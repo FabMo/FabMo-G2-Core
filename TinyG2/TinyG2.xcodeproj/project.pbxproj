@@ -21,6 +21,17 @@
 		D457113317053C3A00EA19A8 /* SamPins.h in Sources */ = {isa = PBXBuildFile; fileRef = D45710D81705334100EA19A8 /* SamPins.h */; };
 		D457117C17053EFA00EA19A8 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = D457117B17053EFA00EA19A8 /* Makefile */; };
 		D478FB87185D7FD1004E35D2 /* SamSPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D478FB85185D7FD1004E35D2 /* SamSPI.cpp */; };
+		D47D382918729FF7001A0F41 /* ccspi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381118729FF7001A0F41 /* ccspi.cpp */; };
+		D47D382A18729FF7001A0F41 /* cc3000_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381418729FF7001A0F41 /* cc3000_common.cpp */; };
+		D47D382B18729FF7001A0F41 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381618729FF7001A0F41 /* debug.cpp */; };
+		D47D382C18729FF7001A0F41 /* evnt_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381818729FF7001A0F41 /* evnt_handler.cpp */; };
+		D47D382D18729FF7001A0F41 /* hci.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381A18729FF7001A0F41 /* hci.cpp */; };
+		D47D382E18729FF7001A0F41 /* netapp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381D18729FF7001A0F41 /* netapp.cpp */; };
+		D47D382F18729FF7001A0F41 /* nvmem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381F18729FF7001A0F41 /* nvmem.cpp */; };
+		D47D383018729FF7001A0F41 /* security.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D382118729FF7001A0F41 /* security.cpp */; };
+		D47D383118729FF7001A0F41 /* sntp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D382318729FF7001A0F41 /* sntp.cpp */; };
+		D47D383218729FF7001A0F41 /* socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D382518729FF7001A0F41 /* socket.cpp */; };
+		D47D383318729FF7001A0F41 /* wlan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D382718729FF7001A0F41 /* wlan.cpp */; };
 		D48F5A56172CB1FA00D0E055 /* canonical_machine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D48F5A40172CB1F900D0E055 /* canonical_machine.cpp */; };
 		D48F5A57172CB1FA00D0E055 /* config_app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D48F5A41172CB1F900D0E055 /* config_app.cpp */; };
 		D48F5A58172CB1FA00D0E055 /* config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D48F5A42172CB1F900D0E055 /* config.cpp */; };
@@ -425,6 +436,29 @@
 		D457117B17053EFA00EA19A8 /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile; sourceTree = "<group>"; usesTabs = 1; xcLanguageSpecificationIdentifier = xcode.lang.sh; };
 		D478FB84185D7C86004E35D2 /* SamCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SamCommon.h; sourceTree = "<group>"; };
 		D478FB85185D7FD1004E35D2 /* SamSPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SamSPI.cpp; sourceTree = "<group>"; };
+		D47D381118729FF7001A0F41 /* ccspi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccspi.cpp; sourceTree = "<group>"; };
+		D47D381218729FF7001A0F41 /* ccspi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ccspi.h; sourceTree = "<group>"; };
+		D47D381418729FF7001A0F41 /* cc3000_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cc3000_common.cpp; sourceTree = "<group>"; };
+		D47D381518729FF7001A0F41 /* cc3000_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cc3000_common.h; sourceTree = "<group>"; };
+		D47D381618729FF7001A0F41 /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug.cpp; sourceTree = "<group>"; };
+		D47D381718729FF7001A0F41 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
+		D47D381818729FF7001A0F41 /* evnt_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = evnt_handler.cpp; sourceTree = "<group>"; };
+		D47D381918729FF7001A0F41 /* evnt_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = evnt_handler.h; sourceTree = "<group>"; };
+		D47D381A18729FF7001A0F41 /* hci.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hci.cpp; sourceTree = "<group>"; };
+		D47D381B18729FF7001A0F41 /* hci.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hci.h; sourceTree = "<group>"; };
+		D47D381C18729FF7001A0F41 /* host_driver_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = host_driver_version.h; sourceTree = "<group>"; };
+		D47D381D18729FF7001A0F41 /* netapp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = netapp.cpp; sourceTree = "<group>"; };
+		D47D381E18729FF7001A0F41 /* netapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = netapp.h; sourceTree = "<group>"; };
+		D47D381F18729FF7001A0F41 /* nvmem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nvmem.cpp; sourceTree = "<group>"; };
+		D47D382018729FF7001A0F41 /* nvmem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nvmem.h; sourceTree = "<group>"; };
+		D47D382118729FF7001A0F41 /* security.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = security.cpp; sourceTree = "<group>"; };
+		D47D382218729FF7001A0F41 /* security.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = security.h; sourceTree = "<group>"; };
+		D47D382318729FF7001A0F41 /* sntp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sntp.cpp; sourceTree = "<group>"; };
+		D47D382418729FF7001A0F41 /* sntp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sntp.h; sourceTree = "<group>"; };
+		D47D382518729FF7001A0F41 /* socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = socket.cpp; sourceTree = "<group>"; };
+		D47D382618729FF7001A0F41 /* socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = socket.h; sourceTree = "<group>"; };
+		D47D382718729FF7001A0F41 /* wlan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wlan.cpp; sourceTree = "<group>"; };
+		D47D382818729FF7001A0F41 /* wlan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wlan.h; sourceTree = "<group>"; };
 		D48F5A40172CB1F900D0E055 /* canonical_machine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = canonical_machine.cpp; sourceTree = "<group>"; };
 		D48F5A41172CB1F900D0E055 /* config_app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = config_app.cpp; sourceTree = "<group>"; };
 		D48F5A42172CB1F900D0E055 /* config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = config.cpp; sourceTree = "<group>"; };
@@ -3293,6 +3327,7 @@
 				D48F5A80172CB21100D0E055 /* util.h */,
 				D48F5A55172CB1FA00D0E055 /* xio.cpp */,
 				D48F5A81172CB21100D0E055 /* xio.h */,
+				D47D380F18729FF6001A0F41 /* fin */,
 				D49EC3FB17054FDF00F2BF9B /* platform */,
 				D45710C61705334000EA19A8 /* motate */,
 				D49EC5D51705FC1100F2BF9B /* bin */,
@@ -3332,6 +3367,52 @@
 				D45710D81705334100EA19A8 /* SamPins.h */,
 				D41D14021737528200D522D9 /* SamUSB.h */,
 				D4550F5F175545F5006BDBA0 /* MotateUSBHelpers.h */,
+			);
+			path = utility;
+			sourceTree = "<group>";
+		};
+		D47D380F18729FF6001A0F41 /* fin */ = {
+			isa = PBXGroup;
+			children = (
+				D47D381018729FF7001A0F41 /* cc3000 */,
+			);
+			path = fin;
+			sourceTree = "<group>";
+		};
+		D47D381018729FF7001A0F41 /* cc3000 */ = {
+			isa = PBXGroup;
+			children = (
+				D47D381118729FF7001A0F41 /* ccspi.cpp */,
+				D47D381218729FF7001A0F41 /* ccspi.h */,
+				D47D381318729FF7001A0F41 /* utility */,
+			);
+			path = cc3000;
+			sourceTree = "<group>";
+		};
+		D47D381318729FF7001A0F41 /* utility */ = {
+			isa = PBXGroup;
+			children = (
+				D47D381418729FF7001A0F41 /* cc3000_common.cpp */,
+				D47D381518729FF7001A0F41 /* cc3000_common.h */,
+				D47D381618729FF7001A0F41 /* debug.cpp */,
+				D47D381718729FF7001A0F41 /* debug.h */,
+				D47D381818729FF7001A0F41 /* evnt_handler.cpp */,
+				D47D381918729FF7001A0F41 /* evnt_handler.h */,
+				D47D381A18729FF7001A0F41 /* hci.cpp */,
+				D47D381B18729FF7001A0F41 /* hci.h */,
+				D47D381C18729FF7001A0F41 /* host_driver_version.h */,
+				D47D381D18729FF7001A0F41 /* netapp.cpp */,
+				D47D381E18729FF7001A0F41 /* netapp.h */,
+				D47D381F18729FF7001A0F41 /* nvmem.cpp */,
+				D47D382018729FF7001A0F41 /* nvmem.h */,
+				D47D382118729FF7001A0F41 /* security.cpp */,
+				D47D382218729FF7001A0F41 /* security.h */,
+				D47D382318729FF7001A0F41 /* sntp.cpp */,
+				D47D382418729FF7001A0F41 /* sntp.h */,
+				D47D382518729FF7001A0F41 /* socket.cpp */,
+				D47D382618729FF7001A0F41 /* socket.h */,
+				D47D382718729FF7001A0F41 /* wlan.cpp */,
+				D47D382818729FF7001A0F41 /* wlan.h */,
 			);
 			path = utility;
 			sourceTree = "<group>";
@@ -7577,6 +7658,7 @@
 			files = (
 				D49EC5EB1706789800F2BF9B /* component_adc.h in Sources */,
 				D49EC5EC1706789800F2BF9B /* component_can.h in Sources */,
+				D47D383318729FF7001A0F41 /* wlan.cpp in Sources */,
 				D49EC5ED1706789800F2BF9B /* component_chipid.h in Sources */,
 				D49EC5EE1706789800F2BF9B /* component_dacc.h in Sources */,
 				D49EC5EF1706789800F2BF9B /* component_dmac.h in Sources */,
@@ -7605,6 +7687,7 @@
 				D49EC6031706789800F2BF9B /* component_twi.h in Sources */,
 				D49EC6041706789800F2BF9B /* component_uart.h in Sources */,
 				D49EC6051706789800F2BF9B /* component_uotghs.h in Sources */,
+				D47D382F18729FF7001A0F41 /* nvmem.cpp in Sources */,
 				D49EC6061706789800F2BF9B /* component_usart.h in Sources */,
 				D49EC6071706789800F2BF9B /* component_wdt.h in Sources */,
 				D49EC6081706789800F2BF9B /* instance_adc.h in Sources */,
@@ -7624,6 +7707,7 @@
 				D49EC6161706789800F2BF9B /* instance_pioc.h in Sources */,
 				D49EC6171706789800F2BF9B /* instance_piod.h in Sources */,
 				D49EC6181706789800F2BF9B /* instance_pioe.h in Sources */,
+				D47D382918729FF7001A0F41 /* ccspi.cpp in Sources */,
 				D49EC6191706789800F2BF9B /* instance_piof.h in Sources */,
 				D49EC61A1706789800F2BF9B /* instance_pmc.h in Sources */,
 				D49EC61B1706789800F2BF9B /* instance_pwm.h in Sources */,
@@ -7637,6 +7721,7 @@
 				D49EC6221706789800F2BF9B /* instance_spi1.h in Sources */,
 				D49EC6231706789800F2BF9B /* instance_ssc.h in Sources */,
 				D49EC6241706789800F2BF9B /* instance_supc.h in Sources */,
+				D47D382C18729FF7001A0F41 /* evnt_handler.cpp in Sources */,
 				D49EC6251706789800F2BF9B /* instance_tc0.h in Sources */,
 				D49EC6261706789800F2BF9B /* instance_tc1.h in Sources */,
 				D49EC6271706789800F2BF9B /* instance_tc2.h in Sources */,
@@ -7663,6 +7748,7 @@
 				D49EC49217054FDF00F2BF9B /* arm_abs_q15.c in Sources */,
 				D49EC49317054FDF00F2BF9B /* arm_abs_q31.c in Sources */,
 				D49EC49417054FDF00F2BF9B /* arm_abs_q7.c in Sources */,
+				D47D382D18729FF7001A0F41 /* hci.cpp in Sources */,
 				D49EC49517054FDF00F2BF9B /* arm_add_f32.c in Sources */,
 				D49EC49617054FDF00F2BF9B /* arm_add_q15.c in Sources */,
 				D49EC49717054FDF00F2BF9B /* arm_add_q31.c in Sources */,
@@ -7695,6 +7781,7 @@
 				D49EC4B217054FDF00F2BF9B /* arm_sub_q31.c in Sources */,
 				D49EC4B317054FDF00F2BF9B /* arm_sub_q7.c in Sources */,
 				D49EC4B417054FDF00F2BF9B /* arm_common_tables.c in Sources */,
+				D47D382B18729FF7001A0F41 /* debug.cpp in Sources */,
 				D49EC4B517054FDF00F2BF9B /* arm_cmplx_conj_f32.c in Sources */,
 				D49EC4B617054FDF00F2BF9B /* arm_cmplx_conj_q15.c in Sources */,
 				D49EC4B717054FDF00F2BF9B /* arm_cmplx_conj_q31.c in Sources */,
@@ -7734,6 +7821,7 @@
 				D49EC4D917054FDF00F2BF9B /* arm_biquad_cascade_df1_f32.c in Sources */,
 				D49EC4DA17054FDF00F2BF9B /* arm_biquad_cascade_df1_fast_q15.c in Sources */,
 				D49EC4DB17054FDF00F2BF9B /* arm_biquad_cascade_df1_fast_q31.c in Sources */,
+				D47D383218729FF7001A0F41 /* socket.cpp in Sources */,
 				D49EC4DC17054FDF00F2BF9B /* arm_biquad_cascade_df1_init_f32.c in Sources */,
 				D49EC4DD17054FDF00F2BF9B /* arm_biquad_cascade_df1_init_q15.c in Sources */,
 				D49EC4DE17054FDF00F2BF9B /* arm_biquad_cascade_df1_init_q31.c in Sources */,
@@ -7742,6 +7830,7 @@
 				D49EC4E117054FDF00F2BF9B /* arm_biquad_cascade_df2T_f32.c in Sources */,
 				D49EC4E217054FDF00F2BF9B /* arm_biquad_cascade_df2T_init_f32.c in Sources */,
 				D49EC4E317054FDF00F2BF9B /* arm_conv_f32.c in Sources */,
+				D47D382E18729FF7001A0F41 /* netapp.cpp in Sources */,
 				D49EC4E417054FDF00F2BF9B /* arm_conv_fast_q15.c in Sources */,
 				D49EC4E517054FDF00F2BF9B /* arm_conv_fast_q31.c in Sources */,
 				D49EC4E617054FDF00F2BF9B /* arm_conv_partial_f32.c in Sources */,
@@ -7806,6 +7895,7 @@
 				D49EC52117054FDF00F2BF9B /* arm_lms_f32.c in Sources */,
 				D49EC52217054FDF00F2BF9B /* arm_lms_init_f32.c in Sources */,
 				D49EC52317054FDF00F2BF9B /* arm_lms_init_q15.c in Sources */,
+				D47D383118729FF7001A0F41 /* sntp.cpp in Sources */,
 				D49EC52417054FDF00F2BF9B /* arm_lms_init_q31.c in Sources */,
 				D49EC52517054FDF00F2BF9B /* arm_lms_norm_f32.c in Sources */,
 				D49EC52617054FDF00F2BF9B /* arm_lms_norm_init_f32.c in Sources */,
@@ -7833,6 +7923,7 @@
 				D49EC53C17054FDF00F2BF9B /* arm_mat_sub_f32.c in Sources */,
 				D49EC53D17054FDF00F2BF9B /* arm_mat_sub_q15.c in Sources */,
 				D49EC53E17054FDF00F2BF9B /* arm_mat_sub_q31.c in Sources */,
+				D47D382A18729FF7001A0F41 /* cc3000_common.cpp in Sources */,
 				D49EC53F17054FDF00F2BF9B /* arm_mat_trans_f32.c in Sources */,
 				D49EC54017054FDF00F2BF9B /* arm_mat_trans_q15.c in Sources */,
 				D49EC54117054FDF00F2BF9B /* arm_mat_trans_q31.c in Sources */,
@@ -7897,6 +7988,7 @@
 				D49EC57C17054FDF00F2BF9B /* arm_rfft_init_f32.c in Sources */,
 				D49EC57D17054FDF00F2BF9B /* arm_rfft_init_q15.c in Sources */,
 				D49EC57E17054FDF00F2BF9B /* arm_rfft_init_q31.c in Sources */,
+				D47D383018729FF7001A0F41 /* security.cpp in Sources */,
 				D49EC57F17054FDF00F2BF9B /* arm_rfft_q15.c in Sources */,
 				D49EC58017054FDF00F2BF9B /* arm_rfft_q31.c in Sources */,
 				D49EC5E31706770A00F2BF9B /* arm_common_tables.h in Sources */,

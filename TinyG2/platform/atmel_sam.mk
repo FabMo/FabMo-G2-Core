@@ -88,7 +88,7 @@ SAM_SOURCE_DIRS += $(DEVICE_PATH)/$(GCC_TOOLCHAIN)
 SAM_SOURCE_DIRS += platform/atmel_sam
 FIRST_LINK_SOURCES += platform/atmel_sam/syscalls_sam3.c
 
-DEVICE_RULES = $(call CREATE_DEVICE_LIBRARY,SAM,cmsis_sam)
+DEVICE_RULES = $(call CREATE_LIBRARY,SAM,cmsis_sam,DEVICE)
 
 # Flags
 DEVICE_INCLUDE_DIRS += "$(CMSIS_PATH)"

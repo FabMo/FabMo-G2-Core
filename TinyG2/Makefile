@@ -52,6 +52,8 @@ ASRC =
 
 DEFAULT_MEMORY = flash
 
+FINS := cc3000 extrudercontroller
+
 # ---------------------------------------------------------------------------------------
 # C Flags (NOT CPP Flags)
 
@@ -154,9 +156,7 @@ ifeq ("$(PLATFORM)","due")
 
 	DEVICE_INCLUDE_DIRS += $(PLATFORM_BASE)/board/due
 	
-
 	include $(PLATFORM_BASE).mk
-	
 
 else
 
@@ -179,6 +179,24 @@ $(error Unknown platform "$(PLATFORM)")
 endif
 
 endif
+
+include platform/make_utilities.mk
+
+
+define MAKE_FIN_RULES_each
+
+$(1)_SOURCE_DIRS := fin/$(1) fin/$(1)/utility
+FIN_INCLUDE_DIRS += fin/$(1) fin/$(1)/utility
+
+$(call CREATE_LIBRARY,$(1),fin_$(1)_lib,FIN)
+
+endef
+
+define MAKE_FIN_RULES
+$(foreach FIN,$(FINS),$(call MAKE_FIN_RULES_each,$(FIN)))
+endef
+
+FIN_RULES = $(call MAKE_FIN_RULES)
 
 #
 # End of platforms section
@@ -255,9 +273,9 @@ FIRST_LINK_OBJECTS = $(addsuffix .o,$(basename $(FIRST_LINK_SOURCES)))
 # Append OBJ and BIN directories to output filename
 OUTPUT := $(BIN)/$(OUTPUT_BIN)
 
-INCLUDES = $(patsubst %,-I%,$(DEVICE_INCLUDE_DIRS) $(USER_INCLUDE_DIRS))
-LIBS     = $(patsubst %,-l%,$(DEVICE_LIBS) $(USER_LIBS))
-LIBDIR   = $(patsubst %,-L%,$(DEVICE_LIB_DIRS) $(USER_LIB_DIRS))
+INCLUDES = $(patsubst %,-I%,$(DEVICE_INCLUDE_DIRS) $(FIN_INCLUDE_DIRS) $(USER_INCLUDE_DIRS))
+LIBS     = $(patsubst %,-l%,$(DEVICE_LIBS) $(FIN_LIBS) $(USER_LIBS))
+LIBDIR   = $(patsubst %,-L%,$(DEVICE_LIB_DIRS) $(FIN_LIB_DIRS) $(USER_LIB_DIRS))
 
 CFLAGS   += -g3 -O$(OPTIMIZATION) $(INCLUDES)
 CPPFLAGS += -g3 -O$(OPTIMIZATION) $(INCLUDES)
@@ -273,8 +291,8 @@ define NEWLINE_TAB
 	
 endef
 
-$(info DEVICE_INCLUDE_DIRS+USER_INCLUDE_DIRS:$(patsubst %,$(NEWLINE_TAB)%,$(DEVICE_INCLUDE_DIRS) $(USER_INCLUDE_DIRS)))
-$(info $(NEWLINE_ONLY)DEVICE_LIB_DIRS+USER_LIB_DIRS: $(patsubst %,$(NEWLINE_TAB)%,$(DEVICE_LIB_DIRS) $(USER_LIB_DIRS)))
+$(info DEVICE_INCLUDE_DIRS+USER_INCLUDE_DIRS:$(patsubst %,$(NEWLINE_TAB)%,$(DEVICE_INCLUDE_DIRS) $(FIN_INCLUDE_DIRS) $(USER_INCLUDE_DIRS)))
+$(info $(NEWLINE_ONLY)DEVICE_LIB_DIRS+USER_LIB_DIRS: $(patsubst %,$(NEWLINE_TAB)%,$(DEVICE_LIB_DIRS) $(FIN_LIB_DIRS) $(USER_LIB_DIRS)))
 $(info $(NEWLINE_ONLY)SOURCE_DIRS: $(patsubst %,$(NEWLINE_TAB)%,$(SOURCE_DIRS)))
 $(info $(NEWLINE_ONLY)C_SOURCES: $(patsubst %,$(NEWLINE_TAB)%,$(C_SOURCES)))
 $(info $(NEWLINE_ONLY)CXX_SOURCES: $(patsubst %,$(NEWLINE_TAB)%,$(CXX_SOURCES)))
@@ -291,13 +309,15 @@ all: $(DEFAULT_MEMORY)
 
 REQUIRED_DIRS := $(BIN) $(OBJ) $(DEPDIR)
 
-MK_DIRS =   $(shell                              \
-              for d in $(REQUIRED_DIRS);         \
-              do                                 \
-                [[ -d $$d ]] || mkdir -p $$d;    \
-              done)
+MK_DIRS =   $(shell                               \
+               for d in $(REQUIRED_DIRS);         \
+               do                                 \
+                 [[ -d $$d ]] || mkdir -p $$d;    \
+               done                               \
+             )
 
 $(eval $(DEVICE_RULES))
+$(eval $(FIN_RULES))
 
 #-------------------------------------------------------------------------------
 #		Per-Memory Rules Block
@@ -326,7 +346,7 @@ ALL_ASM_OBJECTS_$(1) += $$(ASM_OBJECTS_$(1))
 
 $(1): $(OUTPUT_BIN)_$(1).elf
 
-$(OUTPUT_BIN)_$(1).elf: $$(OUTDIR)/core.a $$(DEVICE_OBJECTS_$(1))
+$(OUTPUT_BIN)_$(1).elf: $$(OUTDIR)/core.a $$(DEVICE_OBJECTS_$(1)) $$(FIN_OBJECTS_$(1))
 	@echo $(START_BOLD)"Linking $(OUTPUT_BIN)_$(1).elf" $(END_BOLD)
 	@echo $(START_BOLD)"Using linker script: $$(ABS_LINKER_SCRIPT_$(1))" $(END_BOLD)
 	$(QUIET)$(CXX) $(LIB_PATH) -T"$$(ABS_LINKER_SCRIPT_$(1))" -Wl,-Map,"$(OUTPUT_BIN)_$(1).map" -o $$@ $(LDFLAGS) $(LD_OPTIONAL) $(LIBS) -Wl,--start-group $$(FIRST_LINK_OBJECTS_$(1)) $$+ -Wl,--end-group
