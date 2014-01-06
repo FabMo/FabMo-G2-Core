@@ -23,7 +23,7 @@
 		D478FB87185D7FD1004E35D2 /* SamSPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D478FB85185D7FD1004E35D2 /* SamSPI.cpp */; };
 		D47D382918729FF7001A0F41 /* ccspi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381118729FF7001A0F41 /* ccspi.cpp */; };
 		D47D382A18729FF7001A0F41 /* cc3000_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381418729FF7001A0F41 /* cc3000_common.cpp */; };
-		D47D382B18729FF7001A0F41 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381618729FF7001A0F41 /* debug.cpp */; };
+		D47D382B18729FF7001A0F41 /* debug.cpp-disabled in Sources */ = {isa = PBXBuildFile; fileRef = D47D381618729FF7001A0F41 /* debug.cpp-disabled */; };
 		D47D382C18729FF7001A0F41 /* evnt_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381818729FF7001A0F41 /* evnt_handler.cpp */; };
 		D47D382D18729FF7001A0F41 /* hci.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381A18729FF7001A0F41 /* hci.cpp */; };
 		D47D382E18729FF7001A0F41 /* netapp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D47D381D18729FF7001A0F41 /* netapp.cpp */; };
@@ -440,8 +440,8 @@
 		D47D381218729FF7001A0F41 /* ccspi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ccspi.h; sourceTree = "<group>"; };
 		D47D381418729FF7001A0F41 /* cc3000_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cc3000_common.cpp; sourceTree = "<group>"; };
 		D47D381518729FF7001A0F41 /* cc3000_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cc3000_common.h; sourceTree = "<group>"; };
-		D47D381618729FF7001A0F41 /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug.cpp; sourceTree = "<group>"; };
-		D47D381718729FF7001A0F41 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
+		D47D381618729FF7001A0F41 /* debug.cpp-disabled */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "debug.cpp-disabled"; sourceTree = "<group>"; };
+		D47D381718729FF7001A0F41 /* debug.h-disabled */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "debug.h-disabled"; sourceTree = "<group>"; };
 		D47D381818729FF7001A0F41 /* evnt_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = evnt_handler.cpp; sourceTree = "<group>"; };
 		D47D381918729FF7001A0F41 /* evnt_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = evnt_handler.h; sourceTree = "<group>"; };
 		D47D381A18729FF7001A0F41 /* hci.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hci.cpp; sourceTree = "<group>"; };
@@ -3340,15 +3340,15 @@
 			isa = PBXGroup;
 			children = (
 				D45710C71705334000EA19A8 /* keywords.txt */,
-				D4021F9C175DA4690099576C /* AvrUSB.cpp */,
-				D4550F5E175536DD006BDBA0 /* MotateUSB.h */,
-				D4550F60175549FD006BDBA0 /* MotateUSBCDC.h */,
 				D45710C81705334000EA19A8 /* MotatePins.h */,
 				D41FC0621826F21C003D66C2 /* MotateSPI.h */,
 				D45710C91705334000EA19A8 /* MotateTimers.h */,
+				D4550F5E175536DD006BDBA0 /* MotateUSB.h */,
+				D4550F60175549FD006BDBA0 /* MotateUSBCDC.h */,
+				D4021F9C175DA4690099576C /* AvrUSB.cpp */,
+				D478FB85185D7FD1004E35D2 /* SamSPI.cpp */,
 				D4CFA6D8172B65AD00D29A02 /* SamTimers.cpp */,
 				D4021F9A175DA4610099576C /* SamUSB.cpp */,
-				D478FB85185D7FD1004E35D2 /* SamSPI.cpp */,
 				D45710D51705334100EA19A8 /* utility */,
 			);
 			path = motate;
@@ -3357,16 +3357,16 @@
 		D45710D51705334100EA19A8 /* utility */ = {
 			isa = PBXGroup;
 			children = (
-				D4E2B2F017223FCB004A5C70 /* AvrTimers.h */,
-				D4E2B2F117223FCB004A5C70 /* SamTimers.h */,
-				D478FB84185D7C86004E35D2 /* SamCommon.h */,
+				D4550F5F175545F5006BDBA0 /* MotateUSBHelpers.h */,
 				D45710D61705334100EA19A8 /* AvrPins.h */,
-				D41FC0631826F29F003D66C2 /* SamSPI.h */,
+				D4E2B2F017223FCB004A5C70 /* AvrTimers.h */,
 				D406801B1759B71100C593A3 /* AvrUSB.h */,
 				D45710D71705334100EA19A8 /* AvrXPins.h */,
+				D478FB84185D7C86004E35D2 /* SamCommon.h */,
 				D45710D81705334100EA19A8 /* SamPins.h */,
+				D41FC0631826F29F003D66C2 /* SamSPI.h */,
+				D4E2B2F117223FCB004A5C70 /* SamTimers.h */,
 				D41D14021737528200D522D9 /* SamUSB.h */,
-				D4550F5F175545F5006BDBA0 /* MotateUSBHelpers.h */,
 			);
 			path = utility;
 			sourceTree = "<group>";
@@ -3394,8 +3394,8 @@
 			children = (
 				D47D381418729FF7001A0F41 /* cc3000_common.cpp */,
 				D47D381518729FF7001A0F41 /* cc3000_common.h */,
-				D47D381618729FF7001A0F41 /* debug.cpp */,
-				D47D381718729FF7001A0F41 /* debug.h */,
+				D47D381618729FF7001A0F41 /* debug.cpp-disabled */,
+				D47D381718729FF7001A0F41 /* debug.h-disabled */,
 				D47D381818729FF7001A0F41 /* evnt_handler.cpp */,
 				D47D381918729FF7001A0F41 /* evnt_handler.h */,
 				D47D381A18729FF7001A0F41 /* hci.cpp */,
@@ -7781,7 +7781,7 @@
 				D49EC4B217054FDF00F2BF9B /* arm_sub_q31.c in Sources */,
 				D49EC4B317054FDF00F2BF9B /* arm_sub_q7.c in Sources */,
 				D49EC4B417054FDF00F2BF9B /* arm_common_tables.c in Sources */,
-				D47D382B18729FF7001A0F41 /* debug.cpp in Sources */,
+				D47D382B18729FF7001A0F41 /* debug.cpp-disabled in Sources */,
 				D49EC4B517054FDF00F2BF9B /* arm_cmplx_conj_f32.c in Sources */,
 				D49EC4B617054FDF00F2BF9B /* arm_cmplx_conj_q15.c in Sources */,
 				D49EC4B717054FDF00F2BF9B /* arm_cmplx_conj_q31.c in Sources */,

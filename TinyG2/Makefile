@@ -52,7 +52,7 @@ ASRC =
 
 DEFAULT_MEMORY = flash
 
-FINS := cc3000 extrudercontroller
+#FINS := cc3000
 
 # ---------------------------------------------------------------------------------------
 # C Flags (NOT CPP Flags)

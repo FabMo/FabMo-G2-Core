@@ -192,17 +192,17 @@ void stepper_init()
 	_clear_diagnostic_counters();
 
 	// setup DDA timer (see FOOTNOTE)
-	dda_timer.setInterrupts(kInterruptOnOverflow | kInterruptOnMatchA | kInterruptPriorityHighest);
+	dda_timer.setInterrupts(kTimerInterruptOnOverflow | kTimerInterruptOnMatchA | kTimerInterruptPriorityHighest);
 	dda_timer.setDutyCycleA(0.25);
 
 	// setup DWELL timer
-	dwell_timer.setInterrupts(kInterruptOnOverflow | kInterruptPriorityHighest);
+	dwell_timer.setInterrupts(kTimerInterruptOnOverflow | kTimerInterruptPriorityHighest);
 
 	// setup LOAD timer
-	load_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityLow);
+	load_timer.setInterrupts(kTimerInterruptOnSoftwareTrigger | kTimerInterruptPriorityLow);
 
 	// setup EXEC timer & initial condition
-	exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityLowest);
+	exec_timer.setInterrupts(kTimerInterruptOnSoftwareTrigger | kTimerInterruptPriorityLowest);
 	st_prep.exec_state = PREP_BUFFER_OWNED_BY_EXEC;
 
 	// setup motor power levels and apply power level to stepper drivers
@@ -430,7 +430,7 @@ MOTATE_TIMER_INTERRUPT(dda_timer_num)
 {
 	uint32_t interrupt_cause = dda_timer.getInterruptCause();	// also clears interrupt condition
 
-	if (interrupt_cause == kInterruptOnOverflow) {
+	if (interrupt_cause == kTimerInterruptOnOverflow) {
 //		dda_debug_pin1 = 1;
 
 		if (!motor_1.step.isNull() && (st_run.m[MOTOR_1].phase_accumulator += st_run.m[MOTOR_1].phase_increment) > 0) {
@@ -465,7 +465,7 @@ MOTATE_TIMER_INTERRUPT(dda_timer_num)
 		}
 		dda_debug_pin1 = 0;
 
-	} else if (interrupt_cause == kInterruptOnMatchA) { // dda_timer.getInterruptCause() == kInterruptOnMatchA
+	} else if (interrupt_cause == kTimerInterruptOnMatchA) { // dda_timer.getInterruptCause() == kInterruptOnMatchA
 //		dda_debug_pin2 = 1;
 		motor_1.step.clear();		// turn step bits off
 		motor_2.step.clear();

@@ -3,8 +3,12 @@
  *  spi.c - CC3000 Host Driver Implementation.
  *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
  *
- * Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
- * & Limor Fried for Adafruit Industries
+ * Adapated for use with Motate/Kinen by Rob Giseburt of Synthetos, from the
+ * Adafruit Industries adaptation.
+ *
+ * The Adafruit Industries version was adapted for use with the Arduino/AVR
+ * by KTOWN (Kevin Townsend) & Limor Fried of Adafruit Industries.
+ *
  * This library works with the Adafruit CC3000 breakout
  *	----> https://www.adafruit.com/products/1469
  * Adafruit invests time and resources providing this open source code,
@@ -74,11 +78,11 @@
 using namespace Motate;
 
 
-SPI<kSocket4_SPISlaveSelectPinNumber> cc3000spi(/*8MHz = */8000000, kSPI8Bit | kSPIMode1);
+SPI<kSocket4_SPISlaveSelectPinNumber> cc3000spi(/*8MHz = */8000000, kSPI8Bit | kSPIMode1); // MSBFIRST?
 
 pin_number kCC3000InterruptPinNum = kSocket4_InterruptPinNumber;
 InputPin<kCC3000InterruptPinNum> kCC3000InterruptPin(kPullUp);
-OutputPin<kSocket4_EnablePinNumber> kCC3000EnablePin;
+OutputPin<kSocket4_EnablePinNumber> kCC3000PowerOnPin;
 
 
 
@@ -191,24 +195,9 @@ int init_spi(void)
     
     DEBUGPRINT_F("\tCC3000: init_spi\n\r");
     
-    kCC3000EnablePin = 0;
+    kCC3000PowerOnPin = 0;
     
     delay(500);
-    
-    /* Initialise SPI (Mode 1) */
-    SPI.begin();
-    SPI.setDataMode(SPI_MODE1);
-    SPI.setBitOrder(MSBFIRST);
-    SPI.setClockDivider(g_SPIspeed);
-    
-    SpiConfigStoreMy(); // prime ccspi_my* values for ASSERT
-    
-    // Newly-initialized SPI is in the same state that ASSERT_CS will set it
-    // to.  Invoke DEASSERT (which also restores SPI registers) so the next
-    // ASSERT call won't clobber the ccspi_old* values -- we need those!
-    CC3000_DEASSERT_CS;
-    
-    /* ToDo: Configure IRQ interrupt! */
     
     DEBUGPRINT_F("\tCC3000: Finished init_spi\n\r");
     

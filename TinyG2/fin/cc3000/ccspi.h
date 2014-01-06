@@ -3,9 +3,13 @@
 *  spi.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
+* Adapated for use with Motate/Kinen by Rob Giseburt of Synthetos, from the
+* Adafruit Industries adaptation.
+*
+* The Adafruit Industries version was adapted for use with the Arduino/AVR
+* by KTOWN (Kevin Townsend) & Limor Fried of Adafruit Industries.
+*
+* This library works with the Adafruit CC3000 breakout
 *	----> https://www.adafruit.com/products/1469
 * Adafruit invests time and resources providing this open source code,
 * please support Adafruit and open-source hardware by purchasing
@@ -48,7 +52,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <MotateSPI.h>
 
 #include "utility/wlan.h"
 

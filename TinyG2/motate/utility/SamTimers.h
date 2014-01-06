@@ -126,25 +126,25 @@ namespace Motate {
 	 */
 
 	enum TimerChannelInterruptOptions {
-		kInterruptsOff              = 0,
+		kTimerInterruptsOff              = 0,
         /* Alias for "off" to make more sense
             when returned from setInterruptPending(). */
-		kInterruptUnknown           = 0,
+		kTimerInterruptUnknown           = 0,
 		
-        kInterruptOnMatchA          = 1<<1,
-		kInterruptOnMatchB          = 1<<2,
+        kTimerInterruptOnMatchA          = 1<<1,
+		kTimerInterruptOnMatchB          = 1<<2,
 		/* Note: Interrupt on overflow could be a match C as well. */
-		kInterruptOnOverflow        = 1<<3,
+		kTimerInterruptOnOverflow        = 1<<3,
 
 		/* This turns the IRQ on, but doesn't set the timer to ever trigger it. */
-		kInterruptOnSoftwareTrigger = 1<<4,
+		kTimerInterruptOnSoftwareTrigger = 1<<4,
 
 		/* Set priority levels here as well: */
-		kInterruptPriorityHighest   = 1<<5,
-		kInterruptPriorityHigh      = 1<<6,
-		kInterruptPriorityMedium    = 1<<7,
-		kInterruptPriorityLow       = 1<<8,
-		kInterruptPriorityLowest    = 1<<9,
+		kTimerInterruptPriorityHighest   = 1<<5,
+		kTimerInterruptPriorityHigh      = 1<<6,
+		kTimerInterruptPriorityMedium    = 1<<7,
+		kTimerInterruptPriorityLow       = 1<<8,
+		kTimerInterruptPriorityLowest    = 1<<9,
 	};
 
 	enum TimerErrorCodes {
@@ -415,11 +415,11 @@ namespace Motate {
 
 
 		void setInterrupts(const uint32_t interrupts) {
-			if (interrupts != kInterruptsOff) {
+			if (interrupts != kTimerInterruptsOff) {
 				tcChan()->TC_IDR = 0xFFFFFFFF;
 				NVIC_EnableIRQ(tcIRQ());
 
-				if (interrupts | kInterruptOnOverflow) {
+				if (interrupts & kTimerInterruptOnOverflow) {
 					// Check to see if we're overflowing on C. See getTopValue() description.
 					if (tcChan()->TC_CMR & TC_CMR_CPCTRG) {
 						tcChan()->TC_IER = TC_IER_CPCS; // RC Compare
@@ -427,27 +427,27 @@ namespace Motate {
 						tcChan()->TC_IER = TC_IER_COVFS; // Counter Overflow
 					}
 				}
-				if (interrupts | kInterruptOnMatchA) {
+				if (interrupts & kTimerInterruptOnMatchA) {
 					tcChan()->TC_IER = TC_IER_CPAS; // RA Compare
 				}
-				if (interrupts | kInterruptOnMatchB) {
+				if (interrupts & kTimerInterruptOnMatchB) {
 					tcChan()->TC_IER = TC_IER_CPBS; // RB Compare
 				}
 
 				/* Set interrupt priority */
-				if (interrupts | kInterruptPriorityHighest) {
+				if (interrupts & kTimerInterruptPriorityHighest) {
 					NVIC_SetPriority(tcIRQ(), 0);
 				}
-				else if (interrupts | kInterruptPriorityHigh) {
+				else if (interrupts & kTimerInterruptPriorityHigh) {
 					NVIC_SetPriority(tcIRQ(), 3);
 				}
-				else if (interrupts | kInterruptPriorityMedium) {
+				else if (interrupts & kTimerInterruptPriorityMedium) {
 					NVIC_SetPriority(tcIRQ(), 7);
 				}
-				else if (interrupts | kInterruptPriorityLow) {
+				else if (interrupts & kTimerInterruptPriorityLow) {
 					NVIC_SetPriority(tcIRQ(), 11);
 				}
-				else if (interrupts | kInterruptPriorityLowest) {
+				else if (interrupts & kTimerInterruptPriorityLowest) {
 					NVIC_SetPriority(tcIRQ(), 15);
 				}
 
@@ -477,20 +477,20 @@ namespace Motate {
 
 		TimerChannelInterruptOptions getInterruptCause() {
 			uint32_t sr = tcChan()->TC_SR;
-					// if it is either an overflow or a RC compare
+            // if it is either an overflow or a RC compare
 			if (sr & (TC_SR_COVFS | TC_SR_CPCS)) {
-				return kInterruptOnOverflow;
+				return kTimerInterruptOnOverflow;
 			}
 			else if (sr & (TC_SR_CPAS)) {
-				return kInterruptOnMatchA;
+				return kTimerInterruptOnMatchA;
 			}
 			else if (sr & (TC_SR_CPBS)) {
-				return kInterruptOnMatchB;
+				return kTimerInterruptOnMatchB;
 			}
 			else if (sr & (TC_SR_ETRGS)) {
-				return kInterruptOnMatchA;
+				return kTimerInterruptOnMatchA;
 			}
-			return kInterruptUnknown;
+			return kTimerInterruptUnknown;
 		}
 
 		// Placeholder for user code.
@@ -803,7 +803,7 @@ namespace Motate {
 				return kInterruptOnMatchA;
 			}
 #endif
-			return kInterruptUnknown;
+			return kTimerInterruptUnknown;
 		}
 		
 		// Placeholder for user code.

@@ -68,6 +68,32 @@ namespace Motate {
 		// For use on PWM pins only!
 		kPWMPinInverted    = 1<<7,
 	};
+    
+    enum PinInterruptOptions {
+        kPinInterruptsOff                = 0,
+        
+        kPinInterruptOnChange            = 1,
+        
+        kPinInterruptOnRisingEdge        = 1<<1,
+        kPinInterruptOnFallingEdge       = 2<<1,
+        
+        kPinInterruptOnLowLevel          = 3<<1,
+        kPinInterruptOnHighLevel         = 4<<1,
+
+        kPinInterruptAdvancedMask        = ((1<<3)-1)<<1,
+
+        /* This turns the IRQ on, but doesn't set the timer to ever trigger it. */
+		kPinInterruptOnSoftwareTrigger   = 1<<4,
+
+        kPinInterruptTypeMask            = (1<<5)-1,
+        
+		/* Set priority levels here as well: */
+		kPinInterruptPriorityHighest     = 1<<5,
+		kPinInterruptPriorityHigh        = 1<<6,
+		kPinInterruptPriorityMedium      = 1<<7,
+		kPinInterruptPriorityLow         = 1<<8,
+		kPinInterruptPriorityLowest      = 1<<9,
+    };
 	
 	typedef uint32_t uintPort_t;
 
@@ -516,6 +542,65 @@ namespace Motate {
 			static const uint32_t peripheralId() {\
 				return ID_PIO ## registerLetter;\
 			};\
+            void setInterrupts(const uint32_t interrupts, const uintPort_t mask) {\
+                if (interrupts != kPinInterruptsOff) {\
+                    (*PIO ## registerLetter).PIO_IDR = mask;\
+                    \
+                    /*Is it an "advanced" interrupt?*/\
+                    if (interrupts & kPinInterruptAdvancedMask) {\
+                        (*PIO ## registerLetter).PIO_AIMER = mask;\
+                        /*Is it an edge interrupt?*/\
+                        if ((interrupts & kPinInterruptTypeMask) == kPinInterruptOnRisingEdge ||\
+                            (interrupts & kPinInterruptTypeMask) == kPinInterruptOnFallingEdge) {\
+                            (*PIO ## registerLetter).PIO_ESR = mask;\
+                        }\
+                        else\
+                        if ((interrupts & kPinInterruptTypeMask) == kPinInterruptOnHighLevel ||\
+                            (interrupts & kPinInterruptTypeMask) == kPinInterruptOnLowLevel) {\
+                            (*PIO ## registerLetter).PIO_LSR = mask;\
+                        }\
+                        /*Rising Edge/High Level, or Falling Edge/LowLevel?*/\
+                        if ((interrupts & kPinInterruptTypeMask) == kPinInterruptOnRisingEdge ||\
+                            (interrupts & kPinInterruptTypeMask) == kPinInterruptOnHighLevel) {\
+                            (*PIO ## registerLetter).PIO_REHLSR = mask;\
+                        }\
+                        else\
+                        {\
+                            (*PIO ## registerLetter).PIO_FELLSR = mask;\
+                        }\
+                    }\
+                    else\
+                    {\
+                        (*PIO ## registerLetter).PIO_AIMDR = mask;\
+                    }\
+                    \
+                    /* Set interrupt priority */\
+                    if (interrupts & kPinInterruptPriorityHighest) {\
+                        NVIC_SetPriority(PIO ## registerLetter ## _IRQn, 0);\
+                    }\
+                    else if (interrupts & kPinInterruptPriorityHigh) {\
+                        NVIC_SetPriority(PIO ## registerLetter ## _IRQn, 3);\
+                    }\
+                    else if (interrupts & kPinInterruptPriorityMedium) {\
+                        NVIC_SetPriority(PIO ## registerLetter ## _IRQn, 7);\
+                    }\
+                    else if (interrupts & kPinInterruptPriorityLow) {\
+                        NVIC_SetPriority(PIO ## registerLetter ## _IRQn, 11);\
+                    }\
+                    else if (interrupts & kPinInterruptPriorityLowest) {\
+                        NVIC_SetPriority(PIO ## registerLetter ## _IRQn, 15);\
+                    }\
+                    /* Enable the IRQ */\
+                    NVIC_EnableIRQ(PIO ## registerLetter ## _IRQn);\
+                    /* Enable the interrupt */\
+                    (*PIO ## registerLetter).PIO_IER = mask;\
+                } else {\
+                    (*PIO ## registerLetter).PIO_IDR = mask;\
+                    NVIC_DisableIRQ(PIO ## registerLetter ## _IRQn);\
+                }\
+            };\
+            /* Placeholder for user code. */\
+            static void interrupt() __attribute__ ((weak));\
 		};\
 		typedef Port32<registerChar> Port ## registerLetter;\
 		static Port ## registerLetter port ## registerLetter;
@@ -524,6 +609,12 @@ namespace Motate {
 	static NullPin nullPin;
 
 } // end namespace Motate
+
+
+#define MOTATE_PIN_INTERRUPT(number) \
+    Pin<number>::interrupt_defined = true;\
+    template<> void Pin<number>::interrupt()
+
 
 // Note: We end the namespace before including in case the included file need to include
 //   another Motate file. If it does include another Motate file, we end up with
