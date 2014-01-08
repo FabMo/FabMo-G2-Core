@@ -96,6 +96,8 @@ namespace Motate {
     };
 	
 	typedef uint32_t uintPort_t;
+    
+	typedef const int8_t pin_number;
 
 	template <unsigned char portLetter>
 	struct Port32 {
@@ -167,8 +169,15 @@ namespace Motate {
 		uint8_t getOutputValue() { return 0; };
 		static uint32_t maskForPort(const uint8_t otherPortLetter) { return 0; };
 		bool isNull() { return true; };
+        
+        /* Placeholder for user code. */\
+        static void interrupt() __attribute__ ((weak));\
 	};
 
+    template<uint8_t portChar, uint8_t portPin>
+	struct ReversePinLookup : Pin<-1> {
+    };
+    
 	template<int8_t pinNum>
 	struct InputPin : Pin<pinNum> {
 		InputPin() : Pin<pinNum>(kInput) {};
@@ -199,8 +208,6 @@ namespace Motate {
 	private: /* Make these private to catch them early. */
 		void init(const PinMode type, const PinOptions options = kNormal); /* Intentially not defined. */
 	};	
-    
-	typedef const int8_t pin_number;
 	
 	// TODO: Make the Pin<> use the appropriate Port<>, reducing duplication when there's no penalty
 	
@@ -324,13 +331,22 @@ namespace Motate {
 			uint8_t getOutputValue() {\
 				return (*PIO ## registerLetter).PIO_OSR & mask;\
 			};\
+            void setInterrupts(const uint32_t interrupts) {\
+                port ## registerLetter.setInterrupts(interrupts, mask);\
+            };\
 			bool isNull() { return false; };\
 			static uint32_t maskForPort(const uint8_t otherPortLetter) {\
 				return portLetter == otherPortLetter ? mask : 0x00u;\
 			};\
+            /* Placeholder for user code. */\
+            static void interrupt() __attribute__ ((weak));\
 		};\
 		typedef Pin<pinNum> Pin ## pinNum;\
-		static Pin ## pinNum pin ## pinNum;
+		static Pin ## pinNum pin ## pinNum;\
+        template<>\
+        struct ReversePinLookup<registerChar, registerPin> : Pin<pinNum> {\
+        };
+
 
     
 
@@ -596,18 +612,17 @@ namespace Motate {
                     (*PIO ## registerLetter).PIO_IER = mask;\
                 } else {\
                     (*PIO ## registerLetter).PIO_IDR = mask;\
-                    NVIC_DisableIRQ(PIO ## registerLetter ## _IRQn);\
+                    if ((*PIO ## registerLetter).PIO_ISR == 0)\
+                        NVIC_DisableIRQ(PIO ## registerLetter ## _IRQn);\
                 }\
             };\
-            /* Placeholder for user code. */\
-            static void interrupt() __attribute__ ((weak));\
 		};\
 		typedef Port32<registerChar> Port ## registerLetter;\
 		static Port ## registerLetter port ## registerLetter;
 
 	typedef Pin<-1> NullPin;
 	static NullPin nullPin;
-
+    
 } // end namespace Motate
 
 
