@@ -855,7 +855,9 @@ namespace Motate {
 		static void interrupt() __attribute__ ((weak));
 	};
 	extern Timer<SysTickTimerNum> SysTickTimer;
-
+    
+    extern uint32_t millis();
+    
 	// Provide a Arduino-compatible blocking-delay function
 	inline void delay( uint32_t microseconds )
 	{

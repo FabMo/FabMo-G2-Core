@@ -50,14 +50,11 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <avr/io.h>
-#include <avr/pgmspace.h>
 
 #include "nvmem.h"
 #include "hci.h"
 #include "socket.h"
 #include "evnt_handler.h"
-#include "debug.h"
 
 //*****************************************************************************
 //
@@ -238,7 +235,7 @@ unsigned char nvmem_get_mac_address(unsigned char *mac)
 //!              applied in SP_PORTION_SIZE bytes portions.
 //!	 
 //*****************************************************************************
-
+/*
 unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, const uint8_t *spData)
 {
 	unsigned char 	status = 0;
@@ -281,7 +278,7 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 	
 	return status;
 }
-
+*/
 //*****************************************************************************
 //
 //!  nvmem_read_sp_version

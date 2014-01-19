@@ -72,8 +72,30 @@ namespace Motate {
         kSPI13Bit              = SPI_CSR_BITS_13_BIT,
         kSPI14Bit              = SPI_CSR_BITS_14_BIT,
         kSPI15Bit              = SPI_CSR_BITS_15_BIT,
-        kSPI16Bit              = SPI_CSR_BITS_16_BIT
+        kSPI16Bit              = SPI_CSR_BITS_16_BIT,
+        
+        kSPIBitsMask           = SPI_CSR_BITS_Msk,
+        
+        kSPIDelayAfterSelectMask      = SPI_CSR_DLYBS_Msk,
+        kSPIDelayBetweenTransfersMask = SPI_CSR_DLYBCT_Msk,
 	};
+    
+    inline const uint32_t kSPIDelayAfterSelect(uint16_t delayInHundredthsOfAMicroSecond) {
+        uint8_t newDelay = (SystemCoreClock * delayInHundredthsOfAMicroSecond)/100000000;
+        if (newDelay > 255)
+            newDelay = 255;
+        return SPI_CSR_DLYBS(newDelay);
+    };
+
+    inline const uint32_t kSPIDelayBetweenTransfers(uint16_t delayInHundredthsOfAMicroSecond) {
+        // 38 ~= to SPI_CSR_DLYBCT(1)
+        // We add 19 to round up
+        uint8_t newDelay = (SystemCoreClock * (delayInHundredthsOfAMicroSecond + 19UL))/3200000000UL;
+        if (newDelay > 255)
+            newDelay = 255;
+        return SPI_CSR_DLYBCT(newDelay);
+    };
+
     
     // This is an internal representation of the peripheral.
     // This is *not* to be used externally.
@@ -96,7 +118,7 @@ namespace Motate {
         /* We have to play some tricks here, because templates and static members are tricky.
          * See https://groups.google.com/forum/#!topic/comp.lang.c++.moderated/yun9X6OMiY4
          *
-         * Basically, we want a guard to make sure we dont itinig the SPI0 IC modules every time
+         * Basically, we want a guard to make sure we don't ititiate the SPI0 IC modules every time
          * we create a new SPI object for the individual chip selects.
          *
          * However, since we don't use the module *directly* in the code, other than to init it,
@@ -247,11 +269,11 @@ namespace Motate {
 //            sckPin.setMode(kPeripheralA);
         };
         
-        void init(const uint32_t baud, const uint16_t options, const bool fromConstructor=false) {
+        void init(const uint32_t baud, const uint16_t options = kSPI8Bit | kSPIMode0, const bool fromConstructor=false) {
             setOptions(baud, options, fromConstructor);
         };
         
-        void setOptions(const uint32_t baud, const uint16_t options, const bool fromConstructor=false) {
+        void setOptions(const uint32_t baud, const uint16_t options = kSPI8Bit | kSPIMode0, const bool fromConstructor=false) {
             // We derive the baud from the master clock with a divider.
             // We want the closest match *below* the value asked for. It's safer to bee too slow.
             
@@ -261,15 +283,28 @@ namespace Motate {
             else if (divider < 1)
                 divider = 1;
             
+            // BITS == 0 means it's 8bit, good default
+            // MODE == 0 means MODE 1, good default
+            // Defaults to no delay between transfers
+            // Defaults to 0 delay after select, which the chips takes to mean 1/2 SPI CLK
+            
             // Cruft from Arduino: TODO: Make configurable.
             // SPI_CSR_DLYBCT(1) keeps CS enabled for 32 MCLK after a completed
             // transfer. Some device needs that for working properly.
-            spi()->SPI_CSR[spiChannelNumber()] = (options & (SPI_CSR_NCPHA | SPI_CSR_CPOL | SPI_CSR_BITS_Msk)) | SPI_CSR_SCBR(divider) | SPI_CSR_DLYBCT(1) | SPI_CSR_CSAAT;
+            spi()->SPI_CSR[spiChannelNumber()] = (options & (SPI_CSR_NCPHA | SPI_CSR_CPOL | kSPIBitsMask |  kSPIDelayAfterSelectMask | kSPIDelayBetweenTransfersMask)) | SPI_CSR_SCBR(divider) | SPI_CSR_CSAAT;
             
             // Should be a non-op for already-enabled devices.
             hardware.enable();
 
         };
+        
+        void setDelayAfterSelect(uint16_t delay) {
+            spi()->SPI_CSR[spiChannelNumber()] = ((spi()->SPI_CSR[spiChannelNumber()] & ~(kSPIDelayAfterSelectMask)) | kSPIDelayAfterSelect(delay));
+        }
+
+        void setDelayBetweenTransfers(uint16_t delay) {
+            spi()->SPI_CSR[spiChannelNumber()] = ((spi()->SPI_CSR[spiChannelNumber()] & ~(kSPIDelayBetweenTransfersMask)) | kSPIDelayBetweenTransfers(delay));
+        }
         
         bool setChannel() {
             return hardware.setChannel(spiChannelNumber());
@@ -279,19 +314,31 @@ namespace Motate {
             return spi()->SPI_CSR[spiChannelNumber()]/* & (SPI_CSR_NCPHA | SPI_CSR_CPOL | SPI_CSR_BITS_Msk)*/;
         };
         
+        void setChipSelectControl(bool manual) {
+            csPin.setManual(manual);
+        };
+        
+        void select() {
+            csPin.select();
+        }
+
+        void deselect() {
+            csPin.deselect();
+        }
+        
 		int16_t read(const bool lastXfer = false, uint8_t toSendAsNoop = 0) {
             return hardware.read(lastXfer, toSendAsNoop);
 		};
         
         // WARNING: Currently only reads in bytes. For more-that-byte size data, we'll need another call.
-		int16_t read(const uint8_t *buffer, const uint16_t length) {
+		int16_t read(uint8_t *buffer, const uint16_t length, uint8_t toSendAsNoop = 0) {
 			if (!setChannel())
                 return -1;
             
 
 			int16_t total_read = 0;
 			int16_t to_read = length;
-			const uint8_t *read_ptr = buffer;
+			uint8_t *read_ptr = buffer;
 
             bool lastXfer = false;
 
@@ -301,7 +348,7 @@ namespace Motate {
                 if (to_read == 1)
                     lastXfer = true;
 
-				int16_t ret = read(lastXfer);
+				int16_t ret = read(lastXfer, toSendAsNoop);
                 
                 if (ret >= 0) {
                     *read_ptr++ = ret;

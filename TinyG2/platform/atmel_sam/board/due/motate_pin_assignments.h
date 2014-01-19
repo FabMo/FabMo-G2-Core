@@ -247,7 +247,7 @@ namespace Motate {
 	pin_number kKinen_SyncPinNumber             =  53;
 
 	pin_number kSocket1_SPISlaveSelectPinNumber =  -1;//10;
-	pin_number kSocket1_InterruptPinNumber      =  -1;
+	pin_number kSocket1_InterruptPinNumber      =  46;// WRONG -- But Pin Interrupt dosn't allow a -1
 	pin_number kSocket1_StepPinNumber           =   2;
 	pin_number kSocket1_DirPinNumber            =   5;
 	pin_number kSocket1_EnablePinNumber         =  22;
@@ -256,7 +256,7 @@ namespace Motate {
 	pin_number kSocket1_VrefPinNumber           =  -1;//34; //PWMTimer<0>
 
 	pin_number kSocket2_SPISlaveSelectPinNumber =  65;
-	pin_number kSocket2_InterruptPinNumber      =  -1;
+	pin_number kSocket2_InterruptPinNumber      =  47;// WRONG
 	pin_number kSocket2_StepPinNumber           =   3;
 	pin_number kSocket2_DirPinNumber            =   6;
 	pin_number kSocket2_EnablePinNumber         =  25;
@@ -265,7 +265,7 @@ namespace Motate {
 	pin_number kSocket2_VrefPinNumber           =  -1;//62; //PWMTimer<1>
 
 	pin_number kSocket3_SPISlaveSelectPinNumber =  52;
-	pin_number kSocket3_InterruptPinNumber      =  -1;
+	pin_number kSocket3_InterruptPinNumber      =  48;// WRONG
 	pin_number kSocket3_StepPinNumber           =   4;
 	pin_number kSocket3_DirPinNumber            =   7;
 	pin_number kSocket3_EnablePinNumber         =  28;
@@ -274,7 +274,7 @@ namespace Motate {
 	pin_number kSocket3_VrefPinNumber           =  -1;//63; //PWMTimer<2>
 
 	pin_number kSocket4_SPISlaveSelectPinNumber =  77;
-	pin_number kSocket4_InterruptPinNumber      =  -1;
+	pin_number kSocket4_InterruptPinNumber      =  49;// WRONG
 	pin_number kSocket4_StepPinNumber           =  31;
 	pin_number kSocket4_DirPinNumber            =  32;
 	pin_number kSocket4_EnablePinNumber         =  33;
@@ -283,7 +283,7 @@ namespace Motate {
 	pin_number kSocket4_VrefPinNumber           =  -1;//64; //PWMTimer<3>
 
 	pin_number kSocket5_SPISlaveSelectPinNumber =  78;
-	pin_number kSocket5_InterruptPinNumber      =  -1;
+	pin_number kSocket5_InterruptPinNumber      =  50;// WRONG
 	pin_number kSocket5_StepPinNumber           =  37;
 	pin_number kSocket5_DirPinNumber            =  38;
 	pin_number kSocket5_EnablePinNumber         =  39;
@@ -292,7 +292,7 @@ namespace Motate {
 	pin_number kSocket5_VrefPinNumber           =  -1;//66; //PWMTimer<3>
 
 	pin_number kSocket6_SPISlaveSelectPinNumber =  50;
-	pin_number kSocket6_InterruptPinNumber      =  -1;
+	pin_number kSocket6_InterruptPinNumber      =  51;// WRONG
 	pin_number kSocket6_StepPinNumber           =  42;
 	pin_number kSocket6_DirPinNumber            =  43;
 	pin_number kSocket6_EnablePinNumber         =  44;

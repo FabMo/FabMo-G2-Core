@@ -170,8 +170,9 @@ namespace Motate {
 		uint8_t getInputValue() { return 0; };
 		uint8_t getOutputValue() { return 0; };
 		static uint32_t maskForPort(const uint8_t otherPortLetter) { return 0; };
+        void setInterrupts(const uint32_t interrupts) {};
 		bool isNull() { return true; };
-        
+
         /* Placeholder for user code. */\
         static void interrupt() __attribute__ ((weak));\
 	};
@@ -415,19 +416,9 @@ namespace Motate {
     template<int8_t pinNum>
 	struct SPIChipSelectPin {
 		SPIChipSelectPin() : Pin<pinNum>(kOutput) {};
-        
-//        static const uint8_t moduleId = 255;
-//        static const uint8_t csOffset = 0;
-        
-		/*Override these to pick up new methods */
-        
-	private: /* Make these private to catch them early. */
-		/* These are intentially not defined. */
-//		void init(const PinMode type, const PinOptions options = kNormal);
-        
-		/* WARNING: Covariant return types! */
-		bool get();
-		operator bool();
+        void setManual(bool isManual) {};
+        void select() { this->clear(); }
+        void deselect() { this->set(); }
 	};
 
     #define _MAKE_MOTATE_SPI_CS_PIN(pinNum, peripheralAorB, csNum)\
@@ -436,12 +427,15 @@ namespace Motate {
             SPIChipSelectPin() : Pin<pinNum>(kPeripheral ## peripheralAorB) {};\
             static const uint8_t moduleId = 0; /* Placeholder, bu the SAM3X8s only have SPI0 */\
             static const uint8_t csOffset = csNum;\
-            /*Override these to pick up new methods */\
-        private: /* Make these private to catch them early. */\
-            /* These are intentially not defined. */\
-            /* WARNING: Covariant return types! */\
-            bool get();\
-            operator bool();\
+            void setManual(bool isManual) {\
+                if (isManual) {\
+                    setMode(kOutput);\
+                } else {\
+                    setMode(kPeripheral ## peripheralAorB);\
+                }\
+            };\
+            void select() { clear(); }\
+            void deselect() { set(); }\
         };
 
     

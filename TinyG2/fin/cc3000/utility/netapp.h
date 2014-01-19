@@ -43,6 +43,8 @@
 #ifndef __NETAPP_H__
 #define	__NETAPP_H__
 
+#include "stdint.h"
+
 //*****************************************************************************
 //
 // If building with a C++ compiler, make all of the definitions in this header
@@ -345,7 +347,7 @@ long netapp_set_debug_level(unsigned long ulLevel);
 }
 #endif // __cplusplus
 
-extern Print* CC3KPrinter;
+//extern Print* CC3KPrinter;
 
 #endif	// __NETAPP_H__
 

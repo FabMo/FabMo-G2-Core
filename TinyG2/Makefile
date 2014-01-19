@@ -52,7 +52,7 @@ ASRC =
 
 DEFAULT_MEMORY = flash
 
-#FINS := cc3000
+FINS := cc3000
 
 # ---------------------------------------------------------------------------------------
 # C Flags (NOT CPP Flags)
@@ -252,6 +252,27 @@ LDFLAGS += $(LIBS) $(USER_LIBS) -Wl,--cref -Wl,--check-sections -Wl,--gc-section
 
 
 #-------------------------------------------------------------------------------
+#		Rules
+#-------------------------------------------------------------------------------
+
+
+all: $(DEFAULT_MEMORY)
+
+REQUIRED_DIRS := $(BIN) $(OBJ) $(DEPDIR)
+
+MK_DIRS =   $(shell                               \
+for d in $(REQUIRED_DIRS);         \
+do                                 \
+[[ -d $$d ]] || mkdir -p $$d;    \
+done                               \
+)
+
+$(eval $(DEVICE_RULES))
+$(info $(FIN_RULES))
+$(eval $(FIN_RULES))
+
+
+#-------------------------------------------------------------------------------
 #		Files
 #-------------------------------------------------------------------------------
 
@@ -275,6 +296,11 @@ CFLAGS   += -g3 -O$(OPTIMIZATION) $(INCLUDES)
 CPPFLAGS += -g3 -O$(OPTIMIZATION) $(INCLUDES)
 ASFLAGS  += -g3 -O$(OPTIMIZATION) $(INCLUDES) -D__ASSEMBLY__
 
+
+#-------------------------------------------------------------------------------
+#		Debug output
+#-------------------------------------------------------------------------------
+
 ifeq ($(VERBOSE),2)
 define NEWLINE_ONLY
 
@@ -282,7 +308,7 @@ define NEWLINE_ONLY
 endef
 define NEWLINE_TAB
 
-	
+
 endef
 
 $(info DEVICE_INCLUDE_DIRS+USER_INCLUDE_DIRS:$(patsubst %,$(NEWLINE_TAB)%,$(DEVICE_INCLUDE_DIRS) $(FIN_INCLUDE_DIRS) $(USER_INCLUDE_DIRS)))
@@ -293,25 +319,6 @@ $(info $(NEWLINE_ONLY)CXX_SOURCES: $(patsubst %,$(NEWLINE_TAB)%,$(CXX_SOURCES)))
 $(info $(NEWLINE_ONLY)FIRST_LINK_SOURCES: $(patsubst %,$(NEWLINE_TAB)%,$(FIRST_LINK_SOURCES)))
 endif
 
-
-#-------------------------------------------------------------------------------
-#		Rules
-#-------------------------------------------------------------------------------
-
-
-all: $(DEFAULT_MEMORY)
-
-REQUIRED_DIRS := $(BIN) $(OBJ) $(DEPDIR)
-
-MK_DIRS =   $(shell                               \
-               for d in $(REQUIRED_DIRS);         \
-               do                                 \
-                 [[ -d $$d ]] || mkdir -p $$d;    \
-               done                               \
-             )
-
-$(eval $(DEVICE_RULES))
-$(eval $(FIN_RULES))
 
 #-------------------------------------------------------------------------------
 #		Per-Memory Rules Block

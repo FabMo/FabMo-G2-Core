@@ -107,7 +107,7 @@ DEVICE_CFLAGS := -D__$(CHIP)__ --param max-inline-insns-single=500 -mcpu=cortex-
 # ---------------------------------------------------------------------------------------
 # CPP Flags
 
-DEVICE_CPPFLAGS := -D__$(CHIP)__ --param max-inline-insns-single=500 -mcpu=cortex-m3 -mthumb -mlong-calls -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -u _printf_float
+DEVICE_CPPFLAGS := -D__$(CHIP)__ --param max-inline-insns-single=500 -mcpu=cortex-m3 -mthumb -mlong-calls -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -u _printf_float -std=gnu++11
 
 # ---------------------------------------------------------------------------------------
 # Linker Flags

@@ -55,7 +55,7 @@
 #include "nvmem.h"
 #include "security.h"
 #include "evnt_handler.h"
-#include "debug.h"
+//#include "debug.h"
 
 volatile sSimplLinkInformation tSLInformation;
 
@@ -387,7 +387,7 @@ wlan_stop(void)
 #ifndef CC3000_TINY_DRIVER
 long
 wlan_connect(unsigned long ulSecType, const char *ssid, long ssid_len,
-             unsigned char *bssid, unsigned char *key, long key_len)
+             unsigned char *bssid, unsigned char *key_local, long key_len)
 {
 	long ret;
 	unsigned char *ptr;
@@ -418,9 +418,9 @@ wlan_connect(unsigned long ulSecType, const char *ssid, long ssid_len,
 
 	ARRAY_TO_STREAM(args, ssid, ssid_len);
 
-	if(key_len && key)
+	if(key_len && key_local)
 	{
-		ARRAY_TO_STREAM(args, key, key_len);
+		ARRAY_TO_STREAM(args, key_local, key_len);
 	}
 
 	// Initiate a HCI command
@@ -601,7 +601,7 @@ wlan_add_profile(unsigned long ulSecType,
 								 unsigned char* ucPf_OrKey,
 								 unsigned long ulPassPhraseLen)
 {
-	unsigned short arg_len;
+	unsigned short arg_len = 0;
 	long ret;
 	unsigned char *ptr;
 	long i = 0;

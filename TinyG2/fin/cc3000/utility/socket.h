@@ -43,6 +43,7 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
+#include "stdint.h"
 
 //*****************************************************************************
 //
@@ -60,6 +61,10 @@
 //*****************************************************************************
 #ifdef  __cplusplus
 extern "C" {
+#endif
+    
+#ifndef NULL
+#define NULL 0
 #endif
 
 #define HOSTNAME_MAX_LENGTH (230)  // 230 bytes + header shouldn't exceed 8 bit value

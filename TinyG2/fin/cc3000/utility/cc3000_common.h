@@ -63,6 +63,34 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
+    
+    
+#ifndef DEBUGPRINT_F
+#define DEBUGPRINT_F(...)
+#endif
+    
+#ifndef DEBUGPRINT_HEX16
+#define DEBUGPRINT_HEX16(...)
+#endif
+
+    
+#ifndef DEBUGPRINT_DEC
+#define DEBUGPRINT_DEC(...)
+#endif
+    
+#ifndef DEBUGPRINT_HEX
+#define DEBUGPRINT_HEX(...)
+#endif
+
+    
+#ifndef DEBUG_MODE
+#define DEBUG_MODE 0
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
+
 
 //*****************************************************************************
 //                  ERROR CODES
@@ -365,7 +393,7 @@ extern void cc3k_int_poll();
 //This macro is used for copying 32 bit to stream while converting to little endian format.
 #define UINT32_TO_STREAM(_p, _u32)	(UINT32_TO_STREAM_f(_p, _u32))
 //This macro is used for copying a specified value length bits (l) to stream while converting to little endian format.
-#define ARRAY_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(p)++ = ((uint8_t *) a)[_i];}
+#define ARRAY_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < (short)l; _i++) *(p)++ = ((uint8_t *) a)[_i];}
 //This macro is used for copying received stream to 8 bit in little endian format.
 #define STREAM_TO_UINT8(_p, _offset, _u8)	{_u8 = (uint8_t)(*(_p + _offset));}
 //This macro is used for copying received stream to 16 bit in little endian format.

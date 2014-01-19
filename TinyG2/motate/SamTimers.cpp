@@ -137,6 +137,12 @@ namespace Motate {
 	 */
 
 	Timer<SysTickTimerNum> SysTickTimer;
+    
+    uint32_t millis()
+    {
+        return SysTickTimer.getValue();
+    }
+
 
 	volatile uint32_t Timer<SysTickTimerNum>::_motateTickCount = 0;
 

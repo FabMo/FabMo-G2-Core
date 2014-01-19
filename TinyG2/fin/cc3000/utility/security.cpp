@@ -100,30 +100,30 @@ unsigned char expandedKey[176];
 //!
 //*****************************************************************************
 
-void expandKey(unsigned char *expandedKey,
+void expandKey(unsigned char *expandedKeyLocal,
                unsigned char *key)
 {
   unsigned short ii, buf1;
   for (ii=0;ii<16;ii++)
-    expandedKey[ii] = key[ii];
+    expandedKeyLocal[ii] = key[ii];
   for (ii=1;ii<11;ii++){
-    buf1 = expandedKey[ii*16 - 4];
-    expandedKey[ii*16 + 0] = sbox[expandedKey[ii*16 - 3]]^expandedKey[(ii-1)*16 + 0]^Rcon[ii];
-    expandedKey[ii*16 + 1] = sbox[expandedKey[ii*16 - 2]]^expandedKey[(ii-1)*16 + 1];
-    expandedKey[ii*16 + 2] = sbox[expandedKey[ii*16 - 1]]^expandedKey[(ii-1)*16 + 2];
-    expandedKey[ii*16 + 3] = sbox[buf1                  ]^expandedKey[(ii-1)*16 + 3];
-    expandedKey[ii*16 + 4] = expandedKey[(ii-1)*16 + 4]^expandedKey[ii*16 + 0];
-    expandedKey[ii*16 + 5] = expandedKey[(ii-1)*16 + 5]^expandedKey[ii*16 + 1];
-    expandedKey[ii*16 + 6] = expandedKey[(ii-1)*16 + 6]^expandedKey[ii*16 + 2];
-    expandedKey[ii*16 + 7] = expandedKey[(ii-1)*16 + 7]^expandedKey[ii*16 + 3];
-    expandedKey[ii*16 + 8] = expandedKey[(ii-1)*16 + 8]^expandedKey[ii*16 + 4];
-    expandedKey[ii*16 + 9] = expandedKey[(ii-1)*16 + 9]^expandedKey[ii*16 + 5];
-    expandedKey[ii*16 +10] = expandedKey[(ii-1)*16 +10]^expandedKey[ii*16 + 6];
-    expandedKey[ii*16 +11] = expandedKey[(ii-1)*16 +11]^expandedKey[ii*16 + 7];
-    expandedKey[ii*16 +12] = expandedKey[(ii-1)*16 +12]^expandedKey[ii*16 + 8];
-    expandedKey[ii*16 +13] = expandedKey[(ii-1)*16 +13]^expandedKey[ii*16 + 9];
-    expandedKey[ii*16 +14] = expandedKey[(ii-1)*16 +14]^expandedKey[ii*16 +10];
-    expandedKey[ii*16 +15] = expandedKey[(ii-1)*16 +15]^expandedKey[ii*16 +11];
+    buf1 = expandedKeyLocal[ii*16 - 4];
+    expandedKeyLocal[ii*16 + 0] = sbox[expandedKeyLocal[ii*16 - 3]]^expandedKeyLocal[(ii-1)*16 + 0]^Rcon[ii];
+    expandedKeyLocal[ii*16 + 1] = sbox[expandedKeyLocal[ii*16 - 2]]^expandedKeyLocal[(ii-1)*16 + 1];
+    expandedKeyLocal[ii*16 + 2] = sbox[expandedKeyLocal[ii*16 - 1]]^expandedKeyLocal[(ii-1)*16 + 2];
+    expandedKeyLocal[ii*16 + 3] = sbox[buf1                  ]^expandedKeyLocal[(ii-1)*16 + 3];
+    expandedKeyLocal[ii*16 + 4] = expandedKeyLocal[(ii-1)*16 + 4]^expandedKeyLocal[ii*16 + 0];
+    expandedKeyLocal[ii*16 + 5] = expandedKeyLocal[(ii-1)*16 + 5]^expandedKeyLocal[ii*16 + 1];
+    expandedKeyLocal[ii*16 + 6] = expandedKeyLocal[(ii-1)*16 + 6]^expandedKeyLocal[ii*16 + 2];
+    expandedKeyLocal[ii*16 + 7] = expandedKeyLocal[(ii-1)*16 + 7]^expandedKeyLocal[ii*16 + 3];
+    expandedKeyLocal[ii*16 + 8] = expandedKeyLocal[(ii-1)*16 + 8]^expandedKeyLocal[ii*16 + 4];
+    expandedKeyLocal[ii*16 + 9] = expandedKeyLocal[(ii-1)*16 + 9]^expandedKeyLocal[ii*16 + 5];
+    expandedKeyLocal[ii*16 +10] = expandedKeyLocal[(ii-1)*16 +10]^expandedKeyLocal[ii*16 + 6];
+    expandedKeyLocal[ii*16 +11] = expandedKeyLocal[(ii-1)*16 +11]^expandedKeyLocal[ii*16 + 7];
+    expandedKeyLocal[ii*16 +12] = expandedKeyLocal[(ii-1)*16 +12]^expandedKeyLocal[ii*16 + 8];
+    expandedKeyLocal[ii*16 +13] = expandedKeyLocal[(ii-1)*16 +13]^expandedKeyLocal[ii*16 + 9];
+    expandedKeyLocal[ii*16 +14] = expandedKeyLocal[(ii-1)*16 +14]^expandedKeyLocal[ii*16 +10];
+    expandedKeyLocal[ii*16 +15] = expandedKeyLocal[(ii-1)*16 +15]^expandedKeyLocal[ii*16 +11];
   }
 	
 }
@@ -174,35 +174,35 @@ unsigned char galois_mul2(unsigned char value)
 //!
 //*****************************************************************************
 
-void aes_encr(unsigned char *state, unsigned char *expandedKey)
+void aes_encr(unsigned char *state, unsigned char *expandedKeyLocal)
 {
   unsigned char buf1, buf2, buf3, round;
 		
   for (round = 0; round < 9; round ++){
     // addroundkey, sbox and shiftrows
     // row 0
-    state[ 0]  = sbox[(state[ 0] ^ expandedKey[(round*16)     ])];
-    state[ 4]  = sbox[(state[ 4] ^ expandedKey[(round*16) +  4])];
-    state[ 8]  = sbox[(state[ 8] ^ expandedKey[(round*16) +  8])];
-    state[12]  = sbox[(state[12] ^ expandedKey[(round*16) + 12])];
+    state[ 0]  = sbox[(state[ 0] ^ expandedKeyLocal[(round*16)     ])];
+    state[ 4]  = sbox[(state[ 4] ^ expandedKeyLocal[(round*16) +  4])];
+    state[ 8]  = sbox[(state[ 8] ^ expandedKeyLocal[(round*16) +  8])];
+    state[12]  = sbox[(state[12] ^ expandedKeyLocal[(round*16) + 12])];
     // row 1
-    buf1 = state[1] ^ expandedKey[(round*16) + 1];
-    state[ 1]  = sbox[(state[ 5] ^ expandedKey[(round*16) +  5])];
-    state[ 5]  = sbox[(state[ 9] ^ expandedKey[(round*16) +  9])];
-    state[ 9]  = sbox[(state[13] ^ expandedKey[(round*16) + 13])];
+    buf1 = state[1] ^ expandedKeyLocal[(round*16) + 1];
+    state[ 1]  = sbox[(state[ 5] ^ expandedKeyLocal[(round*16) +  5])];
+    state[ 5]  = sbox[(state[ 9] ^ expandedKeyLocal[(round*16) +  9])];
+    state[ 9]  = sbox[(state[13] ^ expandedKeyLocal[(round*16) + 13])];
     state[13]  = sbox[buf1];
     // row 2
-    buf1 = state[2] ^ expandedKey[(round*16) + 2];
-    buf2 = state[6] ^ expandedKey[(round*16) + 6];
-    state[ 2]  = sbox[(state[10] ^ expandedKey[(round*16) + 10])];
-    state[ 6]  = sbox[(state[14] ^ expandedKey[(round*16) + 14])];
+    buf1 = state[2] ^ expandedKeyLocal[(round*16) + 2];
+    buf2 = state[6] ^ expandedKeyLocal[(round*16) + 6];
+    state[ 2]  = sbox[(state[10] ^ expandedKeyLocal[(round*16) + 10])];
+    state[ 6]  = sbox[(state[14] ^ expandedKeyLocal[(round*16) + 14])];
     state[10]  = sbox[buf1];
     state[14]  = sbox[buf2];
     // row 3
-    buf1 = state[15] ^ expandedKey[(round*16) + 15];
-    state[15]  = sbox[(state[11] ^ expandedKey[(round*16) + 11])];
-    state[11]  = sbox[(state[ 7] ^ expandedKey[(round*16) +  7])];
-    state[ 7]  = sbox[(state[ 3] ^ expandedKey[(round*16) +  3])];
+    buf1 = state[15] ^ expandedKeyLocal[(round*16) + 15];
+    state[15]  = sbox[(state[11] ^ expandedKeyLocal[(round*16) + 11])];
+    state[11]  = sbox[(state[ 7] ^ expandedKeyLocal[(round*16) +  7])];
+    state[ 7]  = sbox[(state[ 3] ^ expandedKeyLocal[(round*16) +  3])];
     state[ 3]  = sbox[buf1];
     
     // mixcolums //////////
@@ -237,46 +237,46 @@ void aes_encr(unsigned char *state, unsigned char *expandedKey)
 		
   }
   // 10th round without mixcols
-  state[ 0]  = sbox[(state[ 0] ^ expandedKey[(round*16)     ])];
-  state[ 4]  = sbox[(state[ 4] ^ expandedKey[(round*16) +  4])];
-  state[ 8]  = sbox[(state[ 8] ^ expandedKey[(round*16) +  8])];
-  state[12]  = sbox[(state[12] ^ expandedKey[(round*16) + 12])];
+  state[ 0]  = sbox[(state[ 0] ^ expandedKeyLocal[(round*16)     ])];
+  state[ 4]  = sbox[(state[ 4] ^ expandedKeyLocal[(round*16) +  4])];
+  state[ 8]  = sbox[(state[ 8] ^ expandedKeyLocal[(round*16) +  8])];
+  state[12]  = sbox[(state[12] ^ expandedKeyLocal[(round*16) + 12])];
   // row 1
-  buf1 = state[1] ^ expandedKey[(round*16) + 1];
-  state[ 1]  = sbox[(state[ 5] ^ expandedKey[(round*16) +  5])];
-  state[ 5]  = sbox[(state[ 9] ^ expandedKey[(round*16) +  9])];
-  state[ 9]  = sbox[(state[13] ^ expandedKey[(round*16) + 13])];
+  buf1 = state[1] ^ expandedKeyLocal[(round*16) + 1];
+  state[ 1]  = sbox[(state[ 5] ^ expandedKeyLocal[(round*16) +  5])];
+  state[ 5]  = sbox[(state[ 9] ^ expandedKeyLocal[(round*16) +  9])];
+  state[ 9]  = sbox[(state[13] ^ expandedKeyLocal[(round*16) + 13])];
   state[13]  = sbox[buf1];
   // row 2
-  buf1 = state[2] ^ expandedKey[(round*16) + 2];
-  buf2 = state[6] ^ expandedKey[(round*16) + 6];
-  state[ 2]  = sbox[(state[10] ^ expandedKey[(round*16) + 10])];
-  state[ 6]  = sbox[(state[14] ^ expandedKey[(round*16) + 14])];
+  buf1 = state[2] ^ expandedKeyLocal[(round*16) + 2];
+  buf2 = state[6] ^ expandedKeyLocal[(round*16) + 6];
+  state[ 2]  = sbox[(state[10] ^ expandedKeyLocal[(round*16) + 10])];
+  state[ 6]  = sbox[(state[14] ^ expandedKeyLocal[(round*16) + 14])];
   state[10]  = sbox[buf1];
   state[14]  = sbox[buf2];
   // row 3
-  buf1 = state[15] ^ expandedKey[(round*16) + 15];
-  state[15]  = sbox[(state[11] ^ expandedKey[(round*16) + 11])];
-  state[11]  = sbox[(state[ 7] ^ expandedKey[(round*16) +  7])];
-  state[ 7]  = sbox[(state[ 3] ^ expandedKey[(round*16) +  3])];
+  buf1 = state[15] ^ expandedKeyLocal[(round*16) + 15];
+  state[15]  = sbox[(state[11] ^ expandedKeyLocal[(round*16) + 11])];
+  state[11]  = sbox[(state[ 7] ^ expandedKeyLocal[(round*16) +  7])];
+  state[ 7]  = sbox[(state[ 3] ^ expandedKeyLocal[(round*16) +  3])];
   state[ 3]  = sbox[buf1];
   // last addroundkey
-  state[ 0]^=expandedKey[160];
-  state[ 1]^=expandedKey[161];
-  state[ 2]^=expandedKey[162];
-  state[ 3]^=expandedKey[163];
-  state[ 4]^=expandedKey[164];
-  state[ 5]^=expandedKey[165];
-  state[ 6]^=expandedKey[166];
-  state[ 7]^=expandedKey[167];
-  state[ 8]^=expandedKey[168];
-  state[ 9]^=expandedKey[169];
-  state[10]^=expandedKey[170];
-  state[11]^=expandedKey[171];
-  state[12]^=expandedKey[172];
-  state[13]^=expandedKey[173];
-  state[14]^=expandedKey[174]; 
-  state[15]^=expandedKey[175];
+  state[ 0]^=expandedKeyLocal[160];
+  state[ 1]^=expandedKeyLocal[161];
+  state[ 2]^=expandedKeyLocal[162];
+  state[ 3]^=expandedKeyLocal[163];
+  state[ 4]^=expandedKeyLocal[164];
+  state[ 5]^=expandedKeyLocal[165];
+  state[ 6]^=expandedKeyLocal[166];
+  state[ 7]^=expandedKeyLocal[167];
+  state[ 8]^=expandedKeyLocal[168];
+  state[ 9]^=expandedKeyLocal[169];
+  state[10]^=expandedKeyLocal[170];
+  state[11]^=expandedKeyLocal[171];
+  state[12]^=expandedKeyLocal[172];
+  state[13]^=expandedKeyLocal[173];
+  state[14]^=expandedKeyLocal[174]; 
+  state[15]^=expandedKeyLocal[175];
 } 
 
 //*****************************************************************************
@@ -301,53 +301,53 @@ void aes_encr(unsigned char *state, unsigned char *expandedKey)
 //!
 //*****************************************************************************
 
-void aes_decr(unsigned char *state, unsigned char *expandedKey)
+void aes_decr(unsigned char *state, unsigned char *expandedKeyLocal)
 {
   unsigned char buf1, buf2, buf3;
   signed char round;
   round = 9;
 	
   // initial addroundkey
-  state[ 0]^=expandedKey[160];
-  state[ 1]^=expandedKey[161];
-  state[ 2]^=expandedKey[162];
-  state[ 3]^=expandedKey[163];
-  state[ 4]^=expandedKey[164];
-  state[ 5]^=expandedKey[165];
-  state[ 6]^=expandedKey[166];
-  state[ 7]^=expandedKey[167];
-  state[ 8]^=expandedKey[168];
-  state[ 9]^=expandedKey[169];
-  state[10]^=expandedKey[170];
-  state[11]^=expandedKey[171];
-  state[12]^=expandedKey[172];
-  state[13]^=expandedKey[173];
-  state[14]^=expandedKey[174]; 
-  state[15]^=expandedKey[175];
+  state[ 0]^=expandedKeyLocal[160];
+  state[ 1]^=expandedKeyLocal[161];
+  state[ 2]^=expandedKeyLocal[162];
+  state[ 3]^=expandedKeyLocal[163];
+  state[ 4]^=expandedKeyLocal[164];
+  state[ 5]^=expandedKeyLocal[165];
+  state[ 6]^=expandedKeyLocal[166];
+  state[ 7]^=expandedKeyLocal[167];
+  state[ 8]^=expandedKeyLocal[168];
+  state[ 9]^=expandedKeyLocal[169];
+  state[10]^=expandedKeyLocal[170];
+  state[11]^=expandedKeyLocal[171];
+  state[12]^=expandedKeyLocal[172];
+  state[13]^=expandedKeyLocal[173];
+  state[14]^=expandedKeyLocal[174]; 
+  state[15]^=expandedKeyLocal[175];
 	
   // 10th round without mixcols
-  state[ 0]  = rsbox[state[ 0]] ^ expandedKey[(round*16)     ];
-  state[ 4]  = rsbox[state[ 4]] ^ expandedKey[(round*16) +  4];
-  state[ 8]  = rsbox[state[ 8]] ^ expandedKey[(round*16) +  8];
-  state[12]  = rsbox[state[12]] ^ expandedKey[(round*16) + 12];
+  state[ 0]  = rsbox[state[ 0]] ^ expandedKeyLocal[(round*16)     ];
+  state[ 4]  = rsbox[state[ 4]] ^ expandedKeyLocal[(round*16) +  4];
+  state[ 8]  = rsbox[state[ 8]] ^ expandedKeyLocal[(round*16) +  8];
+  state[12]  = rsbox[state[12]] ^ expandedKeyLocal[(round*16) + 12];
   // row 1
-  buf1 =       rsbox[state[13]] ^ expandedKey[(round*16) +  1];
-  state[13]  = rsbox[state[ 9]] ^ expandedKey[(round*16) + 13];
-  state[ 9]  = rsbox[state[ 5]] ^ expandedKey[(round*16) +  9];
-  state[ 5]  = rsbox[state[ 1]] ^ expandedKey[(round*16) +  5];
+  buf1 =       rsbox[state[13]] ^ expandedKeyLocal[(round*16) +  1];
+  state[13]  = rsbox[state[ 9]] ^ expandedKeyLocal[(round*16) + 13];
+  state[ 9]  = rsbox[state[ 5]] ^ expandedKeyLocal[(round*16) +  9];
+  state[ 5]  = rsbox[state[ 1]] ^ expandedKeyLocal[(round*16) +  5];
   state[ 1]  = buf1;
   // row 2
-  buf1 =       rsbox[state[ 2]] ^ expandedKey[(round*16) + 10];
-  buf2 =       rsbox[state[ 6]] ^ expandedKey[(round*16) + 14];
-  state[ 2]  = rsbox[state[10]] ^ expandedKey[(round*16) +  2];
-  state[ 6]  = rsbox[state[14]] ^ expandedKey[(round*16) +  6];
+  buf1 =       rsbox[state[ 2]] ^ expandedKeyLocal[(round*16) + 10];
+  buf2 =       rsbox[state[ 6]] ^ expandedKeyLocal[(round*16) + 14];
+  state[ 2]  = rsbox[state[10]] ^ expandedKeyLocal[(round*16) +  2];
+  state[ 6]  = rsbox[state[14]] ^ expandedKeyLocal[(round*16) +  6];
   state[10]  = buf1;
   state[14]  = buf2;
   // row 3
-  buf1 =       rsbox[state[ 3]] ^ expandedKey[(round*16) + 15];
-  state[ 3]  = rsbox[state[ 7]] ^ expandedKey[(round*16) +  3];
-  state[ 7]  = rsbox[state[11]] ^ expandedKey[(round*16) +  7];
-  state[11]  = rsbox[state[15]] ^ expandedKey[(round*16) + 11];
+  buf1 =       rsbox[state[ 3]] ^ expandedKeyLocal[(round*16) + 15];
+  state[ 3]  = rsbox[state[ 7]] ^ expandedKeyLocal[(round*16) +  3];
+  state[ 7]  = rsbox[state[11]] ^ expandedKeyLocal[(round*16) +  7];
+  state[11]  = rsbox[state[15]] ^ expandedKeyLocal[(round*16) + 11];
   state[15]  = buf1;
 	
   for (round = 8; round >= 0; round--){
@@ -400,28 +400,28 @@ void aes_decr(unsigned char *state, unsigned char *expandedKey)
 		
     // addroundkey, rsbox and shiftrows
     // row 0
-    state[ 0]  = rsbox[state[ 0]] ^ expandedKey[(round*16)     ];
-    state[ 4]  = rsbox[state[ 4]] ^ expandedKey[(round*16) +  4];
-    state[ 8]  = rsbox[state[ 8]] ^ expandedKey[(round*16) +  8];
-    state[12]  = rsbox[state[12]] ^ expandedKey[(round*16) + 12];
+    state[ 0]  = rsbox[state[ 0]] ^ expandedKeyLocal[(round*16)     ];
+    state[ 4]  = rsbox[state[ 4]] ^ expandedKeyLocal[(round*16) +  4];
+    state[ 8]  = rsbox[state[ 8]] ^ expandedKeyLocal[(round*16) +  8];
+    state[12]  = rsbox[state[12]] ^ expandedKeyLocal[(round*16) + 12];
     // row 1
-    buf1 =       rsbox[state[13]] ^ expandedKey[(round*16) +  1];
-    state[13]  = rsbox[state[ 9]] ^ expandedKey[(round*16) + 13];
-    state[ 9]  = rsbox[state[ 5]] ^ expandedKey[(round*16) +  9];
-    state[ 5]  = rsbox[state[ 1]] ^ expandedKey[(round*16) +  5];
+    buf1 =       rsbox[state[13]] ^ expandedKeyLocal[(round*16) +  1];
+    state[13]  = rsbox[state[ 9]] ^ expandedKeyLocal[(round*16) + 13];
+    state[ 9]  = rsbox[state[ 5]] ^ expandedKeyLocal[(round*16) +  9];
+    state[ 5]  = rsbox[state[ 1]] ^ expandedKeyLocal[(round*16) +  5];
     state[ 1]  = buf1;
     // row 2
-    buf1 =       rsbox[state[ 2]] ^ expandedKey[(round*16) + 10];
-    buf2 =       rsbox[state[ 6]] ^ expandedKey[(round*16) + 14];
-    state[ 2]  = rsbox[state[10]] ^ expandedKey[(round*16) +  2];
-    state[ 6]  = rsbox[state[14]] ^ expandedKey[(round*16) +  6];
+    buf1 =       rsbox[state[ 2]] ^ expandedKeyLocal[(round*16) + 10];
+    buf2 =       rsbox[state[ 6]] ^ expandedKeyLocal[(round*16) + 14];
+    state[ 2]  = rsbox[state[10]] ^ expandedKeyLocal[(round*16) +  2];
+    state[ 6]  = rsbox[state[14]] ^ expandedKeyLocal[(round*16) +  6];
     state[10]  = buf1;
     state[14]  = buf2;
     // row 3
-    buf1 =       rsbox[state[ 3]] ^ expandedKey[(round*16) + 15];
-    state[ 3]  = rsbox[state[ 7]] ^ expandedKey[(round*16) +  3];
-    state[ 7]  = rsbox[state[11]] ^ expandedKey[(round*16) +  7];
-    state[11]  = rsbox[state[15]] ^ expandedKey[(round*16) + 11];
+    buf1 =       rsbox[state[ 3]] ^ expandedKeyLocal[(round*16) + 15];
+    state[ 3]  = rsbox[state[ 7]] ^ expandedKeyLocal[(round*16) +  3];
+    state[ 7]  = rsbox[state[11]] ^ expandedKeyLocal[(round*16) +  7];
+    state[11]  = rsbox[state[15]] ^ expandedKeyLocal[(round*16) + 11];
     state[15]  = buf1;
   }
 	

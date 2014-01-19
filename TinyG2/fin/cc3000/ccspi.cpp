@@ -50,7 +50,7 @@
 #include "utility/netapp.h"
 #include "utility/evnt_handler.h"
 #include "utility/cc3000_common.h"
-#include "utility/debug.h"
+//#include "utility/debug.h"
 
 #include "MotatePins.h"
 #include "MotateSPI.h"
@@ -111,7 +111,7 @@ void SpiWriteAsync(const unsigned char *data, unsigned short size);
 void SpiPauseSpi(void);
 void SpiResumeSpi(void);
 void SSIContReadOperation(void);
-void cc3k_int_poll(void);
+//void cc3k_int_poll(void);
 
 // The magic number that resides at the end of the TX/RX buffer (1 byte after the allocated size)
 // for the purpose of detection of the overrun. The location of the memory where the magic number
@@ -214,22 +214,22 @@ long SpiFirstWrite(unsigned char *ucBuf, unsigned short usLength)
     DEBUGPRINT_F("\tCC3000: SpiWriteFirst\n\r");
     
     /* Workaround for the first transaction */
-    CC3000_ASSERT_CS;
+    cc3000spi.select();
     
     /* delay (stay low) for ~50us */
-    delay(1);
+//    delay(1);
     
+    cc3000spi.setDelayAfterSelect(5000);
+    cc3000spi.setDelayBetweenTransfers(5000);
+
     /* SPI writes first 4 bytes of data */
     SpiWriteDataSynchronous(ucBuf, 4);
-    
-    delay(1);
-    
     SpiWriteDataSynchronous(ucBuf + 4, usLength - 4);
     
     /* From this point on - operate in a regular manner */
     sSpiInformation.ulSpiState = eSPI_STATE_IDLE;
     
-    CC3000_DEASSERT_CS;
+    cc3000spi.deselect();
     
     return(0);
 }
@@ -291,7 +291,7 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
         sSpiInformation.usTxPacketLength = usLength;
         
         /* Assert the CS line and wait till SSI IRQ line is active and then initialize write operation */
-        CC3000_ASSERT_CS;
+        cc3000spi.select();
         
         /* Re-enable IRQ - if it was not disabled - this is not a problem... */
         tSLInformation.WlanInterruptEnable();
@@ -303,7 +303,7 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
             
             sSpiInformation.ulSpiState = eSPI_STATE_IDLE;
             
-            CC3000_DEASSERT_CS;
+            cc3000spi.deselect();
         }
     }
     
@@ -321,27 +321,9 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
 /**************************************************************************/
 void SpiWriteDataSynchronous(unsigned char *data, unsigned short size)
 {
-    unsigned char dummy;
-    
     DEBUGPRINT_F("\tCC3000: SpiWriteDataSynchronous Start\n\r");
     
-    uint8_t loc;
-    for (loc = 0; loc < size; loc ++)
-    {
-        dummy = SPI.transfer(data[loc]);
-#if (DEBUG_MODE == 1)
-        if (!(loc==size-1))
-        {
-            DEBUGPRINT_F(" ");
-            DEBUGPRINT_HEX(data[loc]);
-        }
-        else
-        {
-            DEBUGPRINT_F(" ");
-            DEBUGPRINT_HEX(data[loc]);
-        }
-#endif
-    }
+    cc3000spi.write(data, size);
     
     DEBUGPRINT_F("\n\r\tCC3000: SpiWriteDataSynchronous End\n\r");
 }
@@ -353,16 +335,8 @@ void SpiWriteDataSynchronous(unsigned char *data, unsigned short size)
 /**************************************************************************/
 void SpiReadDataSynchronous(unsigned char *data, unsigned short size)
 {
-    int i = 0;
-    
     DEBUGPRINT_F("\tCC3000: SpiReadDataSynchronous\n\r");
-    SPI.setDataMode(SPI_MODE1);
-    for (i = 0; i < size; i ++)
-    {
-        data[i] = SPI.transfer(0x03);
-        DEBUGPRINT_F("  ");
-        DEBUGPRINT_HEX(data[i]);
-    }
+    cc3000spi.read(data, size, /* toSendAsNoop = */ 0x03);
     DEBUGPRINT_F("\n\r");
 }
 
@@ -447,7 +421,7 @@ void SpiPauseSpi(void)
     DEBUGPRINT_F("\tCC3000: SpiPauseSpi\n\r");
     
     ccspi_int_enabled = 0;
-    detachInterrupt(g_IRQnum);
+    kCC3000InterruptPin.setInterrupts(kPinInterruptsOff);
 }
 
 /**************************************************************************/
@@ -460,7 +434,8 @@ void SpiResumeSpi(void)
     DEBUGPRINT_F("\tCC3000: SpiResumeSpi\n\r");
     
     ccspi_int_enabled = 1;
-    attachInterrupt(g_IRQnum, SPI_IRQ, FALLING);
+//    attachInterrupt(g_IRQnum, SPI_IRQ, FALLING);
+    kCC3000InterruptPin.setInterrupts(kPinInterruptOnFallingEdge);
 }
 
 /**************************************************************************/
@@ -474,7 +449,7 @@ void SpiTriggerRxProcessing(void)
     
     /* Trigger Rx processing */
     SpiPauseSpi();
-    CC3000_DEASSERT_CS;
+    cc3000spi.deselect();
     
     //DEBUGPRINT_F("Magic?\n\r");
     /* The magic number that resides at the end of the TX/RX buffer (1 byte after the allocated size)
@@ -518,20 +493,20 @@ void SSIContReadOperation(void)
 /**************************************************************************/
 void WriteWlanPin( unsigned char val )
 {
-    if (DEBUG_MODE)
-    {
-        DEBUGPRINT_F("\tCC3000: WriteWlanPin - ");
-        DEBUGPRINT_DEC(val);
-        DEBUGPRINT_F("\n\r");
-        delay(1);
-    }
+//    if (DEBUG_MODE)
+//    {
+//        DEBUGPRINT_F("\tCC3000: WriteWlanPin - ");
+//        DEBUGPRINT_DEC(val);
+//        DEBUGPRINT_F("\n\r");
+//        delay(1);
+//    }
     if (val)
     {
-        digitalWrite(g_vbatPin, HIGH);
+        kCC3000PowerOnPin = 1;
     }
     else
     {
-        digitalWrite(g_vbatPin, LOW);
+        kCC3000PowerOnPin = 0;
     }
 }
 
@@ -543,10 +518,10 @@ void WriteWlanPin( unsigned char val )
 long ReadWlanInterruptPin(void)
 {
     DEBUGPRINT_F("\tCC3000: ReadWlanInterruptPin - ");
-    DEBUGPRINT_DEC(digitalRead(g_irqPin));
+//    DEBUGPRINT_DEC(digitalRead(g_irqPin));
     DEBUGPRINT_F("\n\r");
     
-    return(digitalRead(g_irqPin));
+    return(kCC3000InterruptPin);
 }
 
 /**************************************************************************/
@@ -559,7 +534,7 @@ void WlanInterruptEnable()
     DEBUGPRINT_F("\tCC3000: WlanInterruptEnable.\n\r");
     // delay(100);
     ccspi_int_enabled = 1;
-    //  attachInterrupt(g_IRQnum, SPI_IRQ, FALLING);
+    kCC3000InterruptPin.setInterrupts(kPinInterruptOnFallingEdge);
 }
 
 /**************************************************************************/
@@ -572,6 +547,7 @@ void WlanInterruptDisable()
     DEBUGPRINT_F("\tCC3000: WlanInterruptDisable\n\r");
     ccspi_int_enabled = 0;
     //  detachInterrupt(g_IRQnum);
+    kCC3000InterruptPin.setInterrupts(kPinInterruptsOff);
 }
 
 //*****************************************************************************
@@ -632,42 +608,44 @@ char *sendWLFWPatch(unsigned long *Length) {
  */
 /**************************************************************************/
 
-void SPI_IRQ(void)
-{
-    ccspi_is_in_irq = 1;
-    
-    DEBUGPRINT_F("\tCC3000: Entering SPI_IRQ\n\r");
-    
-    if (sSpiInformation.ulSpiState == eSPI_STATE_POWERUP)
+namespace Motate {
+    void Pin<kCC3000InterruptPinNum>::interrupt()
     {
-        /* IRQ line was low ... perform a callback on the HCI Layer */
-        sSpiInformation.ulSpiState = eSPI_STATE_INITIALIZED;
-    }
-    else if (sSpiInformation.ulSpiState == eSPI_STATE_IDLE)
-    {
-        //DEBUGPRINT_F("IDLE\n\r");
-        sSpiInformation.ulSpiState = eSPI_STATE_READ_IRQ;
-        /* IRQ line goes down - start reception */
+        ccspi_is_in_irq = 1;
         
-        CC3000_ASSERT_CS;
+        DEBUGPRINT_F("\tCC3000: Entering SPI_IRQ\n\r");
         
-        // Wait for TX/RX Compete which will come as DMA interrupt
-        SpiReadHeader();
-        sSpiInformation.ulSpiState = eSPI_STATE_READ_EOT;
-        //DEBUGPRINT_F("SSICont\n\r");
-        SSIContReadOperation();
+        if (sSpiInformation.ulSpiState == eSPI_STATE_POWERUP)
+        {
+            /* IRQ line was low ... perform a callback on the HCI Layer */
+            sSpiInformation.ulSpiState = eSPI_STATE_INITIALIZED;
+        }
+        else if (sSpiInformation.ulSpiState == eSPI_STATE_IDLE)
+        {
+            //DEBUGPRINT_F("IDLE\n\r");
+            sSpiInformation.ulSpiState = eSPI_STATE_READ_IRQ;
+            /* IRQ line goes down - start reception */
+            
+            cc3000spi.select();
+            
+            // Wait for TX/RX Compete which will come as DMA interrupt
+            SpiReadHeader();
+            sSpiInformation.ulSpiState = eSPI_STATE_READ_EOT;
+            //DEBUGPRINT_F("SSICont\n\r");
+            SSIContReadOperation();
+        }
+        else if (sSpiInformation.ulSpiState == eSPI_STATE_WRITE_IRQ)
+        {
+            SpiWriteDataSynchronous(sSpiInformation.pTxPacket, sSpiInformation.usTxPacketLength);
+            sSpiInformation.ulSpiState = eSPI_STATE_IDLE;
+            cc3000spi.deselect();
+        }
+        
+        DEBUGPRINT_F("\tCC3000: Leaving SPI_IRQ\n\r");
+        
+        ccspi_is_in_irq = 0;
+        return;
     }
-    else if (sSpiInformation.ulSpiState == eSPI_STATE_WRITE_IRQ)
-    {
-        SpiWriteDataSynchronous(sSpiInformation.pTxPacket, sSpiInformation.usTxPacketLength);
-        sSpiInformation.ulSpiState = eSPI_STATE_IDLE;
-        CC3000_DEASSERT_CS;
-    }
-    
-    DEBUGPRINT_F("\tCC3000: Leaving SPI_IRQ\n\r");
-    
-    ccspi_is_in_irq = 0;
-    return;
 }
 
 //*****************************************************************************
@@ -680,9 +658,9 @@ void SPI_IRQ(void)
 //
 //*****************************************************************************
 
-void cc3k_int_poll()
-{
-    if (digitalRead(g_irqPin) == LOW && ccspi_is_in_irq == 0 && ccspi_int_enabled != 0) {
-        SPI_IRQ();
-    }
-}
+//void cc3k_int_poll()
+//{
+//    if (digitalRead(g_irqPin) == LOW && ccspi_is_in_irq == 0 && ccspi_int_enabled != 0) {
+//        SPI_IRQ();
+//    }
+//}

@@ -266,12 +266,6 @@
 //   message authentication code (MAC) information defined in Appendix C
 //   of RFC-1305.
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
-#else
-	#include "WProgram.h"
-#endif
-
 #include "utility/socket.h"
 #include "utility/netapp.h"
 
@@ -342,7 +336,7 @@ typedef uint32_t  NTP_Server_List_t[MAX_NTP_SERVERS];   //list of ntp server add
 * Structure for NTP calendar time.
 *
 */
-typedef struct NetTime_t
+struct NetTime_t
 {
 	uint16_t millis; ///< Milliseconds after the second (0..999)
 	uint8_t	 sec;    ///< Seconds after the minute (0..59)
@@ -403,7 +397,7 @@ class sntp
 };
 
 //extern sntp SNTP;
-extern Print* CC3KPrinter;
+//extern Print* CC3KPrinter;
 
 #endif
 
