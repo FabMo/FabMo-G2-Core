@@ -4,8 +4,8 @@
  *
  * This file is part of the TinyG project
  *
- * Copyright (c) 2013 Alden S. Hart, Jr.
- * Copyright (c) 2013 Robert Giseburt
+ * Copyright (c) 2013 - 2014 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2014 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -97,7 +97,7 @@ timer_number exec_timer_num  = 5;	// request exec timer in stepper.cpp
 
 // Pin assignments
 
-pin_number indicator_led_pin_num = kLED_USBTXPinNumber;
+pin_number indicator_led_pin_num = kLED_USBRXPinNumber;
 static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
 
 // Init these to input to keep them high-z
@@ -122,8 +122,8 @@ static OutputPin<kGRBL_CycleStartPinNumber> grbl_cycle_start_pin;
 static OutputPin<kGRBL_CommonEnablePinNumber> motor_common_enable_pin;
 static OutputPin<kSpindle_EnablePinNumber> spindle_enable_pin;
 static OutputPin<kSpindle_DirPinNumber> spindle_dir_pin;
-static OutputPin<kSpindle_PwmPinNumber> spindle_pwm_pin;
-static OutputPin<kSpindle_Pwm2PinNumber> secondary_pwm_pin;
+static PWMOutputPin<kSpindle_PwmPinNumber> spindle_pwm_pin;
+static PWMOutputPin<kSpindle_Pwm2PinNumber> secondary_pwm_pin;
 static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
 
 static InputPin<kXAxis_MinPinNumber> axis_X_min_pin(kPullUp);

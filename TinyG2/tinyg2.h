@@ -36,7 +36,7 @@
 #include "MotatePins.h"
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		030.04	// new jerk selection algorithm - 030.03 with some development cruft removed - profile set for pocketnc
+#define TINYG_FIRMWARE_BUILD   		035.03	// Changed settings to PocketNC
 #endif
 #define TINYG_FIRMWARE_VERSION		0.8		// firmware major version
 #define TINYG_HARDWARE_PLATFORM		3		// hardware platform indicator (2 = Native Arduino Due)
@@ -67,7 +67,7 @@
 /****** DEVELOPMENT SETTINGS ******/
 
 #define __DIAGNOSTIC_PARAMETERS				// includes diagnostics in config_app table
-#define __DEBUG_STATEMENTS					// used to comment out debugging printf's
+//#define __DEBUG_STATEMENTS					// used to comment out debugging printf's
 
 #ifdef __SIMULATION
   #define __CANNED_STARTUP					// run any canned startup moves
@@ -315,9 +315,9 @@ char *get_status_message(stat_t status);
 #define	STAT_ERROR_58 58
 #define	STAT_ERROR_59 59
 
-// Gcode and machining errors
-#define	STAT_MINIMUM_LENGTH_MOVE_ERROR 60	// move is less than minimum length
-#define	STAT_MINIMUM_TIME_MOVE_ERROR 61		// move is less than minimum time
+// Gcode and machining errors and warnings
+#define	STAT_MINIMUM_LENGTH_MOVE 60			// move is less than minimum length
+#define	STAT_MINIMUM_TIME_MOVE 61			// move is less than minimum time
 #define	STAT_GCODE_BLOCK_SKIPPED 62			// block is too short - was skipped
 #define	STAT_GCODE_INPUT_ERROR 63			// general error for gcode input
 #define	STAT_GCODE_FEEDRATE_ERROR 64		// move has no feedrate

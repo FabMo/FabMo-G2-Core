@@ -37,14 +37,28 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D4B6579318B5197600F8616C"
                BuildableName = "TinyG2 G2V9f"
                BlueprintName = "TinyG2 G2V9f"
+               ReferencedContainer = "container:TinyG2.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D4B6579718B5198D00F8616C"
+               BuildableName = "TinyG2 G2V9g"
+               BlueprintName = "TinyG2 G2V9g"
                ReferencedContainer = "container:TinyG2.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
