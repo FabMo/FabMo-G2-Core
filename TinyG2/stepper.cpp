@@ -59,8 +59,8 @@ static void _set_motor_power_level(const uint8_t motor, const float power_level)
 using namespace Motate;
 
 OutputPin<kGRBL_CommonEnablePinNumber> common_enable;	 // shorter form of the above
-OutputPin<-1> dda_debug_pin1;
-OutputPin<-1> dda_debug_pin2;
+OutputPin<kDebug1_PinNumber> dda_debug_pin1;
+OutputPin<kDebug2_PinNumber> dda_debug_pin2;
 
 // Example with prefixed name::
 //Motate::Timer<dda_timer_num> dda_timer(kTimerUpToMatch, FREQUENCY_DDA);// stepper pulse generation
@@ -75,6 +75,7 @@ template<pin_number step_num,			// Setup a stepper template to hold our pins
 		 pin_number enable_num, 
 		 pin_number ms0_num, 
 		 pin_number ms1_num, 
+         pin_number ms2_num,
 		 pin_number vref_num>
 
 struct Stepper {
@@ -85,6 +86,7 @@ struct Stepper {
 	OutputPin<enable_num> enable;
 	OutputPin<ms0_num> ms0;
 	OutputPin<ms1_num> ms1;
+	OutputPin<ms2_num> ms2;
 	PWMOutputPin<vref_num> vref;
 
 	/* stepper default values */
@@ -98,10 +100,12 @@ struct Stepper {
 	void setMicrosteps(const uint8_t microsteps)
 	{
 		switch (microsteps) {
-			case (1): { ms1=0; ms0=0; break; }
-			case (2): { ms1=0; ms0=1; break; }
-			case (4): { ms1=1; ms0=0; break; }
-			case (8): { ms1=1; ms0=1; break; }
+			case ( 1): { ms2=0; ms1=0; ms0=0; break; }
+			case ( 2): { ms2=0; ms1=0; ms0=1; break; }
+			case ( 4): { ms2=0; ms1=1; ms0=0; break; }
+			case ( 8): { ms2=0; ms1=1; ms0=1; break; }
+			case (16): { ms2=1; ms1=0; ms0=0; break; }
+			case (32): { ms2=1; ms1=0; ms0=1; break; }
 		}
 	};
 
@@ -119,6 +123,7 @@ Stepper<kSocket1_StepPinNumber,
 		kSocket1_EnablePinNumber,
 		kSocket1_Microstep_0PinNumber,
 		kSocket1_Microstep_1PinNumber,
+        kSocket1_Microstep_2PinNumber,
 		kSocket1_VrefPinNumber> motor_1;
 
 Stepper<kSocket2_StepPinNumber,
@@ -126,6 +131,7 @@ Stepper<kSocket2_StepPinNumber,
 		kSocket2_EnablePinNumber,
 		kSocket2_Microstep_0PinNumber,
 		kSocket2_Microstep_1PinNumber,
+        kSocket2_Microstep_2PinNumber,
 		kSocket2_VrefPinNumber> motor_2;
 
 Stepper<kSocket3_StepPinNumber,
@@ -133,6 +139,7 @@ Stepper<kSocket3_StepPinNumber,
 		kSocket3_EnablePinNumber,
 		kSocket3_Microstep_0PinNumber,
 		kSocket3_Microstep_1PinNumber,
+        kSocket3_Microstep_2PinNumber,
 		kSocket3_VrefPinNumber> motor_3;
 
 Stepper<kSocket4_StepPinNumber,
@@ -140,6 +147,7 @@ Stepper<kSocket4_StepPinNumber,
 		kSocket4_EnablePinNumber,
 		kSocket4_Microstep_0PinNumber,
 		kSocket4_Microstep_1PinNumber,
+        kSocket4_Microstep_2PinNumber,
 		kSocket4_VrefPinNumber> motor_4;
 
 Stepper<kSocket5_StepPinNumber,
@@ -147,6 +155,7 @@ Stepper<kSocket5_StepPinNumber,
 		kSocket5_EnablePinNumber,
 		kSocket5_Microstep_0PinNumber,
 		kSocket5_Microstep_1PinNumber,
+        kSocket5_Microstep_2PinNumber,
 		kSocket5_VrefPinNumber> motor_5;
 		
 Stepper<kSocket6_StepPinNumber,
@@ -154,6 +163,7 @@ Stepper<kSocket6_StepPinNumber,
 		kSocket6_EnablePinNumber,
 		kSocket6_Microstep_0PinNumber,
 		kSocket6_Microstep_1PinNumber,
+        kSocket6_Microstep_2PinNumber,
 		kSocket6_VrefPinNumber> motor_6;
 
 #endif // __ARM
@@ -189,6 +199,7 @@ void stepper_init()
 	// setup software interrupt exec timer & initial condition
 	exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityLowest);
 	st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;
+	st_pre.segment_ready = false;						// used for diagnostics only
 
 	// setup motor power levels and apply power level to stepper drivers
 	for (uint8_t motor=0; motor<MOTORS; motor++) {
@@ -447,10 +458,10 @@ MOTATE_TIMER_INTERRUPT(dwell_timer_num)
 namespace Motate {			// Must define timer interrupts inside the Motate namespace
 MOTATE_TIMER_INTERRUPT(dda_timer_num)
 {
+//    dda_debug_pin1 = 1;
 	uint32_t interrupt_cause = dda_timer.getInterruptCause();	// also clears interrupt condition
 
 	if (interrupt_cause == kInterruptOnOverflow) {
-//		dda_debug_pin1 = 1;
 
 		if (!motor_1.step.isNull() && (st_run.mot[MOTOR_1].substep_accumulator += st_run.mot[MOTOR_1].substep_increment) > 0) {
 			motor_1.step.set();		// turn step bit on
@@ -482,9 +493,8 @@ MOTATE_TIMER_INTERRUPT(dda_timer_num)
 			st_run.mot[MOTOR_6].substep_accumulator -= st_run.dda_ticks_X_substeps;
 			INCREMENT_ENCODER(MOTOR_6);
 		}
-//		dda_debug_pin1 = 0;
 
-	} else if (interrupt_cause == kInterruptOnMatchA) { // dda_timer.getInterruptCause() == kInterruptOnMatchA
+	} else if (interrupt_cause == kInterruptOnMatchA) {
 //		dda_debug_pin2 = 1;
 		motor_1.step.clear();							// turn step bits off
 		motor_2.step.clear();
@@ -500,6 +510,7 @@ MOTATE_TIMER_INTERRUPT(dda_timer_num)
 		_load_move();									// load the next move at the current interrupt level
 //		dda_debug_pin2 = 0;
 	}
+//    dda_debug_pin1 = 0;
 } // MOTATE_TIMER_INTERRUPT
 } // namespace Motate
 
@@ -610,6 +621,7 @@ namespace Motate {	// Define timer inside Motate namespace
 
 static void _load_move()
 {
+//dda_debug_pin1 = 1;
 	// Be aware that dda_ticks_downcount must equal zero for the loader to run.
 	// So the initial load must also have this set to zero as part of initialization
 	if (st_run.dda_ticks_downcount != 0) return;						// exit if it's still busy
@@ -620,6 +632,11 @@ static void _load_move()
 		}
 		return;
 	}
+
+	if (st_pre.segment_ready != true) {									// trap if prep is not complete
+		printf("######## LOADER - SEGMENT NOT READY\n");
+	}
+	st_pre.segment_ready = false;
 
 	// handle aline() loads first (most common case)  NB: there are no more lines, only alines()
 	if (st_pre.move_type == MOVE_TYPE_ALINE) {
@@ -779,6 +796,7 @@ static void _load_move()
 	st_prep_null();											// needed to shut off timers if no moves left
 	st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;			// flip it back
 	st_request_exec_move();									// exec and prep next move
+//dda_debug_pin1 = 0;
 }
 
 /***********************************************************************************
@@ -875,8 +893,11 @@ stat_t st_prep_line(float travel_steps[], float following_error[], float segment
 		// that results in long-term negative drift. (fabs/round order doesn't matter)
 
 		st_pre.mot[motor].substep_increment = round(fabs(travel_steps[motor] * DDA_SUBSTEPS));
+
+
 	}
 	st_pre.move_type = MOVE_TYPE_ALINE;
+	st_pre.segment_ready = true;
 	return (STAT_OK);
 }
 
@@ -1033,10 +1054,26 @@ stat_t st_set_pl(cmdObj_t *cmd)			// motor power level
 /*
  * st_set_pl() - set motor power level
  *
- *	Input value may vary from 0 to 100. The setting is scaled to allowable PWM range.
+ *	Input value may vary from 0.000 to 1.000 The setting is scaled to allowable PWM range.
  *	This function sets both the scaled and dynamic power levels, and applies the 
  *	scaled value to the vref.
  */ 
+stat_t st_set_pl(cmdObj_t *cmd)	// motor power level
+{
+	if (cmd->value < (float)0.0) cmd->value = 0.0;
+	if (cmd->value > (float)1.0) {
+		if (cmd->value > (float)100) cmd->value = 1;
+ 		cmd->value /= 100;		// accommodate old 0-100 inputs
+	}
+	set_flt(cmd);	// set power_setting value in the motor config struct (st)
+	
+	uint8_t motor = _get_motor(cmd->index);
+	st_cfg.mot[motor].power_level_scaled = (cmd->value * POWER_LEVEL_SCALE_FACTOR);
+	st_run.mot[motor].power_level_dynamic = (st_cfg.mot[motor].power_level_scaled);
+	_set_motor_power_level(motor, st_cfg.mot[motor].power_level_scaled);
+	return(STAT_OK);
+}
+/*
 stat_t st_set_pl(cmdObj_t *cmd)	// motor power level
 {
 	if (cmd->value < (float)0) cmd->value = 0;
@@ -1049,6 +1086,7 @@ stat_t st_set_pl(cmdObj_t *cmd)	// motor power level
 	_set_motor_power_level(motor, st_cfg.mot[motor].power_level_scaled);
 	return(STAT_OK);
 }
+*/
 
 /* GLOBAL FUNCTIONS (SYSTEM LEVEL)
  *
