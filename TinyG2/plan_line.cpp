@@ -114,7 +114,7 @@ stat_t mp_aline(const GCodeState_t *gm_line)
 	if (length < MIN_LENGTH_MOVE) { return (STAT_MINIMUM_LENGTH_MOVE);}
 	if (gm_line->move_time < MIN_TIME_MOVE) {
 		#ifdef __DEBUG_STATEMENTS
-		printf("######## line%lu %f\n", gm_line->linenum, (double)gm_line->move_time);
+		printf("######## aline() line%lu %f\n", gm_line->linenum, (double)gm_line->move_time);
 		#endif
 		return (STAT_MINIMUM_TIME_MOVE);
 	}
@@ -453,7 +453,7 @@ static void _reset_replannable_list()
 
 static void _calculate_trapezoid(mpBuf_t *bf) 
 {
-	bf->head_length = 0;		// inialize the lengths
+	bf->head_length = 0;		// initialize the lengths
 	bf->body_length = 0;
 	bf->tail_length = 0;
 
@@ -476,6 +476,7 @@ static void _calculate_trapezoid(mpBuf_t *bf)
 				bf->body_length = bf->length;
 			} else {
 				bf->move_state = MOVE_SKIP;					// tell runtime to skip the block
+				printf("######## Trapezoid skip[1] - line %lu\n", bf->gm.linenum);
 			}
 			return;
 		}
@@ -490,6 +491,7 @@ static void _calculate_trapezoid(mpBuf_t *bf)
 				bf->body_length = bf->length;
 			} else {
 				bf->move_state = MOVE_SKIP;					// tell runtime to skip the block
+				printf("######## Trapezoid skip[2] - line %lu\n", bf->gm.linenum);
 			}
 			return;
 		}

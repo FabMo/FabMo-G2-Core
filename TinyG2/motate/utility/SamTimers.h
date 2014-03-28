@@ -417,9 +417,8 @@ namespace Motate {
 		void setInterrupts(const uint32_t interrupts) {
 			if (interrupts != kInterruptsOff) {
 				tcChan()->TC_IDR = 0xFFFFFFFF;
-				NVIC_EnableIRQ(tcIRQ());
 
-				if (interrupts | kInterruptOnOverflow) {
+				if (interrupts & kInterruptOnOverflow) {
 					// Check to see if we're overflowing on C. See getTopValue() description.
 					if (tcChan()->TC_CMR & TC_CMR_CPCTRG) {
 						tcChan()->TC_IER = TC_IER_CPCS; // RC Compare
@@ -427,30 +426,31 @@ namespace Motate {
 						tcChan()->TC_IER = TC_IER_COVFS; // Counter Overflow
 					}
 				}
-				if (interrupts | kInterruptOnMatchA) {
+				if (interrupts & kInterruptOnMatchA) {
 					tcChan()->TC_IER = TC_IER_CPAS; // RA Compare
 				}
-				if (interrupts | kInterruptOnMatchB) {
+				if (interrupts & kInterruptOnMatchB) {
 					tcChan()->TC_IER = TC_IER_CPBS; // RB Compare
 				}
 
 				/* Set interrupt priority */
-				if (interrupts | kInterruptPriorityHighest) {
+				if (interrupts & kInterruptPriorityHighest) {
 					NVIC_SetPriority(tcIRQ(), 0);
 				}
-				else if (interrupts | kInterruptPriorityHigh) {
+				else if (interrupts & kInterruptPriorityHigh) {
 					NVIC_SetPriority(tcIRQ(), 3);
 				}
-				else if (interrupts | kInterruptPriorityMedium) {
+				else if (interrupts & kInterruptPriorityMedium) {
 					NVIC_SetPriority(tcIRQ(), 7);
 				}
-				else if (interrupts | kInterruptPriorityLow) {
+				else if (interrupts & kInterruptPriorityLow) {
 					NVIC_SetPriority(tcIRQ(), 11);
 				}
-				else if (interrupts | kInterruptPriorityLowest) {
+				else if (interrupts & kInterruptPriorityLowest) {
 					NVIC_SetPriority(tcIRQ(), 15);
 				}
 
+				NVIC_EnableIRQ(tcIRQ());
 			} else {
 				tcChan()->TC_IDR = 0xFFFFFFFF;
 				NVIC_DisableIRQ(tcIRQ());
@@ -652,7 +652,9 @@ namespace Motate {
 				test_value = masterClock / divisors[divisor_index];
 			}
 
-			pwmChan()->PWM_CMR = (divisor_index & 0xff) | (mode == kPWMCenterAligned ? PWM_CMR_CALG : 0);
+			pwmChan()->PWM_CMR = (divisor_index & 0xff) | (mode == kPWMCenterAligned ? PWM_CMR_CALG : 0) |
+              /* Preserve inversion: */(pwmChan()->PWM_CMR & PWM_CMR_CPOL);
+
 			// ToDo: Polarity setttings, Dead-Time control, Counter events
 
 			int32_t newTop = test_value / frequency;
@@ -743,7 +745,7 @@ namespace Motate {
 				pwmChan()->TC_IDR = 0xFFFFFFFF;
 				NVIC_EnableIRQ(pwmIRQ());
 
-				if (interrupts | kInterruptOnOverflow) {
+				if (interrupts & kInterruptOnOverflow) {
 					// Check to see if we're overflowing on C. See getTopValue() description.
 					if (pwmChan()->TC_CMR & TC_CMR_CPCTRG) {
 						pwmChan()->TC_IER = TC_IER_CPCS; // RC Compare
@@ -751,27 +753,27 @@ namespace Motate {
 						pwmChan()->TC_IER = TC_IER_COVFS; // Counter Overflow
 					}
 				}
-				if (interrupts | kInterruptOnMatchA) {
+				if (interrupts & kInterruptOnMatchA) {
 					pwmChan()->TC_IER = TC_IER_CPAS; // RA Compare
 				}
-				if (interrupts | kInterruptOnMatchB) {
+				if (interrupts & kInterruptOnMatchB) {
 					pwmChan()->TC_IER = TC_IER_CPBS; // RB Compare
 				}
 
 				/* Set interrupt priority */
-				if (interrupts | kInterruptPriorityHighest) {
+				if (interrupts & kInterruptPriorityHighest) {
 					NVIC_SetPriority(pwmIRQ(), 0);
 				}
-				else if (interrupts | kInterruptPriorityHigh) {
+				else if (interrupts & kInterruptPriorityHigh) {
 					NVIC_SetPriority(pwmIRQ(), 3);
 				}
-				else if (interrupts | kInterruptPriorityMedium) {
+				else if (interrupts & kInterruptPriorityMedium) {
 					NVIC_SetPriority(pwmIRQ(), 7);
 				}
-				else if (interrupts | kInterruptPriorityLow) {
+				else if (interrupts & kInterruptPriorityLow) {
 					NVIC_SetPriority(pwmIRQ(), 11);
 				}
-				else if (interrupts | kInterruptPriorityLowest) {
+				else if (interrupts & kInterruptPriorityLowest) {
 					NVIC_SetPriority(pwmIRQ(), 15);
 				}
 

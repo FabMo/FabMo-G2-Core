@@ -41,13 +41,12 @@
 // Do not assume these are the effective settings. Check the machine profile 
 
 // Machine configuration settings
-//#define CHORDAL_TOLERANCE 			0.001				// chord accuracy for arc drawing
-#define CHORDAL_TOLERANCE 			0.01				// chord accuracy for arc drawing
+#define CHORDAL_TOLERANCE 			0.01				// chord accuracy for arc drawing (in mm)
 #define SOFT_LIMIT_ENABLE			0					// 0 = off, 1 = on
 #define SWITCH_TYPE 				SW_TYPE_NORMALLY_OPEN// one of: SW_TYPE_NORMALLY_OPEN, SW_TYPE_NORMALLY_CLOSED
 
 #define MOTOR_POWER_TIMEOUT			2.00				// motor power timeout in seconds
-#define MOTOR_POWER_LEVEL			25					// default motor power level 0-100 (ARM only)
+#define MOTOR_POWER_LEVEL			0.25				// default motor power level 0.00 - 1.00 (ARM only)
 
 // Communications and reporting settings
 #define COMM_MODE					JSON_MODE			// one of: TEXT_MODE, JSON_MODE
@@ -63,7 +62,7 @@
 #define STATUS_REPORT_MIN_MS		100					// milliseconds - enforces a viable minimum
 #define STATUS_REPORT_INTERVAL_MS	250					// milliseconds - set $SV=0 to disable
 
-#define SR_DEFAULTS "line","posx","posy","posz","posa","feed","vel","unit","coor","dist","frmo","momo","stat"
+#define SR_DEFAULTS "line","posx","posy","posz","posa","feed","vel","unit","coor","dist","path","frmo","momo","stat"
 //#define SR_DEFAULTS "line","posx","posy","posz","posa","feed","vel","unit","coor","dist","frmo","momo","_cs5","_es5","_fe5","_xs5","stat"
 //#define SR_DEFAULTS  "line","mpox","mpoy","mpoz","_cs5","_es5","_fe5","_xs5","_cs2","_es2","_fe2","_xs2","stat"
 //#define SR_DEFAULTS  "line","mpox","mpoy","mpoz","_cs2","_es2","_fe2","_xs2","stat"
