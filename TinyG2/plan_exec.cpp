@@ -193,13 +193,13 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 		copy_vector(mr.unit, bf->unit);
 		copy_vector(mr.target, bf->gm.target);			// save the final target of the move
 
-#ifdef __DEBUG_STATEMENTS
+		#ifdef __DEBUG_STATEMENTS
 		ik_kinematics(mr.target, mr.target_steps);		// generate the target steps for diagnostic report only
 
 		printf ("steps:[%0.0f, %0.0f, %0.0f, %0.0f, %0.0f, %0.0f]\n",
 			mr.target_steps[MOTOR_1], mr.target_steps[MOTOR_2], mr.target_steps[MOTOR_3],
 			mr.target_steps[MOTOR_4], mr.target_steps[MOTOR_5], mr.target_steps[MOTOR_6]);
-#endif
+		#endif
 
 		// generate the waypoints for position correction at section ends
 		for (uint8_t axis=0; axis<AXES; axis++) {
@@ -312,8 +312,10 @@ static stat_t _exec_aline_head()
 		_init_forward_diffs(mr.entry_velocity, mr.midpoint_velocity);
 
 		mr.segment_count = (uint32_t)mr.segments;
-		if (mr.segment_time < MIN_SEGMENT_TIME) {
+		if (mr.segment_time < MIN_SEGMENT_TIME) {	
+			#ifdef __DEBUG_STATEMENTS			
 			printf("######## MIN TIME HEAD - line %lu %f\n", mr.gm.linenum, (double)mr.segment_time);
+			#endif
 			return(STAT_GCODE_BLOCK_SKIPPED);				// exit without advancing position
         }
 		mr.section = SECTION_HEAD;
@@ -378,7 +380,9 @@ static stat_t _exec_aline_body()
 		mr.segment_velocity = mr.cruise_velocity;
 		mr.segment_count = (uint32_t)mr.segments;
 		if (mr.segment_time < MIN_SEGMENT_TIME) {
+			#ifdef __DEBUG_STATEMENTS
 			printf("######## min time BODY - line %lu %f\n", mr.gm.linenum, (double)mr.segment_time);
+			#endif
 			return(STAT_GCODE_BLOCK_SKIPPED);				// exit without advancing position
         }
 		mr.section = SECTION_BODY;
@@ -418,7 +422,9 @@ static stat_t _exec_aline_tail()
 
 		mr.segment_count = (uint32_t)mr.segments;
 		if (mr.segment_time < MIN_SEGMENT_TIME) {
+			#ifdef __DEBUG_STATEMENTS
 			printf("######## min time TAIL - line %lu %f\n", mr.gm.linenum, (double)mr.segment_time);
+			#endif
 			return(STAT_GCODE_BLOCK_SKIPPED);				// exit without advancing position
         }
 		mr.section = SECTION_TAIL;
