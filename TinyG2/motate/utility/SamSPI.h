@@ -48,7 +48,7 @@ namespace Motate {
         
         // Using the wikipedia deifinition of "normal phase," see:
         //   http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Clock_polarity_and_phase
-        // Wikipedia, in turn, sites Freescale's SPI Block Guide:
+        // Wikipedia, in turn, cites Freescale's SPI Block Guide:
         //   http://www.ee.nmt.edu/~teare/ee308l/datasheets/S12SPIV3.pdf
         
         // This makes the Phase flag INVERTED from that of the SAM3X/A datasheet.
