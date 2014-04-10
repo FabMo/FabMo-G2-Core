@@ -1,5 +1,5 @@
 /*
- utility/SamSPI.h - Library for the Motate system
+ utility/SamUART.h - Library for the Motate system
  http://tinkerin.gs/
  
  Copyright (c) 2013 Robert Giseburt
@@ -82,8 +82,8 @@ namespace Motate {
     };
     
     template<>
-    struct _USARTHardware<0u> : SamCommon< _USARTHardware<0u> {
-		static Spi * const usart() { return USART0; };
+    struct _USARTHardware<0u> : SamCommon< _USARTHardware<0u> > {
+		static Usart * const usart() { return USART0; };
         static const uint32_t peripheralId() { return ID_USART0; }; // ID_SPI0 .. ID_SPI1
 		static const IRQn_Type usartIRQ() { return USART0_IRQn; };
         
@@ -112,18 +112,10 @@ namespace Motate {
             inited = true;
         
             common::enablePeripheralClock();
-            disable();
-            
-			usart()->
-            /* Execute a software reset of the SPI twice */
-            /* Why? Because ATMEL said!  -Rob*/
-			/*
-            spi()->SPI_CR = SPI_CR_SWRST;
-            spi()->SPI_CR = SPI_CR_SWRST;
-            
-            // Set Mode Register to Master mode + Mode Fault Detection Disabled
-            spi()->SPI_MR = SPI_MR_MSTR | SPI_MR_MODFDIS;
-			*/
+ 
+ 			// Normal mode
+			// Baud rate clock = system master clock
+            usart()->US_MR = 0;
 		};
         
         _USARTHardware() :  SamCommon< this_type_t >() {
@@ -131,17 +123,15 @@ namespace Motate {
         };
 
         static void enable() {
-            //spi()->SPI_CR = SPI_CR_SPIEN ;
 		};
         
         static void disable () {
-            //spi()->SPI_CR = SPI_CR_SPIDIS;
         };
         
     };
     
-	template</*int8_t spiCSPinNumber, int8_t spiMISOPinNumber=kSPI_MISOPinNumber, int8_t spiMOSIPinNumber=kSPI_MOSIPinNumber, int8_t spiSCKSPinNumber=kSPI_SCKPinNumber*/>
-	struct SPI {
+	template<uint8_t temp>
+	struct USART {
         //typedef SPIChipSelectPin<spiCSPinNumber> csPinType;
         //csPinType csPin;
         
@@ -149,18 +139,18 @@ namespace Motate {
         //SPIOtherPin<spiMOSIPinNumber> mosiPin;
         //SPIOtherPin<spiSCKSPinNumber> sckPin;
         
-        //static _SPIHardware< csPinType::moduleId, spiMISOPinNumber, spiMOSIPinNumber, spiSCKSPinNumber > hardware;
         //static const uint8_t spiPeripheralNum() { return csPinType::moduleId; };
         //static const uint8_t spiChannelNumber() { return SPIChipSelectPin<spiCSPinNumber>::csOffset; };
         
-        //static Spi * const spi() { return hardware.spi(); };
         //static const uint32_t peripheralId() { return hardware.peripheralId(); };
         //static const IRQn_Type spiIRQ() { return hardware.spiIRQ(); };
-        
-        //typedef SamCommon< SPI<spiCSPinNumber> > common;
+
+        static _USARTHardware< 0u > hardware;        
+        typedef SamCommon< USART<0> > common;
+        static Usart * const usart() { return hardware.usart(); };
         
 		
-        SPI(const uint32_t baud = 4000000, const uint16_t options = kSPI8Bit | kSPIMode0) {
+        USART(const uint32_t baud = 57600) {
             hardware.init();
         //    init(baud, options, /*fromConstructor =*/ true);
         };
@@ -168,115 +158,11 @@ namespace Motate {
         void init(const uint32_t baud, const uint16_t options, const bool fromConstructor=false) {
           //  setOptions(baud, options, fromConstructor);
         };
- /*       
-        void setOptions(const uint32_t baud, const uint16_t options, const bool fromConstructor=false) {
-            // We derive the baud from the master clock with a divider.
-            // We want the closest match *below* the value asked for. It's safer to bee too slow.
-            
-            uint8_t divider = SystemCoreClock / baud;
-            if (divider > 255)
-                divider = 255;
-            else if (divider < 1)
-                divider = 1;
-            
-            // Cruft from Arduino: TODO: Make configurable.
-            // SPI_CSR_DLYBCT(1) keeps CS enabled for 32 MCLK after a completed
-            // transfer. Some device needs that for working properly.
-            spi()->SPI_CSR[spiChannelNumber()] = (options & (SPI_CSR_NCPHA | SPI_CSR_CPOL | SPI_CSR_BITS_Msk)) | SPI_CSR_SCBR(divider) | SPI_CSR_DLYBCT(1) | SPI_CSR_CSAAT;
-            
-            // Should be a non-op for already-enabled devices.
-            hardware.enable();
-
-        };
-        
-        bool setChannel() {
-            return hardware.setChannel(spiChannelNumber());
-        };
-        */
-        //uint16_t getOptions() {
-        //    return spi()->SPI_CSR[spiChannelNumber()]/* & (SPI_CSR_NCPHA | SPI_CSR_CPOL | SPI_CSR_BITS_Msk)*/;
-        //};
-        /*
-		int16_t read(const bool lastXfer = false, uint8_t toSendAsNoop = 0) {
-            return hardware.read(lastXfer, toSendAsNoop);
-		};
-        
-        // WARNING: Currently only reads in bytes. For more-that-byte size data, we'll need another call.
-		int16_t read(const uint8_t *buffer, const uint16_t length) {
-			if (!setChannel())
-                return -1;
-            
-
-			int16_t total_read = 0;
-			int16_t to_read = length;
-			const uint8_t *read_ptr = buffer;
-
-            bool lastXfer = false;
-
-			// BLOCKING!!
-			while (to_read > 0) {
-                
-                if (to_read == 1)
-                    lastXfer = true;
-
-				int16_t ret = read(lastXfer);
-                
-                if (ret >= 0) {
-                    *read_ptr++ = ret;
-                    total_read++;
-                    to_read--;
-                }
-			};
-            
-			return total_read;
-		};
-        
-        int16_t write(uint16_t data, const bool lastXfer = false) {
-            return hardware.write(data, lastXfer);
-		};
-        
-        int16_t write(uint8_t data, int16_t &readValue, const bool lastXfer = false) {
-            return hardware.write(data, lastXfer);
-		};
-
-        void flush() {
-            hardware.disable();
-            hardware.enable();
-        };
-        
-        // WARNING: Currently only writes in bytes. For more-that-byte size data, we'll need another call.
-		int16_t write(const uint8_t *data, const uint16_t length, bool autoFlush = true) {
-			if (!setChannel())
-                return -1;
-            
-            int16_t total_written = 0;
-			const uint8_t *out_buffer = data;
-			int16_t to_write = length;
-            
-            bool lastXfer = false;
-            
-			// BLOCKING!!
-			do {
-                if (autoFlush && to_write == 1)
-                    lastXfer = true;
-                
-                int16_t ret = write(*out_buffer, lastXfer);
-				
-                if (ret > 0) {
-                    out_buffer++;
-                    total_written++;
-                    to_write--;
-                }
-			} while (to_write);
-            
-//			// HACK! Autoflush forced...
-//			if (autoFlush && total_written > 0)
-//                flush();
-            
-			return total_written;
+		
+		void setOptions(const uint32_t baud) {
+			usart()->US_BRGR = SystemCoreClock / baud;
 		}
-	};
-    */
+	};    
 }
 
-#endif /* end of include guard: SAMSPI_H_ONCE */
+#endif /* end of include guard: SAMUSART_H_ONCE */

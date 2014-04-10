@@ -45,6 +45,7 @@
 
 #ifdef __ARM
 #include "MotateTimers.h"
+#include "MotateUART.h"
 using Motate::delay;
 
 #ifdef __cplusplus

@@ -27,8 +27,8 @@
 	OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MOTATESPI_H_ONCE
-#define MOTATESPI_H_ONCE
+#ifndef MOTATEUART_H_ONCE
+#define MOTATEUART_H_ONCE
 
 #include <inttypes.h>
 
@@ -58,7 +58,8 @@ namespace Motate {
 #endif
 
 #if defined(__SAM3X8E__) || defined(__SAM3X8C__)
+#warning "Including SamUART.h"
 #include <utility/SamUART.h>
 #endif
 
-#endif /* end of include guard: MOTATESPI_H_ONCE */
+#endif /* end of include guard: MOTATEUART_H_ONCE */
