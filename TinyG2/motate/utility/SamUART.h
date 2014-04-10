@@ -84,7 +84,7 @@ namespace Motate {
     template<>
     struct _USARTHardware<0u> : SamCommon< _USARTHardware<0u> > {
 		static Usart * const usart() { return USART0; };
-        static const uint32_t peripheralId() { return ID_USART0; }; // ID_SPI0 .. ID_SPI1
+        static const uint32_t peripheralId() { return ID_USART0; }; 
 		static const IRQn_Type usartIRQ() { return USART0_IRQn; };
         
         static const uint8_t usartPeripheralNum=0;
@@ -123,43 +123,49 @@ namespace Motate {
         };
 
         static void enable() {
+			usart()->US_CR |= US_CR_TXEN | US_CR_RXEN;
 		};
         
         static void disable () {
+			usart()->US_CR &= ~(US_CR_TXEN | US_CR_RXEN);		
         };
         
     };
     
-	template<uint8_t temp>
+	template<uint8_t usartPeripheralNumber>
 	struct USART {
-        //typedef SPIChipSelectPin<spiCSPinNumber> csPinType;
-        //csPinType csPin;
-        
-        //SPIOtherPin<spiMISOPinNumber> misoPin;
-        //SPIOtherPin<spiMOSIPinNumber> mosiPin;
-        //SPIOtherPin<spiSCKSPinNumber> sckPin;
-        
-        //static const uint8_t spiPeripheralNum() { return csPinType::moduleId; };
-        //static const uint8_t spiChannelNumber() { return SPIChipSelectPin<spiCSPinNumber>::csOffset; };
-        
-        //static const uint32_t peripheralId() { return hardware.peripheralId(); };
-        //static const IRQn_Type spiIRQ() { return hardware.spiIRQ(); };
-
-        static _USARTHardware< 0u > hardware;        
-        typedef SamCommon< USART<0> > common;
+        static _USARTHardware< usartPeripheralNumber > hardware;        
+        typedef SamCommon< USART<usartPeripheralNumber> > common;
         static Usart * const usart() { return hardware.usart(); };
-        
 		
         USART(const uint32_t baud = 57600) {
             hardware.init();
-        //    init(baud, options, /*fromConstructor =*/ true);
+            init(baud, /*fromConstructor =*/ true);
         };
         
-        void init(const uint32_t baud, const uint16_t options, const bool fromConstructor=false) {
-          //  setOptions(baud, options, fromConstructor);
+		// TODO: Undo the "blockyness" here - switch to interrupts and buffers or somesuch
+		void butc(uint8_t c) {
+			// Wait for transmit holding register to be ready to receive another character
+			while(!(usart()->US_CSR & US_CSR_TXRDY));
+			// Transmit a character
+			usart()->US_THR = c;	
+		};
+		
+		void write(const uint8_t *buffer, size_t size) {
+			while(size > 0) {
+				butc(*buffer++);
+				size--;
+			}
+		}
+		
+        void init(const uint32_t baud, const bool fromConstructor=false) {
+			setOptions(baud);
+			hardware.enable();
         };
 		
 		void setOptions(const uint32_t baud) {
+			// Set the baud rate
+			usart()->US_MR = US_MR_CHRL_8_BIT | US_MR_USART_MODE_NORMAL | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT;
 			usart()->US_BRGR = SystemCoreClock / baud;
 		}
 	};    

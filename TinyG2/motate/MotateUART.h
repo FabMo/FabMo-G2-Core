@@ -33,7 +33,7 @@
 #include <inttypes.h>
 
 namespace Motate {	
-} // namespace Motate
+}
 
 /****************************************
 	These defines allow masking of *some* (non-neccessary) functionality that is
@@ -58,7 +58,6 @@ namespace Motate {
 #endif
 
 #if defined(__SAM3X8E__) || defined(__SAM3X8C__)
-#warning "Including SamUART.h"
 #include <utility/SamUART.h>
 #endif
 

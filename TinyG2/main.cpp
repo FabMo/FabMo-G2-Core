@@ -87,6 +87,9 @@ MOTATE_SET_USB_PRODUCT_STRING( {'T', 'i', 'n', 'y', 'G', ' ', 'v', '2'} )
 MOTATE_SET_USB_SERIAL_NUMBER_STRING( {'0','0','1'} )
 
 //Motate::SPI<kSocket4_SPISlaveSelectPinNumber> spi;
+Motate::USART<0> usart;
+
+
 #endif
 
 /*
