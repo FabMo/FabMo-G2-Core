@@ -691,6 +691,9 @@
     <Compile Include="motate\AvrUSB.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="motate\MotateUART.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="motate\MotatePins.h">
       <SubType>compile</SubType>
     </Compile>
@@ -725,6 +728,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="motate\utility\AvrXPins.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="motate\utility\SamUART.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="motate\utility\MotateUSBHelpers.h">
