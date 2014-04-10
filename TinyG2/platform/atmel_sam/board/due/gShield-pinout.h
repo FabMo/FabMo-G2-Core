@@ -140,8 +140,8 @@ namespace Motate {
     pin_number kXAxis_MaxPinNumber              =  15;
     pin_number kYAxis_MinPinNumber              =  16;
     pin_number kYAxis_MaxPinNumber              =  17;
-    pin_number kZAxis_MinPinNumber              =  18;
-    pin_number kZAxis_MaxPinNumber              =  19;
+    pin_number kZAxis_MinPinNumber              =  -1; //18;
+    pin_number kZAxis_MaxPinNumber              =  -1; //19;
 
     pin_number kAAxis_MinPinNumber              =  58;
     pin_number kAAxis_MaxPinNumber              =  59;

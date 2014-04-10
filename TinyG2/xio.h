@@ -77,7 +77,7 @@ extern typeof usb._mixin_0_type::Serial &SerialUSB;
 //extern typeof usb._mixin_1_type::Serial &SerialUSB1;
 
 extern Motate::SPI<Motate::kSocket4_SPISlaveSelectPinNumber> spi;
-extern Motate::USART<0> usart;
+extern Motate::USART<0u> usart;
 
 #undef  _FDEV_ERR
 #define _FDEV_ERR -1

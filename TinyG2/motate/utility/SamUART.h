@@ -37,43 +37,7 @@
 #include "SamCommon.h"
 
 namespace Motate {
-    
-	/*    
-    enum SPIMode {
-        
-        kSPIPolarityNormal     = 0,
-        kSPIPolarityReversed   = SPI_CSR_CPOL,
-        
-        // Using the wikipedia deifinition of "normal phase," see:
-        //   http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Clock_polarity_and_phase
-        // Wikipedia, in turn, sites Freescale's SPI Block Guide:
-        //   http://www.ee.nmt.edu/~teare/ee308l/datasheets/S12SPIV3.pdf
-        
-        // This makes the Phase flag INVERTED from that of the SAM3X/A datasheet.
-        
-        kSPIClockPhaseNormal   = SPI_CSR_NCPHA,
-        kSPIClockPhaseReversed = 0,
-        
-        // Using the wikipedia/freescale mode numbers (and the SAM3X/A datashgeet agrees).
-        // The arduino mode settings appear to mirror that of wikipedia as well,
-        //  so we should all be in agreement here.
-        kSPIMode0              = kSPIPolarityNormal   | kSPIClockPhaseNormal,
-        kSPIMode1              = kSPIPolarityNormal   | kSPIClockPhaseReversed,
-        kSPIMode2              = kSPIPolarityReversed | kSPIClockPhaseNormal,
-        kSPIMode3              = kSPIPolarityReversed | kSPIClockPhaseReversed,
-        
-        kSPI8Bit               = SPI_CSR_BITS_8_BIT,
-        kSPI9Bit               = SPI_CSR_BITS_9_BIT,
-        kSPI10Bit              = SPI_CSR_BITS_10_BIT,
-        kSPI11Bit              = SPI_CSR_BITS_11_BIT,
-        kSPI12Bit              = SPI_CSR_BITS_12_BIT,
-        kSPI13Bit              = SPI_CSR_BITS_13_BIT,
-        kSPI14Bit              = SPI_CSR_BITS_14_BIT,
-        kSPI15Bit              = SPI_CSR_BITS_15_BIT,
-        kSPI16Bit              = SPI_CSR_BITS_16_BIT
-	};
-    */
-	
+ 	
     // This is an internal representation of the peripheral.
     // This is *not* to be used externally.
 	template<uint8_t usartPeripheralNumber>
@@ -91,21 +55,10 @@ namespace Motate {
         
         typedef _USARTHardware<0u> this_type_t;
         typedef SamCommon< this_type_t > common;
-
-        /* We have to play some tricks here, because templates and static members are tricky.
-         * See https://groups.google.com/forum/#!topic/comp.lang.c++.moderated/yun9X6OMiY4
-         *
-         * Basically, we want a guard to make sure we dont itinig the SPI0 IC modules every time
-         * we create a new SPI object for the individual chip selects.
-         *
-         * However, since we don't use the module *directly* in the code, other than to init it,
-         * the optimizer removes that object and it's init in it's entrety.
-         *
-         * The solution: Make sure each SPI<> object calls hardware.init(), and then use a static guard
-         * in init() to prevent re-running it.
-         */
         
         void init() {
+			// This solves a problem we theoretically don't have
+			// but leaving it in for now, in case we use a kooky mode of the USART
             static bool inited = false;
             if (inited)
                 return;
@@ -137,6 +90,8 @@ namespace Motate {
         static _USARTHardware< usartPeripheralNumber > hardware;        
         typedef SamCommon< USART<usartPeripheralNumber> > common;
         static Usart * const usart() { return hardware.usart(); };
+		OutputPin<18> txPin;
+		InputPin<19> rxPin;
 		
         USART(const uint32_t baud = 57600) {
             hardware.init();
@@ -159,6 +114,8 @@ namespace Motate {
 		}
 		
         void init(const uint32_t baud, const bool fromConstructor=false) {
+			txPin.setMode(kPeripheralA);
+			//rxPin.setMode(kPeripheralA);		
 			setOptions(baud);
 			hardware.enable();
         };
@@ -167,6 +124,7 @@ namespace Motate {
 			// Set the baud rate
 			usart()->US_MR = US_MR_CHRL_8_BIT | US_MR_USART_MODE_NORMAL | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT;
 			usart()->US_BRGR = SystemCoreClock / baud;
+			
 		}
 	};    
 }

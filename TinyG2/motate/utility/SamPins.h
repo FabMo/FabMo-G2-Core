@@ -208,7 +208,7 @@ namespace Motate {
 		/*Override these to pick up new methods */
 		operator bool() { return (get() != 0); };
 	private: /* Make these private to catch them early. */
-		void init(const PinMode type, const PinOptions options = kNormal); /* Intentially not defined. */
+		void init(const PinMode type, const PinOptions options = kNormal); /* Intentionally not defined. */
 	};	
 	
 	// TODO: Make the Pin<> use the appropriate Port<>, reducing duplication when there's no penalty
