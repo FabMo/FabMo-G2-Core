@@ -123,7 +123,8 @@ namespace Motate {
 		void setOptions(const uint32_t baud) {
 			// Set the baud rate
 			usart()->US_MR = US_MR_CHRL_8_BIT | US_MR_USART_MODE_NORMAL | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT;
-			usart()->US_BRGR = SystemCoreClock / baud;
+//			usart()->US_BRGR = US_BRGR_CD
+			usart()->US_BRGR = SystemCoreClock / (16*baud);
 			
 		}
 	};    
