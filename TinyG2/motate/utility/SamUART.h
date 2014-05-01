@@ -37,42 +37,21 @@
 #include "SamCommon.h"
 
 namespace Motate {
- 	
-    // This is an internal representation of the peripheral.
-    // This is *not* to be used externally.
-	template<uint8_t usartPeripheralNumber>
-    struct _USARTHardware {
-        // TOOD: Hmmm.
-    };
     
-    template<>
-    struct _USARTHardware<0u> : SamCommon< _USARTHardware<0u> > {
+	template<uint8_t usartPeripheralNumber>
+	struct USART {
+        typedef SamCommon< USART<usartPeripheralNumber> > common;
 		static Usart * const usart() { return USART0; };
         static const uint32_t peripheralId() { return ID_USART0; }; 
 		static const IRQn_Type usartIRQ() { return USART0_IRQn; };
-        
-        static const uint8_t usartPeripheralNum=0;
-        
-        typedef _USARTHardware<0u> this_type_t;
-        typedef SamCommon< this_type_t > common;
-        
-        void init() {
-			// This solves a problem we theoretically don't have
-			// but leaving it in for now, in case we use a kooky mode of the USART
-            static bool inited = false;
-            if (inited)
-                return;
-            inited = true;
-        
-            common::enablePeripheralClock();
- 
- 			// Normal mode
-			// Baud rate clock = system master clock
-            usart()->US_MR = 0;
-		};
-        
-        _USARTHardware() :  SamCommon< this_type_t >() {
-//            init();
+
+		// Transmit/receive pins for this USART
+		OutputPin<18> txPin;
+		InputPin<19> rxPin;
+		
+        USART(const uint32_t baud = 57600) {
+            //hardware.init();
+            init(baud, /*fromConstructor =*/ true);
         };
 
         static void enable() {
@@ -81,21 +60,6 @@ namespace Motate {
         
         static void disable () {
 			usart()->US_CR &= ~(US_CR_TXEN | US_CR_RXEN);		
-        };
-        
-    };
-    
-	template<uint8_t usartPeripheralNumber>
-	struct USART {
-        static _USARTHardware< usartPeripheralNumber > hardware;        
-        typedef SamCommon< USART<usartPeripheralNumber> > common;
-        static Usart * const usart() { return hardware.usart(); };
-		OutputPin<18> txPin;
-		InputPin<19> rxPin;
-		
-        USART(const uint32_t baud = 57600) {
-            hardware.init();
-            init(baud, /*fromConstructor =*/ true);
         };
         
 		// TODO: Undo the "blockyness" here - switch to interrupts and buffers or somesuch
@@ -117,7 +81,7 @@ namespace Motate {
 			txPin.setMode(kPeripheralA);
 			//rxPin.setMode(kPeripheralA);		
 			setOptions(baud);
-			hardware.enable();
+			enable();
         };
 		
 		void setOptions(const uint32_t baud) {
