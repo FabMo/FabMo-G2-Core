@@ -632,10 +632,10 @@ static void _load_move()
 		}
 		return;
 	}
-
+/*
 	if (st_pre.segment_ready != true) {									// trap if prep is not complete
 		printf("######## LOADER - SEGMENT NOT READY\n");
-	}
+	} */
 	st_pre.segment_ready = false;
 
 	// handle aline() loads first (most common case)  NB: there are no more lines, only alines()

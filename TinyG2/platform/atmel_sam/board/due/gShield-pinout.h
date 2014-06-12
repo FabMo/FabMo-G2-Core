@@ -135,7 +135,7 @@ namespace Motate {
     pin_number kSocket6_Microstep_2PinNumber    =  -1;
     pin_number kSocket6_VrefPinNumber           =  -1;//67; //PWMTimer<0>
 
-
+/*
     pin_number kXAxis_MinPinNumber              =  14;
     pin_number kXAxis_MaxPinNumber              =  15;
     pin_number kYAxis_MinPinNumber              =  16;
@@ -149,12 +149,28 @@ namespace Motate {
     pin_number kBAxis_MaxPinNumber              =  61;
     pin_number kCAxis_MinPinNumber              =  65;
     pin_number kCAxis_MaxPinNumber              =  51;
+*/
 
-    pin_number kSpindle_EnablePinNumber         =  12;
+    pin_number kXAxis_MinPinNumber              =  25;
+    pin_number kXAxis_MaxPinNumber              =  -1;
+    pin_number kYAxis_MinPinNumber              =  25;
+    pin_number kYAxis_MaxPinNumber              =  -1;
+    pin_number kZAxis_MinPinNumber              =  25;
+    pin_number kZAxis_MaxPinNumber              =  -1;
+
+    pin_number kAAxis_MinPinNumber              =  -1;
+    pin_number kAAxis_MaxPinNumber              =  -1;
+    pin_number kBAxis_MinPinNumber              =  -1;
+    pin_number kBAxis_MaxPinNumber              =  -1;
+    pin_number kCAxis_MinPinNumber              =  -1;
+    pin_number kCAxis_MaxPinNumber              =  -1;
+
+
+    pin_number kSpindle_EnablePinNumber         =  52;
     pin_number kSpindle_DirPinNumber            =  -1;//13;
     pin_number kSpindle_PwmPinNumber            =  11;
     pin_number kSpindle_Pwm2PinNumber           =   9;
-    pin_number kCoolant_EnablePinNumber         =  57;
+    pin_number kCoolant_EnablePinNumber         =  51;
 
     pin_number kLED_USBRXPinNumber              =  72;
     pin_number kLED_USBTXPinNumber              =  73;
