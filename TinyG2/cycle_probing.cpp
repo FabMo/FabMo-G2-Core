@@ -248,7 +248,7 @@ static void _probe_restore_settings()
 	cm.cycle_state = CYCLE_OFF;
 	cm.hold_state = FEEDHOLD_OFF;				// clear feedhold state
 
-    printf_P(PSTR("(cm.cycle_state %i)\n"), cm.cycle_state);
+    //printf_P(PSTR("(cm.cycle_state %i)\n"), cm.cycle_state);
 }
 
 static stat_t _probing_finalize_exit()
