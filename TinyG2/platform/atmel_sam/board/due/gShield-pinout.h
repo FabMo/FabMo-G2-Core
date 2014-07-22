@@ -95,7 +95,7 @@ namespace Motate {
     pin_number kSocket2_Microstep_2PinNumber    =  -1;
     pin_number kSocket2_VrefPinNumber           =  -1;//62; //PWMTimer<1>
 
-    pin_number kSocket3_SPISlaveSelectPinNumber =  -1//52;
+    pin_number kSocket3_SPISlaveSelectPinNumber =  -1;//52;
     pin_number kSocket3_InterruptPinNumber      =  -1;
     pin_number kSocket3_StepPinNumber           =   4;
     pin_number kSocket3_DirPinNumber            =   7;

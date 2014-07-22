@@ -44,7 +44,7 @@
           <JtagDevicesAfter>0</JtagDevicesAfter>
           <JtagInstrBitsBefore>0</JtagInstrBitsBefore>
           <JtagInstrBitsAfter>0</JtagInstrBitsAfter>
-          <SwdClock>12000000</SwdClock>
+          <SwdClock>11100000</SwdClock>
         </InterfaceProperties>
       </ToolOptions>
     </com_atmel_avrdbg_tool_samice>
