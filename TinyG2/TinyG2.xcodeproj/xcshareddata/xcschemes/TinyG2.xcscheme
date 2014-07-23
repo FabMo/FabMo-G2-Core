@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0500"
+   LastUpgradeVersion = "0510"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -59,6 +59,20 @@
                BlueprintIdentifier = "D4B6579718B5198D00F8616C"
                BuildableName = "TinyG2 G2V9g"
                BlueprintName = "TinyG2 G2V9g"
+               ReferencedContainer = "container:TinyG2.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D409C0101902F73000F15547"
+               BuildableName = "TinyG2 G2V9i"
+               BlueprintName = "TinyG2 G2V9i"
                ReferencedContainer = "container:TinyG2.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

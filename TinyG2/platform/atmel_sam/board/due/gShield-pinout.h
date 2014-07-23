@@ -72,6 +72,7 @@ namespace Motate {
 
     pin_number kDebug1_PinNumber                =  49;
     pin_number kDebug2_PinNumber                =  47;
+    pin_number kDebug3_PinNumber                =  45;
 
     pin_number kKinen_SyncPinNumber             =  53;
 
@@ -130,7 +131,7 @@ namespace Motate {
     pin_number kSocket6_StepPinNumber           =  42;
     pin_number kSocket6_DirPinNumber            =  43;
     pin_number kSocket6_EnablePinNumber         =  44;
-    pin_number kSocket6_Microstep_0PinNumber    =  45;
+    pin_number kSocket6_Microstep_0PinNumber    =  -1;//45;
     pin_number kSocket6_Microstep_1PinNumber    =  46;
     pin_number kSocket6_Microstep_2PinNumber    =  -1;
     pin_number kSocket6_VrefPinNumber           =  -1;//67; //PWMTimer<0>
@@ -155,6 +156,9 @@ namespace Motate {
     pin_number kSpindle_PwmPinNumber            =  11;
     pin_number kSpindle_Pwm2PinNumber           =   9;
     pin_number kCoolant_EnablePinNumber         =  57;
+
+    pin_number kSD_CardDetect                   =  -1;
+    pin_number kInterlock_In                    =  -1;
 
     pin_number kLED_USBRXPinNumber              =  72;
     pin_number kLED_USBTXPinNumber              =  73;
