@@ -87,6 +87,7 @@ void controller_init(uint8_t std_in, uint8_t std_out, uint8_t std_err)
 
 	cs.fw_build = TINYG_FIRMWARE_BUILD;
 	cs.fw_version = TINYG_FIRMWARE_VERSION;
+	cs.config_version = TINYG_CONFIG_VERSION;
 	cs.hw_platform = TINYG_HARDWARE_PLATFORM;		// NB: HW version is set from EEPROM
 
 #ifdef __AVR
@@ -200,6 +201,12 @@ static void _controller_HSM()
 static stat_t _command_dispatch()
 {
 #ifdef __AVR
+	devflags_t flags;
+
+	if ((cs.bufp = readline(&flags, &cs.linelen)) == NULL) {
+		return (STAT_OK);									// nothing to process yet
+	}
+/*
 	stat_t status;
 
 	// read input line or return if not a completed line
@@ -207,7 +214,6 @@ static stat_t _command_dispatch()
 	while (true) {
 		if ((status = xio_gets(cs.primary_src, cs.in_buf, sizeof(cs.in_buf))) == STAT_OK) {
 			cs.bufp = cs.in_buf;
-			cs.linelen = strlen(cs.in_buf)+1;			// linelen only tracks primary input
 			break;
 		}
 		// handle end-of-file from file devices
@@ -221,7 +227,7 @@ static stat_t _command_dispatch()
 		}
 		return (status);								// Note: STAT_EAGAIN, errors, etc. will drop through
 	}
-
+*/
 #endif // __AVR
 #ifdef __ARM
 	// detect USB connection and transition to disconnected state if it disconnected
@@ -256,8 +262,9 @@ static stat_t _command_dispatch()
 #endif // __ARM
 
 	// set up the buffers
-//	cs.linelen = strlen(cs.in_buf)+1;					// linelen only tracks primary input
-	strncpy(cs.saved_buf, cs.bufp, SAVED_BUFFER_LEN-1);	// save input buffer for reporting purposes
+	cs.linelen = strlen(cs.bufp)+1;						// linelen only tracks primary input
+	strncpy(cs.saved_buf, cs.bufp, SAVED_BUFFER_LEN-1);	// save input buffer for reporting
+//	strncpy(cs.saved_buf, cs.bufp, INPUT_BUFFER_LEN-1);	// save input buffer for reporting
 
 	// dispatch the new text line
 	switch (toupper(*cs.bufp)) {						// first char
