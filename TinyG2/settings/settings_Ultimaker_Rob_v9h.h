@@ -53,9 +53,35 @@
 #undef SWITCH_TYPE
 #define SWITCH_TYPE 			SW_TYPE_NORMALLY_OPEN
 
+#undef	COMM_MODE
+#define COMM_MODE					JSON_MODE
+
+#undef JSON_VERBOSITY
+//#define JSON_VERBOSITY				JV_SILENT		// one of: JV_SILENT, JV_FOOTER, JV_CONFIGS, JV_MESSAGES, JV_LINENUM, JV_VERBOSE
+//#define JSON_VERBOSITY				JV_MESSAGES		// one of: JV_SILENT, JV_FOOTER, JV_CONFIGS, JV_MESSAGES, JV_LINENUM, JV_VERBOSE
+#define JSON_VERBOSITY				JV_VERBOSE		// one of: JV_SILENT, JV_FOOTER, JV_CONFIGS, JV_MESSAGES, JV_LINENUM, JV_VERBOSE
+
+#undef STATUS_REPORT_VERBOSITY
+//#define STATUS_REPORT_VERBOSITY		SR_OFF		// one of: SR_OFF, SR_FILTERED, SR_VERBOSE
+//#define STATUS_REPORT_VERBOSITY		SR_FILTERED		// one of: SR_OFF, SR_FILTERED, SR_VERBOSE
+#define STATUS_REPORT_VERBOSITY		SR_VERBOSE		// one of: SR_OFF, SR_FILTERED, SR_VERBOSE
+
 #undef STATUS_REPORT_DEFAULTS
 //#define STATUS_REPORT_DEFAULTS	"line","posx","posy","posz","vel","_cs1","_es1","_xs1","_fe1","_cs2","_es2","_xs2","_fe2","unit","path","stat"
 #define STATUS_REPORT_DEFAULTS	"line","posx","posy","posz","vel","_cs1","_es1","_xs1","_fe1","_cs2","_es2","_xs2","_fe2"
+
+#undef GCODE_DEFAULT_COORD_SYSTEM
+#undef GCODE_DEFAULT_UNITS
+#undef GCODE_DEFAULT_PLANE
+#undef GCODE_DEFAULT_COORD_SYSTEM
+#undef GCODE_DEFAULT_PATH_CONTROL
+#undef GCODE_DEFAULT_DISTANCE_MODE
+
+#define GCODE_DEFAULT_UNITS			MILLIMETERS		// MILLIMETERS or INCHES
+#define GCODE_DEFAULT_PLANE			CANON_PLANE_XY	// CANON_PLANE_XY, CANON_PLANE_XZ, or CANON_PLANE_YZ
+#define GCODE_DEFAULT_COORD_SYSTEM	G54				// G54, G55, G56, G57, G58 or G59
+#define GCODE_DEFAULT_PATH_CONTROL 	PATH_CONTINUOUS
+#define GCODE_DEFAULT_DISTANCE_MODE ABSOLUTE_MODE
 
 // *** motor settings ***
 
@@ -77,7 +103,8 @@
 
 #define M3_MOTOR_MAP			AXIS_Z
 #define M3_STEP_ANGLE			1.8
-#define M3_TRAVEL_PER_REV		3.00
+#define M3_TRAVEL_PER_REV		8.00    // With the HeatBed upgrade
+//#define M3_TRAVEL_PER_REV		3.00    // Without the HeatBed upgrade
 #define M3_MICROSTEPS			32
 #define M3_POLARITY				1
 #define M3_POWER_MODE			MOTOR_POWERED_IN_CYCLE
@@ -114,7 +141,7 @@
 #define X_FEEDRATE_MAX 			X_VELOCITY_MAX		// xfr 		G1 max feed rate in mm/min
 #define X_TRAVEL_MIN			0					// xtn		minimum travel - used by soft limits and homing
 #define X_TRAVEL_MAX 			212					// xtm		travel between switches or crashes
-#define X_JERK_MAX 				10000.0				// xjm		yes, that's "100 billion" mm/(min^3)
+#define X_JERK_MAX 				20000.0				// xjm		yes, that's "100 billion" mm/(min^3)
 #define X_JUNCTION_DEVIATION 	JUNCTION_DEVIATION	// xjd
 #define X_SWITCH_MODE_MIN		SW_MODE_HOMING		// xsn		SW_MODE_DISABLED, SW_MODE_HOMING, SW_MODE_HOMING_LIMIT, SW_MODE_LIMIT
 #define X_SWITCH_MODE_MAX		SW_MODE_LIMIT		// xsx		SW_MODE_DISABLED, SW_MODE_HOMING, SW_MODE_HOMING_LIMIT, SW_MODE_LIMIT
@@ -129,7 +156,7 @@
 #define Y_FEEDRATE_MAX 			Y_VELOCITY_MAX
 #define Y_TRAVEL_MIN 			0
 #define Y_TRAVEL_MAX 			190
-#define Y_JERK_MAX 				10000.0
+#define Y_JERK_MAX 				20000.0
 #define Y_JUNCTION_DEVIATION	JUNCTION_DEVIATION
 #define Y_SWITCH_MODE_MIN		SW_MODE_HOMING
 #define Y_SWITCH_MODE_MAX		SW_MODE_LIMIT
@@ -148,10 +175,10 @@
 #define Z_JUNCTION_DEVIATION	JUNCTION_DEVIATION
 #define Z_SWITCH_MODE_MIN       SW_MODE_HOMING
 #define Z_SWITCH_MODE_MAX       SW_MODE_DISABLED
-#define Z_SEARCH_VELOCITY		500
-#define Z_LATCH_VELOCITY		200
-#define Z_LATCH_BACKOFF			3
-#define Z_ZERO_BACKOFF			0.01
+#define Z_SEARCH_VELOCITY		200
+#define Z_LATCH_VELOCITY		100
+#define Z_LATCH_BACKOFF			5
+#define Z_ZERO_BACKOFF			-0.5
 #define Z_JERK_HOMING			Z_JERK_MAX
 
 
