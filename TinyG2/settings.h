@@ -43,11 +43,11 @@
 // Machine configuration settings
 #define CHORDAL_TOLERANCE 			0.01					// chordal accuracy for arc drawing (in mm)
 #define SOFT_LIMIT_ENABLE			0						// 0 = off, 1 = on
-#define SWITCH_TYPE 				SW_TYPE_NORMALLY_OPEN	// one of: SW_TYPE_NORMALLY_OPEN, SW_TYPE_NORMALLY_CLOSED
 
 #define MOTOR_POWER_MODE			MOTOR_POWERED_IN_CYCLE	// default motor power mode (see cmMotorPowerMode in stepper.h)
 #define MOTOR_POWER_TIMEOUT			2.00					// motor power timeout in seconds
 #define MOTOR_POWER_LEVEL			0.375					// default motor power level 0.00 - 1.00 (ARM only)
+#define PAUSE_DWELL_TIME			0.0
 
 // Communications and reporting settings
 #define COMM_MODE					JSON_MODE				// one of: TEXT_MODE, JSON_MODE
@@ -103,8 +103,15 @@
 
 // machine default profiles - choose only one:
 
-//#include "settings/settings_default.h"				// Default settings for release
-#include "settings/settings_test.h"					// Settings for testing - not for release
+
+#ifdef SETTINGS_FILE
+#define SETTINGS_FILE_PATH <settings/SETTINGS_FILE>
+#include SETTINGS_FILE_PATH
+#else
+#include "settings/settings_default.h"				// Default settings for release
+#endif
+
+//#include "settings/settings_test.h"					// Settings for testing - not for release
 //#include "settings/settings_hammer.h"					// Hammer torque demo
 //#include "settings/settings_pendulum.h"				// Pendulum motion demo
 //#include "settings/settings_othermill.h"				// OMC OtherMill
