@@ -25,8 +25,8 @@
     <avrtool>com.atmel.avrdbg.tool.samice</avrtool>
     <com_atmel_avrdbg_tool_samice>
       <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
-      <ToolName>SAM-ICE</ToolName>
-      <ToolNumber>28011911</ToolNumber>
+      <ToolName>J-Link</ToolName>
+      <ToolNumber>58003445</ToolNumber>
       <Channel>
         <host>127.0.0.1</host>
         <port>1063</port>
