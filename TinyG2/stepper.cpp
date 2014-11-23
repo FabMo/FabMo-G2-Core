@@ -135,7 +135,7 @@ struct Stepper {
     };
 
     void setDirection(uint8_t new_direction) {
-        if (!_enable.isNull()) {
+        if (!_dir.isNull()) {
             if (new_direction == DIRECTION_CW) {
                 _dir.clear();
             } else {
@@ -145,7 +145,7 @@ struct Stepper {
     };
 
     void setVref(float new_vref) {
-        if (!_enable.isNull()) {
+        if (!_vref.isNull()) {
             _vref = new_vref;
         }
     };
