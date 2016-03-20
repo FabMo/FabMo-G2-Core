@@ -55,7 +55,7 @@
 
 #define SPINDLE_ENABLE_POLARITY     1                       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0                       // 0=clockwise is low, 1=clockwise is high
-#define SPINDLE_PAUSE_ON_HOLD       true
+#define SPINDLE_PAUSE_ON_HOLD       false
 #define SPINDLE_DWELL_TIME          1.0
 
 #define COOLANT_MIST_POLARITY       1                       // 0=active low, 1=active high
