@@ -161,8 +161,8 @@ static PWMOutputPin<kSpindle_Pwm2PinNumber> secondary_pwm_pin;
 
 // NOTE: In the v9 and the Due the flood and mist coolants are mapped to a the same pin
 //static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
-static OutputPin<kCoolant_EnablePinNumber> flood_enable_pin;
-static OutputPin<kCoolant_EnablePinNumber> mist_enable_pin;
+static OutputPin<kCoolantFlood_EnablePinNumber> flood_enable_pin;
+static OutputPin<kCoolantMist_EnablePinNumber> mist_enable_pin;
 
 // Input pins are defined in switch.cpp
 
@@ -191,7 +191,7 @@ stat_t hw_get_id(nvObj_t *nv);
 #else
 
 	#define hw_print_fb tx_print_stub
-    #define hw_print_fbs tx_print_stub
+   #define hw_print_fbs tx_print_stub
 	#define hw_print_fv tx_print_stub
 	#define hw_print_cv tx_print_stub
 	#define hw_print_hp tx_print_stub

@@ -60,7 +60,7 @@
 
 #define COOLANT_MIST_POLARITY       1                       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1                       // 0=active low, 1=active high
-#define COOLANT_PAUSE_ON_HOLD       true
+#define COOLANT_PAUSE_ON_HOLD       false
 
 // Communications and reporting settings
 

@@ -73,8 +73,8 @@ USER_INCLUDE_DIRS += $(SOURCE_DIRS)
 #	SETTINGS_FILE="settings_default.h"
 #	SETTINGS_FILE="settings_othermill.h"
 #	SETTINGS_FILE="settings_probotixV90.h"
-	SETTINGS_FILE="settings_shapeoko2.h"
-#	SETTINGS_FILE="settings_shopbot_sbv300.h"
+#	SETTINGS_FILE="settings_shapeoko2.h"
+	SETTINGS_FILE="settings_shopbot_sbv300.h"
 #	SETTINGS_FILE="settings_shopbot_test.h"
 #	SETTINGS_FILE="settings_Ultimaker.h"
 
@@ -174,7 +174,7 @@ DEPDIR = $(OBJ)/dep
 # Start of platforms section
 #
 
-PLATFORM ?= gShield
+PLATFORM ?= sbv300
 
 ifeq ("$(PLATFORM)","gShield")
 

@@ -129,13 +129,14 @@ namespace Motate {
     // PERMISSIVE 4 = D 7
     pin_number kSpindle_EnablePinNumber         =  14;  // TODO enable spindle
     pin_number kSpindle_DirPinNumber            =  15;
+    
+    pin_number kCoolantFlood_EnablePinNumber         =  29;
+    pin_number kCoolantMist_EnablePinNumber    =  28;    
 
-    pin_number kCoolant_EnablePinNumber         =  -1;
+    pin_number kSpindle_PwmPinNumber            =  30; //
+    pin_number kSpindle_Pwm2PinNumber           =  31;
 
-    pin_number kSpindle_PwmPinNumber            =  -1;
-    pin_number kSpindle_Pwm2PinNumber           =  -1;
-
-    pin_number kInput1_PinNumber              =  16;
+    pin_number kInput1_PinNumber              =  16;  //16
     pin_number kInput2_PinNumber              =  17;
     pin_number kInput3_PinNumber              =  18;
     pin_number kInput4_PinNumber              =  19;

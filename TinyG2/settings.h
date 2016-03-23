@@ -46,7 +46,7 @@
 #define SETTINGS_FILE_PATH <settings/SETTINGS_FILE>
 #include SETTINGS_FILE_PATH
 #else
-#include "settings/settings_default.h"				// Default settings for release
+#include "settings/settings_shopbot_sbv300.h"				// Default settings for release
 #endif
 
 #endif // End of include guard: SETTINGS_H_ONCE

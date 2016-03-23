@@ -362,13 +362,14 @@ static stat_t _parse_gcode_block(char *buf)
 						SET_MODAL (MODAL_GROUP_M4, program_flow, PROGRAM_STOP);
 				case 2: case 30:
 						SET_MODAL (MODAL_GROUP_M4, program_flow, PROGRAM_END);
-				case 3: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CW);
+				case 3: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CCW);
 				case 4: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CCW);
 				case 5: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_OFF);
 				case 6: SET_NON_MODAL (tool_change, true);
 				case 7: SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
-				case 8: SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
-				case 9: SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
+				case 8: SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
+				case 9: SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
+				case 10: SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
 				case 48: SET_MODAL (MODAL_GROUP_M9, m48_enable, true);
 				case 49: SET_MODAL (MODAL_GROUP_M9, m48_enable, false);
 				case 50: SET_MODAL (MODAL_GROUP_M9, mfo_enable, true);
