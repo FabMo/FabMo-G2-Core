@@ -202,7 +202,7 @@ static void _exec_spindle_control(float *value, bool *flag)
 static float _get_spindle_pwm (cmSpindleEnable enable, cmSpindleDir direction)
 {
 	float speed_lo=0, speed_hi=0, phase_lo=0, phase_hi=0;
-	if (direction == SPINDLE_CW ) {
+	if (direction == SPINDLE_CCW ) {
 		speed_lo = pwm.c[PWM_1].cw_speed_lo;
 		speed_hi = pwm.c[PWM_1].cw_speed_hi;
 		phase_lo = pwm.c[PWM_1].cw_phase_lo;
