@@ -1,0 +1,21 @@
+POUT1		    J2-pin7 	 PA0		<kSpindle1_EnablePinNumber>  	    (M3: on, M5: off)
+POUT2		    J2-pin8	    PD9		<kSpindle2_EnablePinNumber>       (not used)
+POUT3		    J2-pin9	    PD8		<kOutput_3>								 (M64p3: on, M65p3: off)
+POUT4		    J2-pin10 	 PD7		<kSpindle_DirPinNumber>     	    (M3 or M4: on, M5: off)
+POUT5		    J2-pin11	 PD6		<kOutput_5>								 (M64p5: on, M65p5: off)
+POUT6		    J2-pin12	 PD5		<kOutput_6>								 (M64p6: on, M65p6: off)
+POUT7		    J2-pin13	 PD4		<kOutput_7>								 (M64p7: on, M65p7: off)
+POUT8		    J2-pin14	 PD3		<kOutput_8>								 (M64p8: on, M65p8: off)
+POUT9			 J2-pin3     PA8     <kOutput_9>								 (not used)
+POUT10		 J2-pin4	    PA7		<kOutput_10>							 (M64p10: on, M65p10: off)
+POUT11		 J2-pin5	    PA5		<kOutput_11>							 (M64p11: on, M65p11: off)
+POUT12		 J2-pin6	    PA1		<kOutput_12>							 (M64p12: on, M65p12: off)
+
+POUT13		 J6-pin8     PA15    <kCoolantFlood_EnablePinNumber>   (M64p13: on, M65p13: off)  
+POUT14		 J6-pin9     PA14    <kCoolantMist_EnablePinNumber>    (M64p14: on, M65p14: off)
+
+PPWM0		 	 J6-pin11    PA12    <kSpindle_PwmPinNumber> 	       (M3 or M4: bldc esc on, M5: off, S: rpm)
+PPWM1		 	 J6-pin12    PA13    <kSpindle_Pwm2PinNumber> 		    (not used)
+
+
+

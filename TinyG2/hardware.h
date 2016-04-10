@@ -154,7 +154,7 @@ static OutputPin<kGRBL_FeedHoldPinNumber> grbl_feedhold_pin;
 static OutputPin<kGRBL_CycleStartPinNumber> grbl_cycle_start_pin;
 
 static OutputPin<kGRBL_CommonEnablePinNumber> motor_common_enable_pin;
-static OutputPin<kSpindle_EnablePinNumber> spindle_enable_pin;
+static OutputPin<kSpindle1_EnablePinNumber> spindle_enable_pin;
 static OutputPin<kSpindle_DirPinNumber> spindle_dir_pin;
 static PWMOutputPin<kSpindle_PwmPinNumber> spindle_pwm_pin;
 static PWMOutputPin<kSpindle_Pwm2PinNumber> secondary_pwm_pin;
@@ -163,6 +163,15 @@ static PWMOutputPin<kSpindle_Pwm2PinNumber> secondary_pwm_pin;
 //static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
 static OutputPin<kCoolantFlood_EnablePinNumber> flood_enable_pin;
 static OutputPin<kCoolantMist_EnablePinNumber> mist_enable_pin;
+
+static OutputPin<kOutput_3> out3_enable_pin;
+static OutputPin<kOutput_5> out5_enable_pin;
+static OutputPin<kOutput_6> out6_enable_pin;
+static OutputPin<kOutput_7> out7_enable_pin;
+static OutputPin<kOutput_8> out8_enable_pin;
+static OutputPin<kOutput_10> out10_enable_pin;
+static OutputPin<kOutput_11> out11_enable_pin;
+static OutputPin<kOutput_12> out12_enable_pin;
 
 // Input pins are defined in switch.cpp
 

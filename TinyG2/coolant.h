@@ -41,8 +41,20 @@ typedef enum {
 
 typedef enum {                      // used to index the value and flag vectors for coolant execs
     COOLANT_FLOOD = 0,
-    COOLANT_MIST
+    COOLANT_MIST,
+	 OUT3,
+	 OUT5,
+	 OUT6,
+	 OUT7
 } cmCoolantIndex;
+
+typedef enum {                      // used to index the value and flag vectors for coolant execs
+	 OUT8 = 0,
+	 OUT10,
+	 OUT11,
+	 OUT12
+} cmCoolantIndex2;
+
 
 /*
  * Coolant control structure
@@ -52,14 +64,39 @@ typedef struct cmCoolatSingleton {
 
     bool pause_on_hold;                 // true to pause coolant on feedhold
 
-	cmCoolantEnable flood_enable;       // COOLANT_ON = flood on (M8), COOLANT_OFF = off (M9)
+	cmCoolantEnable flood_enable;       // on (M62P14), off (M63P14)
     cmCoolantPolarity flood_polarity;   // 0=active low, 1=active high
 
-	cmCoolantEnable mist_enable;        // COOLANT_ON = mist on (M7), COOLANT_OFF = off (M9)
+	cmCoolantEnable mist_enable;        //on (M62P13), off (M63P13)
     cmCoolantPolarity mist_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out3_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out3_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out5_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out5_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out6_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out6_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out7_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out7_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out8_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out8_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out10_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out10_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out11_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out11_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out12_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out12_polarity;    // 0=active low, 1=active high
 
 } cmCoolantSingleton_t;
 extern cmCoolantSingleton_t coolant;
+
 
 /*
  * Global Scope Functions
@@ -68,8 +105,18 @@ extern cmCoolantSingleton_t coolant;
 void coolant_init();
 void coolant_reset();
 
-stat_t cm_mist_coolant_control(uint8_t mist_enable); 			// M7
-stat_t cm_flood_coolant_control(uint8_t flood_enable);			// M8, M9
+stat_t cm_mist_coolant_control(uint8_t mist_enable); 
+stat_t cm_flood_coolant_control(uint8_t flood_enable);
+			
+stat_t cm_out3_control(uint8_t out3_enable);
+stat_t cm_out5_control(uint8_t out5_enable);
+stat_t cm_out6_control(uint8_t out6_enable);
+stat_t cm_out7_control(uint8_t out7_enable);
+stat_t cm_out8_control(uint8_t out8_enable);
+stat_t cm_out10_control(uint8_t out10_enable);
+stat_t cm_out11_control(uint8_t out11_enable);
+stat_t cm_out12_control(uint8_t out12_enable);
+
 void cm_coolant_off_immediate(void);
 void cm_coolant_optional_pause(bool option);
 void cm_coolant_resume(void);
@@ -84,6 +131,31 @@ void cm_coolant_resume(void);
     void cm_print_com(nvObj_t *nv);     // report mist coolant state
     void cm_print_cof(nvObj_t *nv);     // report flood coolant state
 
+    void cm_print_out3p(nvObj_t *nv); 
+    void cm_print_out3(nvObj_t *nv);
+
+    void cm_print_out5p(nvObj_t *nv); 
+    void cm_print_out5(nvObj_t *nv);
+
+    void cm_print_out6p(nvObj_t *nv); 
+    void cm_print_out6(nvObj_t *nv);
+
+    void cm_print_out7p(nvObj_t *nv); 
+    void cm_print_out7(nvObj_t *nv);
+
+    void cm_print_out8p(nvObj_t *nv); 
+    void cm_print_out8(nvObj_t *nv);
+
+    void cm_print_out10p(nvObj_t *nv); 
+    void cm_print_out10(nvObj_t *nv);
+
+    void cm_print_out11p(nvObj_t *nv); 
+    void cm_print_out11(nvObj_t *nv);
+
+    void cm_print_out12p(nvObj_t *nv); 
+    void cm_print_out12(nvObj_t *nv);
+
+
 #else
 
     #define cm_print_coph tx_print_stub
@@ -91,6 +163,31 @@ void cm_coolant_resume(void);
     #define cm_print_cofp tx_print_stub
     #define cm_print_com tx_print_stub
     #define cm_print_cof tx_print_stub
+
+    #define cm_print_out3p tx_print_stub
+    #define cm_print_out3 tx_print_stub
+
+    #define cm_print_out5p tx_print_stub
+    #define cm_print_out5 tx_print_stub
+
+    #define cm_print_out6p tx_print_stub
+    #define cm_print_out6 tx_print_stub
+
+    #define cm_print_out7p tx_print_stub
+    #define cm_print_out7 tx_print_stub
+
+    #define cm_print_out8p tx_print_stub
+    #define cm_print_out8 tx_print_stub
+
+    #define cm_print_out10p tx_print_stub
+    #define cm_print_out10 tx_print_stub
+
+    #define cm_print_out11p tx_print_stub
+    #define cm_print_out11 tx_print_stub
+
+    #define cm_print_out12p tx_print_stub
+    #define cm_print_out12 tx_print_stub
+
 
 #endif // __TEXT_MODE
 

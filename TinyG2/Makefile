@@ -174,7 +174,7 @@ DEPDIR = $(OBJ)/dep
 # Start of platforms section
 #
 
-PLATFORM ?= sbv300
+PLATFORM ?= shopbotShield
 
 ifeq ("$(PLATFORM)","gShield")
 
@@ -365,14 +365,14 @@ GDB     = $(CROSS_COMPILE)-gdb
 NM      = $(CROSS_COMPILE)-nm
 RM      = rm
 CP      = cp
-CmKSUM	= cksum
+CKSUM	= cksum
 DD		= dd
 # NOTE: Atmel Studio 6.1 will default to the wrong mkdir that doesn't understand -p.
 #       So, in AS6.1, we have to pass MKDIR=gmkdir in the command line.
 MKDIR   ?= mkdir
 GIT     ?= git
 
-#SHELL = bash
+SHELL = bash
 
 # Here we use some heuristics to find the OS.
 # We only use this now for fiding if we're on windows.

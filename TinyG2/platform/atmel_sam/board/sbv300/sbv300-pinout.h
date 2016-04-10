@@ -125,37 +125,46 @@ namespace Motate {
     pin_number kSocket6_Microstep_2PinNumber    =  -1;
     pin_number kSocket6_VrefPinNumber           =  -1;
 
-    // SPINDLE ON 1 = B 15
-    // PERMISSIVE 4 = D 7
-    pin_number kSpindle_EnablePinNumber         =  14;  // TODO enable spindle
+    pin_number kSpindle1_EnablePinNumber        =  14;  
     pin_number kSpindle_DirPinNumber            =  15;
     
-    pin_number kCoolantFlood_EnablePinNumber         =  29;
-    pin_number kCoolantMist_EnablePinNumber    =  28;    
+    pin_number kCoolantFlood_EnablePinNumber    =  29;
+    pin_number kCoolantMist_EnablePinNumber     =  28;    
 
-    pin_number kSpindle_PwmPinNumber            =  30; //
+    pin_number kSpindle_PwmPinNumber            =  30;
     pin_number kSpindle_Pwm2PinNumber           =  31;
 
-    pin_number kInput1_PinNumber              =  16;  //16
-    pin_number kInput2_PinNumber              =  17;
-    pin_number kInput3_PinNumber              =  18;
-    pin_number kInput4_PinNumber              =  19;
-    pin_number kInput5_PinNumber              =  20;
-    pin_number kInput6_PinNumber              =  21;
+    pin_number kInput1_PinNumber                 =  16; 
+    pin_number kInput2_PinNumber                 =  17;
+    pin_number kInput3_PinNumber                 =  18;
+    pin_number kInput4_PinNumber                 =  19;
+    pin_number kInput5_PinNumber                 =  20;
+    pin_number kInput6_PinNumber                 =  21;
 
-    pin_number kInput7_PinNumber              =  22;
-    pin_number kInput8_PinNumber              =  23;
-    pin_number kInput9_PinNumber              =  24;
-    pin_number kInput10_PinNumber              =  25;
-    pin_number kInput11_PinNumber              =  26;
-    pin_number kInput12_PinNumber              =  27;
+    pin_number kInput7_PinNumber                 =  22;
+    pin_number kInput8_PinNumber                 =  23;
+    pin_number kInput9_PinNumber                 =  24;
+    pin_number kInput10_PinNumber                =  25;
+    pin_number kInput11_PinNumber                =  26;
+    pin_number kInput12_PinNumber                =  27;
 
-    pin_number kSD_CardDetect                   =  -1;
-    pin_number kInterlock_In                    =  -1;
+    pin_number kSD_CardDetect                    =  -1;
+    pin_number kInterlock_In                     =  -1;
 
-    pin_number kLED_USBRXPinNumber              =  12;
-    pin_number kLED_USBTXPinNumber              =  13;
+    pin_number kLED_USBRXPinNumber               =  12;
+    pin_number kLED_USBTXPinNumber               =  13;
 
+	 //OUTPUTS
+
+	 pin_number kOutput_3                         =  32;
+	 pin_number kOutput_5                         =  33;
+	 pin_number kOutput_6                         =  34;
+	 pin_number kOutput_7                         =  35;
+	 pin_number kOutput_8                         =  36;
+//	 pin_number kOutput_9                         =  37;
+	 pin_number kOutput_10                        =  38;
+	 pin_number kOutput_11                        =  39;
+	 pin_number kOutput_12                        =  40;
 
     // GRBL / gShield compatibility pins -- Due board ONLY
 

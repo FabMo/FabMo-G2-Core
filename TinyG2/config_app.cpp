@@ -506,6 +506,30 @@ const cfgItem_t cfgArray[] PROGMEM = {
     { "",   "com", _f0,  0, cm_print_com, get_ui8, set_nul,  (float *)&coolant.mist_enable, 0 },    // get mist coolant enable
     { "",   "cof", _f0,  0, cm_print_cof, get_ui8, set_nul,  (float *)&coolant.flood_enable, 0 },   // get flood coolant enable
 
+    { "sys","out3p",_fipn,0, cm_print_out3p,get_ui8, set_01,    (float *)&coolant.out3_polarity,       OUTPUT3_POLARITY },
+    { "",   "out3", _f0,  0, cm_print_out3, get_ui8, set_nul,  (float *)&coolant.out3_enable, 0 },
+
+    { "sys","out5p",_fipn,0, cm_print_out5p,get_ui8, set_01,    (float *)&coolant.out5_polarity,       OUTPUT5_POLARITY },
+    { "",   "out5", _f0,  0, cm_print_out5, get_ui8, set_nul,  (float *)&coolant.out5_enable, 0 },
+
+    { "sys","out6p",_fipn,0, cm_print_out6p,get_ui8, set_01,    (float *)&coolant.out6_polarity,       OUTPUT6_POLARITY },
+    { "",   "out6", _f0,  0, cm_print_out6, get_ui8, set_nul,  (float *)&coolant.out6_enable, 0 },
+
+    { "sys","out7p",_fipn,0, cm_print_out7p,get_ui8, set_01,    (float *)&coolant.out7_polarity,       OUTPUT7_POLARITY },
+    { "",   "out7", _f0,  0, cm_print_out7, get_ui8, set_nul,  (float *)&coolant.out7_enable, 0 },
+
+    { "sys","out8p",_fipn,0, cm_print_out8p,get_ui8, set_01,    (float *)&coolant.out8_polarity,       OUTPUT8_POLARITY },
+    { "",   "out8", _f0,  0, cm_print_out8, get_ui8, set_nul,  (float *)&coolant.out8_enable, 0 },
+
+    { "sys","out10p",_fipn,0, cm_print_out10p,get_ui8, set_01,    (float *)&coolant.out10_polarity,       OUTPUT10_POLARITY },
+    { "",   "out10", _f0,  0, cm_print_out10, get_ui8, set_nul,  (float *)&coolant.out10_enable, 0 },
+
+    { "sys","out11p",_fipn,0, cm_print_out11p,get_ui8, set_01,    (float *)&coolant.out11_polarity,       OUTPUT11_POLARITY },
+    { "",   "out11", _f0,  0, cm_print_out11, get_ui8, set_nul,  (float *)&coolant.out11_enable, 0 },
+
+    { "sys","out12p",_fipn,0, cm_print_out12p,get_ui8, set_01,    (float *)&coolant.out12_polarity,       OUTPUT12_POLARITY },
+    { "",   "out12", _f0,  0, cm_print_out12, get_ui8, set_nul,  (float *)&coolant.out12_enable, 0 },
+
     // Communications and reporting parameters
 #ifdef __TEXT_MODE
     { "sys","tv", _fipn, 0, tx_print_tv,  get_ui8, set_01,     (float *)&txt.text_verbosity,        TEXT_VERBOSITY },

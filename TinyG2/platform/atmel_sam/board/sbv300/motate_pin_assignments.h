@@ -79,15 +79,27 @@ namespace Motate {
 	_MAKE_MOTATE_PIN( 27, A, 'A', 17 );
 
 	// OUTPUTS
-   _MAKE_MOTATE_PIN(28, A, 'A', 14 ); //coolant mist m7 on m8 off
-   _MAKE_MOTATE_PIN(29, A, 'A', 15);	//coolant flood m9 on m10 off
+   _MAKE_MOTATE_PIN(28, A, 'A', 14); //coolant mist 
+   _MAKE_MOTATE_PIN(29, A, 'A', 15);	//coolant flood
       
    _MAKE_MOTATE_PIN(30, A, 'A', 12);	// PWM1 M3 ESC	PIN
    _MAKE_MOTATE_PWM_PIN(30, Motate::PWMTimer<1>, /*Channel:*/ A, /*Peripheral:*/ B, /*Inverted:*/ false); 
    
    _MAKE_MOTATE_PIN(31, A, 'A', 13);	// PWM2
    _MAKE_MOTATE_PWM_PIN(31, Motate::PWMTimer<2>, /*Channel:*/ A, /*Peripheral:*/ B, /*Inverted:*/ true);
-	
+
+	// OUTPUTS
+
+	_MAKE_MOTATE_PIN(32, D, 'D', 8); //POUT3
+	_MAKE_MOTATE_PIN(33, D, 'D', 6); //POUT5-12
+	_MAKE_MOTATE_PIN(34, D, 'D', 5);
+	_MAKE_MOTATE_PIN(35, D, 'D', 4);
+	_MAKE_MOTATE_PIN(36, D, 'D', 3);
+//	_MAKE_MOTATE_PIN(37, A, 'A', 8);
+	_MAKE_MOTATE_PIN(38, A, 'A', 7);
+	_MAKE_MOTATE_PIN(39, A, 'A', 5);
+	_MAKE_MOTATE_PIN(40, A, 'A', 1);
+
 } // namespace Motate
 
 #ifdef MOTATE_BOARD

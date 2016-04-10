@@ -59,8 +59,17 @@
 #define SPINDLE_DWELL_TIME          1.0
 
 #define COOLANT_MIST_POLARITY       1                       // 0=active low, 1=active high
-#define COOLANT_FLOOD_POLARITY      1                       // 0=active low, 1=active high
+#define COOLANT_FLOOD_POLARITY      1
 #define COOLANT_PAUSE_ON_HOLD       false
+
+#define OUTPUT3_POLARITY       1                       // 0=active low, 1=active high
+#define OUTPUT5_POLARITY       1
+#define OUTPUT6_POLARITY       1
+#define OUTPUT7_POLARITY       1
+#define OUTPUT8_POLARITY       1
+#define OUTPUT10_POLARITY       1
+#define OUTPUT11_POLARITY       1
+#define OUTPUT12_POLARITY       1
 
 // Communications and reporting settings
 

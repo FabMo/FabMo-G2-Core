@@ -246,6 +246,7 @@ static stat_t _parse_gcode_block(char *buf)
 {
     char *pstr = (char *)buf;       // persistent pointer into gcode block for parsing words
     char letter;                    // parsed letter, eg.g. G or X or Y
+//    char letter2;                    // parsed letter, p
     float value = 0;                // value parsed from letter (e.g. 2 for G2)
     stat_t status = STAT_OK;
 
@@ -355,7 +356,6 @@ static stat_t _parse_gcode_block(char *buf)
 				default: status = STAT_GCODE_COMMAND_UNSUPPORTED;
 			}
 			break;
-
 			case 'M':
 			switch((uint8_t)value) {
 				case 0: case 1: case 60:
@@ -366,14 +366,16 @@ static stat_t _parse_gcode_block(char *buf)
 				case 4: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CCW);
 				case 5: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_OFF);
 				case 6: SET_NON_MODAL (tool_change, true);
-				case 7: SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
-				case 8: SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
-				case 9: SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
-				case 10: SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
+				//case 7: SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
+				//case 8: SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
+				//case 9: SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
+				//case 10: SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
 				case 48: SET_MODAL (MODAL_GROUP_M9, m48_enable, true);
 				case 49: SET_MODAL (MODAL_GROUP_M9, m48_enable, false);
 				case 50: SET_MODAL (MODAL_GROUP_M9, mfo_enable, true);
 				case 51: SET_MODAL (MODAL_GROUP_M9, sso_enable, true);
+				case 62: SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_HI);
+				case 63: SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_LO);
 				default: status = STAT_MCODE_COMMAND_UNSUPPORTED;
 			}
 			break;
@@ -398,7 +400,76 @@ static stat_t _parse_gcode_block(char *buf)
 			case 'R': SET_NON_MODAL (arc_radius, value);
 			case 'N': SET_NON_MODAL (linenum,(uint32_t)value);		// line number
 			default: status = STAT_GCODE_COMMAND_UNSUPPORTED;
+
 		}
+		if (cm.gn.next_action == NEXT_ACTION_SETPIN_HI) {
+			int pin = int(cm.gn.parameter + 0.5); 			// M62 - set pin #
+			if(pin == 13){
+			   SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
+			}
+			else if(pin==14){
+				SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
+			}
+			else if(pin==3){
+				SET_MODAL (MODAL_GROUP_M8, out3, true);
+			}
+			else if(pin==5){
+				SET_MODAL (MODAL_GROUP_M8, out5, true);
+			}
+			else if(pin==6){
+				SET_MODAL (MODAL_GROUP_M8, out6, true);
+			}
+			else if(pin==7){
+				SET_MODAL (MODAL_GROUP_M8, out7, true);
+			}
+			else if(pin==8){
+				SET_MODAL (MODAL_GROUP_M8, out8, true);
+			}
+			else if(pin==10){
+				SET_MODAL (MODAL_GROUP_M8, out10, true);
+			}
+			else if(pin==11){
+				SET_MODAL (MODAL_GROUP_M8, out11, true);
+			}
+			else if(pin==12){
+				SET_MODAL (MODAL_GROUP_M8, out12, true);
+			}
+		}
+
+		if (cm.gn.next_action == NEXT_ACTION_SETPIN_LO) {
+			int pin = int(cm.gn.parameter + 0.5); 			// M62 - set pin #
+			if(pin == 13){
+			   SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
+			}
+			else if(pin==14){
+				SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
+			}
+			else if(pin==3){
+				SET_MODAL (MODAL_GROUP_M8, out3, false);
+			}
+			else if(pin==5){
+				SET_MODAL (MODAL_GROUP_M8, out5, false);
+			}
+			else if(pin==6){
+				SET_MODAL (MODAL_GROUP_M8, out6, false);
+			}
+			else if(pin==7){
+				SET_MODAL (MODAL_GROUP_M8, out7, false);
+			}
+			else if(pin==8){
+				SET_MODAL (MODAL_GROUP_M8, out8, false);
+			}
+			else if(pin==10){
+				SET_MODAL (MODAL_GROUP_M8, out10, false);
+			}
+			else if(pin==11){
+				SET_MODAL (MODAL_GROUP_M8, out11, false);
+			}
+			else if(pin==12){
+				SET_MODAL (MODAL_GROUP_M8, out12, false);
+			}
+		}
+
 		if(status != STAT_OK) break;
 	}
 	if ((status != STAT_OK) && (status != STAT_COMPLETE)) return (status);
@@ -469,8 +540,19 @@ static stat_t _execute_gcode_block()
 //	EXEC_FUNC(cm_spindle_override_enable, spindle_override_enable);
 //	EXEC_FUNC(cm_override_enables, override_enables);
 */
+
 	EXEC_FUNC(cm_mist_coolant_control, mist_coolant);
 	EXEC_FUNC(cm_flood_coolant_control, flood_coolant);		// also disables mist coolant if OFF
+
+	EXEC_FUNC(cm_out3_control, out3); //output
+	EXEC_FUNC(cm_out5_control, out5);
+	EXEC_FUNC(cm_out6_control, out6); 
+	EXEC_FUNC(cm_out7_control, out7); 
+	EXEC_FUNC(cm_out8_control, out8); 
+	EXEC_FUNC(cm_out10_control, out10); 
+	EXEC_FUNC(cm_out11_control, out11); 
+	EXEC_FUNC(cm_out12_control, out12);  
+
 	EXEC_FUNC(cm_m48_enable, m48_enable);
 	EXEC_FUNC(cm_mfo_enable, mfo_enable);
 //	EXEC_FUNC(cm_sso_enable, sso_enable);
@@ -478,6 +560,8 @@ static stat_t _execute_gcode_block()
 	if (cm.gn.next_action == NEXT_ACTION_DWELL) { 			// G4 - dwell
 		ritorno(cm_dwell(cm.gn.parameter));					// return if error, otherwise complete the block
 	}
+
+
 	EXEC_FUNC(cm_select_plane, select_plane);               // G17, G18, G19
 	EXEC_FUNC(cm_set_units_mode, units_mode);               // G20, G21
 	//--> cutter radius compensation goes here

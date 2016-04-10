@@ -173,6 +173,8 @@ typedef enum {						    // these are in order to optimized CASE statement
 	NEXT_ACTION_SUSPEND_ORIGIN_OFFSETS,	// G92.2
 	NEXT_ACTION_RESUME_ORIGIN_OFFSETS,	// G92.3
 	NEXT_ACTION_DWELL,					// G4
+	NEXT_ACTION_SETPIN_HI,				   // M62
+	NEXT_ACTION_SETPIN_LO,
 	NEXT_ACTION_STRAIGHT_PROBE			// G38.2
 } cmNextAction;
 
@@ -407,6 +409,15 @@ typedef struct GCodeInput {				// Gcode model inputs - meaning depends on contex
     uint8_t mist_coolant;				// TRUE = mist on (M7), FALSE = off (M9)
     uint8_t flood_coolant;				// TRUE = flood on (M8), FALSE = off (M9)
 
+    uint8_t out3;
+    uint8_t out5;
+    uint8_t out6;
+    uint8_t out7;
+    uint8_t out8;
+    uint8_t out10;
+    uint8_t out11;
+    uint8_t out12;
+
     uint8_t spindle_control;            // 0=OFF (M5), 1=CW (M3), 2=CCW (M4)
     float spindle_speed;				// in RPM
     float spindle_override_factor;		// 1.0000 x S spindle speed. Go up or down from there
@@ -452,6 +463,15 @@ typedef struct GCodeFlags {             // Gcode model input flags
     bool tool_change;
     bool mist_coolant;
     bool flood_coolant;
+
+    bool out3;
+    bool out5;
+    bool out6;
+    bool out7;
+    bool out8;
+    bool out10;
+    bool out11;
+    bool out12;
 
     bool spindle_control;
     bool spindle_speed;
