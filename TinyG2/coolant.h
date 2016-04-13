@@ -43,13 +43,14 @@ typedef enum {                      // used to index the value and flag vectors 
     COOLANT_FLOOD = 0,
     COOLANT_MIST,
 	 OUT3,
+	 OUT4,
 	 OUT5,
-	 OUT6,
-	 OUT7
+	 OUT6
 } cmCoolantIndex;
 
 typedef enum {                      // used to index the value and flag vectors for coolant execs
-	 OUT8 = 0,
+	 OUT7 = 0,
+	 OUT8,
 	 OUT10,
 	 OUT11,
 	 OUT12
@@ -72,6 +73,9 @@ typedef struct cmCoolatSingleton {
 
 	cmCoolantEnable out3_enable;        // on (M62P'pin#'), off (M63P'pin#')
     cmCoolantPolarity out3_polarity;    // 0=active low, 1=active high
+
+	cmCoolantEnable out4_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out4_polarity;    // 0=active low, 1=active high
 
 	cmCoolantEnable out5_enable;        // on (M62P'pin#'), off (M63P'pin#')
     cmCoolantPolarity out5_polarity;    // 0=active low, 1=active high
@@ -109,6 +113,7 @@ stat_t cm_mist_coolant_control(uint8_t mist_enable);
 stat_t cm_flood_coolant_control(uint8_t flood_enable);
 			
 stat_t cm_out3_control(uint8_t out3_enable);
+stat_t cm_out4_control(uint8_t out4_enable);
 stat_t cm_out5_control(uint8_t out5_enable);
 stat_t cm_out6_control(uint8_t out6_enable);
 stat_t cm_out7_control(uint8_t out7_enable);
@@ -133,6 +138,9 @@ void cm_coolant_resume(void);
 
     void cm_print_out3p(nvObj_t *nv); 
     void cm_print_out3(nvObj_t *nv);
+
+    void cm_print_out4p(nvObj_t *nv); 
+    void cm_print_out4(nvObj_t *nv);
 
     void cm_print_out5p(nvObj_t *nv); 
     void cm_print_out5(nvObj_t *nv);
@@ -166,6 +174,9 @@ void cm_coolant_resume(void);
 
     #define cm_print_out3p tx_print_stub
     #define cm_print_out3 tx_print_stub
+
+    #define cm_print_out4p tx_print_stub
+    #define cm_print_out4 tx_print_stub
 
     #define cm_print_out5p tx_print_stub
     #define cm_print_out5 tx_print_stub

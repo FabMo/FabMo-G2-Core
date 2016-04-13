@@ -54,6 +54,7 @@ void coolant_init()
     coolant.mist_enable = COOLANT_OFF;
     coolant.flood_enable = COOLANT_OFF;
     coolant.out3_enable = COOLANT_OFF;
+    coolant.out4_enable = COOLANT_OFF;
     coolant.out5_enable = COOLANT_OFF;
     coolant.out6_enable = COOLANT_OFF;
     coolant.out7_enable = COOLANT_OFF;
@@ -154,60 +155,68 @@ stat_t cm_out3_control(uint8_t out3_enable)
     return (STAT_OK);
 }
 
+stat_t cm_out4_control(uint8_t out4_enable)
+{
+    float value[] = { 0,0,0,(float)out4_enable, 0,0 };
+    bool flags[] = { 0,0,0,1,0,0 };
+    mp_queue_command(_exec_coolant_control, value, flags);
+    return (STAT_OK);
+}
+
 stat_t cm_out5_control(uint8_t out5_enable)
 {
-    float value[] = { 0,0,0,(float)out5_enable, 0,0 };
-    bool flags[] = { 0,0,0,1,0,0 };
+    float value[] = { 0,0,0,0,(float)out5_enable,0 };
+    bool flags[] = { 0,0,0,0,1,0};
     mp_queue_command(_exec_coolant_control, value, flags);
     return (STAT_OK);
 }
 
 stat_t cm_out6_control(uint8_t out6_enable)
 {
-    float value[] = { 0,0,0,0,(float)out6_enable,0 };
-    bool flags[] = { 0,0,0,0,1,0};
-    mp_queue_command(_exec_coolant_control, value, flags);
-    return (STAT_OK);
-}
-
-stat_t cm_out7_control(uint8_t out7_enable)
-{
-    float value[] = { 0,0,0,0,0,(float)out7_enable };
+    float value[] = { 0,0,0,0,0,(float)out6_enable };
     bool flags[] = { 0,0,0,0,0,1};
     mp_queue_command(_exec_coolant_control, value, flags);
     return (STAT_OK);
 }
 
+//
 
-stat_t cm_out8_control(uint8_t out8_enable)
+stat_t cm_out67_control(uint8_t out7_enable)
 {
-    float value[] = { (float)out8_enable, 0,0,0,0,0,0 };
+    float value[] = { (float)out7_enable, 0,0,0,0,0,0 };
     bool flags[] = { 1,0,0,0,0,0 };
     mp_queue_command(_exec_output_control, value, flags);
     return (STAT_OK);
 }
 
+stat_t cm_out8_control(uint8_t out8_enable)
+{
+    float value[] = { 0,(float)out8_enable, 0,0,0,0 };
+    bool flags[] = { 0,1,0,0,0,0 };
+    mp_queue_command(_exec_output_control, value, flags);
+    return (STAT_OK);
+}
 
 stat_t cm_out10_control(uint8_t out10_enable)
 {
-    float value[] = { 0,(float)out10_enable, 0,0,0,0 };
-    bool flags[] = { 0,1,0,0,0,0 };
+    float value[] = { 0,0,(float)out10_enable, 0,0,0 };
+    bool flags[] = { 0,0,1,0,0,0 };
     mp_queue_command(_exec_output_control, value, flags);
     return (STAT_OK);
 }
 
 stat_t cm_out11_control(uint8_t out11_enable)
 {
-    float value[] = { 0,0,(float)out11_enable, 0,0,0 };
-    bool flags[] = { 0,0,1,0,0,0 };
+    float value[] = { 0,0,0,(float)out11_enable, 0,0 };
+    bool flags[] = { 0,0,0,1,0,0 };
     mp_queue_command(_exec_output_control, value, flags);
     return (STAT_OK);
 }
 
 stat_t cm_out12_control(uint8_t out12_enable)
 {
-    float value[] = { 0,0,0,(float)out12_enable, 0,0 };
-    bool flags[] = { 0,0,0,1,0,0 };
+    float value[] = { 0,0,0,0,(float)out12_enable,0 };
+    bool flags[] = { 0,0,0,0,1,0 };
     mp_queue_command(_exec_output_control, value, flags);
     return (STAT_OK);
 }
@@ -221,6 +230,9 @@ stat_t cm_out12_control(uint8_t out12_enable)
 	 //outputs
     #define _set_out3_enable_bit_hi() out3_enable_pin.set()
     #define _set_out3_enable_bit_lo() out3_enable_pin.clear()
+
+    #define _set_out4_enable_bit_hi() out4_enable_pin.set()
+    #define _set_out4_enable_bit_lo() out4_enable_pin.clear()
 
     #define _set_out5_enable_bit_hi() out5_enable_pin.set()
     #define _set_out5_enable_bit_lo() out5_enable_pin.clear()
@@ -283,6 +295,16 @@ static void _exec_coolant_control(float *value, bool *flags)
         }
     }
 
+    if (flags[OUT4]) {
+        coolant.out4_enable = (cmCoolantEnable)value[OUT4];
+        if (!((coolant.out4_enable & 0x01) ^ coolant.out4_polarity)) {
+            _set_out4_enable_bit_hi();
+        } else {
+            _set_out4_enable_bit_lo();
+        }
+    }
+
+
     if (flags[OUT5]) {
         coolant.out5_enable = (cmCoolantEnable)value[OUT5];
         if (!((coolant.out5_enable & 0x01) ^ coolant.out5_polarity)) {
@@ -299,6 +321,13 @@ static void _exec_coolant_control(float *value, bool *flags)
             _set_out6_enable_bit_lo();
         }
     }
+
+
+}
+
+
+static void _exec_output_control(float *value, bool *flags){
+
     if (flags[OUT7]) {
         coolant.out7_enable = (cmCoolantEnable)value[OUT7];
         if (!((coolant.out7_enable & 0x01) ^ coolant.out7_polarity)) {
@@ -307,11 +336,6 @@ static void _exec_coolant_control(float *value, bool *flags)
             _set_out7_enable_bit_lo();
         }
     }
-
-}
-
-
-static void _exec_output_control(float *value, bool *flags){
 
     if (flags[OUT8]) {
         coolant.out8_enable = (cmCoolantEnable)value[OUT8];
@@ -363,6 +387,9 @@ const char fmt_cof[] PROGMEM = "Flood coolant:%5d [0=OFF,1=ON]\n";
 const char fmt_out3p[] PROGMEM = "[out3p] OUTPUT 3 polarity%6d [0=low is ON,1=high is ON]\n";
 const char fmt_out3[] PROGMEM = "OUTPUT 3:%5d [0=OFF,1=ON]\n";
 
+const char fmt_out4p[] PROGMEM = "[out4p] OUTPUT 4 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_out4[] PROGMEM = "OUTPUT 4:%5d [0=OFF,1=ON]\n";
+
 const char fmt_out5p[] PROGMEM = "[out5p] OUTPUT 5 polarity%6d [0=low is ON,1=high is ON]\n";
 const char fmt_out5[] PROGMEM = "OUTPUT 5:%5d [0=OFF,1=ON]\n";
 
@@ -392,6 +419,9 @@ void cm_print_cof(nvObj_t *nv) { text_print(nv, fmt_cof);}    // TYPE_INT
 
 void cm_print_out3p(nvObj_t *nv) { text_print(nv, fmt_out3p);}
 void cm_print_out3(nvObj_t *nv) { text_print(nv, fmt_out3);}
+
+void cm_print_out4p(nvObj_t *nv) { text_print(nv, fmt_out4p);}
+void cm_print_out4(nvObj_t *nv) { text_print(nv, fmt_out4);}
 
 void cm_print_out5p(nvObj_t *nv) { text_print(nv, fmt_out5p);}
 void cm_print_out5(nvObj_t *nv) { text_print(nv, fmt_out5);}

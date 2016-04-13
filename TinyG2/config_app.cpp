@@ -509,6 +509,9 @@ const cfgItem_t cfgArray[] PROGMEM = {
     { "sys","out3p",_fipn,0, cm_print_out3p,get_ui8, set_01,    (float *)&coolant.out3_polarity,       OUTPUT3_POLARITY },
     { "",   "out3", _f0,  0, cm_print_out3, get_ui8, set_nul,  (float *)&coolant.out3_enable, 0 },
 
+    { "sys","out4p",_fipn,0, cm_print_out4p,get_ui8, set_01,    (float *)&coolant.out4_polarity,       OUTPUT4_POLARITY },
+    { "",   "out4", _f0,  0, cm_print_out4, get_ui8, set_nul,  (float *)&coolant.out4_enable, 0 },
+
     { "sys","out5p",_fipn,0, cm_print_out5p,get_ui8, set_01,    (float *)&coolant.out5_polarity,       OUTPUT5_POLARITY },
     { "",   "out5", _f0,  0, cm_print_out5, get_ui8, set_nul,  (float *)&coolant.out5_enable, 0 },
 

@@ -362,7 +362,7 @@ static stat_t _parse_gcode_block(char *buf)
 						SET_MODAL (MODAL_GROUP_M4, program_flow, PROGRAM_STOP);
 				case 2: case 30:
 						SET_MODAL (MODAL_GROUP_M4, program_flow, PROGRAM_END);
-				case 3: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CCW);
+				case 3: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CW);
 				case 4: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CCW);
 				case 5: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_OFF);
 				case 6: SET_NON_MODAL (tool_change, true);
@@ -413,6 +413,9 @@ static stat_t _parse_gcode_block(char *buf)
 			else if(pin==3){
 				SET_MODAL (MODAL_GROUP_M8, out3, true);
 			}
+			else if(pin==4){
+				SET_MODAL (MODAL_GROUP_M8, out4, true);  //spindle allow
+			}
 			else if(pin==5){
 				SET_MODAL (MODAL_GROUP_M8, out5, true);
 			}
@@ -446,6 +449,9 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==3){
 				SET_MODAL (MODAL_GROUP_M8, out3, false);
+			}
+			else if(pin==4){
+				SET_MODAL (MODAL_GROUP_M8, out4, false);
 			}
 			else if(pin==5){
 				SET_MODAL (MODAL_GROUP_M8, out5, false);
@@ -542,9 +548,10 @@ static stat_t _execute_gcode_block()
 */
 
 	EXEC_FUNC(cm_mist_coolant_control, mist_coolant);
-	EXEC_FUNC(cm_flood_coolant_control, flood_coolant);		// also disables mist coolant if OFF
+	EXEC_FUNC(cm_flood_coolant_control, flood_coolant);	
 
 	EXEC_FUNC(cm_out3_control, out3); //output
+	EXEC_FUNC(cm_out4_control, out4);
 	EXEC_FUNC(cm_out5_control, out5);
 	EXEC_FUNC(cm_out6_control, out6); 
 	EXEC_FUNC(cm_out7_control, out7); 

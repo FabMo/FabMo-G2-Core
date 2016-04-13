@@ -63,6 +63,7 @@
 #define COOLANT_PAUSE_ON_HOLD       false
 
 #define OUTPUT3_POLARITY        1                           // 0=active low, 1=active high
+#define OUTPUT4_POLARITY        1
 #define OUTPUT5_POLARITY        1
 #define OUTPUT6_POLARITY        1
 #define OUTPUT7_POLARITY        1

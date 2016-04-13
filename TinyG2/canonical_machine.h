@@ -406,10 +406,11 @@ typedef struct GCodeInput {				// Gcode model inputs - meaning depends on contex
     uint8_t tool;						// Tool after T and M6 (tool_select and tool_change)
     uint8_t tool_select;				// T value - T sets this value
     uint8_t tool_change;				// M6 tool change flag - moves "tool_select" to "tool"
-    uint8_t mist_coolant;				// TRUE = mist on (M7), FALSE = off (M9)
-    uint8_t flood_coolant;				// TRUE = flood on (M8), FALSE = off (M9)
+    uint8_t mist_coolant;				// M63/63P14
+    uint8_t flood_coolant;				// M63/63P13
 
     uint8_t out3;
+    uint8_t out4;
     uint8_t out5;
     uint8_t out6;
     uint8_t out7;
@@ -465,6 +466,7 @@ typedef struct GCodeFlags {             // Gcode model input flags
     bool flood_coolant;
 
     bool out3;
+    bool out4;
     bool out5;
     bool out6;
     bool out7;

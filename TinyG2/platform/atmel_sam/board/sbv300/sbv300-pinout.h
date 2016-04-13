@@ -125,8 +125,9 @@ namespace Motate {
     pin_number kSocket6_Microstep_2PinNumber    =  -1;
     pin_number kSocket6_VrefPinNumber           =  -1;
 
-    pin_number kSpindle1_EnablePinNumber        =  14;  
-    pin_number kSpindle_DirPinNumber            =  15;
+    pin_number kSpindle_EnablePinNumber         =  14;  
+    pin_number kSpindle_DirPinNumber            =  -1;
+    pin_number kSpindle_AllowPinNumber          =  15;
     
     pin_number kCoolantFlood_EnablePinNumber    =  29;
     pin_number kCoolantMist_EnablePinNumber     =  28;    
