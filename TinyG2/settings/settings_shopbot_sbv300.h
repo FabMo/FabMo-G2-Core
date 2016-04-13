@@ -72,6 +72,11 @@
 #define OUTPUT11_POLARITY       1
 #define OUTPUT12_POLARITY       1
 
+#define OUTPUT105_POLARITY      1
+#define OUTPUT106_POLARITY      1
+#define OUTPUT107_POLARITY      1
+#define OUTPUT108_POLARITY      1
+
 // Communications and reporting settings
 
 #define TEXT_VERBOSITY              TV_VERBOSE              // one of: TV_SILENT, TV_VERBOSE

@@ -437,6 +437,18 @@ static stat_t _parse_gcode_block(char *buf)
 			else if(pin==12){
 				SET_MODAL (MODAL_GROUP_M8, out12, true);
 			}
+			else if(pin==105){
+				SET_MODAL (MODAL_GROUP_M8, out105, true);
+			}
+			else if(pin==106){
+				SET_MODAL (MODAL_GROUP_M8, out106, true);
+			}
+			else if(pin==107){
+				SET_MODAL (MODAL_GROUP_M8, out107, true);
+			}
+			else if(pin==108){
+				SET_MODAL (MODAL_GROUP_M8, out108, true);
+			}
 		}
 
 		if (cm.gn.next_action == NEXT_ACTION_SETPIN_LO) {
@@ -473,6 +485,18 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==12){
 				SET_MODAL (MODAL_GROUP_M8, out12, false);
+			}
+			else if(pin==105){
+				SET_MODAL (MODAL_GROUP_M8, out105, false);
+			}
+			else if(pin==106){
+				SET_MODAL (MODAL_GROUP_M8, out106, false);
+			}
+			else if(pin==107){
+				SET_MODAL (MODAL_GROUP_M8, out107, false);
+			}
+			else if(pin==108){
+				SET_MODAL (MODAL_GROUP_M8, out108, false);
 			}
 		}
 
@@ -559,6 +583,11 @@ static stat_t _execute_gcode_block()
 	EXEC_FUNC(cm_out10_control, out10); 
 	EXEC_FUNC(cm_out11_control, out11); 
 	EXEC_FUNC(cm_out12_control, out12);  
+
+	EXEC_FUNC(cm_out105_control, out105);
+	EXEC_FUNC(cm_out106_control, out106);
+	EXEC_FUNC(cm_out107_control, out107);
+	EXEC_FUNC(cm_out108_control, out108);
 
 	EXEC_FUNC(cm_m48_enable, m48_enable);
 	EXEC_FUNC(cm_mfo_enable, mfo_enable);

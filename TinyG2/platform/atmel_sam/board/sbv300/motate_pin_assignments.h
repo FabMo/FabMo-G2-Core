@@ -95,10 +95,15 @@ namespace Motate {
 	_MAKE_MOTATE_PIN(34, D, 'D', 5);
 	_MAKE_MOTATE_PIN(35, D, 'D', 4);
 	_MAKE_MOTATE_PIN(36, D, 'D', 3);
-//	_MAKE_MOTATE_PIN(37, A, 'A', 8);
+//	_MAKE_MOTATE_PIN(37, A, 'A', 8); //POUT9 
 	_MAKE_MOTATE_PIN(38, A, 'A', 7);
 	_MAKE_MOTATE_PIN(39, A, 'A', 5);
 	_MAKE_MOTATE_PIN(40, A, 'A', 1);
+
+	_MAKE_MOTATE_PIN(41, A, 'A', 21); //LEDS
+	_MAKE_MOTATE_PIN(42, C, 'C', 30);
+	_MAKE_MOTATE_PIN(43, A, 'A', 18);
+	_MAKE_MOTATE_PIN(44, A, 'A', 19);
 
 } // namespace Motate
 

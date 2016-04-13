@@ -419,6 +419,11 @@ typedef struct GCodeInput {				// Gcode model inputs - meaning depends on contex
     uint8_t out11;
     uint8_t out12;
 
+    uint8_t out105;
+    uint8_t out106;
+    uint8_t out107;
+    uint8_t out108;
+
     uint8_t spindle_control;            // 0=OFF (M5), 1=CW (M3), 2=CCW (M4)
     float spindle_speed;				// in RPM
     float spindle_override_factor;		// 1.0000 x S spindle speed. Go up or down from there
@@ -474,6 +479,11 @@ typedef struct GCodeFlags {             // Gcode model input flags
     bool out10;
     bool out11;
     bool out12;
+
+    bool out105;
+    bool out106;
+    bool out107;
+    bool out108;
 
     bool spindle_control;
     bool spindle_speed;

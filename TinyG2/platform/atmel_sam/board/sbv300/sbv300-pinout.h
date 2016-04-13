@@ -157,15 +157,20 @@ namespace Motate {
 
 	 //OUTPUTS
 
-	 pin_number kOutput_3                         =  32;
+	 pin_number kOutput_3                         =  32;  //output
 	 pin_number kOutput_5                         =  33;
 	 pin_number kOutput_6                         =  34;
 	 pin_number kOutput_7                         =  35;
 	 pin_number kOutput_8                         =  36;
-//	 pin_number kOutput_9                         =  37;
+	 pin_number kOutput_9                         =  -1;
 	 pin_number kOutput_10                        =  38;
 	 pin_number kOutput_11                        =  39;
 	 pin_number kOutput_12                        =  40;
+
+	 pin_number kOutput_105                       =  41;  //LEDS
+	 pin_number kOutput_106                       =  42;
+	 pin_number kOutput_107                       =  43;
+	 pin_number kOutput_108                       =  44;
 
     // GRBL / gShield compatibility pins -- Due board ONLY
 

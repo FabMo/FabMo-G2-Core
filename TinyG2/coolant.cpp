@@ -45,6 +45,8 @@ static void _exec_coolant_control(float *value, bool *flags);
 
 static void _exec_output_control(float *value, bool *flags);
 
+static void _exec_led_control(float *value, bool *flags);
+
 /*
  * coolant_init()
  * coolant_reset()
@@ -62,6 +64,11 @@ void coolant_init()
     coolant.out10_enable = COOLANT_OFF;
     coolant.out11_enable = COOLANT_OFF;
     coolant.out12_enable = COOLANT_OFF;
+
+    coolant.out105_enable = COOLANT_OFF;
+    coolant.out106_enable = COOLANT_OFF;
+    coolant.out107_enable = COOLANT_OFF;
+    coolant.out108_enable = COOLANT_OFF;
 }
 
 void coolant_reset()
@@ -179,9 +186,9 @@ stat_t cm_out6_control(uint8_t out6_enable)
     return (STAT_OK);
 }
 
-//
+//outputs
 
-stat_t cm_out67_control(uint8_t out7_enable)
+stat_t cm_out7_control(uint8_t out7_enable)
 {
     float value[] = { (float)out7_enable, 0,0,0,0,0,0 };
     bool flags[] = { 1,0,0,0,0,0 };
@@ -221,6 +228,41 @@ stat_t cm_out12_control(uint8_t out12_enable)
     return (STAT_OK);
 }
 
+//leds
+
+stat_t cm_out105_control(uint8_t out105_enable)
+{
+    float value[] = { (float)out105_enable, 0,0,0,0,0,0 };
+    bool flags[] = { 1,0,0,0,0,0 };
+    mp_queue_command(_exec_led_control, value, flags);
+    return (STAT_OK);
+}
+
+stat_t cm_out106_control(uint8_t out106_enable)
+{
+    float value[] = { 0,(float)out106_enable, 0,0,0,0 };
+    bool flags[] = { 0,1,0,0,0,0 };
+    mp_queue_command(_exec_led_control, value, flags);
+    return (STAT_OK);
+}
+
+stat_t cm_out107_control(uint8_t out107_enable)
+{
+    float value[] = { 0,0,(float)out107_enable, 0,0,0 };
+    bool flags[] = { 0,0,1,0,0,0 };
+    mp_queue_command(_exec_led_control, value, flags);
+    return (STAT_OK);
+}
+
+stat_t cm_out108_control(uint8_t out108_enable)
+{
+    float value[] = { 0,0,0,(float)out108_enable, 0,0 };
+    bool flags[] = { 0,0,0,1,0,0 };
+    mp_queue_command(_exec_led_control, value, flags);
+    return (STAT_OK);
+}
+
+
 #ifdef __ARM
     // NOTE: flood and mist coolants are mapped to the same pin - see hardware.h
     #define _set_flood_enable_bit_hi() flood_enable_pin.set()
@@ -254,6 +296,18 @@ stat_t cm_out12_control(uint8_t out12_enable)
 
     #define _set_out12_enable_bit_hi() out12_enable_pin.set()
     #define _set_out12_enable_bit_lo() out12_enable_pin.clear()
+
+    #define _set_out105_enable_bit_hi() out105_enable_pin.set()
+    #define _set_out105_enable_bit_lo() out105_enable_pin.clear()
+
+    #define _set_out106_enable_bit_hi() out106_enable_pin.set()
+    #define _set_out106_enable_bit_lo() out106_enable_pin.clear()
+
+    #define _set_out107_enable_bit_hi() out107_enable_pin.set()
+    #define _set_out107_enable_bit_lo() out107_enable_pin.clear()
+
+    #define _set_out108_enable_bit_hi() out108_enable_pin.set()
+    #define _set_out108_enable_bit_lo() out108_enable_pin.clear()
 
 #endif
 #ifdef __AVR
@@ -371,6 +425,48 @@ static void _exec_output_control(float *value, bool *flags){
     }
 
 }
+
+
+static void _exec_led_control(float *value, bool *flags){
+
+    if (flags[OUT105]) {
+        coolant.out105_enable = (cmCoolantEnable)value[OUT105];
+        if (!((coolant.out105_enable & 0x01) ^ coolant.out105_polarity)) {
+            _set_out105_enable_bit_hi();
+        } else {
+            _set_out105_enable_bit_lo();
+        }
+    }
+
+    if (flags[OUT106]) {
+        coolant.out106_enable = (cmCoolantEnable)value[OUT106];
+        if (!((coolant.out106_enable & 0x01) ^ coolant.out106_polarity)) {
+            _set_out106_enable_bit_hi();
+        } else {
+            _set_out106_enable_bit_lo();
+        }
+    }
+
+    if (flags[OUT107]) {
+        coolant.out107_enable = (cmCoolantEnable)value[OUT107];
+        if (!((coolant.out107_enable & 0x01) ^ coolant.out107_polarity)) {
+            _set_out107_enable_bit_hi();
+        } else {
+            _set_out107_enable_bit_lo();
+        }
+    }
+
+    if (flags[OUT108]) {
+        coolant.out108_enable = (cmCoolantEnable)value[OUT108];
+        if (!((coolant.out108_enable & 0x01) ^ coolant.out108_polarity)) {
+            _set_out108_enable_bit_hi();
+        } else {
+            _set_out108_enable_bit_lo();
+        }
+    }
+
+}
+
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table
@@ -411,6 +507,18 @@ const char fmt_out11[] PROGMEM = "OUTPUT 11:%5d [0=OFF,1=ON]\n";
 const char fmt_out12p[] PROGMEM = "[out12p] OUTPUT 12 polarity%6d [0=low is ON,1=high is ON]\n";
 const char fmt_out12[] PROGMEM = "OUTPUT 12:%5d [0=OFF,1=ON]\n";
 
+const char fmt_out105p[] PROGMEM = "[out105p] OUTPUT 105 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_out105[] PROGMEM = "OUTPUT 105:%5d [0=OFF,1=ON]\n";
+
+const char fmt_out106p[] PROGMEM = "[out106p] OUTPUT 106 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_out106[] PROGMEM = "OUTPUT 106:%5d [0=OFF,1=ON]\n";
+
+const char fmt_out107p[] PROGMEM = "[out107p] OUTPUT 107 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_out107[] PROGMEM = "OUTPUT 107:%5d [0=OFF,1=ON]\n";
+
+const char fmt_out108p[] PROGMEM = "[out108p] OUTPUT 108 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_out108[] PROGMEM = "OUTPUT 108:%5d [0=OFF,1=ON]\n";
+
 void cm_print_coph(nvObj_t *nv) { text_print(nv, fmt_coph);}  // TYPE_INT
 void cm_print_comp(nvObj_t *nv) { text_print(nv, fmt_comp);}  // TYPE_INT
 void cm_print_cofp(nvObj_t *nv) { text_print(nv, fmt_cofp);}  // TYPE_INT
@@ -443,5 +551,17 @@ void cm_print_out11(nvObj_t *nv) { text_print(nv, fmt_out11);}
 
 void cm_print_out12p(nvObj_t *nv) { text_print(nv, fmt_out12p);}
 void cm_print_out12(nvObj_t *nv) { text_print(nv, fmt_out12);}
+
+void cm_print_out105p(nvObj_t *nv) { text_print(nv, fmt_out105p);}
+void cm_print_out105(nvObj_t *nv) { text_print(nv, fmt_out105);}
+
+void cm_print_out106p(nvObj_t *nv) { text_print(nv, fmt_out106p);}
+void cm_print_out106(nvObj_t *nv) { text_print(nv, fmt_out106);}
+
+void cm_print_out107p(nvObj_t *nv) { text_print(nv, fmt_out107p);}
+void cm_print_out107(nvObj_t *nv) { text_print(nv, fmt_out107);}
+
+void cm_print_out108p(nvObj_t *nv) { text_print(nv, fmt_out108p);}
+void cm_print_out108(nvObj_t *nv) { text_print(nv, fmt_out108);}
 
 #endif // __TEXT_MODE

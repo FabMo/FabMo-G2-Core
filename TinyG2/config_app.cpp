@@ -533,6 +533,20 @@ const cfgItem_t cfgArray[] PROGMEM = {
     { "sys","out12p",_fipn,0, cm_print_out12p,get_ui8, set_01,    (float *)&coolant.out12_polarity,       OUTPUT12_POLARITY },
     { "",   "out12", _f0,  0, cm_print_out12, get_ui8, set_nul,  (float *)&coolant.out12_enable, 0 },
 
+    { "sys","out05p",_fipn,0, cm_print_out105p,get_ui8, set_01,    (float *)&coolant.out105_polarity,       OUTPUT105_POLARITY },
+    { "",   "out05", _f0,  0, cm_print_out105, get_ui8, set_nul,  (float *)&coolant.out105_enable, 0 },
+
+
+    { "sys","out06p",_fipn,0, cm_print_out106p,get_ui8, set_01,    (float *)&coolant.out106_polarity,       OUTPUT106_POLARITY },
+    { "",   "out06", _f0,  0, cm_print_out106, get_ui8, set_nul,  (float *)&coolant.out106_enable, 0 },
+
+    { "sys","out07p",_fipn,0, cm_print_out107p,get_ui8, set_01,    (float *)&coolant.out107_polarity,       OUTPUT107_POLARITY },
+    { "",   "out07", _f0,  0, cm_print_out107, get_ui8, set_nul,  (float *)&coolant.out107_enable, 0 },
+
+    { "sys","out08p",_fipn,0, cm_print_out108p,get_ui8, set_01,    (float *)&coolant.out108_polarity,       OUTPUT108_POLARITY },
+    { "",   "out08", _f0,  0, cm_print_out108, get_ui8, set_nul,  (float *)&coolant.out108_enable, 0 },
+
+
     // Communications and reporting parameters
 #ifdef __TEXT_MODE
     { "sys","tv", _fipn, 0, tx_print_tv,  get_ui8, set_01,     (float *)&txt.text_verbosity,        TEXT_VERBOSITY },
