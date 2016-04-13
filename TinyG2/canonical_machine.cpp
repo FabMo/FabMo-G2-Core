@@ -723,7 +723,7 @@ void cm_halt_all(void)
 {
     cm_halt_motion();
 	cm_spindle_off_immediate();
-	cm_coolant_off_immediate();
+//	cm_coolant_off_immediate();
 }
 
 void cm_halt_motion(void)
@@ -1523,11 +1523,11 @@ void cm_end_hold()
         // State machine cases:
         if (cm.machine_state == MACHINE_ALARM) {
             cm_spindle_off_immediate();
- 		    cm_coolant_off_immediate();
+//		    cm_coolant_off_immediate();
 
         } else if (cm.motion_state == MOTION_STOP) { // && (! MACHINE_ALARM)
             cm_spindle_off_immediate();
-		    cm_coolant_off_immediate();
+//	  	    cm_coolant_off_immediate();
 		    cm_cycle_end();
 
         } else {    // (MOTION_RUN || MOTION_PLANNING)  && (! MACHINE_ALARM)

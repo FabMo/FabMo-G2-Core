@@ -62,11 +62,11 @@
 #define COOLANT_FLOOD_POLARITY      1
 #define COOLANT_PAUSE_ON_HOLD       false
 
-#define OUTPUT3_POLARITY       1                       // 0=active low, 1=active high
-#define OUTPUT5_POLARITY       1
-#define OUTPUT6_POLARITY       1
-#define OUTPUT7_POLARITY       1
-#define OUTPUT8_POLARITY       1
+#define OUTPUT3_POLARITY        1                           // 0=active low, 1=active high
+#define OUTPUT5_POLARITY        1
+#define OUTPUT6_POLARITY        1
+#define OUTPUT7_POLARITY        1
+#define OUTPUT8_POLARITY        1
 #define OUTPUT10_POLARITY       1
 #define OUTPUT11_POLARITY       1
 #define OUTPUT12_POLARITY       1
@@ -335,9 +335,9 @@
 /*** Handle optional modules that may not be in every machine ***/
 
 #define P1_PWM_FREQUENCY		    100					// in Hz
-#define P1_CW_SPEED_LO			    7900				// in RPM (arbitrary units)
-#define P1_CW_SPEED_HI			    12800
-#define P1_CW_PHASE_LO			    0.13				// phase [0..1]
+#define P1_CW_SPEED_LO			    6000				// in RPM (arbitrary units)
+#define P1_CW_SPEED_HI			    20000
+#define P1_CW_PHASE_LO			    0.106				// phase [0..1]
 #define P1_CW_PHASE_HI			    0.17
 #define P1_CCW_SPEED_LO			    0
 #define P1_CCW_SPEED_HI			    0
