@@ -265,10 +265,12 @@ stat_t cm_out108_control(uint8_t out108_enable)
 
 stat_t cm_out101_control(uint8_t out101_enable)
 {
+
     float value[] = { 0,0,0,0,(float)out101_enable,0 };
     bool flags[] = { 0,0,0,0,1,0 };
     mp_queue_command(_exec_led_control, value, flags);
     return (STAT_OK);
+
 }
 
 

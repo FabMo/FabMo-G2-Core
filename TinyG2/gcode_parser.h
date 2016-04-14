@@ -23,6 +23,53 @@
 /*
  * Global Scope Functions
  */
+    #define _set_flood_enable_bit_hi() flood_enable_pin.set()
+    #define _set_flood_enable_bit_lo() flood_enable_pin.clear()
+    #define _set_mist_enable_bit_hi() mist_enable_pin.set()
+    #define _set_mist_enable_bit_lo() mist_enable_pin.clear()
+	 //outputs
+    #define _set_out3_enable_bit_hi() out3_enable_pin.set()
+    #define _set_out3_enable_bit_lo() out3_enable_pin.clear()
+
+    #define _set_out4_enable_bit_hi() out4_enable_pin.set()
+    #define _set_out4_enable_bit_lo() out4_enable_pin.clear()
+
+    #define _set_out5_enable_bit_hi() out5_enable_pin.set()
+    #define _set_out5_enable_bit_lo() out5_enable_pin.clear()
+
+    #define _set_out6_enable_bit_hi() out6_enable_pin.set()
+    #define _set_out6_enable_bit_lo() out6_enable_pin.clear()
+
+    #define _set_out7_enable_bit_hi() out7_enable_pin.set()
+    #define _set_out7_enable_bit_lo() out7_enable_pin.clear()
+
+    #define _set_out8_enable_bit_hi() out8_enable_pin.set()
+    #define _set_out8_enable_bit_lo() out8_enable_pin.clear()
+
+    #define _set_out10_enable_bit_hi() out10_enable_pin.set()
+    #define _set_out10_enable_bit_lo() out10_enable_pin.clear()
+
+    #define _set_out11_enable_bit_hi() out11_enable_pin.set()
+    #define _set_out11_enable_bit_lo() out11_enable_pin.clear()
+
+    #define _set_out12_enable_bit_hi() out12_enable_pin.set()
+    #define _set_out12_enable_bit_lo() out12_enable_pin.clear()
+
+    #define _set_out101_enable_bit_hi() out101_enable_pin.set()
+    #define _set_out101_enable_bit_lo() out101_enable_pin.clear()
+
+    #define _set_out105_enable_bit_hi() out105_enable_pin.set()
+    #define _set_out105_enable_bit_lo() out105_enable_pin.clear()
+
+    #define _set_out106_enable_bit_hi() out106_enable_pin.set()
+    #define _set_out106_enable_bit_lo() out106_enable_pin.clear()
+
+    #define _set_out107_enable_bit_hi() out107_enable_pin.set()
+    #define _set_out107_enable_bit_lo() out107_enable_pin.clear()
+
+    #define _set_out108_enable_bit_hi() out108_enable_pin.set()
+    #define _set_out108_enable_bit_lo() out108_enable_pin.clear()
+
 stat_t gcode_parser(char *block);
 stat_t gc_get_gc(nvObj_t *nv);
 stat_t gc_run_gc(nvObj_t *nv);

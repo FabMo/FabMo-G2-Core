@@ -24,7 +24,8 @@
 #include "spindle.h"
 #include "coolant.h"
 #include "util.h"
-#include "xio.h"			// for char definitions
+#include "xio.h"
+#include "hardware.h"			// for char definitions
 
 // local helper functions and macros
 static void _normalize_gcode_block(char *str, char **com, char **msg, uint8_t *block_delete_flag);
@@ -249,6 +250,10 @@ static stat_t _parse_gcode_block(char *buf)
 //    char letter2;                    // parsed letter, p
     float value = 0;                // value parsed from letter (e.g. 2 for G2)
     stat_t status = STAT_OK;
+	 bool immediate;
+
+
+
 
     // set initial state for new move
     memset(&cm.gn, 0, sizeof(GCodeInput_t));        // clear all next-state values
@@ -374,8 +379,14 @@ static stat_t _parse_gcode_block(char *buf)
 				case 49: SET_MODAL (MODAL_GROUP_M9, m48_enable, false);
 				case 50: SET_MODAL (MODAL_GROUP_M9, mfo_enable, true);
 				case 51: SET_MODAL (MODAL_GROUP_M9, sso_enable, true);
-				case 62: SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_HI);
-				case 63: SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_LO);
+				case 62: immediate=false;
+							SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_HI);
+				case 63: immediate=false;
+							SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_LO);
+				case 64: immediate = true;
+							SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_HI);
+				case 65: immediate = true;
+							SET_NON_MODAL (next_action, NEXT_ACTION_SETPIN_LO);
 				default: status = STAT_MCODE_COMMAND_UNSUPPORTED;
 			}
 			break;
@@ -405,104 +416,264 @@ static stat_t _parse_gcode_block(char *buf)
 		if (cm.gn.next_action == NEXT_ACTION_SETPIN_HI) {
 			int pin = int(cm.gn.parameter + 0.5); 			// M62 - set pin #
 			if(pin == 13){
-			   SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
+				if(immediate==true){
+				   _set_mist_enable_bit_hi();
+				}
+				else if(immediate==false){
+				   SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
+				}
 			}
 			else if(pin==14){
-				SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
+				if(immediate==true){
+				   _set_flood_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
+				}
 			}
 			else if(pin==3){
-				SET_MODAL (MODAL_GROUP_M8, out3, true);
+				if(immediate==true){
+				   _set_out3_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out3, true);
+				}
 			}
 			else if(pin==4){
-				SET_MODAL (MODAL_GROUP_M8, out4, true);  //spindle allow
+				if(immediate==true){
+				   _set_out4_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out4, true);  //spindle allow
+				}
 			}
 			else if(pin==5){
-				SET_MODAL (MODAL_GROUP_M8, out5, true);
+				if(immediate==true){
+				   _set_out5_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out5, true);
+				}
 			}
 			else if(pin==6){
-				SET_MODAL (MODAL_GROUP_M8, out6, true);
+				if(immediate==true){
+				   _set_out6_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out6, true);
+				}
 			}
 			else if(pin==7){
-				SET_MODAL (MODAL_GROUP_M8, out7, true);
+				if(immediate==true){
+				   _set_out7_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out7, true);
+				}
 			}
 			else if(pin==8){
-				SET_MODAL (MODAL_GROUP_M8, out8, true);
+				if(immediate==true){
+				   _set_out8_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out8, true);
+				}
 			}
 			else if(pin==10){
-				SET_MODAL (MODAL_GROUP_M8, out10, true);
+				if(immediate==true){
+				   _set_out10_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out10, true);
+				}
 			}
 			else if(pin==11){
+				if(immediate==true){
+				   _set_out11_enable_bit_hi();
+				}
+				else if(immediate==false){
 				SET_MODAL (MODAL_GROUP_M8, out11, true);
+				}
 			}
 			else if(pin==12){
-				SET_MODAL (MODAL_GROUP_M8, out12, true);
+				if(immediate==true){
+				   _set_out12_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out12, true);
+				}
 			}
 			else if(pin==101){
-				SET_MODAL (MODAL_GROUP_M8, out101, true);
+				if(immediate==true){
+				   _set_out101_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out101, true);
+				}
 			}
 			else if(pin==105){
-				SET_MODAL (MODAL_GROUP_M8, out105, true);
+				if(immediate==true){
+				   _set_out105_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out105, true);
+				}
 			}
 			else if(pin==106){
-				SET_MODAL (MODAL_GROUP_M8, out106, true);
+				if(immediate==true){
+				   _set_out106_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out106, true);
+				}
 			}
 			else if(pin==107){
-				SET_MODAL (MODAL_GROUP_M8, out107, true);
+				if(immediate==true){
+				   _set_out107_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out107, true);
+				}
 			}
 			else if(pin==108){
-				SET_MODAL (MODAL_GROUP_M8, out108, true);
+				if(immediate==true){
+				   _set_out108_enable_bit_hi();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out108, true);
+				}
 			}
 		}
 
 		if (cm.gn.next_action == NEXT_ACTION_SETPIN_LO) {
 			int pin = int(cm.gn.parameter + 0.5); 			// M62 - set pin #
 			if(pin == 13){
-			   SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
+				if(immediate==true){
+				   _set_mist_enable_bit_lo();
+				}
+				else if(immediate==false){
+				   SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
+				}
 			}
 			else if(pin==14){
-				SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
+				if(immediate==true){
+				   _set_flood_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
+				}
 			}
 			else if(pin==3){
-				SET_MODAL (MODAL_GROUP_M8, out3, false);
+				if(immediate==true){
+				   _set_out3_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out3, false);
+				}
 			}
 			else if(pin==4){
-				SET_MODAL (MODAL_GROUP_M8, out4, false);
+				if(immediate==true){
+				   _set_out4_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out4, false);
+				}
 			}
 			else if(pin==5){
-				SET_MODAL (MODAL_GROUP_M8, out5, false);
+				if(immediate==true){
+				   _set_out5_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out5, false);
+				}
 			}
 			else if(pin==6){
-				SET_MODAL (MODAL_GROUP_M8, out6, false);
+				if(immediate==true){
+				   _set_out6_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out6, false);
+				}
 			}
 			else if(pin==7){
-				SET_MODAL (MODAL_GROUP_M8, out7, false);
+				if(immediate==true){
+				   _set_out7_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out7, false);
+				}
 			}
 			else if(pin==8){
-				SET_MODAL (MODAL_GROUP_M8, out8, false);
+				if(immediate==true){
+				   _set_out8_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out8, false);
+				}
 			}
 			else if(pin==10){
-				SET_MODAL (MODAL_GROUP_M8, out10, false);
+				if(immediate==true){
+				   _set_out10_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out10, false);
+				}
 			}
 			else if(pin==11){
-				SET_MODAL (MODAL_GROUP_M8, out11, false);
+				if(immediate==true){
+				   _set_out11_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out11, false);
+				}
 			}
 			else if(pin==12){
-				SET_MODAL (MODAL_GROUP_M8, out12, false);
+				if(immediate==true){
+				   _set_out12_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out12, false);
+				}
 			}
 			else if(pin==101){
-				SET_MODAL (MODAL_GROUP_M8, out101, false);
+				if(immediate==true){
+				   _set_out101_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out101, false);
+				}
 			}
 			else if(pin==105){
-				SET_MODAL (MODAL_GROUP_M8, out105, false);
+				if(immediate==true){
+				   _set_out105_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out105, false);
+				}
 			}
 			else if(pin==106){
-				SET_MODAL (MODAL_GROUP_M8, out106, false);
+				if(immediate==true){
+				   _set_out106_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out106, false);
+				}
 			}
 			else if(pin==107){
-				SET_MODAL (MODAL_GROUP_M8, out107, false);
+				if(immediate==true){
+				   _set_out107_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out107, false);
+				}
 			}
 			else if(pin==108){
-				SET_MODAL (MODAL_GROUP_M8, out108, false);
+				if(immediate==true){
+				   _set_out108_enable_bit_lo();
+				}
+				else if(immediate==false){
+					SET_MODAL (MODAL_GROUP_M8, out108, false);
+				}
 			}
 		}
 
@@ -681,6 +852,10 @@ stat_t gc_run_gc(nvObj_t *nv)
 {
 	return(gcode_parser(*nv->stringp));
 }
+
+
+
+
 
 /***********************************************************************************
  * TEXT MODE SUPPORT
