@@ -38,11 +38,11 @@ namespace Motate {
     // NOT ALL OF THESE PINS ARE ON ALL PLATFORMS
     // Undefined pins will be equivalent to Motate::NullPin, and return 1 for Pin<>::isNull();
 
-    pin_number kSerial_RX                       =   -1;
-    pin_number kSerial_TX                       =   -1;
+    pin_number kSerial_RX                       =  -1;
+    pin_number kSerial_TX                       =  -1;
 
-    pin_number kSerial0_RX                      =   -1;
-    pin_number kSerial0_TX                      =   -1;
+    pin_number kSerial0_RX                      =  -1;
+    pin_number kSerial0_TX                      =  -1;
 
     pin_number kI2C_SDAPinNumber                =  -1;
     pin_number kI2C_SCLPinNumber                =  -1;
@@ -97,8 +97,8 @@ namespace Motate {
 
     pin_number kSocket4_SPISlaveSelectPinNumber =  -1;
     pin_number kSocket4_InterruptPinNumber      =  -1;
-    pin_number kSocket4_StepPinNumber           =  3;
-    pin_number kSocket4_DirPinNumber            =  9;
+    pin_number kSocket4_StepPinNumber           =   3;
+    pin_number kSocket4_DirPinNumber            =   9;
     pin_number kSocket4_EnablePinNumber         =  -1;
     pin_number kSocket4_Microstep_0PinNumber    =  -1;
     pin_number kSocket4_Microstep_1PinNumber    =  -1;
@@ -107,7 +107,7 @@ namespace Motate {
 
     pin_number kSocket5_SPISlaveSelectPinNumber =  -1;
     pin_number kSocket5_InterruptPinNumber      =  -1;
-    pin_number kSocket5_StepPinNumber           =  4;
+    pin_number kSocket5_StepPinNumber           =   4;
     pin_number kSocket5_DirPinNumber            =  10;
     pin_number kSocket5_EnablePinNumber         =  -1;
     pin_number kSocket5_Microstep_0PinNumber    =  -1;
@@ -117,7 +117,7 @@ namespace Motate {
 
     pin_number kSocket6_SPISlaveSelectPinNumber =  -1;
     pin_number kSocket6_InterruptPinNumber      =  -1;
-    pin_number kSocket6_StepPinNumber           =  5;
+    pin_number kSocket6_StepPinNumber           =   5;
     pin_number kSocket6_DirPinNumber            =  11;
     pin_number kSocket6_EnablePinNumber         =  -1;
     pin_number kSocket6_Microstep_0PinNumber    =  -1;
@@ -153,7 +153,7 @@ namespace Motate {
     pin_number kInterlock_In                     =  -1;
 
     pin_number kLED_USBRXPinNumber               =  12;
-    pin_number kLED_USBTXPinNumber               =  13;
+    pin_number kLED_USBTXPinNumber               =  -1;
 
 	 //OUTPUTS
 
@@ -167,7 +167,8 @@ namespace Motate {
 	 pin_number kOutput_11                        =  39;
 	 pin_number kOutput_12                        =  40;
 
-	 pin_number kOutput_105                       =  41;  //LEDS
+	 pin_number kOutput_101                       =  13; //LEDS
+	 pin_number kOutput_105                       =  41;  
 	 pin_number kOutput_106                       =  42;
 	 pin_number kOutput_107                       =  43;
 	 pin_number kOutput_108                       =  44;

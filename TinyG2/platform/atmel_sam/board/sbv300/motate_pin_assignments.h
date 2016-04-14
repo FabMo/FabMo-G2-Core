@@ -58,7 +58,7 @@ namespace Motate {
 	
 	// LEDS
 	_MAKE_MOTATE_PIN(12, C, 'C', 9);	// USB RXLED (D2 BLUE)
-	_MAKE_MOTATE_PIN(13, B, 'B', 27);	// USB TXLED (D1 WHITE)
+//	_MAKE_MOTATE_PIN(13, B, 'B', 27);	// USB TXLED (D1 WHITE)
 	
 	//  SPINDLE OUTPUTS
 	_MAKE_MOTATE_PIN(14, A, 'A', 0);	// SPINDLE ENABLE (POUT1)
@@ -100,10 +100,12 @@ namespace Motate {
 	_MAKE_MOTATE_PIN(39, A, 'A', 5);
 	_MAKE_MOTATE_PIN(40, A, 'A', 1);
 
-	_MAKE_MOTATE_PIN(41, A, 'A', 21); //LEDS
+	_MAKE_MOTATE_PIN(13, B, 'B', 27); //LEDS
+	_MAKE_MOTATE_PIN(41, A, 'A', 21); 
 	_MAKE_MOTATE_PIN(42, C, 'C', 30);
 	_MAKE_MOTATE_PIN(43, A, 'A', 18);
 	_MAKE_MOTATE_PIN(44, A, 'A', 19);
+
 
 } // namespace Motate
 

@@ -72,6 +72,7 @@
 #define OUTPUT11_POLARITY       1
 #define OUTPUT12_POLARITY       1
 
+#define OUTPUT101_POLARITY      1
 #define OUTPUT105_POLARITY      1
 #define OUTPUT106_POLARITY      1
 #define OUTPUT107_POLARITY      1

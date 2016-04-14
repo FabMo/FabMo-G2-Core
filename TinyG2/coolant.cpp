@@ -65,6 +65,7 @@ void coolant_init()
     coolant.out11_enable = COOLANT_OFF;
     coolant.out12_enable = COOLANT_OFF;
 
+    coolant.out101_enable = COOLANT_OFF;
     coolant.out105_enable = COOLANT_OFF;
     coolant.out106_enable = COOLANT_OFF;
     coolant.out107_enable = COOLANT_OFF;
@@ -262,6 +263,14 @@ stat_t cm_out108_control(uint8_t out108_enable)
     return (STAT_OK);
 }
 
+stat_t cm_out101_control(uint8_t out101_enable)
+{
+    float value[] = { 0,0,0,0,(float)out101_enable,0 };
+    bool flags[] = { 0,0,0,0,1,0 };
+    mp_queue_command(_exec_led_control, value, flags);
+    return (STAT_OK);
+}
+
 
 #ifdef __ARM
     // NOTE: flood and mist coolants are mapped to the same pin - see hardware.h
@@ -296,6 +305,9 @@ stat_t cm_out108_control(uint8_t out108_enable)
 
     #define _set_out12_enable_bit_hi() out12_enable_pin.set()
     #define _set_out12_enable_bit_lo() out12_enable_pin.clear()
+
+    #define _set_out101_enable_bit_hi() out101_enable_pin.set()
+    #define _set_out101_enable_bit_lo() out101_enable_pin.clear()
 
     #define _set_out105_enable_bit_hi() out105_enable_pin.set()
     #define _set_out105_enable_bit_lo() out105_enable_pin.clear()
@@ -465,6 +477,15 @@ static void _exec_led_control(float *value, bool *flags){
         }
     }
 
+    if (flags[OUT101]) {
+        coolant.out101_enable = (cmCoolantEnable)value[OUT101];
+        if (!((coolant.out101_enable & 0x01) ^ coolant.out101_polarity)) {
+            _set_out101_enable_bit_hi();
+        } else {
+            _set_out101_enable_bit_lo();
+        }
+    }
+
 }
 
 /***********************************************************************************
@@ -507,17 +528,20 @@ const char fmt_out11[] PROGMEM = "OUTPUT 11:%5d [0=OFF,1=ON]\n";
 const char fmt_out12p[] PROGMEM = "[out12p] OUTPUT 12 polarity%6d [0=low is ON,1=high is ON]\n";
 const char fmt_out12[] PROGMEM = "OUTPUT 12:%5d [0=OFF,1=ON]\n";
 
-const char fmt_out105p[] PROGMEM = "[out105p] OUTPUT 105 polarity%6d [0=low is ON,1=high is ON]\n";
-const char fmt_out105[] PROGMEM = "OUTPUT 105:%5d [0=OFF,1=ON]\n";
+const char fmt_led1p[] PROGMEM = "[led1p] led 1 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_led1[] PROGMEM = "LED 1:%5d [0=OFF,1=ON]\n";
 
-const char fmt_out106p[] PROGMEM = "[out106p] OUTPUT 106 polarity%6d [0=low is ON,1=high is ON]\n";
-const char fmt_out106[] PROGMEM = "OUTPUT 106:%5d [0=OFF,1=ON]\n";
+const char fmt_led5p[] PROGMEM = "[led5p] led 5 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_led5[] PROGMEM = "OUTPUT 105:%5d [0=OFF,1=ON]\n";
 
-const char fmt_out107p[] PROGMEM = "[out107p] OUTPUT 107 polarity%6d [0=low is ON,1=high is ON]\n";
-const char fmt_out107[] PROGMEM = "OUTPUT 107:%5d [0=OFF,1=ON]\n";
+const char fmt_led6p[] PROGMEM = "[led6p] led 6 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_led6[] PROGMEM = "LED 6:%5d [0=OFF,1=ON]\n";
 
-const char fmt_out108p[] PROGMEM = "[out108p] OUTPUT 108 polarity%6d [0=low is ON,1=high is ON]\n";
-const char fmt_out108[] PROGMEM = "OUTPUT 108:%5d [0=OFF,1=ON]\n";
+const char fmt_led7p[] PROGMEM = "[led7p] led 7 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_led7[] PROGMEM = "LED 7:%5d [0=OFF,1=ON]\n";
+
+const char fmt_led8p[] PROGMEM = "[led8p] led 8 polarity%6d [0=low is ON,1=high is ON]\n";
+const char fmt_led8[] PROGMEM = "LED 8:%5d [0=OFF,1=ON]\n";
 
 void cm_print_coph(nvObj_t *nv) { text_print(nv, fmt_coph);}  // TYPE_INT
 void cm_print_comp(nvObj_t *nv) { text_print(nv, fmt_comp);}  // TYPE_INT
@@ -552,16 +576,19 @@ void cm_print_out11(nvObj_t *nv) { text_print(nv, fmt_out11);}
 void cm_print_out12p(nvObj_t *nv) { text_print(nv, fmt_out12p);}
 void cm_print_out12(nvObj_t *nv) { text_print(nv, fmt_out12);}
 
-void cm_print_out105p(nvObj_t *nv) { text_print(nv, fmt_out105p);}
-void cm_print_out105(nvObj_t *nv) { text_print(nv, fmt_out105);}
+void cm_print_out101p(nvObj_t *nv) { text_print(nv, fmt_led1p);}
+void cm_print_out101(nvObj_t *nv) { text_print(nv, fmt_led1);}
 
-void cm_print_out106p(nvObj_t *nv) { text_print(nv, fmt_out106p);}
-void cm_print_out106(nvObj_t *nv) { text_print(nv, fmt_out106);}
+void cm_print_out105p(nvObj_t *nv) { text_print(nv, fmt_led5p);}
+void cm_print_out105(nvObj_t *nv) { text_print(nv, fmt_led5);}
 
-void cm_print_out107p(nvObj_t *nv) { text_print(nv, fmt_out107p);}
-void cm_print_out107(nvObj_t *nv) { text_print(nv, fmt_out107);}
+void cm_print_out106p(nvObj_t *nv) { text_print(nv, fmt_led6p);}
+void cm_print_out106(nvObj_t *nv) { text_print(nv, fmt_led6);}
 
-void cm_print_out108p(nvObj_t *nv) { text_print(nv, fmt_out108p);}
-void cm_print_out108(nvObj_t *nv) { text_print(nv, fmt_out108);}
+void cm_print_out107p(nvObj_t *nv) { text_print(nv, fmt_led7p);}
+void cm_print_out107(nvObj_t *nv) { text_print(nv, fmt_led7);}
+
+void cm_print_out108p(nvObj_t *nv) { text_print(nv, fmt_led8p);}
+void cm_print_out108(nvObj_t *nv) { text_print(nv, fmt_led8);}
 
 #endif // __TEXT_MODE

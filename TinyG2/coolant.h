@@ -60,7 +60,8 @@ typedef enum {                      // used to index the value and flag vectors 
 	 OUT105 = 0,
 	 OUT106,
 	 OUT107,
-	 OUT108
+	 OUT108,
+	 OUT101
 } cmLEDIndex;
 
 
@@ -105,6 +106,9 @@ typedef struct cmCoolatSingleton {
 	cmCoolantEnable out12_enable;        // on (M62P'pin#'), off (M63P'pin#')
     cmCoolantPolarity out12_polarity;    // 0=active low, 1=active high
 
+	cmCoolantEnable out101_enable;        // on (M62P'pin#'), off (M63P'pin#')
+    cmCoolantPolarity out101_polarity;    // 0=active low, 1=active high
+
 	cmCoolantEnable out105_enable;        // on (M62P'pin#'), off (M63P'pin#')
     cmCoolantPolarity out105_polarity;    // 0=active low, 1=active high
 
@@ -141,6 +145,7 @@ stat_t cm_out10_control(uint8_t out10_enable);
 stat_t cm_out11_control(uint8_t out11_enable);
 stat_t cm_out12_control(uint8_t out12_enable);
 
+stat_t cm_out101_control(uint8_t out101_enable);
 stat_t cm_out105_control(uint8_t out105_enable);
 stat_t cm_out106_control(uint8_t out106_enable);
 stat_t cm_out107_control(uint8_t out107_enable);
@@ -186,6 +191,9 @@ void cm_coolant_resume(void);
 
     void cm_print_out12p(nvObj_t *nv); 
     void cm_print_out12(nvObj_t *nv);
+
+    void cm_print_out101p(nvObj_t *nv); 
+    void cm_print_out101(nvObj_t *nv);
 
     void cm_print_out105p(nvObj_t *nv); 
     void cm_print_out105(nvObj_t *nv);
@@ -234,6 +242,9 @@ void cm_coolant_resume(void);
 
     #define cm_print_out12p tx_print_stub
     #define cm_print_out12 tx_print_stub
+
+    #define cm_print_out101p tx_print_stub
+    #define cm_print_out101 tx_print_stub
 
     #define cm_print_out105p tx_print_stub
     #define cm_print_out105 tx_print_stub

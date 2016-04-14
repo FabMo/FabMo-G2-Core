@@ -419,6 +419,7 @@ typedef struct GCodeInput {				// Gcode model inputs - meaning depends on contex
     uint8_t out11;
     uint8_t out12;
 
+    uint8_t out101;
     uint8_t out105;
     uint8_t out106;
     uint8_t out107;
@@ -480,6 +481,7 @@ typedef struct GCodeFlags {             // Gcode model input flags
     bool out11;
     bool out12;
 
+    bool out101;
     bool out105;
     bool out106;
     bool out107;

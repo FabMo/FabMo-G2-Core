@@ -173,6 +173,7 @@ static OutputPin<kOutput_10> out10_enable_pin;
 static OutputPin<kOutput_11> out11_enable_pin;
 static OutputPin<kOutput_12> out12_enable_pin;
 
+static OutputPin<kOutput_101> out101_enable_pin;
 static OutputPin<kOutput_105> out105_enable_pin;
 static OutputPin<kOutput_106> out106_enable_pin;
 static OutputPin<kOutput_107> out107_enable_pin;

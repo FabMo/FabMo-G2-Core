@@ -437,6 +437,9 @@ static stat_t _parse_gcode_block(char *buf)
 			else if(pin==12){
 				SET_MODAL (MODAL_GROUP_M8, out12, true);
 			}
+			else if(pin==101){
+				SET_MODAL (MODAL_GROUP_M8, out101, true);
+			}
 			else if(pin==105){
 				SET_MODAL (MODAL_GROUP_M8, out105, true);
 			}
@@ -485,6 +488,9 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==12){
 				SET_MODAL (MODAL_GROUP_M8, out12, false);
+			}
+			else if(pin==101){
+				SET_MODAL (MODAL_GROUP_M8, out101, false);
 			}
 			else if(pin==105){
 				SET_MODAL (MODAL_GROUP_M8, out105, false);
@@ -584,6 +590,7 @@ static stat_t _execute_gcode_block()
 	EXEC_FUNC(cm_out11_control, out11); 
 	EXEC_FUNC(cm_out12_control, out12);  
 
+	EXEC_FUNC(cm_out101_control, out101); //leds
 	EXEC_FUNC(cm_out105_control, out105);
 	EXEC_FUNC(cm_out106_control, out106);
 	EXEC_FUNC(cm_out107_control, out107);
