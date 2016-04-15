@@ -111,7 +111,7 @@ void cm_coolant_optional_pause(bool option)
 
 void cm_coolant_resume()
 {
-//    float value[] = { 1,1,0,0,0,0 };  // ++++ Will this work? No need to set 'value' below
+//  float value[] = { 1,1,0,0,0,0 };  // ++++ Will this work? No need to set 'value' below
     float value[] = { 0,0,0,0,0,0 };
     bool flags[] = { 0,0,0,0,0,0 };
 
@@ -278,6 +278,7 @@ stat_t cm_out101_control(uint8_t out101_enable)
     // NOTE: flood and mist coolants are mapped to the same pin - see hardware.h
     #define _set_flood_enable_bit_hi() flood_enable_pin.set()
     #define _set_flood_enable_bit_lo() flood_enable_pin.clear()
+
     #define _set_mist_enable_bit_hi() mist_enable_pin.set()
     #define _set_mist_enable_bit_lo() mist_enable_pin.clear()
 	 //outputs

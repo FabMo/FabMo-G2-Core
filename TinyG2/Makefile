@@ -103,7 +103,7 @@ CFLAGS += -Wunreachable-code
 
 
 # Turn off printf() format strings. We use late bound FLASH and RAM format strings and this causes warnings
-CFLAGS += -Wno-format-nonliteral -Wno-format-security
+#CFLAGS += -Wno-format-nonliteral -Wno-format-security
 
 # To reduce application size use only integer printf function.
 #CFLAGS += -Dprintf=iprintf

@@ -25,6 +25,7 @@
  */
     #define _set_flood_enable_bit_hi() flood_enable_pin.set()
     #define _set_flood_enable_bit_lo() flood_enable_pin.clear()
+
     #define _set_mist_enable_bit_hi() mist_enable_pin.set()
     #define _set_mist_enable_bit_lo() mist_enable_pin.clear()
 	 //outputs

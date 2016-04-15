@@ -367,8 +367,8 @@ static stat_t _parse_gcode_block(char *buf)
 						SET_MODAL (MODAL_GROUP_M4, program_flow, PROGRAM_STOP);
 				case 2: case 30:
 						SET_MODAL (MODAL_GROUP_M4, program_flow, PROGRAM_END);
-				case 3: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CW);
-				case 4: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CCW);
+				case 3: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CW); //m62/63 m64/65 p4 spindle allow on/off
+				case 4: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_CW);  
 				case 5: SET_MODAL (MODAL_GROUP_M7, spindle_control, SPINDLE_CONTROL_OFF);
 				case 6: SET_NON_MODAL (tool_change, true);
 				//case 7: SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
@@ -417,7 +417,12 @@ static stat_t _parse_gcode_block(char *buf)
 			int pin = int(cm.gn.parameter + 0.5); 			// M62 - set pin #
 			if(pin == 13){
 				if(immediate==true){
-				   _set_mist_enable_bit_hi();
+					if(coolant.mist_polarity==0){
+				   	_set_mist_enable_bit_lo();
+					}
+					else{
+					   _set_mist_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 				   SET_MODAL (MODAL_GROUP_M8, mist_coolant, true);
@@ -425,7 +430,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==14){
 				if(immediate==true){
-				   _set_flood_enable_bit_hi();
+					if(coolant.flood_polarity==0){
+				   	_set_flood_enable_bit_lo();
+					}
+					else{
+					   _set_flood_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, flood_coolant, true);
@@ -433,7 +443,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==3){
 				if(immediate==true){
-				   _set_out3_enable_bit_hi();
+					if(coolant.out3_polarity==0){
+				   	_set_out3_enable_bit_lo();
+					}
+					else{
+					   _set_out3_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out3, true);
@@ -441,7 +456,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==4){
 				if(immediate==true){
-				   _set_out4_enable_bit_hi();
+					if(coolant.out4_polarity==0){
+				   	_set_out4_enable_bit_lo();
+					}
+					else{
+					   _set_out4_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out4, true);  //spindle allow
@@ -449,7 +469,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==5){
 				if(immediate==true){
-				   _set_out5_enable_bit_hi();
+					if(coolant.out5_polarity==0){
+				   	_set_out5_enable_bit_lo();
+					}
+					else{
+					   _set_out5_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out5, true);
@@ -457,7 +482,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==6){
 				if(immediate==true){
-				   _set_out6_enable_bit_hi();
+					if(coolant.out6_polarity==0){
+				   	_set_out6_enable_bit_lo();
+					}
+					else{
+					   _set_out6_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out6, true);
@@ -465,7 +495,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==7){
 				if(immediate==true){
-				   _set_out7_enable_bit_hi();
+					if(coolant.out7_polarity==0){
+				   	_set_out7_enable_bit_lo();
+					}
+					else{
+					   _set_out7_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out7, true);
@@ -473,7 +508,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==8){
 				if(immediate==true){
-				   _set_out8_enable_bit_hi();
+					if(coolant.out8_polarity==0){
+				   	_set_out8_enable_bit_lo();
+					}
+					else{
+					   _set_out8_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out8, true);
@@ -481,7 +521,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==10){
 				if(immediate==true){
-				   _set_out10_enable_bit_hi();
+					if(coolant.out10_polarity==0){
+				   	_set_out10_enable_bit_lo();
+					}
+					else{
+					   _set_out10_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out10, true);
@@ -489,7 +534,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==11){
 				if(immediate==true){
-				   _set_out11_enable_bit_hi();
+					if(coolant.out11_polarity==0){
+				   	_set_out11_enable_bit_lo();
+					}
+					else{
+					   _set_out11_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 				SET_MODAL (MODAL_GROUP_M8, out11, true);
@@ -497,7 +547,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==12){
 				if(immediate==true){
-				   _set_out12_enable_bit_hi();
+					if(coolant.out12_polarity==0){
+				   	_set_out12_enable_bit_lo();
+					}
+					else{
+					   _set_out12_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out12, true);
@@ -505,7 +560,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==101){
 				if(immediate==true){
-				   _set_out101_enable_bit_hi();
+					if(coolant.out101_polarity==0){
+				   	_set_out101_enable_bit_lo();
+					}
+					else{
+				   	_set_out101_enable_bit_hi();
+					}					
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out101, true);
@@ -513,7 +573,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==105){
 				if(immediate==true){
-				   _set_out105_enable_bit_hi();
+					if(coolant.out105_polarity==0){
+				   	_set_out105_enable_bit_lo();
+					}
+					else{
+					   _set_out105_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out105, true);
@@ -521,7 +586,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==106){
 				if(immediate==true){
-				   _set_out106_enable_bit_hi();
+					if(coolant.out106_polarity==0){
+				   	_set_out106_enable_bit_lo();
+					}
+					else{
+					   _set_out106_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out106, true);
@@ -529,7 +599,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==107){
 				if(immediate==true){
-				   _set_out107_enable_bit_hi();
+					if(coolant.out107_polarity==0){
+				   	_set_out107_enable_bit_lo();
+					}
+					else{
+					   _set_out107_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out107, true);
@@ -537,7 +612,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==108){
 				if(immediate==true){
-				   _set_out108_enable_bit_hi();
+					if(coolant.out108_polarity==0){
+				   	_set_out108_enable_bit_lo();
+					}
+					else{
+					   _set_out108_enable_bit_hi();
+					}
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out108, true);
@@ -549,7 +629,12 @@ static stat_t _parse_gcode_block(char *buf)
 			int pin = int(cm.gn.parameter + 0.5); 			// M62 - set pin #
 			if(pin == 13){
 				if(immediate==true){
-				   _set_mist_enable_bit_lo();
+					if(coolant.mist_polarity==0){
+				   	_set_mist_enable_bit_hi();
+					}
+					else{
+					   _set_mist_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 				   SET_MODAL (MODAL_GROUP_M8, mist_coolant, false);
@@ -557,7 +642,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==14){
 				if(immediate==true){
-				   _set_flood_enable_bit_lo();
+					if(coolant.flood_polarity==0){
+				   	_set_flood_enable_bit_hi();
+					}
+					else{
+						_set_flood_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, flood_coolant, false);
@@ -565,7 +655,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==3){
 				if(immediate==true){
-				   _set_out3_enable_bit_lo();
+					if(coolant.out3_polarity==0){
+				   	_set_out3_enable_bit_hi();
+					}
+					else{
+				   	_set_out3_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out3, false);
@@ -573,7 +668,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==4){
 				if(immediate==true){
-				   _set_out4_enable_bit_lo();
+					if(coolant.out4_polarity==0){
+				   	_set_out4_enable_bit_hi();
+					}
+					else{
+				   	_set_out4_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out4, false);
@@ -581,7 +681,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==5){
 				if(immediate==true){
-				   _set_out5_enable_bit_lo();
+					if(coolant.out5_polarity==0){
+				   	_set_out5_enable_bit_hi();
+					}
+					else{
+				   	_set_out5_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out5, false);
@@ -589,7 +694,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==6){
 				if(immediate==true){
-				   _set_out6_enable_bit_lo();
+					if(coolant.out6_polarity==0){
+				   	_set_out6_enable_bit_hi();
+					}
+					else{
+				   	_set_out6_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out6, false);
@@ -597,7 +707,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==7){
 				if(immediate==true){
-				   _set_out7_enable_bit_lo();
+					if(coolant.out7_polarity==0){
+				   	_set_out7_enable_bit_hi();
+					}
+					else{
+				   	_set_out7_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out7, false);
@@ -605,7 +720,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==8){
 				if(immediate==true){
-				   _set_out8_enable_bit_lo();
+					if(coolant.out8_polarity==0){
+				   	_set_out8_enable_bit_hi();
+					}
+					else{
+				   	_set_out8_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out8, false);
@@ -613,7 +733,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==10){
 				if(immediate==true){
-				   _set_out10_enable_bit_lo();
+					if(coolant.out10_polarity==0){
+				   	_set_out10_enable_bit_hi();
+					}
+					else{
+				   	_set_out10_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out10, false);
@@ -621,7 +746,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==11){
 				if(immediate==true){
-				   _set_out11_enable_bit_lo();
+					if(coolant.out11_polarity==0){
+				   	_set_out11_enable_bit_hi();
+					}
+					else{
+				   	_set_out11_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out11, false);
@@ -629,7 +759,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==12){
 				if(immediate==true){
-				   _set_out12_enable_bit_lo();
+					if(coolant.out12_polarity==0){
+				   	_set_out12_enable_bit_hi();
+					}
+					else{
+				   	_set_out12_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out12, false);
@@ -637,7 +772,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==101){
 				if(immediate==true){
-				   _set_out101_enable_bit_lo();
+					if(coolant.out101_polarity==0){
+				   	_set_out101_enable_bit_hi();
+					}
+					else{
+				   	_set_out101_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out101, false);
@@ -645,7 +785,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==105){
 				if(immediate==true){
-				   _set_out105_enable_bit_lo();
+					if(coolant.out105_polarity==0){
+				   	_set_out105_enable_bit_hi();
+					}
+					else{
+					   _set_out105_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out105, false);
@@ -653,7 +798,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==106){
 				if(immediate==true){
-				   _set_out106_enable_bit_lo();
+					if(coolant.out106_polarity==0){
+				   	_set_out106_enable_bit_hi();
+					}
+					else{
+					   _set_out106_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out106, false);
@@ -661,7 +811,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==107){
 				if(immediate==true){
-				   _set_out107_enable_bit_lo();
+					if(coolant.out107_polarity==0){
+				   	_set_out107_enable_bit_hi();
+					}
+					else{
+					   _set_out107_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out107, false);
@@ -669,7 +824,12 @@ static stat_t _parse_gcode_block(char *buf)
 			}
 			else if(pin==108){
 				if(immediate==true){
-				   _set_out108_enable_bit_lo();
+					if(coolant.out108_polarity==0){
+				   	_set_out108_enable_bit_hi();
+					}
+					else{
+					   _set_out108_enable_bit_lo();
+					}	
 				}
 				else if(immediate==false){
 					SET_MODAL (MODAL_GROUP_M8, out108, false);
