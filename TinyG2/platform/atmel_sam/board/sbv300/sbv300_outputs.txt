@@ -20,8 +20,8 @@ D8				 LED8			 PA19		<kOutput_108>							 (M62p108: on, M63p108: off)
 POUT13		 J6-pin8     PA15    <kCoolantFlood_EnablePinNumber>   (M62p13: on, M63p13: off)  
 POUT14		 J6-pin9     PA14    <kCoolantMist_EnablePinNumber>    (M62p14: on, M63p14: off)
 
-PPWM0		 	 J6-pin11    PA12    <kSpindle_PwmPinNumber> 	       (M3 or M4: bldc esc on, M5: off, S: rpm)
-PPWM1		 	 J6-pin12    PA13    <kSpindle_Pwm2PinNumber> 		    (not used)
+PPWM0		 	 J6-pin11    PA12    <kSpindle_Pwm2PinNumber> 	       (not used)
+PPWM1		 	 J6-pin12    PA13    <kSpindle_PwmPinNumber> 		    (M3 or M4: bldc esc on, M5: off, S: rpm)
 
 
 

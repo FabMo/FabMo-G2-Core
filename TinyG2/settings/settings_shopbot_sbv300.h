@@ -343,9 +343,9 @@
 
 #define P1_PWM_FREQUENCY		    100					// in Hz
 #define P1_CW_SPEED_LO			    6000				// in RPM (arbitrary units)
-#define P1_CW_SPEED_HI			    20000
-#define P1_CW_PHASE_LO			    0.106				// phase [0..1]
-#define P1_CW_PHASE_HI			    0.17
+#define P1_CW_SPEED_HI			    18000
+#define P1_CW_PHASE_LO			    0.103				// phase [0..1]
+#define P1_CW_PHASE_HI			    0.16
 #define P1_CCW_SPEED_LO			    0
 #define P1_CCW_SPEED_HI			    0
 #define P1_CCW_PHASE_LO			    0.1
