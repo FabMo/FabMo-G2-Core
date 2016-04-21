@@ -82,11 +82,11 @@ namespace Motate {
    _MAKE_MOTATE_PIN(28, A, 'A', 15); //coolant  flood
    _MAKE_MOTATE_PIN(29, A, 'A', 14);	//coolant mist
       
-   _MAKE_MOTATE_PIN(30, A, 'A', 12);	// PWM1
-   _MAKE_MOTATE_PWM_PIN(30, Motate::PWMTimer<1>, /*Channel:*/ A, /*Peripheral:*/ B, /*Inverted:*/ false); 
+   _MAKE_MOTATE_PIN(30, A, 'A', 13);	// 
+   _MAKE_MOTATE_PWM_PIN(30, Motate::PWMTimer<2>, /*Channel:*/ A, /*Peripheral:*/ B, /*Inverted:*/ true); 
    
-   _MAKE_MOTATE_PIN(31, A, 'A', 13);	// PWM0
-   _MAKE_MOTATE_PWM_PIN(31, Motate::PWMTimer<2>, /*Channel:*/ A, /*Peripheral:*/ B, /*Inverted:*/ true);
+   _MAKE_MOTATE_PIN(31, A, 'A', 12);	// 
+   _MAKE_MOTATE_PWM_PIN(31, Motate::PWMTimer<1>, /*Channel:*/ A, /*Peripheral:*/ B, /*Inverted:*/ false);
 
 	// OUTPUTS
 

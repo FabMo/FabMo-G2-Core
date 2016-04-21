@@ -65,11 +65,15 @@ void coolant_init()
     coolant.out11_enable = COOLANT_OFF;
     coolant.out12_enable = COOLANT_OFF;
 
-    coolant.out101_enable = COOLANT_OFF;
+    coolant.out101_enable = COOLANT_ON;	//led1 on
+	 _set_out101_enable_bit_hi();
+
     coolant.out105_enable = COOLANT_OFF;
     coolant.out106_enable = COOLANT_OFF;
     coolant.out107_enable = COOLANT_OFF;
     coolant.out108_enable = COOLANT_OFF;
+
+
 }
 
 void coolant_reset()
@@ -89,6 +93,8 @@ void cm_coolant_off_immediate()
     float value[] = { 0,0,0,0,0,0 };
     bool flags[] = { 1,1,0,0,0,0 };
     _exec_coolant_control(value, flags);
+
+
 }
 
 void cm_coolant_optional_pause(bool option)

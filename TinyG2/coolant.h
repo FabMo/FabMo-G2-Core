@@ -28,6 +28,9 @@
 #ifndef COOLANT_H_ONCE
 #define COOLANT_H_ONCE
 
+#define _set_out101_enable_bit_hi() out101_enable_pin.set()
+#define _set_out101_enable_bit_lo() out101_enable_pin.clear()
+
 typedef enum {
     COOLANT_OFF = 0,                // don't change the order. It gets masked.
     COOLANT_ON,
