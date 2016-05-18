@@ -1230,6 +1230,30 @@ stat_t st_set_mi(nvObj_t *nv)			// motor microsteps
 	return (STAT_OK);
 }
 
+stat_t st_set_su(nvObj_t *nv)			// motor steps per unit (direct)
+{
+	uint8_t m = _get_motor(nv->index);
+	// Do the unit conversion here (rather than using set_flu) because it's a reciprocal value
+	if (cm_get_units_mode(MODEL) == INCHES) {	
+		nv->value *= INCHES_PER_MM;				
+	}
+	if(nv->value <= 0) {
+		// Don't set a zero or negative value - just calculate based on sa,tr,mi
+		// This way, if we set the STEPS_PER_UNIT to default to 0, it is unused and we get the computed value
+		_set_motor_steps_per_unit(nv);
+		return(STAT_OK);
+	}
+
+	set_flt(nv);
+	st_cfg.mot[m].units_per_step = 1.0/st_cfg.mot[m].steps_per_unit;
+
+	// Scale TR so all the other values make sense
+	// You could scale any one of the other values, but TR makes the most sense?
+	st_cfg.mot[m].travel_rev = (360.0*st_cfg.mot[m].microsteps)/(st_cfg.mot[m].steps_per_unit*st_cfg.mot[m].step_angle);
+
+	return(STAT_OK);
+}
+
 stat_t st_set_pm(nvObj_t *nv)			// motor power mode
 {
 	if (nv->value >= MOTOR_POWER_MODE_MAX_VALUE) return (STAT_INPUT_VALUE_UNSUPPORTED);
@@ -1318,6 +1342,7 @@ static const char fmt_mt[] PROGMEM = "[mt]  motor idle timeout%14.2f seconds\n";
 static const char fmt_0ma[] PROGMEM = "[%s%s] m%s map to axis%15d [0=X,1=Y,2=Z...]\n";
 static const char fmt_0sa[] PROGMEM = "[%s%s] m%s step angle%20.3f%s\n";
 static const char fmt_0tr[] PROGMEM = "[%s%s] m%s travel per revolution%10.4f%s\n";
+static const char fmt_0su[] PROGMEM = "[%s%s] m%s %10.4f steps/%s\n";
 static const char fmt_0po[] PROGMEM = "[%s%s] m%s polarity%18d [0=normal,1=reverse]\n";
 static const char fmt_0pm[] PROGMEM = "[%s%s] m%s power management%10d [0=disabled,1=always on,2=in cycle,3=when moving]\n";
 static const char fmt_0pl[] PROGMEM = "[%s%s] m%s motor power level%13.3f [0.000=minimum, 1.000=maximum]\n";
@@ -1349,6 +1374,7 @@ static void _print_motor_flt_units(nvObj_t *nv, const char *format, uint8_t unit
 void st_print_ma(nvObj_t *nv) { _print_motor_int(nv, fmt_0ma);}
 void st_print_sa(nvObj_t *nv) { _print_motor_flt_units(nv, fmt_0sa, DEGREE_INDEX);}
 void st_print_tr(nvObj_t *nv) { _print_motor_flt_units(nv, fmt_0tr, cm_get_units_mode(MODEL));}
+void st_print_su(nvObj_t *nv) { _print_motor_flt_units(nv, fmt_0su, cm_get_units_mode(MODEL));}
 void st_print_mi(nvObj_t *nv) { _print_motor_int(nv, fmt_0mi);}
 void st_print_po(nvObj_t *nv) { _print_motor_int(nv, fmt_0po);}
 void st_print_pm(nvObj_t *nv) { _print_motor_int(nv, fmt_0pm);}

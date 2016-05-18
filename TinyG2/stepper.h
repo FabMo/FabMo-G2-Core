@@ -459,6 +459,7 @@ stat_t st_set_pl(nvObj_t *nv);
 stat_t st_set_mt(nvObj_t *nv);
 stat_t st_set_md(nvObj_t *nv);
 stat_t st_set_me(nvObj_t *nv);
+stat_t st_set_su(nvObj_t *nv);
 
 #ifdef __TEXT_MODE
 
@@ -466,6 +467,7 @@ stat_t st_set_me(nvObj_t *nv);
 	void st_print_sa(nvObj_t *nv);
 	void st_print_tr(nvObj_t *nv);
 	void st_print_mi(nvObj_t *nv);
+	void st_print_su(nvObj_t *nv);
 	void st_print_po(nvObj_t *nv);
 	void st_print_pm(nvObj_t *nv);
 	void st_print_pl(nvObj_t *nv);

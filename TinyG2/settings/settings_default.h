@@ -101,6 +101,7 @@
 #define M1_POLARITY                 0                       // 1po  0=normal, 1=reversed
 #define M1_POWER_MODE               MOTOR_POWER_MODE        // 1pm
 #define M1_POWER_LEVEL              MOTOR_POWER_LEVEL       // 1pl
+#define M1_STEPS_PER_UNIT           0
 
 #define M2_MOTOR_MAP                AXIS_Y
 #define M2_STEP_ANGLE               1.8
@@ -109,6 +110,7 @@
 #define M2_POLARITY                 0
 #define M2_POWER_MODE               MOTOR_POWER_MODE
 #define M2_POWER_LEVEL              MOTOR_POWER_LEVEL
+#define M2_STEPS_PER_UNIT           0
 
 #define M3_MOTOR_MAP                AXIS_Z
 #define M3_STEP_ANGLE               1.8
@@ -117,6 +119,7 @@
 #define M3_POLARITY                 0
 #define M3_POWER_MODE               MOTOR_POWER_MODE
 #define M3_POWER_LEVEL              MOTOR_POWER_LEVEL
+#define M3_STEPS_PER_UNIT           0
 
 #define M4_MOTOR_MAP                AXIS_A				// 1ma
 #define M4_STEP_ANGLE               1.8					// 1sa
@@ -125,6 +128,7 @@
 #define M4_POLARITY                 0					// 1po
 #define M4_POWER_MODE               MOTOR_POWER_MODE	// 1pm
 #define M4_POWER_LEVEL              MOTOR_POWER_LEVEL	// 1mp
+#define M4_STEPS_PER_UNIT           0
 
 #define M5_MOTOR_MAP                AXIS_B
 #define M5_STEP_ANGLE               1.8
@@ -133,6 +137,7 @@
 #define M5_POLARITY                 0
 #define M5_POWER_MODE               MOTOR_POWER_MODE
 #define M5_POWER_LEVEL              MOTOR_POWER_LEVEL
+#define M5_STEPS_PER_UNIT           0
 
 #define M6_MOTOR_MAP                AXIS_C
 #define M6_STEP_ANGLE               1.8
@@ -141,6 +146,7 @@
 #define M6_POLARITY                 0
 #define M6_POWER_MODE               MOTOR_POWER_MODE
 #define M6_POWER_LEVEL              MOTOR_POWER_LEVEL
+#define M6_STEPS_PER_UNIT           0
 
 // *** axis settings ***
 

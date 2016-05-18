@@ -101,6 +101,7 @@
 #define M1_POLARITY		    		0					// 1po		0=normal, 1=reversed
 #define M1_POWER_MODE		    	MOTOR_POWER_MODE	// 1pm		TRUE=low power idle enabled
 #define M1_POWER_LEVEL		    	MOTOR_POWER_LEVEL	// 1pl		Irrelevant to Shopbot sbv300
+#define M1_STEPS_PER_UNIT           0
 
 #define M2_MOTOR_MAP		    	AXIS_Y
 #define M2_STEP_ANGLE		    	1.8
@@ -109,6 +110,7 @@
 #define M2_POLARITY			    	0
 #define M2_POWER_MODE		    	MOTOR_POWER_MODE
 #define M2_POWER_LEVEL		    	MOTOR_POWER_LEVEL
+#define M2_STEPS_PER_UNIT           0
 
 #define M3_MOTOR_MAP		    	AXIS_Z
 #define M3_STEP_ANGLE		    	1.8
@@ -117,6 +119,7 @@
 #define M3_POLARITY			    	0
 #define M3_POWER_MODE		    	MOTOR_POWER_MODE
 #define M3_POWER_LEVEL		    	MOTOR_POWER_LEVEL
+#define M3_STEPS_PER_UNIT           0
 
 #define M4_MOTOR_MAP			    AXIS_A
 #define M4_STEP_ANGLE		    	1.8
@@ -125,6 +128,7 @@
 #define M4_POLARITY			    	0
 #define M4_POWER_MODE		    	MOTOR_POWER_MODE
 #define M4_POWER_LEVEL		    	MOTOR_POWER_LEVEL
+#define M4_STEPS_PER_UNIT           0
 
 #if (MOTORS >= 5)
 #define M5_MOTOR_MAP	    		AXIS_B
@@ -134,6 +138,7 @@
 #define M5_POLARITY		    		0
 #define M5_POWER_MODE	    		MOTOR_POWER_MODE
 #define M5_POWER_LEVEL	    		MOTOR_POWER_LEVEL
+#define M5_STEPS_PER_UNIT           0
 
 #define M6_MOTOR_MAP		    	AXIS_C
 #define M6_STEP_ANGLE		    	1.8
@@ -142,6 +147,7 @@
 #define M6_POLARITY			    	0
 #define M6_POWER_MODE		    	MOTOR_POWER_MODE
 #define M6_POWER_LEVEL		    	MOTOR_POWER_LEVEL
+#define M6_STEPS_PER_UNIT           0
 #endif
 
 #define MANUAL_FEEDRATE_OVERRIDE_ENABLE     false
@@ -164,8 +170,6 @@
 #define X_LATCH_VELOCITY	    	(30 * 25.4)				// xlv	mm/min
 #define X_LATCH_BACKOFF		    	(0.125 * 25.4)			// xlb	mm
 #define X_ZERO_BACKOFF		    	(0.375 * 25.4)			// xzb	mm
-#define X_HOMING_INPUT				0
-#define X_HOMING_DIR				0
 
 #define Y_AXIS_MODE			    	AXIS_STANDARD
 #define Y_VELOCITY_MAX		    	(360 * 25.4)
@@ -181,8 +185,6 @@
 #define Y_LATCH_VELOCITY	    	(30 * 25.4)
 #define Y_LATCH_BACKOFF		    	(0.125 * 25.4)
 #define Y_ZERO_BACKOFF		    	(0.375 * 25.4)
-#define Y_HOMING_INPUT				0
-#define Y_HOMING_DIR				0
 
 
 #define Z_AXIS_MODE			       	AXIS_STANDARD
@@ -199,8 +201,6 @@
 #define Z_LATCH_VELOCITY	    	(30 * 25.4)
 #define Z_LATCH_BACKOFF		    	(0.125 * 25.4)
 #define Z_ZERO_BACKOFF		    	(0.375 * 25.4)
-#define Z_HOMING_INPUT				0
-#define Z_HOMING_DIR				0
 
 
 #define A_AXIS_MODE			    	AXIS_STANDARD
@@ -218,8 +218,6 @@
 #define A_LATCH_VELOCITY	    	(30 * 25.4)
 #define A_LATCH_BACKOFF		    	(0.125 * 25.4)
 #define A_ZERO_BACKOFF		    	(0.375 * 25.4)
-#define A_HOMING_INPUT				0
-#define A_HOMING_DIR				0
 
 #define B_AXIS_MODE			    	AXIS_DISABLED
 #define B_VELOCITY_MAX		    	(360 * 25.4)
@@ -236,8 +234,6 @@
 #define B_LATCH_VELOCITY	    	(30 * 25.4)
 #define B_LATCH_BACKOFF		    	(0.125 * 25.4)
 #define B_ZERO_BACKOFF		    	(0.375 * 25.4)
-#define B_HOMING_INPUT				0
-#define B_HOMING_DIR				0
 
 
 #define C_AXIS_MODE			    	AXIS_DISABLED
@@ -255,8 +251,6 @@
 #define C_LATCH_VELOCITY	    	(30 * 25.4)
 #define C_LATCH_BACKOFF		    	(0.125 * 25.4)
 #define C_ZERO_BACKOFF		    	(0.375 * 25.4)
-#define C_HOMING_INPUT				0
-#define C_HOMING_DIR				0
 
 //*** Input / output settings ***
 
