@@ -216,7 +216,7 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "4","4sa",_fip, 3, st_print_sa, get_flt, st_set_sa, (float *)&st_cfg.mot[MOTOR_4].step_angle,	M4_STEP_ANGLE },
 	{ "4","4tr",_fipc,4, st_print_tr, get_flt, st_set_tr, (float *)&st_cfg.mot[MOTOR_4].travel_rev,	M4_TRAVEL_PER_REV },
 	{ "4","4mi",_fip, 0, st_print_mi, get_ui8, st_set_mi, (float *)&st_cfg.mot[MOTOR_4].microsteps,	M4_MICROSTEPS },
-	{ "4","4su",_fipi, 5, st_print_su, get_flt, st_set_su, (float *)&st_cfg.mot[MOTOR_4].steps_per_unit,	M3_STEPS_PER_UNIT },
+	{ "4","4su",_fip, 5, st_print_su, get_flt, st_set_su, (float *)&st_cfg.mot[MOTOR_4].steps_per_unit,	M3_STEPS_PER_UNIT },
 	{ "4","4po",_fip, 0, st_print_po, get_ui8, set_01,    (float *)&st_cfg.mot[MOTOR_4].polarity,	M4_POLARITY },
 	{ "4","4pm",_fip, 0, st_print_pm, get_ui8, st_set_pm, (float *)&st_cfg.mot[MOTOR_4].power_mode,	M4_POWER_MODE },
 #ifdef __ARM
@@ -228,7 +228,7 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "5","5sa",_fip, 3, st_print_sa, get_flt, st_set_sa, (float *)&st_cfg.mot[MOTOR_5].step_angle,	M5_STEP_ANGLE },
 	{ "5","5tr",_fipc,4, st_print_tr, get_flt, st_set_tr, (float *)&st_cfg.mot[MOTOR_5].travel_rev,	M5_TRAVEL_PER_REV },
 	{ "5","5mi",_fip, 0, st_print_mi, get_ui8, st_set_mi, (float *)&st_cfg.mot[MOTOR_5].microsteps,	M5_MICROSTEPS },
-	{ "5","5su",_fipi ,5, st_print_su, get_flt, st_set_su, (float *)&st_cfg.mot[MOTOR_5].steps_per_unit,	M5_STEPS_PER_UNIT },	
+	{ "5","5su",_fip ,5, st_print_su, get_flt, st_set_su, (float *)&st_cfg.mot[MOTOR_5].steps_per_unit,	M5_STEPS_PER_UNIT },	
 	{ "5","5po",_fip, 0, st_print_po, get_ui8, set_01,    (float *)&st_cfg.mot[MOTOR_5].polarity,	M5_POLARITY },
 	{ "5","5pm",_fip, 0, st_print_pm, get_ui8, st_set_pm, (float *)&st_cfg.mot[MOTOR_5].power_mode,	M5_POWER_MODE },
 #ifdef __ARM
@@ -240,7 +240,7 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "6","6sa",_fip, 3, st_print_sa, get_flt, st_set_sa, (float *)&st_cfg.mot[MOTOR_6].step_angle,	M6_STEP_ANGLE },
 	{ "6","6tr",_fipc,4, st_print_tr, get_flt, st_set_tr, (float *)&st_cfg.mot[MOTOR_6].travel_rev,	M6_TRAVEL_PER_REV },
 	{ "6","6mi",_fip, 0, st_print_mi, get_ui8, st_set_mi, (float *)&st_cfg.mot[MOTOR_6].microsteps,	M6_MICROSTEPS },
-	{ "6","6su",_fipi ,5, st_print_su, get_flt, st_set_su, (float *)&st_cfg.mot[MOTOR_6].steps_per_unit,	M6_STEPS_PER_UNIT },	
+	{ "6","6su",_fip ,5, st_print_su, get_flt, st_set_su, (float *)&st_cfg.mot[MOTOR_6].steps_per_unit,	M6_STEPS_PER_UNIT },	
 	{ "6","6po",_fip, 0, st_print_po, get_ui8, set_01,    (float *)&st_cfg.mot[MOTOR_6].polarity,	M6_POLARITY },
 	{ "6","6pm",_fip, 0, st_print_pm, get_ui8, st_set_pm, (float *)&st_cfg.mot[MOTOR_6].power_mode,	M6_POWER_MODE },
 #ifdef __ARM
