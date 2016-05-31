@@ -1234,7 +1234,7 @@ stat_t st_set_su(nvObj_t *nv)			// motor steps per unit (direct)
 {
 	uint8_t m = _get_motor(nv->index);
 	// Do the unit conversion here (rather than using set_flu) because it's a reciprocal value
-	if ((m >= 3) && (cm_get_units_mode(MODEL) == INCHES)) {	
+	if ((m <= 3) && (cm_get_units_mode(MODEL) == INCHES)) {	
 		nv->value *= INCHES_PER_MM;				
 	}
 	if(nv->value <= 0) {
