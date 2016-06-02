@@ -141,13 +141,14 @@ namespace Motate {
     pin_number kInput4_PinNumber              =  19;
     pin_number kInput5_PinNumber              =  20;
     pin_number kInput6_PinNumber              =  21;
-
     pin_number kInput7_PinNumber              =  22;
     pin_number kInput8_PinNumber              =  23;
     pin_number kInput9_PinNumber              =  24;
     pin_number kInput10_PinNumber              =  25;
     pin_number kInput11_PinNumber              =  26;
     pin_number kInput12_PinNumber              =  27;
+
+    pin_number kOutput1_PinNumber              = 28;
 
     pin_number kSD_CardDetect                   =  -1;
     pin_number kInterlock_In                    =  -1;

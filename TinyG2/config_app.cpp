@@ -39,7 +39,7 @@
 #include "stepper.h"
 #include "gpio.h"
 #include "spindle.h"
-#include "temperature.h"
+//#include "temperature.h"
 #include "coolant.h"
 #include "pwm.h"
 #include "report.h"
@@ -267,8 +267,8 @@ const cfgItem_t cfgArray[] PROGMEM = {
 #endif
 	// Axis parameters
 	{ "x","xam",_fip,  0, cm_print_am, cm_get_am, cm_set_am, (float *)&cm.a[AXIS_X].axis_mode,		X_AXIS_MODE },
-	{ "x","xvm",_fipc, 0, cm_print_vm, get_flt,   cm_set_vm, (float *)&cm.a[AXIS_X].velocity_max,	X_VELOCITY_MAX },
-	{ "x","xfr",_fipc, 0, cm_print_fr, get_flt,   cm_set_fr, (float *)&cm.a[AXIS_X].feedrate_max,	X_FEEDRATE_MAX },
+	{ "x","xvm",_fipc, 0, cm_print_vm, get_flt,   set_flu /*cm_set_vm*/, (float *)&cm.a[AXIS_X].velocity_max,	X_VELOCITY_MAX },
+	{ "x","xfr",_fipc, 0, cm_print_fr, get_flt,   set_flu /*cm_set_fr*/, (float *)&cm.a[AXIS_X].feedrate_max,	X_FEEDRATE_MAX },
 	{ "x","xtn",_fipc, 3, cm_print_tn, get_flt,   set_flu,   (float *)&cm.a[AXIS_X].travel_min,		X_TRAVEL_MIN },
 	{ "x","xtm",_fipc, 3, cm_print_tm, get_flt,   set_flu,   (float *)&cm.a[AXIS_X].travel_max,		X_TRAVEL_MAX },
 	{ "x","xjm",_fipc, 0, cm_print_jm, get_flt,   cm_set_jm, (float *)&cm.a[AXIS_X].jerk_max,		X_JERK_MAX },
@@ -282,8 +282,8 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "x","xzb",_fipc, 3, cm_print_zb, get_flt,   set_flu,   (float *)&cm.a[AXIS_X].zero_backoff,	X_ZERO_BACKOFF },
 
 	{ "y","yam",_fip,  0, cm_print_am, cm_get_am, cm_set_am, (float *)&cm.a[AXIS_Y].axis_mode,		Y_AXIS_MODE },
-	{ "y","yvm",_fipc, 0, cm_print_vm, get_flt,   cm_set_vm, (float *)&cm.a[AXIS_Y].velocity_max,	Y_VELOCITY_MAX },
-	{ "y","yfr",_fipc, 0, cm_print_fr, get_flt,   cm_set_fr, (float *)&cm.a[AXIS_Y].feedrate_max,	Y_FEEDRATE_MAX },
+	{ "y","yvm",_fipc, 0, cm_print_vm, get_flt,   set_flu /*cm_set_vm*/, (float *)&cm.a[AXIS_Y].velocity_max,	Y_VELOCITY_MAX },
+	{ "y","yfr",_fipc, 0, cm_print_fr, get_flt,   set_flu /*cm_set_fr*/, (float *)&cm.a[AXIS_Y].feedrate_max,	Y_FEEDRATE_MAX },
 	{ "y","ytn",_fipc, 3, cm_print_tn, get_flt,   set_flu,   (float *)&cm.a[AXIS_Y].travel_min,		Y_TRAVEL_MIN },
 	{ "y","ytm",_fipc, 3, cm_print_tm, get_flt,   set_flu,   (float *)&cm.a[AXIS_Y].travel_max,		Y_TRAVEL_MAX },
 	{ "y","yjm",_fipc, 0, cm_print_jm, get_flt,   cm_set_jm, (float *)&cm.a[AXIS_Y].jerk_max,		Y_JERK_MAX },
@@ -297,8 +297,8 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "y","yzb",_fipc, 3, cm_print_zb, get_flt,   set_flu,   (float *)&cm.a[AXIS_Y].zero_backoff,	Y_ZERO_BACKOFF },
 
 	{ "z","zam",_fip,  0, cm_print_am, cm_get_am, cm_set_am, (float *)&cm.a[AXIS_Z].axis_mode,		Z_AXIS_MODE },
-	{ "z","zvm",_fipc, 0, cm_print_vm, get_flt,   cm_set_vm, (float *)&cm.a[AXIS_Z].velocity_max,	Z_VELOCITY_MAX },
-	{ "z","zfr",_fipc, 0, cm_print_fr, get_flt,   cm_set_fr, (float *)&cm.a[AXIS_Z].feedrate_max,	Z_FEEDRATE_MAX },
+	{ "z","zvm",_fipc, 0, cm_print_vm, get_flt,   set_flu /*cm_set_vm*/, (float *)&cm.a[AXIS_Z].velocity_max,	Z_VELOCITY_MAX },
+	{ "z","zfr",_fipc, 0, cm_print_fr, get_flt,   set_flu /*cm_set_fr*/, (float *)&cm.a[AXIS_Z].feedrate_max,	Z_FEEDRATE_MAX },
 	{ "z","ztn",_fipc, 3, cm_print_tn, get_flt,   set_flu,   (float *)&cm.a[AXIS_Z].travel_min,		Z_TRAVEL_MIN },
 	{ "z","ztm",_fipc, 3, cm_print_tm, get_flt,   set_flu,   (float *)&cm.a[AXIS_Z].travel_max,		Z_TRAVEL_MAX },
 	{ "z","zjm",_fipc, 0, cm_print_jm, get_flt,   cm_set_jm, (float *)&cm.a[AXIS_Z].jerk_max,		Z_JERK_MAX },
@@ -312,8 +312,8 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "z","zzb",_fipc, 3, cm_print_zb, get_flt,   set_flu,   (float *)&cm.a[AXIS_Z].zero_backoff,	Z_ZERO_BACKOFF },
 
 	{ "a","aam",_fip,  0, cm_print_am, cm_get_am, cm_set_am, (float *)&cm.a[AXIS_A].axis_mode,		A_AXIS_MODE },
-	{ "a","avm",_fip,  0, cm_print_vm, get_flt,   cm_set_vm, (float *)&cm.a[AXIS_A].velocity_max,	A_VELOCITY_MAX },
-	{ "a","afr",_fip,  0, cm_print_fr, get_flt,   cm_set_fr, (float *)&cm.a[AXIS_A].feedrate_max,	A_FEEDRATE_MAX },
+	{ "a","avm",_fip,  0, cm_print_vm, get_flt,   set_flt /*cm_set_vm*/, (float *)&cm.a[AXIS_A].velocity_max,	A_VELOCITY_MAX },
+	{ "a","afr",_fip,  0, cm_print_fr, get_flt,   set_flt /*cm_set_fr*/, (float *)&cm.a[AXIS_A].feedrate_max,	A_FEEDRATE_MAX },
 	{ "a","atn",_fip,  3, cm_print_tn, get_flt,   set_flt,   (float *)&cm.a[AXIS_A].travel_min,		A_TRAVEL_MIN },
 	{ "a","atm",_fip,  3, cm_print_tm, get_flt,   set_flt,   (float *)&cm.a[AXIS_A].travel_max,		A_TRAVEL_MAX },
 	{ "a","ajm",_fip,  0, cm_print_jm, get_flt,   cm_set_jm, (float *)&cm.a[AXIS_A].jerk_max,		A_JERK_MAX },
@@ -328,8 +328,8 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "a","azb",_fip,  3, cm_print_zb, get_flt,   set_flt,   (float *)&cm.a[AXIS_A].zero_backoff,	A_ZERO_BACKOFF },
 
 	{ "b","bam",_fip,  0, cm_print_am, cm_get_am, cm_set_am, (float *)&cm.a[AXIS_B].axis_mode,		B_AXIS_MODE },
-	{ "b","bvm",_fip,  0, cm_print_vm, get_flt,   cm_set_vm, (float *)&cm.a[AXIS_B].velocity_max,	B_VELOCITY_MAX },
-	{ "b","bfr",_fip,  0, cm_print_fr, get_flt,   cm_set_fr, (float *)&cm.a[AXIS_B].feedrate_max,	B_FEEDRATE_MAX },
+	{ "b","bvm",_fip,  0, cm_print_vm, get_flt,   set_flt /*cm_set_vm*/, (float *)&cm.a[AXIS_B].velocity_max,	B_VELOCITY_MAX },
+	{ "b","bfr",_fip,  0, cm_print_fr, get_flt,   set_flu /*cm_set_fr*/, (float *)&cm.a[AXIS_B].feedrate_max,	B_FEEDRATE_MAX },
 	{ "b","btn",_fip,  3, cm_print_tn, get_flt,   set_flt,   (float *)&cm.a[AXIS_B].travel_min,		B_TRAVEL_MIN },
 	{ "b","btm",_fip,  3, cm_print_tm, get_flt,   set_flt,   (float *)&cm.a[AXIS_B].travel_max,		B_TRAVEL_MAX },
 	{ "b","bjm",_fip,  0, cm_print_jm, get_flt,   cm_set_jm, (float *)&cm.a[AXIS_B].jerk_max,		B_JERK_MAX },
@@ -346,8 +346,8 @@ const cfgItem_t cfgArray[] PROGMEM = {
 #endif
 
 	{ "c","cam",_fip,  0, cm_print_am, cm_get_am, cm_set_am, (float *)&cm.a[AXIS_C].axis_mode,		C_AXIS_MODE },
-	{ "c","cvm",_fip,  0, cm_print_vm, get_flt,   cm_set_vm, (float *)&cm.a[AXIS_C].velocity_max,	C_VELOCITY_MAX },
-	{ "c","cfr",_fip,  0, cm_print_fr, get_flt,   cm_set_fr, (float *)&cm.a[AXIS_C].feedrate_max,	C_FEEDRATE_MAX },
+	{ "c","cvm",_fip,  0, cm_print_vm, get_flt,   set_flt /*cm_set_vm*/, (float *)&cm.a[AXIS_C].velocity_max,	C_VELOCITY_MAX },
+	{ "c","cfr",_fip,  0, cm_print_fr, get_flt,   set_flt /*cm_set_fr*/, (float *)&cm.a[AXIS_C].feedrate_max,	C_FEEDRATE_MAX },
 	{ "c","ctn",_fip,  3, cm_print_tn, get_flt,   set_flt,   (float *)&cm.a[AXIS_C].travel_min,		C_TRAVEL_MIN },
 	{ "c","ctm",_fip,  3, cm_print_tm, get_flt,   set_flt,   (float *)&cm.a[AXIS_C].travel_max,		C_TRAVEL_MAX },
 	{ "c","cjm",_fip,  0, cm_print_jm, get_flt,   cm_set_jm, (float *)&cm.a[AXIS_C].jerk_max,		C_JERK_MAX },
@@ -457,6 +457,7 @@ const cfgItem_t cfgArray[] PROGMEM = {
 
     // temperature configs - pid active values (read-only)
     // NOTICE: If you change these PID group keys, you MUST change the get/set functions too!!
+/*
     { "pid1","pid1p",_f0, 3, tx_print_nul, cm_get_pid_p, set_nul, (float *)&cs.null, 0 },
     { "pid1","pid1i",_f0, 5, tx_print_nul, cm_get_pid_i, set_nul, (float *)&cs.null, 0 },
     { "pid1","pid1d",_f0, 5, tx_print_nul, cm_get_pid_d, set_nul, (float *)&cs.null, 0 },
@@ -468,9 +469,10 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "pid3","pid3p",_f0, 3, tx_print_nul, cm_get_pid_p, set_nul, (float *)&cs.null, 0 },
     { "pid3","pid3i",_f0, 5, tx_print_nul, cm_get_pid_i, set_nul, (float *)&cs.null, 0 },
     { "pid3","pid3d",_f0, 5, tx_print_nul, cm_get_pid_d, set_nul, (float *)&cs.null, 0 },
-
+*/
     // temperature configs - heater set values (read-write)
     // NOTICE: If you change these heater group keys, you MUST change the get/set functions too!!
+/*
     { "he1","he1e", _fip, 0, tx_print_nul, cm_get_heater_enable,   cm_set_heater_enable,   (float *)&cs.null, H1_DEFAULT_ENABLE },
     { "he1","he1p", _fi,  3, tx_print_nul, cm_get_heater_p,        cm_set_heater_p,        (float *)&cs.null, H1_DEFAULT_P },
     { "he1","he1i", _fi,  5, tx_print_nul, cm_get_heater_i,        cm_set_heater_i,        (float *)&cs.null, H1_DEFAULT_I },
@@ -503,6 +505,7 @@ const cfgItem_t cfgArray[] PROGMEM = {
     { "he3","he3tr",_f0,  3, tx_print_nul, cm_get_thermistor_resistance,   set_nul,        (float *)&cs.null, 0 },
     { "he3","he3at",_f0,  0, tx_print_nul, cm_get_at_temperature,  set_nul,                (float *)&cs.null, 0 },
     { "he3","he3an",_f0,  0, tx_print_nul, cm_get_heater_adc,      set_nul,                (float *)&cs.null, 0 },
+*/
 
 	// Coordinate system offsets (G54-G59 and G92)
 	{ "g54","g54x",_fipc, 3, cm_print_cofs, get_flt, set_flu,(float *)&cm.offset[G54][AXIS_X], G54_X_OFFSET },
@@ -580,28 +583,28 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "sys","ct", _fipnc,4, cm_print_ct,  get_flt, set_flu,  (float *)&cm.chordal_tolerance,        CHORDAL_TOLERANCE },
 	{ "sys","sl", _fipn, 0, cm_print_sl,  get_ui8, set_01,   (float *)&cm.soft_limit_enable,        SOFT_LIMIT_ENABLE },
 
-	{ "sys","bme",_fipn, 0, cm_print_bme, get_ui8, set_01,   (float *)&mp.block_merge_enable,       BLOCK_MERGE_ENABLE },
-	{ "sys","bmr",_fipn, 0, cm_print_bmr, get_flt, set_nul,  (float *)&mp.block_merge_ratio,  0 },
-	{ "sys","bmv",_fipn, 0, cm_print_bmv, get_flt, set_flt,  (float *)&mp.block_merge_velocity_max, BLOCK_MERGE_VELOCITY_MAX },
-	{ "sys","bml",_fipn, 2, cm_print_bml, get_flt, set_flt,  (float *)&mp.block_merge_length_max,   BLOCK_MERGE_LENGTH_MAX },
-	{ "sys","bmc",_fipn, 2, cm_print_bmc, get_flt, set_flt,  (float *)&mp.block_merge_cosine_min,   BLOCK_MERGE_COSINE_MIN },
+//	{ "sys","bme",_fipn, 0, cm_print_bme, get_ui8, set_01,   (float *)&mp.block_merge_enable,       BLOCK_MERGE_ENABLE },
+//	{ "sys","bmr",_fipn, 0, cm_print_bmr, get_flt, set_nul,  (float *)&mp.block_merge_ratio,  0 },
+//	{ "sys","bmv",_fipn, 0, cm_print_bmv, get_flt, set_flt,  (float *)&mp.block_merge_velocity_max, BLOCK_MERGE_VELOCITY_MAX },
+//	{ "sys","bml",_fipn, 2, cm_print_bml, get_flt, set_flt,  (float *)&mp.block_merge_length_max,   BLOCK_MERGE_LENGTH_MAX },
+//	{ "sys","bmc",_fipn, 2, cm_print_bmc, get_flt, set_flt,  (float *)&mp.block_merge_cosine_min,   BLOCK_MERGE_COSINE_MIN },
 
 	{ "sys","lim",_fipn, 0, cm_print_lim, get_ui8, set_01,   (float *)&cm.limit_enable,	            HARD_LIMIT_ENABLE },
 	{ "sys","saf",_fipn, 0, cm_print_saf, get_ui8, set_01,   (float *)&cm.safety_interlock_enable,	SAFETY_INTERLOCK_ENABLE },
 	{ "sys","mt", _fipn, 2, st_print_mt,  get_flt, st_set_mt,(float *)&st_cfg.motor_power_timeout,  MOTOR_POWER_TIMEOUT},
 	{ "sys","m48e",_fipn,0, cm_print_m48e,get_ui8, set_01,   (float *)&cm.gmx.m48_enable, 0 },      // M48/M49 feedrate & spindle override enable
-	{ "sys","mfoe",_fipn,0, cm_print_mfoe,get_ui8, set_01,   (float *)&cm.gmx.mfo_enable,           FEED_OVERRIDE_ENABLE},
-	{ "sys","mfo", _fipn,3, cm_print_mfo, get_flt,cm_set_mfo,(float *)&cm.gmx.mfo_factor,           FEED_OVERRIDE_FACTOR},
-	{ "sys","mtoe",_fipn,0, cm_print_mtoe,get_ui8, set_01,   (float *)&cm.gmx.mto_enable,           TRAVERSE_OVERRIDE_ENABLE},
-	{ "sys","mto", _fipn,3, cm_print_mto, get_flt,cm_set_mto,(float *)&cm.gmx.mto_factor,           TRAVERSE_OVERRIDE_FACTOR},
+//	{ "sys","mfoe",_fipn,0, cm_print_mfoe,get_ui8, set_01,   (float *)&cm.gmx.mfo_enable,           FEED_OVERRIDE_ENABLE},
+//	{ "sys","mfo", _fipn,3, cm_print_mfo, get_flt,cm_set_mfo,(float *)&cm.gmx.mfo_factor,           FEED_OVERRIDE_FACTOR},
+//	{ "sys","mtoe",_fipn,0, cm_print_mtoe,get_ui8, set_01,   (float *)&cm.gmx.mto_enable,           TRAVERSE_OVERRIDE_ENABLE},
+//	{ "sys","mto", _fipn,3, cm_print_mto, get_flt,cm_set_mto,(float *)&cm.gmx.mto_factor,           TRAVERSE_OVERRIDE_FACTOR},
 
     // Spindle functions
     { "sys","spep",_fipn,0, cm_print_spep,get_ui8, set_01,   (float *)&spindle.enable_polarity,     SPINDLE_ENABLE_POLARITY },
     { "sys","spdp",_fipn,0, cm_print_spdp,get_ui8, set_01,   (float *)&spindle.dir_polarity,        SPINDLE_DIR_POLARITY },
     { "sys","spph",_fipn,0, cm_print_spph,get_ui8, set_01,   (float *)&spindle.pause_on_hold,       SPINDLE_PAUSE_ON_HOLD },
     { "sys","spdw",_fipn,2, cm_print_spdw,get_flt, set_flt,  (float *)&spindle.dwell_seconds,       SPINDLE_DWELL_TIME },
-    { "sys","ssoe",_fipn,0, cm_print_ssoe,get_ui8, set_01,   (float *)&spindle.sso_enable,          SPINDLE_OVERRIDE_ENABLE},
-    { "sys","sso", _fipn,3, cm_print_sso, get_flt,cm_set_sso,(float *)&spindle.sso_factor,          SPINDLE_OVERRIDE_FACTOR},
+//    { "sys","ssoe",_fipn,0, cm_print_ssoe,get_ui8, set_01,   (float *)&spindle.sso_enable,          SPINDLE_OVERRIDE_ENABLE},
+//    { "sys","sso", _fipn,3, cm_print_sso, get_flt,cm_set_sso,(float *)&spindle.sso_factor,          SPINDLE_OVERRIDE_FACTOR},
     { "",   "spe", _f0,  0, cm_print_spe, get_ui8, set_nul,  (float *)&spindle.enable, 0 },         // get spindle enable
     { "",   "spd", _f0,  0, cm_print_spd, get_ui8,cm_set_dir,(float *)&spindle.direction, 0 },      // get spindle direction
     { "",   "sps", _f0,  0, cm_print_sps, get_flt, set_nul,  (float *)&spindle.speed, 0 },          // get spindle speed
