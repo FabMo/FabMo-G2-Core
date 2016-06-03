@@ -80,6 +80,56 @@ mpBufferPool_t mb;				// move buffer queue
 mpMoveMasterSingleton_t mm;		// context for line planning
 mpMoveRuntimeSingleton_t mr;	// context for line runtime
 
+#define JSON_COMMAND_BUFFER_SIZE 3
+
+struct json_command_buffer_t {
+    char buf[RX_BUFFER_MIN_SIZE];
+    json_command_buffer_t *pv;
+    json_command_buffer_t *nx;
+};
+
+struct _json_commands_t {
+    json_command_buffer_t _json_bf[JSON_COMMAND_BUFFER_SIZE]; // storage of all buffers
+    json_command_buffer_t *_json_r;   // pointer to the next "run" buffer
+    json_command_buffer_t *_json_w;   // pointer tot he next "write" buffer
+
+    int8_t available;
+
+    // Constructor (intializer)
+    // Note, reset routines handle zeroing out all of the above
+    _json_commands_t() {
+        json_command_buffer_t *js_pv = &_json_bf[JSON_COMMAND_BUFFER_SIZE - 1];
+        for (uint8_t i=0; i < JSON_COMMAND_BUFFER_SIZE; i++) {
+            _json_bf[i].nx = &_json_bf[((i+1 == JSON_COMMAND_BUFFER_SIZE) ? 0 : i+1)];
+            _json_bf[i].pv = js_pv;
+            js_pv = &_json_bf[i];
+        }
+        _json_r = &_json_bf[0];
+        _json_w = _json_r;
+        available = JSON_COMMAND_BUFFER_SIZE;
+    };
+
+    // Write a json command to the buffer, using up one slot
+    void write_buffer(char * new_json) {
+        strcpy(_json_w->buf, new_json);
+        available--;
+        _json_w = _json_w->nx;
+    };
+
+    // Read a buffer out, but do NOT free it (so it can be used directly)
+    char *read_buffer() {
+        return _json_r->buf;
+    };
+
+    // Free the last read buffer.
+    void free_buffer() {
+        _json_r = _json_r->nx;
+        available++;
+    }
+};
+
+_json_commands_t jc;
+
 /*
  * Local Scope Data and Functions
  */
