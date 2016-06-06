@@ -2067,9 +2067,17 @@ void cm_set_axis_jerk(const uint8_t axis, const float jerk)
 
 stat_t cm_set_jm(nvObj_t *nv)
 {
+    uint8_t axis;
 	if (nv->value > JERK_MULTIPLIER) nv->value /= JERK_MULTIPLIER;
-	set_flu(nv);
-	cm_set_axis_jerk(_get_axis(nv->index), nv->value);
+    axis = _get_axis(nv->index);
+
+    if (axis >= AXIS_A) {
+        set_flt(nv);
+    } else {
+        set_flu(nv);
+    }
+
+	cm_set_axis_jerk(axis, nv->value);
 	return(STAT_OK);
 }
 
