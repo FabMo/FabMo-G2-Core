@@ -148,6 +148,8 @@
 #define M6_POWER_LEVEL              MOTOR_POWER_LEVEL
 #define M6_STEPS_PER_UNIT           0
 
+#define MANUAL_FEEDRATE_OVERRIDE_ENABLE     false
+#define MANUAL_FEEDRATE_OVERRIDE_PARAMETER  1.00
 // *** axis settings ***
 
 #define JERK_MAX                    20                  // that's "20,000,000" mm/(min^3)
