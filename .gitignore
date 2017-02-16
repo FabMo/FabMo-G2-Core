@@ -35,6 +35,7 @@ xcuserdata
 .cproject
 *.launch
 .settings
+.*
 \bin
 \build
 build/
@@ -48,10 +49,7 @@ JLink.log
 Tools/gcc-arm-none-eabi*
 openocd.cfg
 openocd.log
-*/mb.txt
 Tools/gcc-arm-none-eabi-*.tar.bz2
-*/TinyG2.componentinfo.xml
 g2core/g2core.componentinfo.xml
 .tags
-
 g2core/compile_commands.json
