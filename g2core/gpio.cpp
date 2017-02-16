@@ -470,6 +470,42 @@ bool gpio_read_input(const uint8_t input_num_ext)
     return (d_in[input_num_ext-1].state);
 }
 
+/*
+ * gpio_set_output() - Set output pins
+ */
+stat_t gpio_set_output(uint8_t output_num, float value) {
+  ioMode outMode = d_out[output_num-1].mode;
+  if (outMode == IO_MODE_DISABLED) {
+      value = 0; // Inactive?
+  } else {
+      bool invert = (outMode == 0);
+      if (invert) {
+          value = 1.0 - value;
+      }
+      switch (output_num) {
+          // Generated with:
+          // perl -e 'for($i=1;$i<14;$i++) { print "case ${i}:  { output_${i}_pin = value; } break;\n";}'
+          // BEGIN generated
+          case 1:  { output_1_pin = value; } break;
+          case 2:  { output_2_pin = value; } break;
+          case 3:  { output_3_pin = value; } break;
+          case 4:  { output_4_pin = value; } break;
+          case 5:  { output_5_pin = value; } break;
+          case 6:  { output_6_pin = value; } break;
+          case 7:  { output_7_pin = value; } break;
+          case 8:  { output_8_pin = value; } break;
+          case 9:  { output_9_pin = value; } break;
+          case 10:  { output_10_pin = value; } break;
+          case 11:  { output_11_pin = value; } break;
+          case 12:  { output_12_pin = value; } break;
+          case 13:  { output_13_pin = value; } break;
+          // END generated
+          default: { value = 0; } // inactive
+      }
+  }
+  return STAT_OK;
+}
+
 
 /***********************************************************************************
  * CONFIGURATION AND INTERFACE FUNCTIONS
@@ -633,7 +669,7 @@ stat_t io_get_output(nvObj_t *nv)
 }
 
 /*
- *  io_set_output() - return input state given an nv object
+ *  io_set_output() - set output state given an nv object
  */
 stat_t io_set_output(nvObj_t *nv)
 {
@@ -645,39 +681,9 @@ stat_t io_set_output(nvObj_t *nv)
     }
     // the token has been stripped down to an ASCII digit string - use it as an index
     uint8_t output_num = strtol(num_start, NULL, 10);
-
-    ioMode outMode = d_out[output_num-1].mode;
-    if (outMode == IO_MODE_DISABLED) {
-        nv->value = 0; // Inactive?
-    } else {
-        bool invert = (outMode == 0);
-        float value = nv->value;
-        if (invert) {
-            value = 1.0 - value;
-        }
-        switch (output_num) {
-            // Generated with:
-            // perl -e 'for($i=1;$i<14;$i++) { print "case ${i}:  { output_${i}_pin = value; } break;\n";}'
-            // BEGIN generated
-            case 1:  { output_1_pin = value; } break;
-            case 2:  { output_2_pin = value; } break;
-            case 3:  { output_3_pin = value; } break;
-            case 4:  { output_4_pin = value; } break;
-            case 5:  { output_5_pin = value; } break;
-            case 6:  { output_6_pin = value; } break;
-            case 7:  { output_7_pin = value; } break;
-            case 8:  { output_8_pin = value; } break;
-            case 9:  { output_9_pin = value; } break;
-            case 10:  { output_10_pin = value; } break;
-            case 11:  { output_11_pin = value; } break;
-            case 12:  { output_12_pin = value; } break;
-            case 13:  { output_13_pin = value; } break;
-            // END generated
-            default: { nv->value = 0; } // inactive
-        }
-    }
-    return (STAT_OK);
+    return gpio_set_output(output_num, nv->value);
 }
+
 
 /***********************************************************************************
  * TEXT MODE SUPPORT
