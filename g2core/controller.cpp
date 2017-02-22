@@ -166,8 +166,8 @@ static void _controller_HSM()
     DISPATCH(cm_probing_cycle_callback());      // probing cycle operation (G38.2)
     DISPATCH(cm_jogging_cycle_callback());      // jog cycle operation
     DISPATCH(cm_deferred_write_callback());     // persist G10 changes when not in machining cycle
-//    DISPATCH(cm_feedhold_command_blocker());    // blocks new commands from arriving while in feedhold
-    
+    DISPATCH(cm_feedhold_command_blocker());    // blocks new Gcode from arriving while in feedhold
+
 //----- command readers and parsers --------------------------------------------------//
 
     DISPATCH(_sync_to_planner());               // ensure there is at least one free buffer in planning queue
@@ -471,12 +471,12 @@ static stat_t _test_assertions()
 stat_t _test_system_assertions()
 {
     // these functions will panic if an assertion fails
-    _test_assertions();                     // controller assertions (local)
+    _test_assertions();         // controller assertions (local)
     config_test_assertions();
     canonical_machine_test_assertions(&cm1);
     canonical_machine_test_assertions(&cm2);
-    planner_test_assertions(&mp1);
-    planner_test_assertions(&mp2);
+    planner_assert(&mp1);
+    planner_assert(&mp2);
     stepper_test_assertions();
     encoder_test_assertions();
     xio_test_assertions();

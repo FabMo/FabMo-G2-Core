@@ -62,7 +62,6 @@ static void _init_forward_diffs(float v_0, float v_1);
  *  See also: Planner Overview notes in planner.h
  * 
  *  It examines the currently running buffer and its adjacent buffers to:
- *
  *  - Stop the system from re-planning or planning something that's not prepped
  *  - Plan the next available ALINE (movement) block past the COMMAND blocks
  *  - Skip past/ or pre-plan COMMAND blocks while labeling them as PLANNED
@@ -149,37 +148,25 @@ static void _init_forward_diffs(float v_0, float v_1);
  *                                                              (Note: all COMMAND(s) in j. should be in PLANNED state)
  */
 
-static mpBuf_t *_plan_commands(mpBuf_t *bf)         // plan or skip commands; return bf past last command
-{
-    // must test for buffer state first as the buffer is only "safe" once it's >= PREPPED
-    while ((bf->buffer_state >= MP_BUFFER_PREPPED) && (bf->block_type >= BLOCK_TYPE_COMMAND)) {
-        if (bf->buffer_state != MP_BUFFER_PLANNED) {        // skip already planned buffers
-            bf->buffer_state = MP_BUFFER_PLANNED;           // "planning" is just setting the state (for now)
-        }
-        bf = bf->nx;
-    }
-    return (bf);
-}
+// _plan_aline() - mp_forward_plan() helper
+//
+// Calculate ramps for the current planning block and the next PREPPED buffer
+// The PREPPED buffer will be set to PLANNED later...
+//
+// Pass in the bf buffer that will "link" with the planned block
+// The block and the buffer are implicitly linked for exec_aline()
+//
+// Note that that can only be one PLANNED move at a time.
+// This is to help sync mr->p to point to the next planned mr->bf
+// mr->p is only advanced in mp_exec_aline(), after mp.r = mr->p.
+// This code aligns the buffers and the blocks for exec_aline().
 
-static stat_t _plan_move(mpBuf_t *bf, float entry_velocity)
+static stat_t _plan_aline(mpBuf_t *bf, float entry_velocity)
 {
-    // Calculate ramps for the current planning block and the next PREPPED buffer
-    // The PREPPED buffer will be set to PLANNED later...
-    //
-    // Pass in the bf buffer that will "link" with the planned block
-    // The block and the buffer are implicitly linked for exec_aline()
-    //
-    // Note that that can only be one PLANNED move at a time.
-    // This is to help sync mr->p to point to the next planned mr->bf
-    // mr->p is only advanced in mp_exec_aline(), after mp.r = mr->p.
-    // This code aligns the buffers and the blocks for exec_aline().
-
-    mpBlockRuntimeBuf_t* block = mr->p;              // set a local planning block so it doesn't change on you
+    mpBlockRuntimeBuf_t* block = mr->p;             // set a local planning block so it doesn't change on you
     mp_calculate_ramps(block, bf, entry_velocity);  // (which it will if you don't do this)
 
-    // diagnostic traps
-
-#if IN_DEBUGGER == 1
+#ifdef IN_DEBUGGER      // DIAGNOSTIC
     if (block->exit_velocity > block->cruise_velocity)  {
         __asm__("BKPT");                            // exit > cruise after calculate_block
     }
@@ -215,10 +202,18 @@ stat_t mp_forward_plan()
         entry_velocity = mr->entry_velocity;         // set Note 2 entry velocity (command cases)
     }
 
-    // bf points to command; start cases 1f, 1g, 1h, 1i, 1j, 1k, 2c, 2d, 2e, 2h, 2i, 2j
+    // bf points to a command block; start cases 1f, 1g, 1h, 1i, 1j, 1k, 2c, 2d, 2e, 2h, 2i, 2j
+    bool planned_something = false;
+
     if (bf->block_type != BLOCK_TYPE_ALINE) {       // meaning it's a COMMAND
-        bf = _plan_commands(bf);                    // plan commands or skip past already planned commands
-        // bf now points to the first non-command buffer past the command(s)
+        while (bf->block_type >= BLOCK_TYPE_COMMAND) {
+            if (bf->buffer_state == MP_BUFFER_PREPPED) {
+                bf->buffer_state = MP_BUFFER_PLANNED;// "planning" is just setting the state (for now)
+                planned_something = true;
+            }            
+            bf = bf->nx;
+        }
+        // Note: bf now points to the first non-command buffer past the command(s)
         if ((bf->block_type == BLOCK_TYPE_ALINE) && (bf->buffer_state > MP_BUFFER_PREPPED )) { // case 1i
             entry_velocity = mr->r->exit_velocity;   // set entry_velocity for Note 1a
         }        
@@ -228,12 +223,11 @@ stat_t mp_forward_plan()
     // process move                           
     if (bf->block_type == BLOCK_TYPE_ALINE) {       // do cases 1a - 1e; finish cases 1f - 1k
         if (bf->buffer_state == MP_BUFFER_PREPPED) {// do 1a; finish 1f, 1j, 2d, 2i
-            return (_plan_move(bf, entry_velocity));
-        } else {
-            return (STAT_NOOP);                     // do 1b, 1c, 1d, 1e; finish 1g, 1h, 1j, 1k, 2e, 2j
+            _plan_aline(bf, entry_velocity);
+            planned_something = true;
         }
     }
-    return (STAT_OK);                               // report that we planned something...
+    return (planned_something ? STAT_OK : STAT_NOOP);
 }
 
 /*************************************************************************
@@ -265,7 +259,7 @@ stat_t mp_exec_move()
         // first-time operations
         if (bf->buffer_state != MP_BUFFER_RUNNING) {
             if ((bf->buffer_state < MP_BUFFER_PREPPED) && (cm->motion_state == MOTION_RUN)) {
-#if IN_DEBUGGER == 1
+#ifdef IN_DEBUGGER
                 __asm__("BKPT");    // mp_exec_move() buffer is not prepped
 #endif
                 // IMPORTANT: We can't rpt_exception from here!
@@ -280,8 +274,8 @@ stat_t mp_exec_move()
 
             if (bf->buffer_state == MP_BUFFER_PREPPED) {
                 if (cm->motion_state == MOTION_RUN) {
-#if IN_DEBUGGER == 1
-                    __asm__("BKPT"); // we are running but don't have a block planned
+#ifdef IN_DEBUGGER
+//                    __asm__("BKPT"); // we are running but don't have a block planned
 #endif
                 }
                 // We need to have it planned. We don't want to do this here, as it
@@ -298,11 +292,12 @@ stat_t mp_exec_move()
             mp_planner_time_accounting();
         }
 
+        // Go ahead and *ask* for a forward planning of the next move.
+        // This won't call mp_plan_move until we leave this function
+        // (and have called mp_exec_aline via bf->bf_func).
+        // This also allows mp_exec_aline to advance mr->p first.
         if (bf->nx->buffer_state >= MP_BUFFER_PREPPED) {
-            // We go ahead and *ask* for a forward planning of the next move.
-            // This won't call mp_plan_move until we leave this function
-            // (and have called mp_exec_aline via bf->bf_func).
-            // This also allows mp_exec_aline to advance mr->p first.
+//        if (bf->nx->buffer_state == MP_BUFFER_PREPPED) {
             st_request_forward_plan();
         }
 
@@ -558,7 +553,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
             return (STAT_OK);                                   // hold here. No more movement
         }
 
-        // Case (5) - Decelerated to zero
+        // Case (5) - Decelerated to zero. See also Feedhold Case (5, continued), toward end of mp_exec_aline()
         // Update the run buffer then force a replan of the whole planner queue. Replans from 0 velocity
         if (cm->hold_state == FEEDHOLD_DECEL_END) {
             mr->block_state = BLOCK_INACTIVE;                   // invalidate mr buffer to reset the new move
@@ -640,26 +635,35 @@ stat_t mp_exec_aline(mpBuf_t *bf)
     else if (mr->section == SECTION_TAIL) { status = _exec_aline_tail(bf);}
     else    { return(cm_panic(STAT_INTERNAL_ERROR, "exec_aline()"));}    // never supposed to get here
 
-    // We can't use the if/else block above, since the head may call body, and body call tail, so we wait till after
-    if ((mr->section == SECTION_TAIL) // Once we're in the tail, we can't plan the block anymore
-        || ((mr->section == SECTION_BODY) && (mr->segment_count < 3))) { // or are too close to the end of the body
-
+    // Conditionally set the move to be unplannable. We can't use the if/else block above, 
+    // since the head may call a body or a tail, and a body call tail, so we wait till after.
+    //
+    // Conditions are: 
+    //  - Allow 3 segments: 1 segment isn't enough, because there's one running as we execute, 
+    //    so it has to be the next one. There's a slight possibility we'll miss that, since we 
+    //    didn't necessarily start at the beginning, so three.
+    //  - If it's a head/tail move and we've started the head we can't replan it anyway as
+    //    the head can't be interrupted, and the tail is already as sharp as it can be (or there'd be a body)
+    //  - ...so if you are in a body mark the body unplannable if we are too close to its end.
+    if ((mr->section == SECTION_TAIL) || ((mr->section == SECTION_BODY) && (mr->segment_count < 3))) {
         bf->plannable = false;
     }
 
-    // Feedhold Case (5): Look for the end of the deceleration to go into HOLD state
-    if ((cm->hold_state == FEEDHOLD_DECEL_TO_ZERO) && (status == STAT_OK)) {
-        cm->hold_state = FEEDHOLD_DECEL_END;
-        bf->block_state = BLOCK_INITIAL_ACTION;                      // reset bf so it can restart the rest of the move
+    // Feedhold Case (5, continued): Look for the end of the deceleration to go into HOLD state
+    if (cm->hold_state == FEEDHOLD_DECEL_TO_ZERO) {
+        if ((status == STAT_OK) || (status == STAT_NOOP)) {
+            cm->hold_state = FEEDHOLD_DECEL_END;
+            bf->block_state = BLOCK_INITIAL_ACTION;     // reset bf so it can restart the rest of the move
+        }
     }
 
     // There are 4 things that can happen here depending on return conditions:
-    //  status          bf->block_state     Description
-    //  -----------     --------------      ----------------------------------------
+    //  status        bf->block_state       Description
+    //  -----------   --------------        ----------------------------------------
     //  STAT_EAGAIN   <don't care>          mr buffer has more segments to run
     //  STAT_OK       BLOCK_ACTIVE          mr and bf buffers are done
     //  STAT_OK       BLOCK_INITIAL_ACTION  mr done; bf must be run again (it's been reused)
-    //  There is no fourth thing. Nobody expects the Spanish Inquisition
+    //  STAT_NOOP     <don't care>          treated as a STAT_OK
 
     if (status == STAT_EAGAIN) {
         sr_request_status_report(SR_REQUEST_TIMED);     // continue reporting mr buffer
@@ -909,8 +913,8 @@ static stat_t _exec_aline_head(mpBuf_t *bf)
 /*********************************************************************************************
  * _exec_aline_body()
  *
- *    The body is broken into little segments even though it is a straight line so that
- *    feed holds can happen in the middle of a line with a minimum of latency
+ *  The body is broken into little segments even though it is a straight line 
+ *  so that feed holds can happen in the middle of a line with minimum latency
  */
 static stat_t _exec_aline_body(mpBuf_t *bf)
 {
@@ -931,11 +935,11 @@ static stat_t _exec_aline_body(mpBuf_t *bf)
         }
 
         mr->section = SECTION_BODY;
-        mr->section_state = SECTION_RUNNING;                 // uses PERIOD_2 so last segment detection works
+        mr->section_state = SECTION_RUNNING;                // uses PERIOD_2 so last segment detection works
     }
     if (_exec_aline_segment() == STAT_OK) {                 // OK means this section is done
         if (fp_ZERO(mr->r->tail_length)) {
-            return(STAT_OK);                                    // ends the move
+            return(STAT_OK);                                // ends the move
         }
         mr->section = SECTION_TAIL;
         mr->section_state = SECTION_NEW;
@@ -950,16 +954,16 @@ static stat_t _exec_aline_body(mpBuf_t *bf)
 static stat_t _exec_aline_tail(mpBuf_t *bf)
 {
     bool first_pass = false;
-    if (mr->section_state == SECTION_NEW) {                          // INITIALIZATION
+    if (mr->section_state == SECTION_NEW) {                 // INITIALIZATION
         first_pass = true;
 
         // Mark the block as unplannable
         bf->plannable = false;
 
-        if (fp_ZERO(mr->r->tail_length)) { return(STAT_OK);}         // end the move
+        if (fp_ZERO(mr->r->tail_length)) { return(STAT_OK);} // end the move
         mr->segments = ceil(uSec(mr->r->tail_time) / NOM_SEGMENT_USEC);// # of segments for the section
         mr->segment_count = (uint32_t)mr->segments;
-        mr->segment_time = mr->r->tail_time / mr->segments;             // time to advance for each segment
+        mr->segment_time = mr->r->tail_time / mr->segments;     // time to advance for each segment
 
         if (mr->segment_count == 1) {
             mr->segment_velocity = mr->r->tail_length / mr->segment_time;
@@ -968,8 +972,8 @@ static stat_t _exec_aline_tail(mpBuf_t *bf)
         }
         if (mr->segment_time < MIN_SEGMENT_TIME) {
             _debug_trap("mr->segment_time < MIN_SEGMENT_TIME");
-            return(STAT_OK);                                        // exit without advancing position, say we're done
-         // return(STAT_MINIMUM_TIME_MOVE);                         // exit without advancing position
+            return(STAT_OK);                                    // exit without advancing position, say we're done
+         // return(STAT_MINIMUM_TIME_MOVE);                     // exit without advancing position
         }
         mr->section = SECTION_TAIL;
         mr->section_state = SECTION_RUNNING;

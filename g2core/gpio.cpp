@@ -452,7 +452,7 @@ void  gpio_set_probing_mode(const uint8_t input_num_ext, const bool is_probing)
     d_in[input_num_ext-1].probing_mode = is_probing;
 }
 
-int8_t gpio_get_probing_input(void) 
+int8_t gpio_get_probing_input(void)
 {
     for (uint8_t i = 0; i <= D_IN_CHANNELS; i++) {
         if (d_in[i-1].function == INPUT_FUNCTION_PROBE) {

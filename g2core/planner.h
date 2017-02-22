@@ -182,6 +182,7 @@ typedef enum {                      // bf->block_type values
     BLOCK_TYPE_NULL = 0,            // MUST=0  null move - does a no-op
     BLOCK_TYPE_ALINE = 1,           // MUST=1  acceleration planned line
     BLOCK_TYPE_COMMAND = 2,         // MUST=2  general command
+                                    // All other non-move commands are > BLOCK_TYPE_COMMAND
     BLOCK_TYPE_DWELL,               // Gcode dwell
     BLOCK_TYPE_JSON_WAIT,           // JSON wait command
     BLOCK_TYPE_TOOL,                // T command (T, not M6 tool change)
@@ -225,6 +226,7 @@ typedef enum {                      // code blocks for planning and trapezoid ge
     ASYMMETRIC_BUMP,                // (Ve != Vx) < Vc
 } blockHint;
 
+/*
 typedef enum {
     ZOID_EXIT_NULL = 0,
     ZOID_EXIT_1a,
@@ -239,6 +241,7 @@ typedef enum {
     ZOID_EXIT_3d2,
     ZOID_EXIT_3a2
 } zoidExitPoint;
+*/
 
 /*** Most of these factors are the result of a lot of tweaking. Change with caution.***/
 
@@ -250,9 +253,12 @@ typedef enum {
 #define JUNCTION_INTEGRATION_MIN    (0.05)              // JT minimum allowable setting
 #define JUNCTION_INTEGRATION_MAX    (5.00)              // JT maximum allowable setting
 
+#ifndef MIN_SEGMENT_MS                                  // boards can override this value in hardware.h
 #define MIN_SEGMENT_MS              ((float)0.75)       // minimum segment milliseconds
-#define NOM_SEGMENT_MS              ((float)1.5)        // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
-#define MIN_BLOCK_MS                ((float)1.5)        // minimum block (whole move) milliseconds
+#endif
+#define NOM_SEGMENT_MS              ((float)MIN_SEGMENT_MS * 2) // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
+#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS * 2) // minimum block (whole move) milliseconds
+
 #define BLOCK_TIMEOUT_MS            ((float)30.0)       // MS before deciding there are no new blocks arriving
 #define PHAT_CITY_MS                ((float)100.0)      // if you have at least this much time in the planner
 
@@ -395,7 +401,6 @@ typedef struct mpBuffer {
         plannable_length = 0;
         meet_iterations = 0;
 #endif
-
         buffer_state = MP_BUFFER_EMPTY;
         block_type = BLOCK_TYPE_NULL;
         block_state = BLOCK_INACTIVE;
@@ -405,7 +410,6 @@ typedef struct mpBuffer {
             unit[i] = 0;
             axis_flags[i] = 0;
         }
-
         plannable = false;
         length = 0.0;
         block_time = 0.0;
@@ -581,7 +585,7 @@ extern mpBuf_t mp2_queue[SECONDARY_QUEUE_SIZE]; // storage allocation for second
 
 void planner_init(mpPlanner_t *_mp, mpPlannerRuntime_t *_mr, mpBuf_t *queue, uint8_t queue_size);
 void planner_reset(mpPlanner_t *_mp);
-stat_t planner_test_assertions(const mpPlanner_t *_mp);
+stat_t planner_assert(const mpPlanner_t *_mp);
 
 void mp_halt_runtime(void);
 
@@ -644,7 +648,7 @@ void mp_plan_block_list(void);
 void mp_plan_block_forward(mpBuf_t *bf);
 
 //**** plan_zoid.c functions
-void mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const float entry_velocity);
+stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const float entry_velocity);
 float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t *bf);
 float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t *bf); // acceleration ONLY
 float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t *bf);  // deceleration ONLY
