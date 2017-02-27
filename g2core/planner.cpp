@@ -194,10 +194,10 @@ void planner_init(mpPlanner_t *_mp, mpPlannerRuntime_t *_mr, mpBuf_t *queue, uin
     _mr->magic_start = MAGICNUM;        // mr assertions 
     _mr->magic_end = MAGICNUM;
  
-    _mr->bf[0].nx = &_mr->bf[1];        // Handle the two "stub blocks" in the runtime structure
-    _mr->bf[1].nx = &_mr->bf[0];
-    _mr->r = &_mr->bf[0];
-    _mr->p = &_mr->bf[1];
+    _mr->block[0].nx = &_mr->block[1];  // Handle the two "stub blocks" in the runtime structure
+    _mr->block[1].nx = &_mr->block[0];
+    _mr->r = &_mr->block[0];
+    _mr->p = &_mr->block[1];
 }
 
 void planner_reset(mpPlanner_t *_mp)        // reset planner queue, cease MR activity, but leave positions alone
@@ -752,7 +752,7 @@ mpBuf_t * mp_get_write_buffer()     // get & clear a buffer
     mpPlannerQueue_t *q = &(mp->q);
        
     if (q->w->buffer_state == MP_BUFFER_EMPTY) {
-        _clear_buffer(q->w);        // RG: this is redundant, it was just cleared in mp_free_run_buffer
+        _clear_buffer(q->w);        // NB: this is no longer redundant, as it was not just cleared in mp_free_run_buffer
         q->w->buffer_state = MP_BUFFER_INITIALIZING;
         q->buffers_available--;
         return (mp_get_w());
@@ -825,8 +825,9 @@ bool mp_free_run_buffer()           // EMPTY current run buffer & advance to the
     mpBuf_t *r_now = q->r;          // save this pointer is to avoid a race condition when clearing the buffer
 
     _audit_buffers();               // DIAGNOSTIC audit for buffer chain integrity (only runs in DEBUG mode)
-    q->r = q->r->nx;                // advance to next run buffer first,
-    _clear_buffer(r_now);           // ... then clear out the old buffer (& set MP_BUFFER_EMPTY)
+    q->r = q->r->nx;                // advance to next run buffer first...
+//    _clear_buffer(r_now);           // ... then clear out the old buffer (& set MP_BUFFER_EMPTY)
+    r_now->buffer_state = MP_BUFFER_EMPTY; //... then mark the buffer empty while perserving content for debug inspection
     q->buffers_available++;
     qr_request_queue_report(-1);    // request a QR and add to the "removed buffers" count
     return (q->w == q->r);          // return true if the queue emptied

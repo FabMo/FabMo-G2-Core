@@ -45,105 +45,81 @@ static stat_t _run_p1_hold_exit_actions(void);
 static void   _sync_to_p1_hold_exit_actions_done(float* vect, bool* flag);
 static stat_t _finalize_p1_hold_exit(void);
 static stat_t _finalize_p2_hold_exit(void);
+static stat_t _feedhold_alarm_exit(void);
 
-/***********************************************************************************
- **** Feedholds ********************************************************************
- ***********************************************************************************/
+
+/****************************************************************************************
+ **** Feedholds *************************************************************************
+ ****************************************************************************************/
 /*
- *  Feedholds, queue flushes and end_holds are all related and are in this file.
- *  Feedholds are implemented as a state machine (cmFeedholdState) that runs in the 
- *  planner (plan_exec.cpp, see Feedhold Processing around line 500) and in this file.
+ *  Feedholds, queue flushes and end_holds are all related and are performed in this
+ *  file and in plan_exec.cpp. Feedholds are implemented as a state machine 
+ *  (cmFeedholdState) that runs in these files. 
  *
- *  Feedholds also use the dual planner (secondary context, or hold context) where a
- *  new canonical machine and planner are spun up and entered when a feedhold is initiated. 
- *  This allows (almost) all of the machine operations to be accessible during a feedhold.
+ *  There are 2 planners: p1 (primary planner) and p2 (secondary planner). A feedhold
+ *  received while in p1 stops motion in p1 and transitions to p2, where entry actions
+ *  like Z lift, spindle and coolant pause occur. While in p2 (almost) all machine 
+ *  operations are available. 
  *
- *  Feedholds are initiated and ended by a series of request flags (requests).
- *  The request functions set flags or change state to "REQUESTED". 
- *  The sequencing callback interprets the flags as so:
- *    - A feedhold request received during motion should be honored
- *    - A feedhold request received during a feedhold should be ignored
- *    - A feedhold request received during a motion stop should be ignored
+ *  A feedhold received while in p2 (a feedhold within a feedhold - very Inception)
+ *  stops motion in p2 and flushes the p2 planner. Control remains in p2.
  *
- *    - A queue flush request should only be honored while in a feedhold
- *    - Said queue flush request received during a feedhold should be deferred until
- *      the feedhold enters a HOLD state (i.e. until deceleration is complete and motors stop).
- *    - A queue flush request received during a motion stop should be honored
+ *  A feedhold exit request (~) received while in either p1 or p2 will execute the 
+ *  feedhold exit actions:
+ *    - Resume coolant (if paused)
+ *    - Resume spindle (if paseud) with spinup delay
+ *    - Move back to starting location in XY, then plunge in Z
+ *  Motion will resume in p1 after the exit actions complete
  *
- *    - An end_hold (cycle start) request should only be honored while in a feedhold
- *    - Said end_hold request received during a feedhold should be deferred until the
- *      feedhold enters a HOLD state (i.e. until deceleration is complete).
- *      If a queue flush request is also present the queue flush should be done first
+ *  A feedhold flush request (%) received while in either p1 or p2 will execute the
+ *  exit actions, flush the p1 and p2 queues, then stop motion at the hold point.
  */
-/*  Below the request level, feedholds work like this:
- *    - The hold is initiated by calling cm_start_hold(). cm->hold_state is set to
- *      FEEDHOLD_SYNC, motion_state is set to MOTION_HOLD, and the spindle is turned off
- *      (if it it on). The remainder of feedhold
- *      processing occurs in plan_exec.c in the mp_exec_aline() function.
+/*
+ * Feedhold Processing - Performs the following cases (listed in rough sequence order):
+ *  (0) - Feedhold request arrives or cm_start_hold()
  *
- *      - MOTION_HOLD and FEEDHOLD_SYNC tells mp_exec_aline() to begin feedhold processing
- *      after the current move segment is finished (< 5 ms later). (Cases handled by
- *      feedhold processing are listed in plan_exec.c).
+ *  Control transfers to plan_exec.cpp feedhold functions:
  *
- *    - FEEDHOLD_SYNC causes the current move in mr to be replanned into a deceleration.
- *      If the distance remaining in the executing move is sufficient for a full deceleration
- *      then motion will stop in the current block. Otherwise the deceleration phase
- *      will extend across as many blocks necessary until one will stop.
+ *  (1) - Feedhold arrives while we are in the middle executing of a block
+ *   (1a) - The block is currently accelerating - wait for the end of acceleration
+ *   (1b) - The block is in a head, but has not started execution yet - start deceleration
+ *    (1b1) - The deceleration fits into the current block
+ *    (1b2) - The deceleration does not fit and needs to continue in the next block
+ *   (1c) - The block is in a body - start deceleration
+ *    (1c1) - The deceleration fits into the current block
+ *    (1c2) - The deceleration does not fit and needs to continue in the next block
+ *   (1d) - The block is currently in the tail - wait until the end of the block
+ *   (1e) - We have a new block and a new feedhold request that arrived at EXACTLY the same time
+ *          (unlikely, but handled as 1b).
+ *  (2) - The block has decelerated to some velocity > zero, so needs continuation into next block
+ *  (3) - The block has decelerated to zero velocity
+ *   (3a) - The end of deceleration is detected inline in mp_exec_aline()
+ *   (3b) - The end of deceleration is signaled and state is transitioned
+ *  (4) - We have finished all the runtime work now we have to wait for the motors to stop
+ *   (4a) - It's a homing or probing feedhold - ditch the remaining buffer & go directly to OFF
+ *   (4b) - It's a p2 feedhold - ditch the remaining buffer & signal we want a p2 queue flush
+ *   (4c) - It's a normal feedhold - signal we want the p2 entry actions to execute
+ *  (5) - The steppers have stopped. No motion should occur. Allows hold actions to complete
  *
- *    - Once deceleration is complete hold state transitions to FEEDHOLD_FINALIZING and 
- *      the distance remaining in the bf last block is replanned up from zero velocity.
- *      The move in the bf block is NOT released (unlike normal operation), as it will
- *      be used again to restart from hold.
+ *  Control transfers back to cycle_feedhold.cpp feedhold functions:
  *
- *    - When cm_end_hold() is called it releases the hold, restarts the move and restarts
- *      the spindle if the spindle is active.
- */
-
-/* With the addition of the secondary CM, feedhold state management gets tricky.
-   What you see below is a temporary solution until we decide the general solution.
-   
-   The general solution causes a feedhold from the primary context to switch 
-   into the secondary context to perform feedhold actions. When in the secondary
-   context an additional feedhold will perform the usual STOP operation, but 
-   will remain in the secondary context, and therefore not perform any feedhold
-   actions (lifts, spindle, etc.). This is needed to support homing and probing 
-   operations from within the secondary context.
-   
-   Oddities of the general solution:
-      - Should we allow a feedhold to be performed if the tool is not moving? 
-        Right now we don't, but with the secondary context this might be useful
-   
-    What you see here is a Q&D to only allow feedholds from the primary context. 
-    It has the following limitations:
-      - Feedhold requests are only honored form the primary context
-      - Queue flush requests are only honored form the primary context
-      - Machine alarm state is not (yet) taken into account in feedhold sequencing and restart
+ *  (6) - Removing the hold state and there is queued motion - see cycle_feedhold.cpp
+ *  (7) - Removing the hold state and there is no queued motion - see cycle_feedhold.cpp
  */
 
-/***********************************************************************************
+/****************************************************************************************
  * cm_has_hold()   - return true if a hold condition exists (or a pending hold request)
- * cm_start_hold() - start a feedhhold external to feedhold request & sequencing
- *
- *  It's OK to call start_hold directly in order to get a hold quickly (see gpio.cpp)
  */
 bool cm_has_hold()
 {
     return (cm1.hold_state != FEEDHOLD_OFF);
 }
 
-void cm_start_hold()
-{
-    // Can only request a feedhold if the machine is in motion and there not one is not already in progress 
-    if ((cm1.hold_state == FEEDHOLD_OFF) && (mp_has_runnable_buffer(mp))) {
-        cm_set_motion_state(MOTION_HOLD);
-        cm1.hold_state = FEEDHOLD_SYNC;   // invokes hold from aline execution
-    }
-}
-
-/***********************************************************************************
+/****************************************************************************************
  * cm_request_feedhold()
  * cm_request_exit_hold()
  * cm_request_queue_flush()
+ * cm_start_hold() - start a feedhhold external to feedhold request & sequencing
  *
  *  p1 is the primary planner, p2 is the secondary planner, which is active if the 
  *  primary planner is in hold. IOW p2 can only be in a hold if p1 is already in one.
@@ -165,6 +141,8 @@ void cm_start_hold()
  *    - If p1 is in HOLD request_queue_flush will end p1 hold & queue flush (stop motion).
  *      Pre-defined exit actions (coolant, spindle, Z move) are completed first
  *      Any executing or pending "in-hold" moves are stopped prior to the exit actions
+ *
+ *  It's OK to call start_hold directly in order to get a hold quickly (see gpio.cpp)
  */
 
 void cm_request_feedhold(void)  // !
@@ -194,10 +172,19 @@ void cm_request_queue_flush()   // %
     }
 }
 
-/***********************************************************************************
+void cm_start_hold()
+{
+    // Can only request a feedhold if the machine is in motion and there not one is not already in progress
+    if ((cm1.hold_state == FEEDHOLD_OFF) && (mp_has_runnable_buffer(mp))) {
+        cm_set_motion_state(MOTION_HOLD);
+        cm1.hold_state = FEEDHOLD_SYNC;   // invokes hold from aline execution
+    }
+}
+
+/****************************************************************************************
  * cm_feedhold_sequencing_callback() - sequence feedhold, queue_flush, and end_hold requests
  *
- * Expected behaviors:           (no-hold means machine is not in hold, etc)
+ * Expected behaviors: (no-hold means machine is not in hold, etc)
  *
  *  (no-cycle) !    No action. Feedhold is not run (nothing to hold!)
  *  (no-hold)  ~    No action. Cannot exit a feedhold that does not exist
@@ -210,14 +197,6 @@ void cm_request_queue_flush()   // %
  *  (in-cycle) !%~  Same as above
  *  (in-cycle) !~%  Same as above (this one's an anomaly, but the intent would be to Q flush)
  */
-
-stat_t cm_feedhold_command_blocker()
-{
-    if (cm1.hold_state != FEEDHOLD_OFF) {
-        return (STAT_EAGAIN);
-    }
-    return (STAT_OK);
-}
 
 stat_t cm_feedhold_sequencing_callback()
 {
@@ -251,6 +230,12 @@ stat_t cm_feedhold_sequencing_callback()
             qr_request_queue_report(0);             // request a queue report, since we've changed the number of buffers available
     }
 
+    // special handling for alarms and job kill
+    if ((cm1.hold_state == FEEDHOLD_HOLD) && (cm_is_alarmed())) {
+        cm1.hold_exit_requested = false;
+        return(_feedhold_alarm_exit());
+    }
+
     // exit_hold runs for both ~ and % feedhold ends
     if (cm1.hold_exit_requested) {
         
@@ -268,8 +253,20 @@ stat_t cm_feedhold_sequencing_callback()
     }
     return (STAT_OK);
 }
-    
-/***********************************************************************************
+
+/****************************************************************************************
+ * cm_feedhold_command_blocker() - prevents new Gcode commands from queueing to p2 planner
+ */
+
+stat_t cm_feedhold_command_blocker()
+{
+    if (cm1.hold_state != FEEDHOLD_OFF) {
+        return (STAT_EAGAIN);
+    }
+    return (STAT_OK);
+}
+
+/****************************************************************************************
  * _run_p1_hold_entry_actions()          - run actions in p2 that complete the p1 hold
  * _sync_to_p1_hold_entry_actions_done() - final state change occurs here
  *
@@ -285,6 +282,7 @@ stat_t cm_feedhold_sequencing_callback()
  *  not run actions, so this function is never called for p2 feedholds. It's called 
  *  from an interrupt, so it only sets a flag.
  */
+
 static void _sync_to_p1_hold_entry_actions_done(float* vect, bool* flag)
 {
     cm1.hold_state = FEEDHOLD_HOLD;
@@ -292,11 +290,15 @@ static void _sync_to_p1_hold_entry_actions_done(float* vect, bool* flag)
 }
 
 static stat_t _run_p1_hold_entry_actions()
-{    
+{
+    // do not perform entry actions if in alarm state
+    if (cm_is_alarmed()) {
+        cm1.hold_state = FEEDHOLD_HOLD;
+        return (STAT_OK);
+    }
+    
     cm->hold_state = FEEDHOLD_ACTIONS_WAIT;   // penultimate state before transitioning to HOLD
-    
-    debug_trap_if_true(st_runtime_isbusy(), "_run_p1_hold_entry_actions() - runtime is busy");
-    
+        
     // copy the primary canonical machine to the secondary, 
     // fix the planner pointer, and reset the secondary planner
     memcpy(&cm2, &cm1, sizeof(cmMachine_t));
@@ -341,7 +343,7 @@ static stat_t _run_p1_hold_entry_actions()
     return (STAT_OK);
 }
 
-/***********************************************************************************
+/****************************************************************************************
  *  _run_p1_hold_exit_actions()          - initiate return from feedhold planner
  *  _sync_to_p1_hold_exit_actions_done() - callback to sync to end of planner operations
  *  _finalize_p1_hold_exit()             - callback to finsh return once moves are done 
@@ -373,7 +375,8 @@ static stat_t _run_p1_hold_exit_actions()     // LATER: if value == true return 
 
 static void _sync_to_p1_hold_exit_actions_done(float* vect, bool* flag)
 {
-    cm1.hold_state = FEEDHOLD_P1_EXIT;      // penultimate state before transitioning to FEEDHOLD_OFF
+    cm1.hold_state = FEEDHOLD_P1_EXIT;          // penultimate state before transitioning to FEEDHOLD_OFF
+ //   copy_vector(mp->position, mr->position);    // +++++ Compensate for amount of move already performed
     sr_request_status_report(SR_REQUEST_IMMEDIATE);
 }
 
@@ -397,7 +400,6 @@ static stat_t _finalize_p1_hold_exit()
     }
 
     // resume motion from primary planner or end cycle if no moves in planner
-    cm1.hold_state = FEEDHOLD_OFF;
     if (mp_has_runnable_buffer(&mp1)) {
         cm_set_motion_state(MOTION_RUN);
         cm_cycle_start();
@@ -406,10 +408,11 @@ static stat_t _finalize_p1_hold_exit()
         cm_set_motion_state(MOTION_STOP);
         cm_cycle_end();
     }
+    cm1.hold_state = FEEDHOLD_OFF;
     return (STAT_OK);
 }
 
-/***********************************************************************************
+/****************************************************************************************
  * _finalize_p2_hold_exit()
  */
 
@@ -428,7 +431,26 @@ static stat_t _finalize_p2_hold_exit()
     return (STAT_OK);
 }
 
-/***********************************************************************************
+/****************************************************************************************
+ * _feedhold_alarm_exit()
+ */
+
+static stat_t _feedhold_alarm_exit()
+{
+    cm = &cm1;                              // return to primary planner (p1)
+    mp = (mpPlanner_t *)cm->mp;             // cm->mp is a void pointer
+    mr = mp->mr;
+    
+    if (cm1.flush_state == FLUSH_WAS_RUN) { // adjust p1 planner positions to runtime positions
+        cm_reset_position_to_absolute_position(cm);
+        cm1.flush_state = FLUSH_OFF;
+    }
+    cm->cycle_state = CYCLE_OFF;
+    cm->hold_state = FEEDHOLD_OFF;
+    return (STAT_OK);
+}
+
+/****************************************************************************************
  * Queue Flush operations
  *
  * This one's complicated. See here first:

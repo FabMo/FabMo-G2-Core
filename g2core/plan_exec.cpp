@@ -44,7 +44,7 @@ static stat_t _exec_aline_body(mpBuf_t *bf); // passing bf so that body can exte
 static stat_t _exec_aline_tail(mpBuf_t *bf);
 static stat_t _exec_aline_segment(void);
 static void   _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b);
-static stat_t _exec_aline_feedhold_processing(mpBuf_t *bf);
+static stat_t _exec_aline_feedhold(mpBuf_t *bf);
 
 static void _init_forward_diffs(float v_0, float v_1);
 
@@ -403,6 +403,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
     if (mr->block_state == BLOCK_INACTIVE) {
 
         // ASSERTIONS
+
         // Zero length moves (and other too-short moves) should have already been removed earlier
         // But let's still alert the condition should it ever occur
         debug_trap_if_zero(bf->length, "mp_exec_aline() zero length move");
@@ -440,6 +441,9 @@ stat_t mp_exec_aline(mpBuf_t *bf)
         copy_vector(mr->target, bf->gm.target);
         copy_vector(mr->axis_flags, bf->axis_flags);
 
+        mr->run_bf = bf;                                // DIAGNOSTIC: points to running bf
+        mr->plan_bf = bf->nx;                           // DIAGNOSTIC: points to next bf to forward plan
+
         // characterize the move for starting section - head/body/tail 
         mr->section_state = SECTION_NEW;
         mr->section = SECTION_HEAD;
@@ -456,6 +460,9 @@ stat_t mp_exec_aline(mpBuf_t *bf)
             mr->waypoint[SECTION_BODY][axis] = mr->position[axis] + mr->unit[axis] * (mr->r->head_length + mr->r->body_length);
             mr->waypoint[SECTION_TAIL][axis] = mr->position[axis] + mr->unit[axis] * (mr->r->head_length + mr->r->body_length + mr->r->tail_length);
         }
+//        if (mr->waypoint[SECTION_TAIL][AXIS_X] < 0) {   //+++++
+//            bf->hint = (blockHint)0;
+//        }
     }
 
     // Feed Override Processing - We need to handle the following cases (listed in rough sequence order):
@@ -466,7 +473,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
         if (cm->hold_state >= FEEDHOLD_ACTIONS_START) { // handles _exec_aline_feedhold_processing case (7)
             return (STAT_NOOP);                         // VERY IMPORTANT to exit as a NOOP. No more movement
         }
-        if (_exec_aline_feedhold_processing(bf) == STAT_OK) {
+        if (_exec_aline_feedhold(bf) == STAT_OK) {
             return (STAT_OK);                           // STAT_OK terminates aline execution for this move
         }
     }
@@ -735,7 +742,7 @@ static stat_t _exec_aline_head(mpBuf_t *bf)
         if (mr->segment_time < MIN_SEGMENT_TIME) {
             debug_trap("mr->segment_time < MIN_SEGMENT_TIME (head)");
             return (STAT_OK);                               // exit without advancing position, say we're done
-        }
+        }        
         mr->section = SECTION_HEAD;                         // +++++ Redundant???
         mr->section_state = SECTION_RUNNING;
     } else {
@@ -924,7 +931,6 @@ static stat_t _exec_aline_segment()
 
 static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
 {
-
     if ((b->head_length > 0) && (b->head_time < MIN_SEGMENT_TIME)) {
         // Compute the new body time. head_time !== body_time
         b->body_length += b->head_length;
@@ -975,7 +981,7 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
 }
 
 /*********************************************************************************************
- * _exec_aline_feedhold_processing() - feedhold helper for mp_exec_aline()
+ * _exec_aline_feedhold() - feedhold helper for mp_exec_aline()
  *
  *  This function performs the bulk of the feedhold state machine processing from within 
  *  mp_exec_aline(). There is also a little chunk labeled "Feedhold Case (3-continued)".
@@ -984,49 +990,39 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
  *
  *  Returning STAT_OK ends the move. (i.e. returns STAT_OK from mp_exec_aline())
  *  Returning STAT_EAGAIN allows mp_exec_aline() to continue execution
- *
- * Feedhold Processing - We need to handle the following cases (listed in rough sequence order):
- *  (1) - Feedhold arrives while we are in the middle executing of a block
- *   (1a) - The block is currently accelerating - wait for the end of acceleration
- *   (1b) - The block is in a body - start deceleration
- *    (1b1) - The deceleration fits into the current block
- *    (1b2) - The deceleration does not fit and needs to continue in the next block
- *   (1c) - The block is in a head, but has not started execution yet - start deceleration
- *    (1c1) - The deceleration fits into the current block
- *    (1c2) - The deceleration does not fit and needs to continue in the next block
- *   (1d) - The block is currently in the tail - wait until the end of the block
- *   (1e) - We have a new block and a new feedhold request that arrived at EXACTLY the same time
- *          (unlikely, but handled as 1c).
- *  (2) - The block has decelerated to some velocity > zero, so needs continuation into next block
- *  (3) - The block has decelerated to zero velocity
- *   (3a) - The end of deceleration is detected (inline in mp_exec_aline())
- *   (3b) - The end of deceleration is signeled and transitioned
- *  (4) - We have finished all the runtime work now we have to wait for the motors to stop
- *   (4a) - It's a homing or probing feedhold - ditch the remaining buffer & go directly to OFF
- *   (4b) - It's a p2 feedhold - ditch the remaining buffer & signal we want a p2 queue flush
- *   (4c) - It's a normal feedhold - signal we want the p2 entry actions to execute
- *  (5) - The steppers have stopped. No motion should occur. Allows hold actions to complete
- *  (6) - Removing the hold state and there is queued motion - see cycle_feedhold.cpp
- *  (7) - Removing the hold state and there is no queued motion - see cycle_feedhold.cpp
  */
 
-static stat_t _exec_aline_feedhold_processing(mpBuf_t *bf) 
+static stat_t _exec_aline_feedhold(mpBuf_t *bf) 
 {
     // Case (4) - Wait for the steppers to stop
     if (cm->hold_state == FEEDHOLD_MOTORS_STOPPING) {
         if (mp_runtime_is_idle()) {                         // wait for steppers to actually finish
-            // finalize position and velocity
-            copy_vector(mr->position, mr->gm.target);                       // update position from target
-            bf->length = get_axis_vector_length(mr->target, mr->position);  // reset length in buffer //+++++ TEST THIS
-            mp_zero_segment_velocity();                                     // for reporting purposes
+            mp_zero_segment_velocity();                     // finalize velocity for reporting purposes
 
-            // when homing or probing don't stay in HOLD or execute entry actions
-            if ((cm->cycle_state == CYCLE_HOMING) || (cm->cycle_state == CYCLE_PROBE)) {
-                cm->hold_state = FEEDHOLD_OFF;
-            } else if (cm == &cm2) {                        // if in p2 hold set up a flush
+            // If in a p2 hold, exit the p2 hold set up a flush of the p2 planner queue            
+            if (cm == &cm2) {
+//                copy_vector(mp->position, mr->position);    // +++++ update planner position from runtime
                 cm->hold_state = FEEDHOLD_P2_EXIT;
-            }  else {
-                cm->hold_state = FEEDHOLD_ACTIONS_START;    // perform Z-lift, spindle, coolant actions
+            }
+            // At this point we know we are in a p1 hold
+
+            // If probing or homing, exit the move and advance to the _motion_end_callback()'s.
+            // Stop the runtime, clear the run buffer and do not transition to p2 planner.
+            else if ((cm->cycle_state == CYCLE_HOMING) || (cm->cycle_state == CYCLE_PROBE)) {
+                mr->block_state = BLOCK_INACTIVE;           // disable the rest of the runtime movement
+                mp_free_run_buffer();                       // free buffer and enable finalization move to get loaded
+                cm->hold_state = FEEDHOLD_OFF;
+            } 
+                        
+            // If exiting a regular p1 hold set state to FEEDHOLD_ACTIONS_START.
+            // This enables transition to p2 planner; then Z-lift, spindle, coolant actions
+            else {
+                if (bf->gm.linenum == 10) { // +++ DEBUG TRAP
+                    bf->override_factor *= 1.01;
+                }
+//              copy_vector(mp->position, mr->position);    // ++++ update planner position from runtime
+//              bf->length = get_axis_vector_length(mr->position, mr->target); //+++++
+                cm->hold_state = FEEDHOLD_ACTIONS_START;
             }
 
             sr_request_status_report(SR_REQUEST_IMMEDIATE);
@@ -1041,13 +1037,8 @@ static stat_t _exec_aline_feedhold_processing(mpBuf_t *bf)
         mr->block_state = BLOCK_INACTIVE;                   // invalidate mr buffer to reset the new move
         bf->block_state = BLOCK_INITIAL_ACTION;             // tell _exec to re-use the bf buffer
         cm->hold_state = FEEDHOLD_MOTORS_STOPPING;          // wait for the motors to come to a complete stop
-
-        // No point bothering with the rest of this move if homing or probing
-        if ((cm->cycle_state == CYCLE_HOMING) || (cm->cycle_state == CYCLE_PROBE)) {
-            mp_free_run_buffer();
-        }
         mp_replan_queue(mp_get_r());                        // make it replan all the blocks
-        return (STAT_OK);                                   // stop mp_exec_aline() from further execution
+        return (STAT_OK);                                   // exit from mp_exec_aline()
     }
 
     // Cases (1x), Case (2)
