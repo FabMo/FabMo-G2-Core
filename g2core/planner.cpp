@@ -179,22 +179,22 @@ void _init_planner_queue(mpPlanner_t *_mp, mpBuf_t *queue, uint8_t size)
 void planner_init(mpPlanner_t *_mp, mpPlannerRuntime_t *_mr, mpBuf_t *queue, uint8_t queue_size)
 {
     // init planner master structure
-    memset(_mp, 0, sizeof(mpPlanner_t));// clear all values, pointers and status    
-    _mp->magic_start = MAGICNUM;        // set boundary condition assertions
+    memset(_mp, 0, sizeof(mpPlanner_t));    // clear all values, pointers and status    
+    _mp->magic_start = MAGICNUM;            // set boundary condition assertions
     _mp->magic_end = MAGICNUM;
     _mp->mfo_factor = 1.00;
    
     // init planner queues
-    _mp->q.bf = queue;                  // assign puffer pool to queue manager structure
+    _mp->q.bf = queue;                      // assign puffer pool to queue manager structure
     _init_planner_queue(_mp, queue, queue_size);
  
     // init runtime structs
     _mp->mr = _mr;
-    memset(_mr, 0, sizeof(mpPlannerRuntime_t));    // clear all values, pointers and status
-    _mr->magic_start = MAGICNUM;        // mr assertions 
+    memset(_mr, 0, sizeof(mpPlannerRuntime_t)); // clear all values, pointers and status
+    _mr->magic_start = MAGICNUM;            // mr assertions 
     _mr->magic_end = MAGICNUM;
  
-    _mr->block[0].nx = &_mr->block[1];  // Handle the two "stub blocks" in the runtime structure
+    _mr->block[0].nx = &_mr->block[1];      // Handle the two "stub blocks" in the runtime structure
     _mr->block[1].nx = &_mr->block[0];
     _mr->r = &_mr->block[0];
     _mr->p = &_mr->block[1];
@@ -262,7 +262,7 @@ void mp_set_runtime_position(uint8_t axis, const float position) { mr->position[
 void mp_set_steps_to_runtime_position()
 {
     float step_position[MOTORS];
-    kn_inverse_kinematics(mr->position, step_position);      // convert lengths to steps in floating point
+    kn_inverse_kinematics(mr->position, step_position);     // convert lengths to steps in floating point
     for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
         mr->target_steps[motor] = step_position[motor];
         mr->position_steps[motor] = step_position[motor];
@@ -564,6 +564,7 @@ stat_t mp_planner_callback()
  *  We don't actually need to invalidate back-planning. Only forward planning.
  *
  */
+
 void mp_replan_queue(mpBuf_t *bf)
 {
     do {
