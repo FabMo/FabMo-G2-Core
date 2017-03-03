@@ -104,7 +104,7 @@ float mp_get_runtime_display_position(uint8_t axis) {
     }
 }
 
-/*
+/****************************************************************************************
  * mp_get_runtime_busy() - returns TRUE if motion control busy (i.e. robot is moving)
  * mp_runtime_is_idle()  - returns TRUE is steppers are not actively moving
  *
@@ -233,7 +233,7 @@ stat_t mp_aline(GCodeState_t* _gm)
     return (STAT_OK);
 }
 
-/*
+/****************************************************************************************
  * mp_plan_block_list() - plan all the blocks in the list
  *
  *  This parent function is just a dispatcher that reads forward in the list
@@ -263,10 +263,9 @@ void mp_plan_block_list()
             return;
         }
 
-        bf = _plan_block(bf);  // returns next block to plan
-
+        bf = _plan_block(bf);       // returns next block to plan
         planned_something = true;
-        mp->p = bf;  // DIAGNOSTIC - this is not needed but is set here for debugging purposes
+        mp->p = bf;                 // DIAGNOSTIC - this is not needed but is set here for debugging purposes
     }
     if (mp->planner_state > PLANNER_STARTUP) {
         if (planned_something && (cm->hold_state != FEEDHOLD_HOLD)) {
@@ -276,8 +275,8 @@ void mp_plan_block_list()
     mp->p = bf;  // update planner pointer
 }
 
-/*
- * _plan_block() - the block chain using pessimistic assumptions
+/****************************************************************************************
+ * _plan_block() - stitch and backplan a new block to the planner queue
  */
 
 static mpBuf_t* _plan_block(mpBuf_t* bf) 
@@ -297,7 +296,7 @@ static mpBuf_t* _plan_block(mpBuf_t* bf)
         }
         _calculate_override(bf);                        // adjust cruise_vmax for feed/traverse override
  //     bf->plannable_time = bf->pv->plannable_time;    // set plannable time - excluding current move
-        bf->buffer_state = MP_BUFFER_IN_PROCESS;
+        bf->buffer_state = MP_BUFFER_NOT_PLANNED;
         bf->hint = NO_HINT;                             // ensure we've cleared the hints
         
         // Time: 12us-41us
@@ -418,18 +417,18 @@ static mpBuf_t* _plan_block(mpBuf_t* bf)
                 optimal = true;   // We can't improve this entry more
             }
 
-            // DIAGNOSTICS
+            // Exit the loop if we've hit and passed the running buffer. It can happen.
             if (bf->buffer_state == MP_BUFFER_EMPTY) {
-            //     _debug_trap("Exec apparently cleared this block while we were planning it.");
-                break;  // exit the loop, we've hit and passed the running buffer
+                break;  
             }
-            // if (fp_ZERO(bf->exit_velocity) && !fp_ZERO(bf->exit_vmax)) {
-            //     _debug_trap(); // why zero?
+            
+            // if (fp_ZERO(bf->exit_velocity) && !fp_ZERO(bf->exit_vmax)) { // DIAGNOSTIC
+            //     debug_trap("_plan_block(): Why is exit velocity zero?");
             // }
 
             // We might back plan into the running or planned buffer, so we have to check.
-            if (bf->buffer_state < MP_BUFFER_PREPPED) {
-                bf->buffer_state = MP_BUFFER_PREPPED;
+            if (bf->buffer_state < MP_BUFFER_BACK_PLANNED) {
+                bf->buffer_state = MP_BUFFER_BACK_PLANNED;
             }
         }  // for loop
     }      // exits with bf pointing to a locked or EMPTY block
@@ -493,7 +492,7 @@ static void _calculate_override(mpBuf_t* bf)  // execute ramp to adjust cruise v
     // }
 }
 
-/*
+/****************************************************************************************
  * _calculate_jerk() - calculate jerk given the dynamic state
  *
  *  Set the jerk scaling to the lowest axis with a non-zero unit vector.
@@ -543,7 +542,7 @@ static void _calculate_jerk(mpBuf_t* bf)
     bf->q_recip_2_sqrt_j = q / (2 * sqrt_j);
 }
 
-/*
+/****************************************************************************************
  * _calculate_vmaxes() - compute cruise_vmax and absolute_vmax based on velocity constraints
  *
  *  The following feeds and times are compared and the longest (slowest velocity) is returned:
@@ -648,7 +647,7 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
     bf->block_time    = block_time;               // initial estimate - used for ramp computations
 }
 
-/*
+/****************************************************************************************
  * _calculate_junction_vmax() - Giseburt's Algorithm ;-)
  *
  *  WARNING: This description is out of date and needs to be updated.
