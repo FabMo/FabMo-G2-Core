@@ -30,7 +30,7 @@
 // Structures used by Gcode parser
 
 typedef struct GCodeInputValue {    // Gcode inputs - meaning depends on context
-    
+
     uint8_t next_action;            // handles G modal group 1 moves & non-modals
     cmMotionMode motion_mode;       // Group1: G0, G1, G2, G3, G38.2, G80, G81, G82, G83, G84, G85, G86, G87, G88, G89
     uint8_t program_flow;           // used only by the gcode_parser
@@ -735,7 +735,7 @@ static stat_t _execute_gcode_block(char *active_comment)
     cm_set_model_linenum(gv.linenum);
 
     EXEC_FUNC(cm_m48_enable, m48_enable);
-    
+
     if (gf.fro_control) {                                   // feedrate override
         ritorno(cm_fro_control(gv.P_word, gf.P_word));
     }
@@ -774,12 +774,12 @@ static stat_t _execute_gcode_block(char *active_comment)
 
     switch (gv.next_action) {                               // Tool length offsets
         case NEXT_ACTION_SET_TL_OFFSET: {                   // G43
-            ritorno(cm_set_tl_offset(gv.H_word, gf.H_word, false)); 
-            break; 
+            ritorno(cm_set_tl_offset(gv.H_word, gf.H_word, false));
+            break;
         }
         case NEXT_ACTION_SET_ADDITIONAL_TL_OFFSET: {        // G43.2
-            ritorno(cm_set_tl_offset(gv.H_word, gf.H_word, true)); 
-            break; 
+            ritorno(cm_set_tl_offset(gv.H_word, gf.H_word, true));
+            break;
         }
         case NEXT_ACTION_CANCEL_TL_OFFSET: {                // G49
             ritorno(cm_cancel_tl_offset());
@@ -790,7 +790,7 @@ static stat_t _execute_gcode_block(char *active_comment)
     EXEC_FUNC(cm_set_coord_system, coord_system);           // G54, G55, G56, G57, G58, G59
 
     if (gf.path_control) {                                  // G61, G61.1, G64
-        status = cm_set_path_control(MODEL, gv.path_control); 
+        status = cm_set_path_control(MODEL, gv.path_control);
     }
 
     EXEC_FUNC(cm_set_distance_mode, distance_mode);         // G90, G91
@@ -853,7 +853,11 @@ static stat_t _execute_gcode_block(char *active_comment)
         } else {
             cm_program_end();
         }
+    } else {
+      cm_program_start();
     }
+
+
     return (status);
 }
 

@@ -156,7 +156,7 @@ void canonical_machine_inits()
     cm = &cm1;                          // set global canonical machine pointer to primary machine
     mp = &mp1;                          // set global pointer to the primary planner
     mr = &mr1;                          // and primary runtime
-}    
+}
 
 void canonical_machine_init(cmMachine_t *_cm, void *_mp)
 {
@@ -220,7 +220,7 @@ void canonical_machine_reset_rotation(cmMachine_t *_cm) {
     _cm->rotation_matrix[1][1] = 1.0;
     _cm->rotation_matrix[2][2] = 1.0;
 
-    // Separately handle a z-offset so that the new plane maintains a consistent 
+    // Separately handle a z-offset so that the new plane maintains a consistent
     // distance from the old one. We only need z, since we are rotating to the z axis.
     _cm->rotation_z_offset = 0.0;
 }
@@ -391,7 +391,7 @@ void cm_set_model_linenum(const uint32_t linenum)
  * Notes on Coordinate System and Offset functions
  *
  * All positional information in the canonical machine is kept as absolute coords and in
- *    canonical units (mm, mm/min). The offsets are only used to translate in and out of 
+ *    canonical units (mm, mm/min). The offsets are only used to translate in and out of
  *    canonical form during incoming processing, and for displays in responses.
  *
  * Managing the coordinate systems & offsets is somewhat complicated. The following affect offsets:
@@ -411,7 +411,7 @@ void cm_set_model_linenum(const uint32_t linenum)
  *    - cm.tool_offset[axis]            offsets for currently selected and active tool - persistent
  *    - cm.gmx.origin_offset[axis]      G92 origin offset. Not persistent
  *
- *    - cm_get_combined_offset() puts the above together to provide a combined, active offset. 
+ *    - cm_get_combined_offset() puts the above together to provide a combined, active offset.
  *      G92 offsets are only included if it is active
  *
  *  Display offsets
@@ -420,16 +420,16 @@ void cm_set_model_linenum(const uint32_t linenum)
  *    - cm_set_display_offsets() should be called every time underlying data would cause a change
  *    - cm_set_display_offsets() takes absolute override display rules into account
  *    - Use cm_get_display_offset() to return the display offset value
- */     
-/*  Absolute Override is the Gcode G53 convention to allow one and only one Gcode block 
- *  to be run in absolute coordinates, regardless of coordinate offsets, G92 offsets, and 
- *  tool offsets. If absolute_override is set to ABSOLUTE_OVERRIDE_ON_AND_DISPLAY the display  
- *  values will be set to 0.0 for the offset value. This bit is here to support G28 and G30 
- *  return moves and other moves that run in absolute override mode but may want position 
- *  to be reported using all current offsets (work offsets), versus an explicit G53 move that 
+ */
+/*  Absolute Override is the Gcode G53 convention to allow one and only one Gcode block
+ *  to be run in absolute coordinates, regardless of coordinate offsets, G92 offsets, and
+ *  tool offsets. If absolute_override is set to ABSOLUTE_OVERRIDE_ON_AND_DISPLAY the display
+ *  values will be set to 0.0 for the offset value. This bit is here to support G28 and G30
+ *  return moves and other moves that run in absolute override mode but may want position
+ *  to be reported using all current offsets (work offsets), versus an explicit G53 move that
  *  should be displayed in absolute coordinates.
  */
- 
+
 float cm_get_combined_offset(const uint8_t axis)
 {
     if (cm->gm.absolute_override >= ABSOLUTE_OVERRIDE_ON) {
@@ -440,7 +440,7 @@ float cm_get_combined_offset(const uint8_t axis)
         offset += cm->gmx.origin_offset[axis];
     }
     return (offset);
-}    
+}
 
 float cm_get_display_offset(const GCodeState_t *gcode_state, const uint8_t axis)
 {
@@ -450,15 +450,15 @@ float cm_get_display_offset(const GCodeState_t *gcode_state, const uint8_t axis)
 void cm_set_display_offsets(GCodeState_t *gcode_state)
 {
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
-        
+
         // if absolute override is on for G53 so position should be displayed with no offsets
         if (cm->gm.absolute_override == ABSOLUTE_OVERRIDE_ON_AND_DISPLAY) {
             gcode_state->display_offset[axis] = 0;
-        } 
+        }
 
         // all other cases: position should be displayed with currently active offsets
         else {
-            gcode_state->display_offset[axis] = cm->coord_offset[cm->gm.coord_system][axis] + 
+            gcode_state->display_offset[axis] = cm->coord_offset[cm->gm.coord_system][axis] +
                                                 cm->tool_offset[axis];
             if (cm->gmx.origin_offset_enable == true) {
                 gcode_state->display_offset[axis] += cm->gmx.origin_offset[axis];
@@ -642,8 +642,8 @@ stat_t cm_set_tram(nvObj_t *nv)
             cm->rotation_matrix[2][2] = 1 - q_xx_2 - q_yy_2;
 
             // Step 4: compute the z-offset
-            cm->rotation_z_offset = (n_x*cm->probe_results[1][0] + 
-                                     n_y*cm->probe_results[1][1]) / 
+            cm->rotation_z_offset = (n_x*cm->probe_results[1][0] +
+                                     n_y*cm->probe_results[1][1]) /
                                      n_z + cm->probe_results[1][2];
         } else {
             return (STAT_COMMAND_NOT_ACCEPTED);
@@ -863,8 +863,8 @@ stat_t cm_set_g10_data(const uint8_t P_word, const bool P_flag,
                     cm->coord_offset[P_word][axis] = _to_millimeters(offset[axis]);
                 } else {
                     // Should L20 take into account G92 offsets?
-                    cm->coord_offset[P_word][axis] = cm->gmx.position[axis] - 
-                        _to_millimeters(offset[axis]) - 
+                    cm->coord_offset[P_word][axis] = cm->gmx.position[axis] -
+                        _to_millimeters(offset[axis]) -
                         cm->tool_offset[axis];
                 }
                 cm->deferred_write_flag = true;         // persist offsets once machining cycle is over
@@ -881,8 +881,8 @@ stat_t cm_set_g10_data(const uint8_t P_word, const bool P_flag,
                     tt.tt_offset[P_word][axis] = _to_millimeters(offset[axis]);
                 } else {                                // L10 should also take into account G92 offset
                     tt.tt_offset[P_word][axis] =
-                        cm->gmx.position[axis] - _to_millimeters(offset[axis]) - 
-                        cm->coord_offset[cm->gm.coord_system][axis] - 
+                        cm->gmx.position[axis] - _to_millimeters(offset[axis]) -
+                        cm->coord_offset[cm->gm.coord_system][axis] -
                         (cm->gmx.origin_offset[axis] * cm->gmx.origin_offset_enable);
                 }
                 cm->deferred_write_flag = true;         // persist offsets once machining cycle is over
@@ -963,7 +963,7 @@ static void _exec_offset(float *value, bool *flag)
     uint8_t coord_system = ((uint8_t)value[0]);         // coordinate system is passed in value[0] element
     float offsets[AXES];
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
-        offsets[axis] = cm->coord_offset[coord_system][axis] + cm->tool_offset[axis] + 
+        offsets[axis] = cm->coord_offset[coord_system][axis] + cm->tool_offset[axis] +
                         (cm->gmx.origin_offset[axis] * cm->gmx.origin_offset_enable);
     }
     mp_set_runtime_display_offset(offsets);
@@ -1066,7 +1066,7 @@ stat_t cm_set_origin_offsets(const float offset[], const bool flag[])
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (flag[axis]) {
             cm->gmx.origin_offset[axis] = cm->gmx.position[axis] -
-                                          cm->coord_offset[cm->gm.coord_system][axis] - 
+                                          cm->coord_offset[cm->gm.coord_system][axis] -
                                           cm->tool_offset[axis] -
                                           _to_millimeters(offset[axis]);
         }
@@ -1597,6 +1597,12 @@ static void _exec_program_finalize(float *value, bool *flag)
     sr_request_status_report(SR_REQUEST_IMMEDIATE);         // request a final and full status report (not filtered)
 }
 
+void cm_program_start(void) {
+  if(cm->machine_state == MACHINE_PROGRAM_END || cm->machine_state == MACHINE_READY) {
+    cm->machine_state = MACHINE_PROGRAM_STOP;
+  }
+}
+
 void cm_cycle_start()
 {
     if (cm->cycle_state == CYCLE_OFF) {                     // don't (re)start homing, probe or other canned cycles
@@ -1695,13 +1701,13 @@ static int8_t _coord(nvObj_t *nv)   // extract coordinate system from 3rd charac
  *    - tt1x, tt32x   tool table
  *    - _tex, _tra    diagnostic parameters
  *
- *  Note that this function will return an erroneous value if called by a non-axis tag, 
+ *  Note that this function will return an erroneous value if called by a non-axis tag,
  *  such as 'coph' But it should not be called in these cases in any event.
  */
 
 static int8_t _axis(const nvObj_t *nv)
 {
-    // test if this is a SYS parameter (global), in which case there will be no axis    
+    // test if this is a SYS parameter (global), in which case there will be no axis
     if (strcmp("sys", cfgArray[nv->index].group) == 0) {
         return (AXIS_TYPE_SYSTEM);
     }
@@ -2034,7 +2040,7 @@ stat_t cm_get_g30(nvObj_t *nv)   { return (get_float(nv, cm->gmx.g30_position[_a
  **** TOOL TABLE AND OFFSET GET AND SET FUNCTIONS ****
  *****************************************************/
 
-static uint8_t _tool(nvObj_t *nv) 
+static uint8_t _tool(nvObj_t *nv)
 {
     if (nv->group[0] != 0) {
         return (atoi(&nv->group[2]));   // ttNN is the group, axis is in the token
@@ -2046,7 +2052,7 @@ stat_t cm_get_tof(nvObj_t *nv) { return (get_float(nv, cm->tool_offset[_axis(nv)
 stat_t cm_set_tof(nvObj_t *nv) { return (set_float(nv, cm->tool_offset[_axis(nv)])); }
 
 stat_t cm_get_tt(nvObj_t *nv)
-{   
+{
     uint8_t toolnum = _tool(nv);
     if (toolnum > TOOLS) {
         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
@@ -2088,19 +2094,19 @@ stat_t cm_get_am(nvObj_t *nv)
 stat_t cm_set_am(nvObj_t *nv)        // axis mode
 {
     if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR) {
-        if (nv->value > AXIS_MODE_LINEAR_MAX) { 
+        if (nv->value > AXIS_MODE_LINEAR_MAX) {
             nv->valuetype = TYPE_NULL;
             return (STAT_INPUT_EXCEEDS_MAX_VALUE);
         }
     } else {
-        if (nv->value > AXIS_MODE_ROTARY_MAX) { 
+        if (nv->value > AXIS_MODE_ROTARY_MAX) {
             nv->valuetype = TYPE_NULL;
             return (STAT_INPUT_EXCEEDS_MAX_VALUE);
         }
     }
     nv->valuetype = TYPE_INT;
     cm->a[_axis(nv)].axis_mode = (cmAxisMode)nv->value;
-    return(STAT_OK);    
+    return(STAT_OK);
 }
 
 stat_t cm_get_tn(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].travel_min)); }
@@ -2151,21 +2157,21 @@ void cm_set_axis_jerk(const uint8_t axis, const float jerk)
  *  values are divided by 1,000,000 then reconstituted before use.
  *
  *  The axis_jerk() functions expect the jerk in divided-by 1,000,000 form.
- *  The set_xjm() and set_xjh() functions accept values divided by 1,000,000. 
+ *  The set_xjm() and set_xjh() functions accept values divided by 1,000,000.
  *  This is corrected to mm/min^3 by the internals of the code.
  */
 
 stat_t cm_get_vm(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].velocity_max)); }
-stat_t cm_set_vm(nvObj_t *nv) 
-{ 
+stat_t cm_set_vm(nvObj_t *nv)
+{
     uint8_t axis = _axis(nv);
-    ritorno(set_float_range(nv, cm->a[axis].velocity_max, 0, MAX_LONG)); 
+    ritorno(set_float_range(nv, cm->a[axis].velocity_max, 0, MAX_LONG));
     cm->a[axis].recip_velocity_max = 1/nv->value;
     return(STAT_OK);
 }
 
 stat_t cm_get_fr(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].feedrate_max)); }
-stat_t cm_set_fr(nvObj_t *nv) 
+stat_t cm_set_fr(nvObj_t *nv)
 {
     uint8_t axis = _axis(nv);
     ritorno(set_float_range(nv, cm->a[axis].feedrate_max, 0, MAX_LONG));
@@ -2174,7 +2180,7 @@ stat_t cm_set_fr(nvObj_t *nv)
 }
 
 stat_t cm_get_jm(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].jerk_max)); }
-stat_t cm_set_jm(nvObj_t *nv) 
+stat_t cm_set_jm(nvObj_t *nv)
 {
     uint8_t axis = _axis(nv);
     ritorno(set_float_range(nv, cm->a[axis].jerk_max, JERK_INPUT_MIN, JERK_INPUT_MAX));

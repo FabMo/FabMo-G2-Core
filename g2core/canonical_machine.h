@@ -149,7 +149,7 @@ typedef enum {                  // feed override state machine
 typedef enum {                  // queue flush state machine
     FLUSH_OFF = 0,              // no queue flush in effect
     FLUSH_REQUESTED,            // flush has been requested but not started yet
-    FLUSH_WAS_RUN               // transient state to note that a queue flush has been run 
+    FLUSH_WAS_RUN               // transient state to note that a queue flush has been run
 } cmFlushState;
 
 /*****************************************************************************
@@ -260,7 +260,7 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     uint8_t shutdown_requested;             // set non-zero to request shutdown in support of external estop (value is input number)
     bool deferred_write_flag;               // G10 data has changed (e.g. offsets) - flag to persist them
     bool hold_exit_requested;               // request exit from feedhold
-    bool job_kill_requested;                // ^d job kill received 
+    bool job_kill_requested;                // ^d job kill received
     bool return_flags[AXES];                // flags for recording which axes moved - used in feedhold exit move
 
     cmHomingState homing_state;             // home: homing cycle sub-state machine
@@ -422,7 +422,7 @@ void cm_reset_overrides(void);
 stat_t cm_m48_enable(uint8_t enable);                           // M48, M49
 stat_t cm_fro_control(const float P_word, const bool P_flag);   // M50
 stat_t cm_tro_control(const float P_word, const bool P_flag);   // M50.1
-// See spindle.cpp for cm_spo_control()                         // M51        
+// See spindle.cpp for cm_spo_control()                         // M51
 
 // Program Functions (4.3.10)
 void cm_cycle_start(void);                                      // (no Gcode)
@@ -431,6 +431,8 @@ void cm_canned_cycle_end(void);                                 // end of canned
 void cm_program_stop(void);                                     // M0
 void cm_optional_program_stop(void);                            // M1
 void cm_program_end(void);                                      // M2
+
+void cm_program_start(void); // (no Gcode)
 
 stat_t cm_json_command(char *json_string);                      // M100
 stat_t cm_json_wait(char *json_string);                         // M102
@@ -675,7 +677,7 @@ stat_t cm_set_gdi(nvObj_t *nv);         // set gcode default distance mode
   void cm_print_zb(nvObj_t *nv);
   void cm_print_cofs(nvObj_t *nv);
   void cm_print_cpos(nvObj_t *nv);
-  
+
 #else // __TEXT_MODE
 
     #define cm_print_vel tx_print_stub      // model state reporting
