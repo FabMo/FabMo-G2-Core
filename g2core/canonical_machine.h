@@ -115,10 +115,10 @@ typedef enum {                  // feedhold state machine
     FEEDHOLD_SYNC,              // start hold - sync to latest aline segment
     FEEDHOLD_DECEL_CONTINUE,    // in deceleration that will not end at zero
     FEEDHOLD_DECEL_TO_ZERO,     // in deceleration that will go to zero
-    FEEDHOLD_DECEL_COMPLETE,    // feedhold deceleration has completed
-    FEEDHOLD_MOTORS_STOPPING,   // waiting to complete deceleration once planner motion stops
-    FEEDHOLD_ACTIONS_START,     // enter secondary planner and perform feedhold actions (once)
-    FEEDHOLD_ACTIONS_WAIT,      // wait for feedhold actions to complete
+    FEEDHOLD_DECEL_COMPLETE,    // feedhold deceleration has completed, but motors may not have stopped yet
+    FEEDHOLD_MOTORS_STOPPING,   // waiting for motors to have stopped on hold point (motion stop)
+    FEEDHOLD_P2_START,          // enter secondary planner and perform feedhold actions (once)
+    FEEDHOLD_P2_WAIT,           // wait for feedhold actions to complete
     FEEDHOLD_HOLD,              // holding (steady state) Must be last state
     FEEDHOLD_P2_EXIT            // set when p2 feedhold is finishing
 } cmFeedholdState;
@@ -259,8 +259,9 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     uint8_t limit_requested;                // set non-zero to request limit switch processing (value is input number)
     uint8_t shutdown_requested;             // set non-zero to request shutdown in support of external estop (value is input number)
     bool deferred_write_flag;               // G10 data has changed (e.g. offsets) - flag to persist them
+    
     bool hold_exit_requested;               // request exit from feedhold
-    bool job_kill_requested;                // ^d job kill received
+    bool hold_abort_requested;              // request emergency exit from feedhold (typically ^d job kill) 
     bool return_flags[AXES];                // flags for recording which axes moved - used in feedhold exit move
 
     cmHomingState homing_state;             // home: homing cycle sub-state machine
@@ -724,6 +725,8 @@ stat_t cm_set_gdi(nvObj_t *nv);         // set gcode default distance mode
     #define cm_print_fro tx_print_stub
     #define cm_print_troe tx_print_stub
     #define cm_print_tro tx_print_stub
+    #define cm_print_tram tx_print_stub
+
     #define cm_print_tram tx_print_stub
 
     #define cm_print_am tx_print_stub    // axis print functions
