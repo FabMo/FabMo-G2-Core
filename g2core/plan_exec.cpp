@@ -188,7 +188,7 @@ stat_t mp_forward_plan()
 {
     mpBuf_t *bf = mp_get_run_buffer();
     float entry_velocity;
-    
+        
     // Case 0: Examine current running buffer for early exit conditions
     if (bf == NULL) {                               // case 0a: NULL means nothing is running - this is OK
         st_prep_null();
@@ -247,7 +247,7 @@ stat_t mp_exec_move()
 
     // It is possible to try to try to exec from a priming planner if coming off a hold
     // This occurs if new p1 commands (and were held back) arrived while in a hold
-//    if (mp->planner_state <= PLANNER_PRIMING) {
+//    if (mp->planner_state <= MP_BUFFER_BACK_PLANNED) {
 //        st_prep_null();
 //        return (STAT_NOOP);
 //    }
@@ -266,7 +266,7 @@ stat_t mp_exec_move()
     }
 
     if (bf->block_type == BLOCK_TYPE_ALINE) {             // cycle auto-start for lines only
-
+//    if ((bf->block_type == BLOCK_TYPE_ALINE) || (bf->block_type == BLOCK_TYPE_COMMAND)) {
         // first-time operations
         if (bf->buffer_state != MP_BUFFER_RUNNING) {
             if ((bf->buffer_state < MP_BUFFER_BACK_PLANNED) && (cm->motion_state == MOTION_RUN)) {
@@ -306,10 +306,8 @@ stat_t mp_exec_move()
             st_request_forward_plan();
         }
 
-        // Manage motion state transitions
-        if ((cm->motion_state != MOTION_RUN) && (cm->motion_state != MOTION_HOLD)) {
-            cm_set_motion_state(MOTION_RUN);                // also sets active model to RUNTIME
-        }
+        // Perform motion state transition. Also sets active model to RUNTIME
+//        if (cm->motion_state != MOTION_RUN) { cm_set_motion_state(MOTION_RUN); }
     }
     if (bf->bf_func == NULL) {
         return(cm_panic(STAT_INTERNAL_ERROR, "mp_exec_move()")); // never supposed to get here
@@ -407,6 +405,12 @@ stat_t mp_exec_move()
 
 stat_t mp_exec_aline(mpBuf_t *bf)
 {
+    // don't run the block if the machine is not in cycle
+    if (cm_get_machine_state() != MACHINE_CYCLE) {
+        return (STAT_NOOP);
+    }
+
+    // don't run the block if the block is inactive
     if (bf->block_state == BLOCK_INACTIVE) {
         return (STAT_NOOP);
     }
@@ -479,9 +483,9 @@ stat_t mp_exec_aline(mpBuf_t *bf)
     // Feed Override Processing - We need to handle the following cases (listed in rough sequence order):
 
     // Feedhold Processing - We need to handle the following cases (listed in rough sequence order):
-    if (cm->motion_state == MOTION_HOLD) {
-        // if FEEDHOLD_P2_START, FEEDHOLD_P2_WAIT, FEEDHOLD HOLD or FEEDHOLD_P2_EXIT
-        if (cm->hold_state >= FEEDHOLD_P2_START) { // handles _exec_aline_feedhold_processing case (7)
+    if (cm->hold_state != FEEDHOLD_OFF) {
+        // if running actions, or in HOLD state, or exiting with actions
+        if (cm->hold_state >= FEEDHOLD_MOTION_STOPPED) { // handles _exec_aline_feedhold_processing case (7)
             return (STAT_NOOP);                    // VERY IMPORTANT to exit as a NOOP. Do not load another move
         }
         // STAT_OK terminates aline execution for this move
@@ -525,6 +529,11 @@ stat_t mp_exec_aline(mpBuf_t *bf)
             bf->block_state = BLOCK_INITIAL_ACTION;     // reset bf so it can restart the rest of the move
         }
     }
+    
+    // Perform motion state transition. Also sets active model to RUNTIME
+    if (cm->motion_state != MOTION_RUN) { 
+        cm_set_motion_state(MOTION_RUN); 
+    }
 
     // There are 4 things that can happen here depending on return conditions:
     //  status        bf->block_state       Description
@@ -546,6 +555,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
         if (bf->block_state == BLOCK_ACTIVE) {
             if (mp_free_run_buffer()) {                 // returns true of the buffer is empty
                 if (cm->hold_state == FEEDHOLD_OFF) {
+                    cm_set_motion_state(MOTION_STOP);   // also sets active model to RUNTIME
                     cm_cycle_end();                     // free buffer & end cycle if planner is empty
                 }
             } else {
@@ -757,8 +767,9 @@ static stat_t _exec_aline_head(mpBuf_t *bf)
             debug_trap("mr->segment_time < MIN_SEGMENT_TIME (head)");
             return (STAT_OK);                               // exit without advancing position, say we're done
         }
+        // If this trap ever fires put this statement back in: mr->section = SECTION_HEAD;
         debug_trap_if_true(mr->section != SECTION_HEAD, "exec_aline() Not section head");
-        mr->section = SECTION_HEAD;                         // +++++ Redundant???
+
         mr->section_state = SECTION_RUNNING;
     } else {
         mr->segment_velocity += mr->forward_diff_5;
@@ -802,8 +813,9 @@ static stat_t _exec_aline_body(mpBuf_t *bf)
             debug_trap("mr->segment_time < MIN_SEGMENT_TIME (body)");
             return (STAT_OK);                               // exit without advancing position, say we're done
         }
+        // If this trap ever fires put this statement back in: mr->section = SECTION_BODY;
         debug_trap_if_true(mr->section != SECTION_BODY, "exec_aline() Not section body");
-        mr->section = SECTION_BODY;                         // +++++ Redundant???
+
         mr->section_state = SECTION_RUNNING;                // uses PERIOD_2 so last segment detection works
     }
     if (_exec_aline_segment() == STAT_OK) {                 // OK means this section is done
@@ -843,8 +855,9 @@ static stat_t _exec_aline_tail(mpBuf_t *bf)
             debug_trap("mr->segment_time < MIN_SEGMENT_TIME (tail)");
             return (STAT_OK);                               // exit without advancing position, say we're done
         }
+        // If this trap ever fires put this statement back in: mr->section = SECTION_TAIL;
         debug_trap_if_true(mr->section != SECTION_TAIL, "exec_aline() Not section tail");
-        mr->section = SECTION_TAIL;                         // +++++ Redundant???
+
         mr->section_state = SECTION_RUNNING;
     } else {
         mr->segment_velocity += mr->forward_diff_5;
@@ -891,7 +904,7 @@ static stat_t _exec_aline_segment()
     // Otherwise if not at a section waypoint compute target from segment time and velocity
     // Don't do waypoint correction if you are going into a hold.
 
-    if ((--mr->segment_count == 0) && (cm->motion_state != MOTION_HOLD)) {
+    if ((--mr->segment_count == 0) && (cm->hold_state == FEEDHOLD_OFF)) {
         copy_vector(mr->gm.target, mr->waypoint[mr->section]);
     } else {
         float segment_length = mr->segment_velocity * mr->segment_time;
@@ -970,7 +983,7 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
 
         // We'll add the time to either the head or the tail or split it
         if (b->tail_length > 0) {
-            if (b->head_length > 0) {       // Split the body to the head and tail
+            if (b->head_length > 0) {           // Split the body to the head and tail
                 b->head_length += b->body_length * 0.5;
                 b->tail_length += b->body_length * 0.5; // let the compiler optimize out one of these *
                 b->head_time = (2.0 * b->head_length) / (mr->entry_velocity + b->cruise_velocity);
@@ -984,7 +997,7 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
                 b->body_time = 0;
             }
         }
-        else if (b->head_length > 0) {       // Put it all in the head
+        else if (b->head_length > 0) {          // Put it all in the head
             b->head_length += b->body_length;
             b->head_time = (2.0 * b->head_length) / (mr->entry_velocity + b->cruise_velocity);
             b->body_length = 0;
@@ -1019,51 +1032,32 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
 static stat_t _exec_aline_feedhold(mpBuf_t *bf) 
 {
     // Case (4) - Completing the feedhold - Wait for the steppers to stop
-    if (cm->hold_state == FEEDHOLD_MOTORS_STOPPING) {
+    if (cm->hold_state == FEEDHOLD_MOTION_STOPPING) {
         if (mp_runtime_is_idle()) {                         // wait for steppers to actually finish
-            mp_zero_segment_velocity();                     // finalize velocity for reporting purposes
-
-            // If in a p2 hold, exit the p2 hold immediately set up a flush of the p2 planner queue            
-            if (cm == &cm2) {
-                cm->hold_state = FEEDHOLD_P2_EXIT;
-                return (STAT_OK);                           // will end this exec_aline() with no more movement
-            }
-            // At this point we know we are in a p1 hold
-    
-            // If probing or homing, exit the move and advance to the _motion_end_callback()'s.
-            // Stop the runtime, clear the run buffer and do not transition to p2 planner.
-            else if ((cm->cycle_state == CYCLE_HOMING) || (cm->cycle_state == CYCLE_PROBE)) {
-                mr->block_state = BLOCK_INACTIVE;           // disable the rest of the runtime movement
-                mp_free_run_buffer();                       // free buffer and enable finalization move to get loaded
-                cm->hold_state = FEEDHOLD_OFF;
-            } 
-
-            // In a regular p1 hold. Motion has stopped, so we can rely on positions and other values to be stable
-            else {
-  
-                // Reset the state of the p1 planner regardless of how hold will ultimately be exited.
+ 
+            // Motion has stopped, so we can rely on positions and other values to be stable
+            // If SKIP type, discard the remainder of the block and position to the next block
+            if (cm->hold_type == FEEDHOLD_TYPE_SKIP) {
+                copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
+                mp_free_run_buffer();                       // advance to next block, discarding the rest of the move
+            } else { // Otherwise setup the block to complete motion (regardless of how hold will ultimately be exited)
                 bf->length = get_axis_vector_length(mr->position, mr->target); // update bf w/remaining length in move
                 bf->block_state = BLOCK_INITIAL_ACTION;     // tell _exec to re-use the bf buffer
-                mr->block_state = BLOCK_INACTIVE;           // invalidate mr buffer to reset the new move
-                bf->plannable = true;                       // needed so black can be adjusted
-                mp_replan_queue(mp_get_r());                // unplan current forward plan (bf head block), and reset all blocks
-                st_request_forward_plan();                  // replan the current bf buffer
-                
-                // Set state to enable transition to p2 and perform entry actions in the p2 planner
-                cm->hold_state = FEEDHOLD_P2_START;         // executes entirely out of p2 planner
+                bf->plannable = true;                       // needed so block can be replanned
             }
-            
+            mr->reset();                                    // reset MR for next use and for forward planning
+            cm_set_motion_state(MOTION_STOP);
+            cm->hold_state = FEEDHOLD_MOTION_STOPPED;
             sr_request_status_report(SR_REQUEST_IMMEDIATE);
-            cs.controller_state = CONTROLLER_READY;         // remove controller readline() PAUSE
+//          cs.controller_state = CONTROLLER_READY; // Can this be removed? +++++ // remove controller readline() PAUSE
         }
         return (STAT_NOOP);                                 // hold here. leave with a NOOP so it does not attempt another load and exec.
     }
 
     // Case (3') - Decelerated to zero. See also Feedhold Case (3) in mp_exec_aline()
-    // Update the run buffer then force a replan of the whole planner queue. Replans from zero velocity
-    // This state might not appear necessary, but it is to handle closely packed !~ and other cases
+    // This state is needed to return an OK to complete the aline exec before transitioning to case (4).
     if (cm->hold_state == FEEDHOLD_DECEL_COMPLETE) {
-        cm->hold_state = FEEDHOLD_MOTORS_STOPPING;          // wait for the motors to come to a complete stop
+        cm->hold_state = FEEDHOLD_MOTION_STOPPING;          // wait for motion to come to a complete stop
         return (STAT_OK);                                   // exit from mp_exec_aline()
     }
 

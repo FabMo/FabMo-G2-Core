@@ -25,9 +25,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* util.c/.h contains a dog's breakfast of supporting functions that are
- * not specific to g2core: including:
- *
+/* util.c/.h contains a dog's breakfast of supporting functions that are not specific 
+ *  to g2core: including:
  *  - math and min/max utilities and extensions
  *  - vector manipulation utilities
  *  - support for debugging routines
@@ -49,6 +48,12 @@ using Motate::SysTickTimer;
 #include <cmath> // isnan, isinf
 
 /****** Global Scope Variables and Functions ******/
+/*
+#pragma GCC push_options        // DIAGNOSTIC +++++
+#pragma GCC optimize ("O0")     // DIAGNOSTIC +++++
+// insert function here
+#pragma GCC reset_options       // DIAGNOSTIC +++++
+*/
 
 //*** vector utilities ***
 
@@ -134,6 +139,7 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 // Constants
 #define MAX_LONG (2147483647)
 #define MAX_ULONG (4294967295)
+#define MAX_FP_INTEGER (8388608)  // maximum integer 32 bit FP will represent exactly (23 bits)
 #define MM_PER_INCH (25.4)
 #define INCHES_PER_MM (1/25.4)
 #define MICROSECONDS_PER_MINUTE ((float)60000000)

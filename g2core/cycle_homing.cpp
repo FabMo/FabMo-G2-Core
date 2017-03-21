@@ -170,7 +170,7 @@ stat_t cm_homing_cycle_start(const float axes[], const bool flags[]) {
     hm.axis          = -1;                  // set to retrieve initial axis
     hm.func          = _homing_axis_start;  // bind initial processing function
     cm->machine_state = MACHINE_CYCLE;
-    cm->cycle_state   = CYCLE_HOMING;
+    cm->cycle_type    = CYCLE_HOMING;
     cm->homing_state  = HOMING_NOT_HOMED;
     return (STAT_OK);
 }
@@ -186,7 +186,7 @@ stat_t cm_homing_cycle_start_no_set(const float axes[], const bool flags[]) {
  */
 
 stat_t cm_homing_cycle_callback(void) {
-    if (cm->cycle_state != CYCLE_HOMING) {  // exit if not in a homing cycle
+    if (cm->cycle_type != CYCLE_HOMING) {   // exit if not in a homing cycle
         return (STAT_NOOP);
     }
     if (hm.waiting_for_motion_end) {        // sync to planner move ends (using callback)
@@ -300,7 +300,7 @@ static stat_t _homing_axis_clear_init(int8_t axis)  // first clear move
  */
 static stat_t _homing_axis_search(int8_t axis)  // drive to switch
 {
-    cm_set_axis_jerk(axis, cm->a[axis].jerk_high);  // use the high-speed jerk for search onward
+    cm_set_axis_max_jerk(axis, cm->a[axis].jerk_high);  // use the high-speed jerk for search onward
     _homing_axis_move(axis, hm.search_travel, hm.search_velocity);
     return (_set_homing_func(_homing_axis_clear));
 }
@@ -346,7 +346,7 @@ static stat_t _homing_axis_set_position(int8_t axis)
         kn_forward_kinematics(en_get_encoder_snapshot_vector(), contact_position);
         _homing_axis_move(axis, contact_position[AXIS_Z], hm.search_velocity);
     }
-    cm_set_axis_jerk(axis, hm.saved_jerk);  // restore the max jerk value
+    cm_set_axis_max_jerk(axis, hm.saved_jerk);  // restore the max jerk value
 
     gpio_set_homing_mode(hm.homing_input, false);  // end homing mode
     return (_set_homing_func(_homing_axis_start));
@@ -371,7 +371,7 @@ static stat_t _homing_axis_move(int8_t axis, float target, float velocity) {
     flags[axis] = true;
     cm_set_feed_rate(velocity);
 
-    stat_t status = cm_straight_feed(vect, flags);
+    stat_t status = cm_straight_feed(vect, flags, PROFILE_FAST);
     if (status != STAT_OK) {
         rpt_exception(status, "Homing move failed. Check min/max settings");
         return (_homing_error_exit(axis, STAT_HOMING_CYCLE_FAILED));

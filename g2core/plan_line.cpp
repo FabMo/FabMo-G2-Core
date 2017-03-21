@@ -113,7 +113,7 @@ float mp_get_runtime_display_position(uint8_t axis) {
  */
 bool mp_get_runtime_busy() 
 {
-    if (cm->cycle_state == CYCLE_OFF) {
+    if (cm->cycle_type == CYCLE_NONE) {
         return (false);
     }
     if ((st_runtime_isbusy() == true) || 
@@ -262,7 +262,6 @@ void mp_plan_block_list()
             mp->p = mp->p->nx;
             return;
         }
-
         bf = _plan_block(bf);       // returns next block to plan
         planned_something = true;
         mp->p = bf;                 // DIAGNOSTIC - this is not needed but is set here for debugging purposes

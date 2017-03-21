@@ -133,9 +133,8 @@ const cfgItem_t cfgArray[] = {
     { "", "frmo",_f0, 0, cm_print_frmo, cm_get_frmo, set_ro, (float *)&cs.null, 0 },    // feed rate mode
     { "", "tool",_f0, 0, cm_print_tool, cm_get_toolv,set_ro, (float *)&cs.null, 0 },    // active tool
     { "", "g92e",_f0, 0, cm_print_g92e, get_ui8,     set_ro, (float *)&cm->gmx.origin_offset_enable, 0 }, // G92 enabled
-
 #ifdef TEMPORARY_HAS_LEDS
-    { "",   "_leds",_f0, 0, tx_print_nul, _get_leds,_set_leds,(float *)&cs.null, 0 },   // TEMPORARY - change LEDs
+    { "", "_leds",_f0, 0, tx_print_nul, _get_leds,_set_leds, (float *)&cs.null, 0 },    // TEMPORARY - change LEDs
 #endif
 
     { "mpo","mpox",_f0, 5, cm_print_mpo, cm_get_mpo, set_ro, (float *)&cs.null, 0 },    // X machine position
@@ -667,7 +666,7 @@ const cfgItem_t cfgArray[] = {
     { "", "qi",  _f0, 0, qr_print_qi,   qi_get,    set_nul,   (float *)&cs.null, 0 },   // get queue value - buffers added to queue
     { "", "qo",  _f0, 0, qr_print_qo,   qo_get,    set_nul,   (float *)&cs.null, 0 },   // get queue value - buffers removed from queue
     { "", "er",  _f0, 0, tx_print_nul,  rpt_er,    set_nul,   (float *)&cs.null, 0 },   // get bogus exception report for testing
-    { "", "qf",  _f0, 0, tx_print_nul,  get_nul,   cm_run_qf, (float *)&cs.null, 0 },   // SET to invoke queue flush
+//    { "", "qf",  _f0, 0, tx_print_nul,  get_nul,   cm_run_qf, (float *)&cs.null, 0 },   // SET to invoke queue flush
     { "", "rx",  _f0, 0, tx_print_int,  get_rx,    set_nul,   (float *)&cs.null, 0 },   // get RX buffer bytes or packets
     { "", "dw",  _f0, 0, tx_print_int,  st_get_dw, set_noop,  (float *)&cs.null, 0 },   // get dwell time remaining
     { "", "msg", _f0, 0, tx_print_str,  get_nul,   set_noop,  (float *)&cs.null, 0 },   // no operation on messages

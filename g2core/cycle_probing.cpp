@@ -36,6 +36,7 @@
 #include "report.h"
 #include "gpio.h"
 #include "planner.h"
+#include "stepper.h"
 #include "util.h"
 #include "xio.h"
 
@@ -54,7 +55,7 @@ struct pbProbingSingleton {             // persistent probing runtime variables
     int8_t probe_input;                 // digital input to read
     bool trip_sense;                    // true if contact CLOSURE trips probe  (true for G38.2 and G38.3)
     bool alarm_flag;                    // true if failure triggers alarm       (true for G38.2 and G38.4)
-    bool wait_for_motion_end;           // flag to know when the motion has ended
+    bool waiting_for_motion_complete;   // true if waiting for a motion to complete
     stat_t (*func)();                   // binding for callback function state machine
 
     // saved gcode model state
@@ -169,7 +170,7 @@ uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool al
 
     // queue a function to let us know when we can start probing
     cm->probe_state[0] = PROBE_WAITING;      // wait until planner queue empties before starting movement
-    pb.wait_for_motion_end = true;
+    pb.waiting_for_motion_complete = true;
     mp_queue_command(_motion_end_callback, nullptr, nullptr);  // note: these args are ignored
     return (STAT_OK);
 } 
@@ -184,13 +185,36 @@ uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool al
 
 uint8_t cm_probing_cycle_callback(void) 
 {
-    if ((cm->cycle_state != CYCLE_PROBE) && (cm->probe_state[0] != PROBE_WAITING)) { 
-        return (STAT_NOOP);         // exit if not in a probing cycle
+    if ((cm->cycle_type != CYCLE_PROBE) && (cm->probe_state[0] != PROBE_WAITING)) { 
+        return (STAT_NOOP);                 // exit if not in a probing cycle
     }
-    if (pb.wait_for_motion_end) {   // sync to planner move ends (using callback)
+    if (pb.waiting_for_motion_complete) {   // sync to planner move ends (using callback)
         return (STAT_EAGAIN);
     }
-    return (pb.func());             // execute the current probing move
+    return (pb.func());                     // execute the current probing move
+}
+
+/***********************************************************************************
+ * _probe_move()          - function to execute probing moves
+ * _motion_end_callback() - callback completes when motion has stopped
+ *
+ *  target[] must be provided in machine canonical coordinates (absolute, mm)
+ *  cm_set_absolute_override() also zeros work offsets, which are restored on exit.
+ */
+
+static void _motion_end_callback(float* vect, bool* flag)
+{
+    pb.waiting_for_motion_complete = false;
+}
+
+static stat_t _probe_move(const float target[], const bool flags[])
+{
+    cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON);  
+    pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
+    cm_straight_feed(target, flags, PROFILE_FAST);  // NB: feed rate was set earlier, so it's OK
+    mp_queue_command(_motion_end_callback, nullptr, nullptr); // the last two arguments are ignored anyway
+//    st_request_forward_plan();                      //+++++
+    return (STAT_EAGAIN);
 }
 
 /***********************************************************************************
@@ -207,7 +231,7 @@ static uint8_t _probing_start()
     
     cm->probe_state[0] = PROBE_FAILED;
     cm->machine_state = MACHINE_CYCLE;
-    cm->cycle_state = CYCLE_PROBE;
+    cm->cycle_type = CYCLE_PROBE;
 
     // save relevant non-axis parameters from Gcode model
     pb.saved_distance_mode = (cmDistanceMode)cm_get_distance_mode(ACTIVE_MODEL);
@@ -222,7 +246,7 @@ static uint8_t _probing_start()
     // Save the current jerk settings & change to the high-speed jerk settings
     for (uint8_t axis = 0; axis < AXES; axis++) {
         pb.saved_jerk[axis] = cm_get_axis_jerk(axis);  // save the max jerk value
-        cm_set_axis_jerk(axis, cm->a[axis].jerk_high);  // use the high-speed jerk for probe
+        cm_set_axis_max_jerk(axis, cm->a[axis].jerk_high);  // use the high-speed jerk for probe
     }
 
     // Error if the probe target is too close to the current position
@@ -265,28 +289,6 @@ static stat_t _probing_backoff()
         cm->probe_state[0] = PROBE_FAILED;
     }
     pb.func = _probing_finish;
-    return (STAT_EAGAIN);
-}
-
-/***********************************************************************************
- * _probe_move()          - function to execute probing moves
- * _motion_end_callback() - callback completes when motion has stopped
- *
- *  target[] must be provided in machine canonical coordinates (absolute, mm)
- *  cm_set_absolute_override() also zeros work offsets, which are restored on exit.
- */
-
-static void _motion_end_callback(float* vect, bool* flag)
-{
-    pb.wait_for_motion_end = false;
-}
-
-static stat_t _probe_move(const float target[], const bool flags[])
-{
-    cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON);  
-    pb.wait_for_motion_end = true;          // set this BEFORE the motion starts
-    cm_straight_feed(target, flags);        // NB: feed rate was set earlier, so it's OK
-    mp_queue_command(_motion_end_callback, nullptr, nullptr); // the last two arguments are ignored anyway
     return (STAT_EAGAIN);
 }
 

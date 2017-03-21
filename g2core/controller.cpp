@@ -142,7 +142,9 @@ static void _controller_HSM()
 //      See hardware.h for a list of ISRs and their priorities.
 //
 //----- kernel level ISR handlers ----(flags are set in ISRs)------------------------//
-                                                // Order is important:
+
+    // Order is important, and line breaks indicate dependency groups
+
     DISPATCH(hardware_periodic());              // give the hardware a chance to do stuff
     DISPATCH(_led_indicator());                 // blink LEDs at the current rate
     DISPATCH(_shutdown_handler());              // invoke shutdown
@@ -159,13 +161,16 @@ static void _controller_HSM()
     DISPATCH(sr_status_report_callback());      // conditionally send status report
     DISPATCH(qr_queue_report_callback());       // conditionally send queue report
 
-    DISPATCH(cm_feedhold_sequencing_callback());// feedhold state machine runner
+    // these 3 must be in this exact order:
     DISPATCH(mp_planner_callback());            // motion planner
+    DISPATCH(cm_operation_runner_callback());   // operation action runner
     DISPATCH(cm_arc_callback(cm));              // arc generation runs as a cycle above lines
+
     DISPATCH(cm_homing_cycle_callback());       // homing cycle operation (G28.2)
     DISPATCH(cm_probing_cycle_callback());      // probing cycle operation (G38.2)
     DISPATCH(cm_jogging_cycle_callback());      // jog cycle operation
     DISPATCH(cm_deferred_write_callback());     // persist G10 changes when not in machining cycle
+
     DISPATCH(cm_feedhold_command_blocker());    // blocks new Gcode from arriving while in feedhold
 
 //----- command readers and parsers --------------------------------------------------//
@@ -236,10 +241,10 @@ static void _dispatch_kernel(const devflags_t flags)
     }
 
     // trap single character commands
-    if      (*cs.bufp == '!') { cm_request_feedhold(); }
+    if      (*cs.bufp == '!') { cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_CYCLE); }
     else if (*cs.bufp == '%') { cm_request_queue_flush(); xio_flush_to_command(); }
-    else if (*cs.bufp == '~') { cm_request_exit_hold(); }
-    else if (*cs.bufp == EOT) { cm_job_kill(); }
+    else if (*cs.bufp == '~') { cm_request_cycle_start(); }
+    else if (*cs.bufp == EOT) { cm_request_job_kill(); }
     else if (*cs.bufp == ENQ) { controller_request_enquiry(); }
     else if (*cs.bufp == CAN) { hw_hard_reset(); }          // reset immediately
 
@@ -432,7 +437,7 @@ static stat_t _interlock_handler(void)
         if (cm->safety_interlock_disengaged != 0) {
             cm->safety_interlock_disengaged = 0;
             cm->safety_interlock_state = SAFETY_INTERLOCK_DISENGAGED;
-            cm_request_feedhold();                                  // may have already requested STOP as INPUT_ACTION
+            cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_INTERLOCK);  // may have already requested STOP as INPUT_ACTION
             // feedhold was initiated by input action in gpio
             // pause spindle
             // pause coolant
@@ -442,7 +447,8 @@ static stat_t _interlock_handler(void)
         if ((cm->safety_interlock_reengaged != 0) && (mp_runtime_is_idle())) {
             cm->safety_interlock_reengaged = 0;
             cm->safety_interlock_state = SAFETY_INTERLOCK_ENGAGED;  // interlock restored
-            cm_request_exit_hold();                                 // use cm_request_exit_hold() instead of just ending
+//            cm_request_exit_hold();                                 // use cm_request_exit_hold() instead of just ending +++++
+            cm_request_cycle_start();                               // proper way to restart the cycle
         }
     }
     return(STAT_OK);
