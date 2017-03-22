@@ -50,6 +50,7 @@
 #define JERK_INPUT_MAX      (1000000)       // maximum allowable jerk setting in millions mm/min^3
 #define PROBES_STORED       3               // we store three probes for coordinate rotation computation
 #define RADIUS_MIN          (0.0001)        // minimum value for ABC radius settings
+#define MAX_LINENUM         2000000000      // set 2 billion as max line number
 
 /*****************************************************************************
  * MACHINE STATE MODEL
@@ -375,7 +376,7 @@ float cm_get_feed_rate(const GCodeState_t *gcode_state);
 void cm_set_motion_mode(GCodeState_t *gcode_state, const uint8_t motion_mode);
 void cm_set_tool_number(GCodeState_t *gcode_state, const uint8_t tool);
 void cm_set_absolute_override(GCodeState_t *gcode_state, const uint8_t absolute_override);
-void cm_set_model_linenum(uint32_t linenum);
+void cm_set_model_linenum(int32_t linenum);
 
 // Coordinate systems and offsets
 float cm_get_combined_offset(const uint8_t axis);
@@ -421,10 +422,10 @@ stat_t cm_set_absolute_origin(const float origin[], bool flag[]);           // G
 void cm_set_axis_origin(uint8_t axis, const float position);                // G28.3 planner callback
 
 stat_t cm_set_coord_system(const uint8_t coord_system);                     // G54 - G59
-stat_t cm_set_origin_offsets(const float offset[], const bool flag[]);      // G92
-stat_t cm_reset_origin_offsets(void);                                       // G92.1
-stat_t cm_suspend_origin_offsets(void);                                     // G92.2
-stat_t cm_resume_origin_offsets(void);                                      // G92.3
+stat_t cm_set_g92_offsets(const float offset[], const bool flag[]);      // G92
+stat_t cm_reset_g92_offsets(void);                                       // G92.1
+stat_t cm_suspend_g92_offsets(void);                                     // G92.2
+stat_t cm_resume_g92_offsets(void);                                      // G92.3
 
 // Free Space Motion (4.3.4)
 //stat_t cm_straight_traverse(const float target[], const bool flags[]);      // G0
@@ -570,6 +571,7 @@ stat_t cm_get_ofs(nvObj_t *nv);         // get runtime work offset
 stat_t cm_get_coord(nvObj_t *nv);       // get coordinate offset
 stat_t cm_set_coord(nvObj_t *nv);       // set coordinate offset
 
+stat_t cm_get_g92e(nvObj_t *nv);        // get g92 enable state
 stat_t cm_get_g92(nvObj_t *nv);         // get g92 offset
 stat_t cm_get_g28(nvObj_t *nv);         // get g28 offset
 stat_t cm_get_g30(nvObj_t *nv);         // get g30 offset
