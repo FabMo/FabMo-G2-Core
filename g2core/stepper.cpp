@@ -44,18 +44,9 @@
 
 #include "MotateDebug.h"
 
-/* Note: stepper_debug statements removed 1/16/17 in SHA eb0905ccae03c04f99e6f471cbe029002f0324c6. See earlier commits to recover
-// Unless debugging, this should always read "#if 0 && ..."
-// DON'T COMMIT with anything else!
-// 
-#if 0 && (IN_DEBUGGER == 1)
-template<int32_t len>
-void stepper_debug(const char (&str)[len]) { Motate::debug.write(str); };
-#else
-template<int32_t len>
-void stepper_debug(const char (&str)[len]) { ; };
-#endif
-*/
+/* Note: stepper_debug statements removed 1/16/17 in SHA eb0905ccae03c04f99e6f471cbe029002f0324c6. 
+ * See earlier commits to recover
+ */
 
 /**** Allocate structures ****/
 
@@ -66,9 +57,6 @@ static stRunSingleton_t st_run;
 /**** Static functions ****/
 
 static void _load_move(void);
-
-// handy macro
-//#define _f_to_period(f) (uint16_t)((float)F_CPU / (float)f)
 
 /**** Setup motate ****/
 
@@ -128,11 +116,11 @@ void stepper_init()
     dda_timer.setInterrupts(kInterruptOnOverflow | kInterruptPriorityHighest);
 
     // setup software interrupt exec timer & initial condition
-    exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityMedium);
+    exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityHigh);
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_EXEC;
 
     // setup software interrupt forward plan timer & initial condition
-    fwd_plan_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityLow);
+    fwd_plan_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityMedium);
 
     // setup motor power levels and apply power level to stepper drivers
     for (uint8_t motor=0; motor<MOTORS; motor++) {
@@ -215,6 +203,7 @@ stat_t st_clc(nvObj_t *nv)    // clear diagnostic counters, reset stepper prep
  *
  *  Handles motor power-down timing, low-power idle, and adaptive motor power
  */
+
 stat_t st_motor_power_callback()     // called by controller
 {
     if (!mp_is_phat_city_time()) {   // don't process this if you are time constrained in the planner
@@ -222,7 +211,10 @@ stat_t st_motor_power_callback()     // called by controller
     }
 
     bool have_actually_stopped = false;
-    if ((!st_runtime_isbusy()) && (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER)) {    // if there are no moves to load...
+    if ((!st_runtime_isbusy()) &&
+        (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) &&
+//        (cm_get_cycle_state() == CYCLE_OFF)
+        (cm_get_machine_state() != MACHINE_CYCLE)) {    // if there are no moves to load...
         have_actually_stopped = true;
     }
 
@@ -427,7 +419,7 @@ static void _load_move()
     // Be aware that dda_ticks_downcount must equal zero for the loader to run.
     // So the initial load must also have this set to zero as part of initialization
     if (st_runtime_isbusy()) {
-        return;                                                 // exit if the runtime is busy
+        return;                     // exit if the runtime is busy
     }
 
     // If there are no moves to load start motor power timeouts
@@ -646,8 +638,8 @@ stat_t st_prep_line(float travel_steps[], float following_error[], float segment
         return (cm_panic(STAT_PREP_LINE_MOVE_TIME_IS_INFINITE, "st_prep_line()"));
     } else if (isnan(segment_time)) {                           // never supposed to happen
         return (cm_panic(STAT_PREP_LINE_MOVE_TIME_IS_NAN, "st_prep_line()"));
-    } else if (segment_time < EPSILON) {
-        return (STAT_MINIMUM_TIME_MOVE);
+//    } else if (segment_time < EPSILON) {
+//        return (STAT_MINIMUM_TIME_MOVE);
     }
     // setup segment parameters
     // - dda_ticks is the integer number of DDA clock ticks needed to play out the segment
@@ -828,8 +820,8 @@ static float _set_motor_steps_per_unit(nvObj_t *nv)
  */
 
 // motor axis mapping
-stat_t st_get_ma(nvObj_t *nv) { return(get_int(nv, st_cfg.mot[_motor(nv->index)].motor_map)); }
-stat_t st_set_ma(nvObj_t *nv) { return(set_int(nv, st_cfg.mot[_motor(nv->index)].motor_map, 0, AXES)); }
+stat_t st_get_ma(nvObj_t *nv) { return(get_integer(nv, st_cfg.mot[_motor(nv->index)].motor_map)); }
+stat_t st_set_ma(nvObj_t *nv) { return(set_integer(nv, st_cfg.mot[_motor(nv->index)].motor_map, 0, AXES)); }
 
 // step angle
 stat_t st_get_sa(nvObj_t *nv) { return(get_float(nv, st_cfg.mot[_motor(nv->index)].step_angle)); }
@@ -850,22 +842,22 @@ stat_t st_set_tr(nvObj_t *nv)
 }
 
 // microsteps
-stat_t st_get_mi(nvObj_t *nv) { return(get_int(nv, st_cfg.mot[_motor(nv->index)].microsteps)); }
+stat_t st_get_mi(nvObj_t *nv) { return(get_integer(nv, st_cfg.mot[_motor(nv->index)].microsteps)); }
 stat_t st_set_mi(nvObj_t *nv)
 {
-    if (nv->value <= 0) {
+    if (nv->value_int <= 0) {
         nv->valuetype = TYPE_NULL;
         return (STAT_INPUT_LESS_THAN_MIN_VALUE);
     }
 
-    uint8_t mi = (uint8_t)nv->value;
+    uint8_t mi = (uint8_t)nv->value_int;
     if ((mi != 1) && (mi != 2) && (mi != 4) && (mi != 8) && (mi != 16) && (mi != 32)) {
         nv_add_conditional_message((const char *)"*** WARNING *** Setting non-standard microstep value");
     }
     // set it anyway, even if it's unsupported
-    ritorno(set_int(nv, st_cfg.mot[_motor(nv->index)].microsteps, 1, 255));
+    ritorno(set_integer(nv, st_cfg.mot[_motor(nv->index)].microsteps, 1, 255));
     _set_motor_steps_per_unit(nv);
-    _set_hw_microsteps(_motor(nv->index), (uint8_t)nv->value);
+    _set_hw_microsteps(_motor(nv->index), nv->value_int);
     return (STAT_OK);
 }
 
@@ -879,19 +871,19 @@ stat_t st_set_su(nvObj_t *nv)
 {
     // Don't set a zero or negative value - just calculate based on sa, tr, and mi
     // This way, if STEPS_PER_UNIT is set to 0 it is unused and we get the computed value
-    if(nv->value <= 0) {
-        nv->value = _set_motor_steps_per_unit(nv);
+    if(nv->value_flt <= 0) {
+        nv->value_flt = _set_motor_steps_per_unit(nv);
         return(STAT_OK);
     }
 
     // Do unit conversion here because it's a reciprocal value (rather than process_incoming_float())
     if (cm_get_units_mode(MODEL) == INCHES) {
         if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR) {
-            nv->value *= INCHES_PER_MM;
+            nv->value_flt *= INCHES_PER_MM;
         }
     }    
     uint8_t m = _motor(nv->index);
-    st_cfg.mot[m].steps_per_unit = nv->value;
+    st_cfg.mot[m].steps_per_unit = nv->value_flt;
     st_cfg.mot[m].units_per_step = 1.0/st_cfg.mot[m].steps_per_unit;
 
     // Scale TR so all the other values make sense
@@ -902,14 +894,14 @@ stat_t st_set_su(nvObj_t *nv)
 }
 
 // polarity
-stat_t st_get_po(nvObj_t *nv) { return(get_int(nv, st_cfg.mot[_motor(nv->index)].polarity)); }
-stat_t st_set_po(nvObj_t *nv) { return(set_int(nv, st_cfg.mot[_motor(nv->index)].polarity, 0, 1)); }
+stat_t st_get_po(nvObj_t *nv) { return(get_integer(nv, st_cfg.mot[_motor(nv->index)].polarity)); }
+stat_t st_set_po(nvObj_t *nv) { return(set_integer(nv, st_cfg.mot[_motor(nv->index)].polarity, 0, 1)); }
 
 // power management mode
 stat_t st_get_pm(nvObj_t *nv)
 {
-    nv->value = (float)Motors[_motor(nv->index)]->getPowerMode();
-    nv->valuetype = TYPE_INT;
+    nv->value_int = (float)Motors[_motor(nv->index)]->getPowerMode();
+    nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
 
@@ -917,8 +909,8 @@ stat_t st_set_pm(nvObj_t *nv)
 {
     // Test the value without setting it, then setPowerMode() now
     // to both set and take effect immediately.
-    ritorno(set_int(nv, (uint8_t &)cs.null, 0, MOTOR_POWER_MODE_MAX_VALUE ));
-    Motors[_motor(nv->index)]->setPowerMode((stPowerMode)nv->value);
+    ritorno(set_integer(nv, (uint8_t &)cs.null, 0, MOTOR_POWER_MODE_MAX_VALUE ));
+    Motors[_motor(nv->index)]->setPowerMode((stPowerMode)nv->value_int);
     return (STAT_OK);
 }
 
@@ -935,7 +927,7 @@ stat_t st_set_pl(nvObj_t *nv)
 {
     uint8_t m = _motor(nv->index);
     ritorno(set_float_range(nv, st_cfg.mot[m].power_level, 0.0, 1.0));
-    st_cfg.mot[m].power_level_scaled = (nv->value * POWER_LEVEL_SCALE_FACTOR);
+    st_cfg.mot[m].power_level_scaled = (nv->value_flt * POWER_LEVEL_SCALE_FACTOR);
     st_run.mot[m].power_level_dynamic = (st_cfg.mot[m].power_level_scaled);
     Motors[m]->setPowerLevel(st_cfg.mot[m].power_level_scaled);
     return(STAT_OK);
@@ -954,7 +946,7 @@ stat_t st_get_pwr(nvObj_t *nv)
     uint8_t motor = (cfgArray[nv->index].token[3] & 0x0F) - 1;
     if (motor > MOTORS) { return STAT_INPUT_VALUE_RANGE_ERROR; };
 
-    nv->value = Motors[motor]->getCurrentPowerLevel(motor);
+    nv->value_flt = Motors[motor]->getCurrentPowerLevel(motor);
 	nv->valuetype = TYPE_FLOAT;
     nv->precision = cfgArray[nv->index].precision;
 	return (STAT_OK);
@@ -984,7 +976,7 @@ stat_t st_set_mt(nvObj_t *nv) { return(set_float_range(nv, st_cfg.motor_power_ti
 stat_t st_set_me(nvObj_t *nv)    
 {
     for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
-        Motors[motor]->enable(nv->value);   // nv->value is the timeout or 0 for default
+        Motors[motor]->enable(nv->value_int);   // nv->value is the timeout or 0 for default
     }
     return (STAT_OK);
 }
@@ -993,29 +985,29 @@ stat_t st_set_me(nvObj_t *nv)
 // nv-value is motor to disable, or 0 for all motors
 stat_t st_set_md(nvObj_t *nv)    
 {
-    if (nv->value < 0) {
+    if (nv->value_int < 0) {
         nv->valuetype = TYPE_NULL;
         return (STAT_INPUT_LESS_THAN_MIN_VALUE);
     }
-    if (nv->value > MOTORS) {
+    if (nv->value_int > MOTORS) {
         nv->valuetype = TYPE_NULL;
         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
     }    
     // de-energize all motors
-    if ((uint8_t)nv->value == 0) {      // 0 means all motors
+    if ((uint8_t)nv->value_int == 0) {      // 0 means all motors
         for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
             Motors[motor]->disable();
         }
     } else {                            // otherwise it's just one motor
-         Motors[(uint8_t)nv->value -1]->disable();
+         Motors[(uint8_t)nv->value_int -1]->disable();
     }
     return (STAT_OK);
 }
 
 stat_t st_get_dw(nvObj_t *nv) 
 {
-    nv->value = st_run.dwell_ticks_downcount;
-    nv->valuetype = TYPE_INT;
+    nv->value_int = st_run.dwell_ticks_downcount;
+    nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
 
@@ -1051,25 +1043,25 @@ void st_print_mt(nvObj_t *nv) { text_print(nv, fmt_mt);}    // TYPE_FLOAT
 
 static void _print_motor_int(nvObj_t *nv, const char *format)
 {
-    sprintf(cs.out_buf, format, nv->group, nv->token, nv->group, (int)nv->value);
+    sprintf(cs.out_buf, format, nv->group, nv->token, nv->group, (int)nv->value_int);
     xio_writeline(cs.out_buf);
 }
 
 static void _print_motor_flt(nvObj_t *nv, const char *format)
 {
-    sprintf(cs.out_buf, format, nv->group, nv->token, nv->group, nv->value);
+    sprintf(cs.out_buf, format, nv->group, nv->token, nv->group, nv->value_flt);
     xio_writeline(cs.out_buf);
 }
 
 static void _print_motor_flt_units(nvObj_t *nv, const char *format, uint8_t units)
 {
-    sprintf(cs.out_buf, format, nv->group, nv->token, nv->group, nv->value, GET_TEXT_ITEM(msg_units, units));
+    sprintf(cs.out_buf, format, nv->group, nv->token, nv->group, nv->value_flt, GET_TEXT_ITEM(msg_units, units));
     xio_writeline(cs.out_buf);
 }
 
 static void _print_motor_pwr(nvObj_t *nv, const char *format)
 {
-    sprintf(cs.out_buf, format, nv->group, nv->token, nv->token[0], nv->value);
+    sprintf(cs.out_buf, format, nv->group, nv->token, nv->token[0], nv->value_flt);
     xio_writeline(cs.out_buf);
 }
 

@@ -2,8 +2,8 @@
  * xio.h - extended IO functions
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2016 Alden S. Hart Jr.
- * Copyright (c) 2013 - 2016 Robert Giseburt
+ * Copyright (c) 2013 - 2017 Alden S. Hart Jr.
+ * Copyright (c) 2013 - 2017 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -48,9 +48,10 @@
 #ifndef XIO_H_ONCE
 #define XIO_H_ONCE
 
-//#include "g2core.h"                // not required if used in g2core project
+//#include "g2core.h"           // not required if used in g2core project
 #include "config.h"             // required for nvObj typedef
 #include "canonical_machine.h"  // needed for cm_has_hold()
+#include "settings.h"           // needed for MARLIN_COMPAT_ENABLED
 
 /**** Defines, Macros, and  Assorted Parameters ****/
 
@@ -59,8 +60,6 @@
 
 #undef  _FDEV_EOF
 #define _FDEV_EOF -2
-
-#define USB_LINE_BUFFER_SIZE    255         // text buffer size
 
 //*** Device flags ***
 typedef uint16_t devflags_t;                // might need to bump to 32 be 16 or 32
@@ -110,7 +109,7 @@ enum xioSPIMode {
 
 /**** readline stuff *****/
 
-#define RX_BUFFER_MIN_SIZE       256        // minimum requested buffer size (they are usually larger)
+#define RX_BUFFER_SIZE       512            // maximum length of recieved lines from xio_readline
 
 /**** function prototypes ****/
 
@@ -122,6 +121,9 @@ char *xio_readline(devflags_t &flags, uint16_t &size);
 int16_t xio_writeline(const char *buffer, bool only_to_muted = false);
 bool xio_connected();
 void xio_flush_to_command();
+#if MARLIN_COMPAT_ENABLED == true
+void xio_exit_fake_bootloader();
+#endif
 
 stat_t xio_set_spi(nvObj_t *nv);
 
@@ -156,13 +158,11 @@ extern "C" {
 
 /* Signal character mappings */
 
-#define CHAR_RESET CAN
-#define CHAR_ALARM EOT
-#define CHAR_FEEDHOLD (char)'!'
-#define CHAR_CYCLE_START (char)'~'
-#define CHAR_QUEUE_FLUSH (char)'%'
-//#define CHAR_BOOTLOADER ESC
-
+#define CHAR_RESET CAN              // Control X - Reset Board
+#define CHAR_ALARM EOT              // Control D - Kill Job
+#define CHAR_FEEDHOLD (char)'!'     // Feedhold
+#define CHAR_CYCLE_START (char)'~'  // Feedhold Exit and Resume
+#define CHAR_QUEUE_FLUSH (char)'%'  // Feedhold Exit and Flush  
 
 /**** xio_flash_file - object to hold in-flash (compiled-in) "files" to run ****/
 

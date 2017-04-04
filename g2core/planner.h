@@ -164,15 +164,15 @@ typedef enum {                      // planner operating state
     PLANNER_IDLE = 0,               // planner and movement are idle
     PLANNER_STARTUP,                // ingesting blocks before movement is started
     PLANNER_PRIMING,                // preparing new moves for planning ("stitching")
-    PLANNER_BACK_PLANNING           // plan by planning all blocks, from the newest added to the running block
+    PLANNER_BACK_PLANNING           // actively backplanning all blocks, from the newest added to the running block
 } plannerState;
 
 typedef enum {                      // bf->buffer_state values in incresing order so > and < can be used
     MP_BUFFER_EMPTY = 0,            // buffer is available for use (MUST BE 0)
     MP_BUFFER_INITIALIZING,         // buffer has been checked out and is being initialzed by aline() or a command
-    MP_BUFFER_IN_PROCESS,           // planning is in progress - at least vmaxes have been set
-    MP_BUFFER_PREPPED,              // buffer ready for final planning; velocities have been set
-    MP_BUFFER_PLANNED,              // buffer fully planned. May still be replanned
+    MP_BUFFER_NOT_PLANNED,          // planning is in progress - at least vmaxes have been set
+    MP_BUFFER_BACK_PLANNED,         // buffer ready for final planning; velocities have been set
+    MP_BUFFER_FULLY_PLANNED,        // buffer fully planned. May still be replanned
     MP_BUFFER_RUNNING,              // current running buffer
     MP_BUFFER_POLAND,               // Hitler used Poland as a buffer state
     MP_BUFFER_UKRAINE               // Later Stalin did the same to Ukraine
@@ -182,6 +182,7 @@ typedef enum {                      // bf->block_type values
     BLOCK_TYPE_NULL = 0,            // MUST=0  null move - does a no-op
     BLOCK_TYPE_ALINE = 1,           // MUST=1  acceleration planned line
     BLOCK_TYPE_COMMAND = 2,         // MUST=2  general command
+                                    // All other non-move commands are > BLOCK_TYPE_COMMAND
     BLOCK_TYPE_DWELL,               // Gcode dwell
     BLOCK_TYPE_JSON_WAIT,           // JSON wait command
     BLOCK_TYPE_TOOL,                // T command (T, not M6 tool change)
@@ -225,21 +226,6 @@ typedef enum {                      // code blocks for planning and trapezoid ge
     ASYMMETRIC_BUMP,                // (Ve != Vx) < Vc
 } blockHint;
 
-typedef enum {
-    ZOID_EXIT_NULL = 0,
-    ZOID_EXIT_1a,
-    ZOID_EXIT_1c,
-    ZOID_EXIT_1d,
-    ZOID_EXIT_2a,
-    ZOID_EXIT_2c,
-    ZOID_EXIT_2d,
-    ZOID_EXIT_3c,
-    ZOID_EXIT_3s,
-    ZOID_EXIT_3s2,
-    ZOID_EXIT_3d2,
-    ZOID_EXIT_3a2
-} zoidExitPoint;
-
 /*** Most of these factors are the result of a lot of tweaking. Change with caution.***/
 
 #define PLANNER_QUEUE_SIZE          ((uint8_t)48)       // Suggest 12 min. Limit is 255
@@ -250,9 +236,12 @@ typedef enum {
 #define JUNCTION_INTEGRATION_MIN    (0.05)              // JT minimum allowable setting
 #define JUNCTION_INTEGRATION_MAX    (5.00)              // JT maximum allowable setting
 
+#ifndef MIN_SEGMENT_MS                                  // boards can override this value in hardware.h
 #define MIN_SEGMENT_MS              ((float)0.75)       // minimum segment milliseconds
-#define NOM_SEGMENT_MS              ((float)1.5)        // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
-#define MIN_BLOCK_MS                ((float)1.5)        // minimum block (whole move) milliseconds
+#endif
+#define NOM_SEGMENT_MS              ((float)MIN_SEGMENT_MS * 2) // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
+#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS * 2) // minimum block (whole move) milliseconds
+
 #define BLOCK_TIMEOUT_MS            ((float)30.0)       // MS before deciding there are no new blocks arriving
 #define PHAT_CITY_MS                ((float)100.0)      // if you have at least this much time in the planner
 
@@ -286,7 +275,7 @@ typedef enum {
 #define Veq2_lo 1.0
 #define VELOCITY_ROUGHLY_EQ(v0,v1) ( (v0 > Vthr2) ? fabs(v0-v1) < Veq2_hi : fabs(v0-v1) < Veq2_lo )
 
-/* Diagnostics */
+/* Planner Diagnostics */
 
 //#define __PLANNER_DIAGNOSTICS   // comment this out to drop diagnostics
 
@@ -395,7 +384,6 @@ typedef struct mpBuffer {
         plannable_length = 0;
         meet_iterations = 0;
 #endif
-
         buffer_state = MP_BUFFER_EMPTY;
         block_type = BLOCK_TYPE_NULL;
         block_state = BLOCK_INACTIVE;
@@ -405,7 +393,6 @@ typedef struct mpBuffer {
             unit[i] = 0;
             axis_flags[i] = 0;
         }
-
         plannable = false;
         length = 0.0;
         block_time = 0.0;
@@ -477,7 +464,10 @@ typedef struct mpPlannerRuntime {       // persistent runtime variables
 
     mpBlockRuntimeBuf_t *r;             // block that is running
     mpBlockRuntimeBuf_t *p;             // block that is being planned, p might == r
-    mpBlockRuntimeBuf_t bf[2];          // buffer holding the two blocks
+    mpBlockRuntimeBuf_t block[2];       // buffer holding the two blocks
+
+    mpBuf_t *plan_bf;                   // DIAGNOSTIC - pointer to next buffer to plan
+    mpBuf_t *run_bf;                    // DIAGNOSTIC - pointer to currently running buffer
 
     float entry_velocity;               // entry values for the currently running block
 
@@ -501,8 +491,11 @@ typedef struct mpPlannerRuntime {       // persistent runtime variables
         block_state = BLOCK_INACTIVE;
         section = SECTION_HEAD;
         section_state = SECTION_OFF;
+        entry_velocity = 0;             // needed to ensure next block in forward planning starts from 0 velocity
+        r->exit_velocity = 0;           // ditto
+        segment_velocity = 0;
     }
-        
+
 } mpPlannerRuntime_t;
 
 //**** Master Planner Structure ***
@@ -581,7 +574,7 @@ extern mpBuf_t mp2_queue[SECONDARY_QUEUE_SIZE]; // storage allocation for second
 
 void planner_init(mpPlanner_t *_mp, mpPlannerRuntime_t *_mr, mpBuf_t *queue, uint8_t queue_size);
 void planner_reset(mpPlanner_t *_mp);
-stat_t planner_test_assertions(const mpPlanner_t *_mp);
+stat_t planner_assert(const mpPlanner_t *_mp);
 
 void mp_halt_runtime(void);
 
@@ -589,10 +582,11 @@ void mp_set_planner_position(uint8_t axis, const float position);
 void mp_set_runtime_position(uint8_t axis, const float position);
 void mp_set_steps_to_runtime_position(void);
 
-void mp_queue_command(void(*cm_exec_t)(float[], bool[]), float *value, bool *flag);
+void mp_queue_command(void(*cm_exec)(float *, bool *), float *value, bool *flag);
 stat_t mp_runtime_command(mpBuf_t *bf);
 
 stat_t mp_json_command(char *json_string);
+stat_t mp_json_command_immediate(char *json_string);
 stat_t mp_json_wait(char *json_string);
 
 stat_t mp_dwell(const float seconds);
@@ -639,12 +633,12 @@ void mp_set_runtime_display_offset(float offset[]);
 bool mp_get_runtime_busy(void);
 bool mp_runtime_is_idle(void);
 
-stat_t mp_aline(GCodeState_t *gm_in);                   // line planning...
+stat_t mp_aline(GCodeState_t *_gm);                   // line planning...
 void mp_plan_block_list(void);
 void mp_plan_block_forward(mpBuf_t *bf);
 
 //**** plan_zoid.c functions
-void mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const float entry_velocity);
+stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const float entry_velocity);
 float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t *bf);
 float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t *bf); // acceleration ONLY
 float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t *bf);  // deceleration ONLY

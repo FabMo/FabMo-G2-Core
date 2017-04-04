@@ -24,37 +24,6 @@
 
 /**** Gcode-specific definitions ****/
 
-/* The difference between NextAction and MotionMode is that NextAction is
- * used by the current block, and may carry non-modal commands, whereas
- * MotionMode persists across blocks (as G modal group 1)
- */
-
-typedef enum {                          // these are in order to optimized CASE statement
-    NEXT_ACTION_DEFAULT = 0,            // Must be zero (invokes motion modes)
-    NEXT_ACTION_DWELL,                  // G4
-    NEXT_ACTION_SET_G10_DATA,           // G10
-    NEXT_ACTION_GOTO_G28_POSITION,      // G28 go to machine position
-    NEXT_ACTION_SET_G28_POSITION,       // G28.1 set position in abs coordinates
-    NEXT_ACTION_SEARCH_HOME,            // G28.2 homing cycle
-    NEXT_ACTION_SET_ABSOLUTE_ORIGIN,    // G28.3 origin set
-    NEXT_ACTION_HOMING_NO_SET,          // G28.4 homing cycle with no coordinate setting
-    NEXT_ACTION_GOTO_G30_POSITION,      // G30 go to machine position
-    NEXT_ACTION_SET_G30_POSITION,       // G30.1 set position in abs coordinates
-    NEXT_ACTION_STRAIGHT_PROBE_ERR,     // G38.2
-    NEXT_ACTION_STRAIGHT_PROBE,         // G38.3
-    NEXT_ACTION_STRAIGHT_PROBE_AWAY_ERR,// G38.4
-    NEXT_ACTION_STRAIGHT_PROBE_AWAY,    // G38.5
-    NEXT_ACTION_SET_TL_OFFSET,          // G43
-    NEXT_ACTION_SET_ADDITIONAL_TL_OFFSET,// G43.2
-    NEXT_ACTION_CANCEL_TL_OFFSET,       // G49
-    NEXT_ACTION_SET_ORIGIN_OFFSETS,     // G92
-    NEXT_ACTION_RESET_ORIGIN_OFFSETS,   // G92.1
-    NEXT_ACTION_SUSPEND_ORIGIN_OFFSETS, // G92.2
-    NEXT_ACTION_RESUME_ORIGIN_OFFSETS,  // G92.3
-    NEXT_ACTION_JSON_COMMAND_SYNC,      // M100
-    NEXT_ACTION_JSON_WAIT               // M101
-} cmNextAction;
-
 typedef enum {                          // G Modal Group 1
     MOTION_MODE_STRAIGHT_TRAVERSE=0,    // G0 - straight traverse
     MOTION_MODE_STRAIGHT_FEED,          // G1 - straight feed
@@ -73,29 +42,8 @@ typedef enum {                          // G Modal Group 1
     MOTION_MODE_CANNED_CYCLE_89         // G89 - boring, dwell, feed out
 } cmMotionMode;
 
-typedef enum {                          // Used for detecting gcode errors. See NIST section 3.4
-    MODAL_GROUP_G0 = 0,                 // {G10,G28,G28.1,G92}  non-modal axis commands (note 1)
-    MODAL_GROUP_G1,                     // {G0,G1,G2,G3,G80}    motion
-    MODAL_GROUP_G2,                     // {G17,G18,G19}        plane selection
-    MODAL_GROUP_G3,                     // {G90,G91}            distance mode
-    MODAL_GROUP_G5,                     // {G93,G94}            feed rate mode
-    MODAL_GROUP_G6,                     // {G20,G21}            units
-    MODAL_GROUP_G7,                     // {G40,G41,G42}        cutter radius compensation
-    MODAL_GROUP_G8,                     // {G43,G49}            tool length offset
-    MODAL_GROUP_G9,                     // {G98,G99}            return mode in canned cycles
-    MODAL_GROUP_G12,                    // {G54,G55,G56,G57,G58,G59} coordinate system selection
-    MODAL_GROUP_G13,                    // {G61,G61.1,G64}      path control mode
-    MODAL_GROUP_M4,                     // {M0,M1,M2,M30,M60}   stopping
-    MODAL_GROUP_M6,                     // {M6}                 tool change
-    MODAL_GROUP_M7,                     // {M3,M4,M5}           spindle turning
-    MODAL_GROUP_M8,                     // {M7,M8,M9}           coolant (M7 & M8 may be active together)
-    MODAL_GROUP_M9                      // {M48,M49}            speed/feed override switches
-} cmModalGroup;
-#define MODAL_GROUP_COUNT (MODAL_GROUP_M9+1)
-// Note 1: Our G0 omits G4,G30,G53,G92.1,G92.2,G92.3 as these have no axis components to error check
-
 typedef enum {              // canonical plane - translates to:
-    //     axis_0  axis_1  axis_2
+                            //     axis_0  axis_1  axis_2
     CANON_PLANE_XY = 0,     // G17    X      Y      Z
     CANON_PLANE_XZ,         // G18    X      Z      Y
     CANON_PLANE_YZ          // G19    Y      Z      X
@@ -120,8 +68,8 @@ typedef enum {
 
 typedef enum {
     ABSOLUTE_OVERRIDE_OFF = 0,          // G53 disabled
-    ABSOLUTE_OVERRIDE_ON,               // G53 enabled for movement
-    ABSOLUTE_OVERRIDE_ON_AND_DISPLAY    // G53 enabled for movement and display
+    ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS,   // G53 enabled for movement, displays use current offsets
+    ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_NO_OFFSETS // G53 enabled for movement, displays use no offset
 } cmAbsoluteOverride;
 
 typedef enum {              // G Modal Group 13
@@ -176,45 +124,46 @@ typedef enum {              // axis modes (ordered: see _cm_get_feed_time())
 
 /* Gcode state structures */
 
-/*****************************************************************************
+/****************************************************************************************
  * GCODE MODEL - The following GCodeModel/GCodeInput structs are used:
  *
- * - gm is the core Gcode model state. It keeps the internal gcode state model in
- *   normalized, canonical form. All values are unit converted (to mm) and in the
- *   machine coordinate system (absolute coordinate system). Gm is owned by the
+ * - gm is the core Gcode model state. It keeps the internal gcode state model in 
+ *   normalized canonical form. All values are unit converted (to mm) and in the 
+ *   machine coordinate system (absolute coordinate system). Gm is owned by the 
  *   canonical machine layer and should be accessed only through cm_ routines.
  *
- *   The gm core struct is copied and passed as context to the runtime where it is
- *   used for planning, move execution, feedholds, and reporting.
+ *   The gm core struct is copied and passed as context to the runtime where it is used 
+ *   for planning, move execution, feedholds, and reporting.
  *
  * - gmx is the extended gcode model variables that are only used by the canonical
- *   machine and do not need to be passed further down. It keeps "global" gcode
- *   state that does not change when you go down through the planner to the runtime.
- *   Other Gcode model state is kept in the singletons for various sub-systems, such
- *   as arcs, spindle, coolant, and others (i.e. not ALL gcode global state is in gmx)
+ *   machine and do not need to be passed further down. It keeps "global" gcode state
+ *   that does not change when you go down through the planner to the runtime. Other
+ *   Gcode model state is kept in the singletons for various sub-systems, such as arcs
+ *   spindle, coolant, and others (i.e. not ALL gcode global state is in gmx)
  *
- * - gn is used by the gcode interpreter and is re-initialized for each
- *   gcode block.It accepts data in the new gcode block in the formats
- *   present in the block (pre-normalized forms). During initialization
- *   some state elements are necessarily restored from gm.
+ * - gn is used by the gcode interpreter and is re-initialized for each gcode block.
+ *   It accepts data in the new gcode block in the formats present in the block 
+ *   (pre-normalized forms). During initialization some state elements are necessarily 
+ *    restored from gm.
  *
- * - gf is used by the gcode parser interpreter to hold flags for any data
- *   that has changed in gn during the parse. gf.target[] values are also used
- *   by the canonical machine during set_target().
+ * - gf is used by the gcode parser interpreter to hold flags for any data that has 
+ *   changed in gn during the parse. gf.target[] values are also used by the canonical 
+ *   machine during set_target().
  *
- * - cfg (config struct in config.h) is also used heavily and contains some
- *   values that might be considered to be Gcode model values. The distinction
- *   is that all values in the config are persisted and restored, whereas the
- *   gm structs are transient. So cfg has the G54 - G59 offsets, but gm has the
- *   G92 offsets. cfg has the power-on / reset gcode default values, but gm has
- *   the operating state for the values (which may have changed).
+ * - cfg (config struct in config.h) is also used heavily and contains some values that
+ *   might be considered to be Gcode model values. The distinction is that all values 
+ *   in the config are persisted and restored, whereas the gm structs are transient. 
+ *   So cfg has the G54 - G59 offsets, but gm has the G92 offsets. cfg has the power-on / 
+ *   reset gcode default values, but gm has the operating state for the values 
+ *   (which may have changed).
  */
-typedef struct GCodeState {             // Gcode model state - used by model, planning and runtime
-    uint32_t linenum;                   // Gcode block line number
-    cmMotionMode motion_mode;           // Group1: G0, G1, G2, G3, G38.2, G80, G81,
-                                        // G82, G83 G84, G85, G86, G87, G88, G89
 
-    float target[AXES];                 // XYZABC where the move should go
+typedef struct GCodeState {             // Gcode model state - used by model, planning and runtime
+    int32_t linenum;                    // Gcode block line number
+    cmMotionMode motion_mode;           // Group1: G0, G1, G2, G3, G38.2, G80, G81, G82
+                                        //         G83, G84, G85, G86, G87, G88, G89
+
+    float target[AXES];                 // XYZABC target where the move should go
     float target_comp[AXES];            // summation compensation (Kahan) overflow value
     float display_offset[AXES];         // work offsets from the machine coordinate system (for reporting only)
 
@@ -262,11 +211,13 @@ typedef struct GCodeStateExtended {     // Gcode dynamic state extensions - used
     uint16_t magic_start;               // magic number to test memory integrity
     uint8_t next_action;                // handles G modal group 1 moves & non-modals
     uint8_t program_flow;               // used only by the gcode_parser
+    int32_t last_line_number;           // used with line checksums
 
     float position[AXES];               // XYZABC model position (Note: not used in gn or gf)
-    float origin_offset[AXES];          // XYZABC G92 offsets (Note: not used in gn or gf)
+    float g92_offset[AXES];             // XYZABC G92 offsets (aka origin offsets) (Note: not used in gn or gf)
     float g28_position[AXES];           // XYZABC stored machine position for G28
     float g30_position[AXES];           // XYZABC stored machine position for G30
+    float p1_position[AXES];            // XYZABC stored machine position for return to p1 planner
 
     bool m48_enable;                    // master feedrate / spindle speed override enable
     bool mfo_enable;                    // feedrate override enable
@@ -274,7 +225,7 @@ typedef struct GCodeStateExtended {     // Gcode dynamic state extensions - used
     bool mto_enable;                    // traverse override enable
     float mto_factor;                   // valid from 0.05 to 1.00
 
-    bool origin_offset_enable;          // G92 offsets enabled/disabled.  0=disabled, 1=enabled
+    bool g92_offset_enable;             // G92 offsets enabled/disabled.  0=disabled, 1=enabled
     bool block_delete_switch;           // set true to enable block deletes (true is default)
 
     uint16_t magic_end;

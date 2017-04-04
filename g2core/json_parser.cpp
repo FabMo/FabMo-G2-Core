@@ -85,7 +85,7 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth);
  *    _json_parser_execute() executes sets and gets in an application agnostic way. It should work for other apps than g2core
  */
 
-void json_parser(char *str)
+stat_t json_parser(char *str, bool suppress_response) // suppress_response defaults to false, see decalaration in .h
 {
     nvObj_t *nv = nv_reset_nv_list();               // get a fresh nvObj list
     stat_t status = _json_parser_kernal(nv, str);
@@ -93,12 +93,12 @@ void json_parser(char *str)
         nv = nv_body;
         status = _json_parser_execute(nv);
     }
-    if (status == STAT_COMPLETE) {                  // skip the print if returning from something that already did it.
-        return;
+    if (suppress_response || (status == STAT_COMPLETE)) {  // skip the print if returning from something that already did it.
+        return status;
     }
     nv_print_list(status, TEXT_MULTILINE_FORMATTED, JSON_RESPONSE_FORMAT);
-//    nv_print_list(status, TEXT_NO_PRINT, JSON_RESPONSE_FORMAT);
     sr_request_status_report(SR_REQUEST_TIMED);     // generate incremental status report to show any changes
+    return STAT_OK;
 }
 
 // This is almost the same as json_parser, except it doesn't *always* execute the parsed out list, and it never returns a reponse
@@ -107,9 +107,8 @@ void json_parse_for_exec(char *str, bool execute)
     nvObj_t *nv = nv_reset_exec_nv_list();          // get a fresh nvObj list
     stat_t status = _json_parser_kernal(nv, str);
     if ((status == STAT_OK) && (execute)) {
-        // execute the command
         nv = nv_exec;
-        status = _json_parser_execute(nv);
+        status = _json_parser_execute(nv);          // execute the command
     }
 }
 
@@ -171,6 +170,7 @@ static stat_t _json_parser_kernal(nvObj_t *nv, char *str)
         if ((nv_index_is_group(nv->index)) && (nv_group_is_prefixed(nv->token))) {
             strncpy(group, nv->token, GROUP_LEN);   // record the group ID
         }
+        nv_coerce_types(nv);                        // adjust types based on type fields in configApp table
         if ((nv = nv->nx) == NULL) {
             return (STAT_JSON_TOO_MANY_PAIRS);      // Not supposed to encounter a NULL
         }
@@ -286,11 +286,12 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
     // nulls (gets)
     if ((**pstr == 'n') || ((**pstr == '\"') && (*(*pstr+1) == '\"'))) { // process null value
         nv->valuetype = TYPE_NULL;
-        nv->value = TYPE_NULL;
+        nv->value_int = TYPE_NULL;
 
     // numbers
     } else if (isdigit(**pstr) || (**pstr == '-')) {    // value is a number
-        nv->value = (float)strtod(*pstr, &tmp);         // tmp is the end pointer
+        nv->value_int = atol(*pstr);                    // get the number as an integer
+        nv->value_flt = (float)strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
 
         if ((tmp == *pstr) ||                           // if start pointer equals end the conversion failed
             (strchr(terminators, *tmp) == NULL)) {      // terminators are the only legal chars at the end of a number
@@ -318,7 +319,7 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
         // if string begins with 0x it might be data, needs to be at least 3 chars long
         if( strlen(*pstr)>=3 && (*pstr)[0]=='0' && (*pstr)[1]=='x')
         {
-            uint32_t *v = (uint32_t*)&nv->value;
+            uint32_t *v = (uint32_t*)&nv->value_flt;
             *v = strtoul((const char *)*pstr, 0L, 0);
             nv->valuetype = TYPE_DATA;
         } else {
@@ -328,11 +329,11 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
 
     // boolean true/false
     } else if (**pstr == 't') {
-        nv->valuetype = TYPE_BOOL;
-        nv->value = true;
+        nv->valuetype = TYPE_BOOLEAN;
+        nv->value_int = true;
     } else if (**pstr == 'f') {
-        nv->valuetype = TYPE_BOOL;
-        nv->value = false;
+        nv->valuetype = TYPE_BOOLEAN;
+        nv->value_int = false;
 
     // arrays
     } else if (**pstr == '[') {
@@ -421,11 +422,14 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         break;
                                     }
                 case (TYPE_FLOAT):  {   convert_outgoing_float(nv);
-                                        str += floattoa(str, nv->value, nv->precision);
+                                        str += floattoa(str, nv->value_flt, nv->precision);
                                         break;
                                     }
-                case (TYPE_INT):    {   // str += inttoa(str, (int)nv->value); // doesn't handle negative numbers
-                                        str += sprintf(str, "%d", (int)nv->value);
+//                case (TYPE_INT):    {   // str += inttoa(str, (int)nv->value); // doesn't handle negative numbers
+//                                        str += sprintf(str, "%d", (int)nv->value);
+//                                        break;
+//                                    }
+                case (TYPE_INTEGER):{   str += sprintf(str, "%d", (int)nv->value_int);
                                         break;
                                     }
                 case (TYPE_STRING): {   *str++ = '"';
@@ -434,7 +438,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         *str++ = '"';
                                         break;
                                     }
-                case (TYPE_BOOL):   {   if (fp_FALSE(nv->value)) {
+                case (TYPE_BOOLEAN):{   if (nv->value_int) {
                                             strcpy(str, "false");
                                             str += 5;
                                         } else {
@@ -443,7 +447,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         }
                                         break;
                                     }
-                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value;
+                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_flt;
                                         str += sprintf(str, "\"0x%lx\"", *v);
                                         break;
                                     }
@@ -453,6 +457,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         strcpy(str++, "]");
                                         break;
                                     }
+                default: {}
             }
         }
         if (str >= str_max) { return (-1);}     // signal buffer overrun
@@ -525,7 +530,7 @@ void json_print_list(stat_t status, uint8_t flags)
 
 void json_print_response(uint8_t status, const bool only_to_muted /*= false*/)
 {
-    if (js.json_verbosity == JV_SILENT) {                   // silent means no responses
+    if ((js.json_verbosity == JV_SILENT) || (cs.responses_suppressed)) {                   // silent means no responses
         return;
     }
     if (js.json_verbosity == JV_EXCEPTIONS)    {            // cutout for JV_EXCEPTIONS mode
@@ -563,7 +568,7 @@ void json_print_response(uint8_t status, const bool only_to_muted /*= false*/)
                 }
 
             } else if (nv_type == NV_TYPE_LINENUM) {        // kill line number echo if not enabled
-                if ((js.echo_json_linenum == false) || (fp_ZERO(nv->value))) { // do not report line# 0
+                if ((js.echo_json_linenum == false) || (fp_ZERO(nv->value_int))) { // do not report line# 0
                     nv->valuetype = TYPE_EMPTY;
                 }
             }
@@ -624,12 +629,12 @@ void json_print_response(uint8_t status, const bool only_to_muted /*= false*/)
  *  If comm_mode is set to AUTO_MORE (0) then json_mode should not be changed
  */
 
-stat_t js_get_ej(nvObj_t *nv) { return(get_int(nv, cs.comm_mode)); }
+stat_t js_get_ej(nvObj_t *nv) { return(get_integer(nv, cs.comm_mode)); }
 stat_t js_set_ej(nvObj_t *nv)
 {
-    ritorno (set_int(nv, (uint8_t &)cs.comm_mode, TEXT_MODE, AUTO_MODE));
-    if (commMode(nv->value) < AUTO_MODE) {    // set json_mode to 0 or 1, but don't change it if comm_mode == 2
-        js.json_mode = commMode(nv->value);
+    ritorno (set_integer(nv, (uint8_t &)cs.comm_mode, TEXT_MODE, AUTO_MODE));
+    if (commMode(nv->value_int) < AUTO_MODE) {    // set json_mode to 0 or 1, but don't change it if comm_mode == 2
+        js.json_mode = commMode(nv->value_int);
     }
     return (STAT_OK);
 }
@@ -639,10 +644,10 @@ stat_t js_set_ej(nvObj_t *nv)
  * js_set_jv() - set JSON verbosity and related flags
  */
 
-stat_t js_get_jv(nvObj_t *nv) { return(get_int(nv, js.json_verbosity)); }
+stat_t js_get_jv(nvObj_t *nv) { return(get_integer(nv, js.json_verbosity)); }
 stat_t js_set_jv(nvObj_t *nv)
 {
-    ritorno (set_int(nv, (uint8_t &)js.json_verbosity, JV_SILENT, JV_MAX_VALUE));  
+    ritorno (set_integer(nv, (uint8_t &)js.json_verbosity, JV_SILENT, JV_MAX_VALUE));  
 
     js.echo_json_footer = false;
     js.echo_json_messages = false;
@@ -655,11 +660,11 @@ stat_t js_set_jv(nvObj_t *nv)
         js.echo_json_messages = true;
         js.echo_json_configs = true;
     } else {
-        if (nv->value >= JV_FOOTER)     js.echo_json_footer = true;
-        if (nv->value >= JV_MESSAGES)   js.echo_json_messages = true;
-        if (nv->value >= JV_CONFIGS)    js.echo_json_configs = true;
-        if (nv->value >= JV_LINENUM)    js.echo_json_linenum = true;
-        if (nv->value >= JV_VERBOSE)    js.echo_json_gcode_block = true;
+        if (nv->value_int >= JV_FOOTER)     js.echo_json_footer = true;
+        if (nv->value_int >= JV_MESSAGES)   js.echo_json_messages = true;
+        if (nv->value_int >= JV_CONFIGS)    js.echo_json_configs = true;
+        if (nv->value_int >= JV_LINENUM)    js.echo_json_linenum = true;
+        if (nv->value_int >= JV_VERBOSE)    js.echo_json_gcode_block = true;
     }
     return(STAT_OK);
 }

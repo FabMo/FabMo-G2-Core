@@ -31,34 +31,35 @@
 #include "planner.h"
 #include "report.h"
 #include "util.h"
+//#include "xio.h"    // only need for_ramp_exit_logger
 
 // DIAGNOSTICS
 
-//#if IN_DEBUGGER < 1
-#define LOG_RETURN(msg)  // LOG_RETURN with no action (production)
-//#else
-//#include "xio.h"
-//static char logbuf[128];
-//static void _logger(const char *msg, const mpBuf_t *bf)         // LOG_RETURN with full state dump
-//{
-//    sprintf(logbuf, "[%2d] %s (%d) mt:%5.2f, L:%1.3f [%1.3f, %1.3f, %1.3f] V:[%1.2f, %1.2f, %1.2f]\n",
-//                    bf->buffer_number, msg, bf->hint, (bf->block_time * 60000),
-//                    bf->length, bf->head_length, bf->body_length, bf->tail_length,
-//                    bf->pv->exit_velocity, bf->cruise_velocity, bf->exit_velocity);
-//    xio_writeline(logbuf);
-//}
-//#define LOG_RETURN(msg) { _logger(msg, bf); }
-//#endif
-
-#if IN_DEBUGGER < 1
-#define TRAP_ZERO(t,m)
-#else
-#define TRAP_ZERO(t, m)                             \
-    if (fp_ZERO(t)) {                               \
-        rpt_exception(STAT_MINIMUM_LENGTH_MOVE, m); \
-        _debug_trap(m);                             \
+stat_t _ramp_exit_logger(mpBuf_t* bf, const char *msg)
+{
+    #ifdef __PLANNER_DIAGNOSTICS
+    if (mp_runtime_is_idle()) {  // normally the runtime keeps this value fresh
+//      bf->time_in_plan_ms += bf->block_time_ms;
+        bf->plannable_time_ms += bf->block_time_ms;\
     }
-#endif
+    #endif
+
+/* insert logger functions here if needed:
+
+    // LOG_RETURN with full state dump
+    #if IN_DEBUGGER == 1
+
+    static char logbuf[128];
+
+    sprintf(logbuf, "[%2d] %s (%d) mt:%5.2f, L:%1.3f [%1.3f, %1.3f, %1.3f] V:[%1.2f, %1.2f, %1.2f]\n",
+                    bf->buffer_number, msg, bf->hint, (bf->block_time * 60000),
+                    bf->length, bf->head_length, bf->body_length, bf->tail_length,
+                    bf->pv->exit_velocity, bf->cruise_velocity, bf->exit_velocity);
+    xio_writeline(logbuf);
+    #endif
+*/
+    return (STAT_OK);
+}
 
 // END DIAGNOSTICS
 
@@ -114,31 +115,20 @@ static float _get_meet_velocity(const float          v_0,
  *
  */
 
-void _zoid_exit(mpBuf_t* bf, zoidExitPoint exit_point) 
-{
-#ifdef __PLANNER_DIAGNOSTICS
-    //    bf->zoid_exit = exit_point;
-    if (mp_runtime_is_idle()) {  // normally the runtime keeps this value fresh
-//      bf->time_in_plan_ms += bf->block_time_ms;
-        bf->plannable_time_ms += bf->block_time_ms;
-    }
-#endif
-}
-
 // Hint will be one of these from back-planning: COMMAND_BLOCK, PERFECT_DECELERATION, PERFECT_CRUISE,
 // MIXED_DECELERATION, ASYMMETRIC_BUMP
 // We are incorporating both the forward planning and ramp-planning into one function, since we use the same data.
-void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float entry_velocity) 
+stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float entry_velocity) 
 {
     // *** Skip non-move commands ***
     if (bf->block_type == BLOCK_TYPE_COMMAND) {
         bf->hint = COMMAND_BLOCK;
-        return;
+        return (STAT_NOOP);                             // NOOP status is informative, not actionable
     }
-    TRAP_ZERO(bf->length, "zoid() got L=0");            //+++++ Move this outside of zoid
-    TRAP_ZERO(bf->cruise_velocity, "zoid() got Vc=0");  // move this outside
+    debug_trap_if_zero(bf->length, "mp_calculate_ramps() - got L=0");
+    debug_trap_if_zero(bf->cruise_velocity, "mp_calculate_ramps() - got Vc=0");
 
-    // Timing from *here*
+    // Timings from *here*
 
     // initialize parameters to know values
     block->head_time = 0;
@@ -149,12 +139,16 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
     block->body_length = 0;
     block->tail_length = 0;
 
-    block->cruise_velocity = min(bf->cruise_velocity, bf->cruise_vmax);
+    // these conditions should have been met earlier, but if they are not trap and correct them
+    debug_trap_if_true((bf->exit_velocity > bf->exit_vmax), "mp_calculate_ramps() - Vexit > Vexit_max");
     block->exit_velocity   = min(bf->exit_velocity, bf->exit_vmax);
 
+    // +++++ THIS WILL NEED TO CHANGE TO SUPPORT OVERRIDES
+//    debug_trap_if_true((bf->cruise_velocity, bf->cruise_vmax), "mp_calculate_ramps() - Vcruise > Vcruise_max");
+    block->cruise_velocity = min(bf->cruise_velocity, bf->cruise_vmax);
 
-    // We *might* do this exact computation later, so cache the value.
-    float test_velocity       = 0;
+    // We *might* do this exact computation later, so cache the value
+    float test_velocity = 0;
     bool  test_velocity_valid = false;  // record if we have a validly cached value
 
     // *** Perfect-Fit Cases (1) *** Cases where curve fitting has already been done
@@ -173,29 +167,25 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
             block->body_length = bf->length;
             block->body_time   = block->body_length / block->cruise_velocity;
             bf->block_time     = block->body_time;
-
-            LOG_RETURN("1c");
-            return (_zoid_exit(bf, ZOID_EXIT_1c));
-        } else {
-            // we need to degrade the hint to MIXED_ACCELERATION
+            return (_ramp_exit_logger(bf, "1c"));
+        } 
+        else {  // degrade the hint to MIXED_ACCELERATION
             bf->hint = MIXED_ACCELERATION;
         }
     }
 
-
     // Quick test to ensure we haven't violated the hint
-    if (entry_velocity > block->exit_velocity) {
-        // We're in a deceleration.
-        if (mp->entry_changed) {
-            // If entry_changed, then entry_velocity is lower than the hints expect.
-            // A deceleration will never become an acceleration (post-hinting).
-            // If it is marked as MIXED_DECELERATION, it means the entry was CRUISE_VMAX.
-            // If it is marked as PERFECT_DECELERATION, it means the entry was as <= CRUISE_VMAX,
-            //   but as high as possible.
-            // So, this move is and was a DECELERATION, meaning it *could* achieve the previous (higher)
-            //   entry safely, it will likely get a head section, so we will now degrade the hint to an
-            //   ASYMMETRIC_BUMP.
 
+    if (entry_velocity > block->exit_velocity) {    // Means this is a deceleration
+        //  If entry_changed then entry_velocity is lower than the hints expect
+        //  A deceleration will never become an acceleration (post-hinting)
+        //  If it is marked as MIXED_DECELERATION, it means the entry was CRUISE_VMAX
+        //  If it is marked as PERFECT_DECELERATION, it means the entry was as <= CRUISE_VMAX,
+        //   but as high as possible
+        //  So, this move is and was a DECELERATION, meaning it *could* achieve the previous (higher)
+        //   entry safely, it will likely get a head section, so we will now degrade the hint to an
+        //   ASYMMETRIC_BUMP
+        if (mp->entry_changed) {
             bf->hint = ASYMMETRIC_BUMP;
         }
 
@@ -209,8 +199,7 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
             block->body_time = block->body_length / block->cruise_velocity;
             block->tail_time = block->tail_length * 2 / (block->exit_velocity + block->cruise_velocity);
             bf->block_time   = block->body_time + block->tail_time;
-            LOG_RETURN("2d");
-            return (_zoid_exit(bf, ZOID_EXIT_2d));
+            return (_ramp_exit_logger(bf, "2d"));
         }
 
         // PERFECT_DECELERATION (1d) single tail segment (deltaV == delta_vmax)
@@ -220,19 +209,16 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
             block->cruise_velocity = entry_velocity;
             block->tail_time       = block->tail_length * 2 / (block->exit_velocity + block->cruise_velocity);
             bf->block_time         = block->tail_time;
-            LOG_RETURN("1d");
-            return (_zoid_exit(bf, ZOID_EXIT_1d));
+            return (_ramp_exit_logger(bf, "1d"));
         }
-
 
         // Reset entry_changed. We won't likely be changing the next block's entry velocity.
         mp->entry_changed = false;
 
-
         // Since we are not generally decelerating, this is effectively all of forward planning that we need.
     } else {
-        // Note that the hints from back-planning are ignored in this section, since back-planing can only predict decel
-        // and cruise.
+        // Note that the hints from back-planning are ignored in this section, since back-planing can only 
+        // predict decelerations and cruises
 
         float accel_velocity;
         if (test_velocity_valid) {
@@ -256,9 +242,9 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
             block->cruise_velocity = block->exit_velocity;
             block->head_time       = (block->head_length * 2.0) / (entry_velocity + block->cruise_velocity);
             bf->block_time         = block->head_time;
-            LOG_RETURN("1a");
-            return (_zoid_exit(bf, ZOID_EXIT_1a));
-        } else {  // it's hit the cusp
+            return (_ramp_exit_logger(bf, "1a"));
+        } 
+        else {  // it's hit the cusp
 
             mp->entry_changed = false;  // we are NOT changing the next block's entry velocity
 
@@ -281,8 +267,7 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
                 block->head_time   = (block->head_length * 2.0) / (entry_velocity + block->cruise_velocity);
                 block->body_time   = block->body_length / block->cruise_velocity;
                 bf->block_time     = block->head_time + block->body_time;
-                LOG_RETURN("2a");
-                return (_zoid_exit(bf, ZOID_EXIT_2a));
+                return (_ramp_exit_logger(bf, "2a"));
             }
         }
     }
@@ -314,9 +299,7 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
         bf->block_time   = block->head_time + block->body_time + block->tail_time;
 
         bf->hint = ASYMMETRIC_BUMP;
-
-        LOG_RETURN("2c");
-        return (_zoid_exit(bf, ZOID_EXIT_2c));
+        return (_ramp_exit_logger(bf, "2c"));
     }
 
     // *** Rate-Limited-Fit cases (3) ***
@@ -325,7 +308,7 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
     // Rate-limited asymmetric cases (3)
     // compute meet velocity to see if the cruise velocity rises above the entry and/or exit velocities
     block->cruise_velocity = _get_meet_velocity(entry_velocity, block->exit_velocity, bf->length, bf, block);
-    TRAP_ZERO(block->cruise_velocity, "zoid() Vc=0 asymmetric HT case");
+    debug_trap_if_zero(block->cruise_velocity, "mp_calculate_ramps() Vc=0 asymmetric HT case");
 
     // We now store the head/tail lengths we computed in _get_meet_velocity.
     // treat as a full up and down (head and tail)
@@ -344,11 +327,8 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
         block->tail_time = (block->tail_length * 2.0) / (block->exit_velocity + block->cruise_velocity);
     }
     bf->block_time = block->head_time + block->body_time + block->tail_time;
-
-    LOG_RETURN("3c");
-    return (_zoid_exit(bf, ZOID_EXIT_3c));  // 550us worst case
+    return (_ramp_exit_logger(bf, "3c"));  // 550us worst case
 }
-
 
 /**** Planner helpers ****
  *
@@ -369,7 +349,7 @@ void mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float ent
  */
 
 // Just calling this tl_constant. It's full name is:
-// static const float tl_constant = 1.201405707067378;                     // sqrt(5)/( sqrt(2)pow(3,4) )
+// static const float tl_constant = 1.201405707067378;      // sqrt(5)/( sqrt(2)pow(3,4) )
 
 float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t* bf) 
 {
@@ -422,7 +402,7 @@ float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t* bf)
 /*
  * mp_get_decel_velocity() - mp_get_target_velocity but ONLY for deceleration
  *
- *  Get "the velocity" that we would end up at if we *decelerated* from v_0,
+ *  Get the velocity that we would end up at if we decelerated from v_0,
  *  over the provided L (length) and J (jerk, provided in the bf structure).
  *
  *  We have to use a root finding solution, since there is actually three possible
@@ -434,6 +414,9 @@ float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t* bf)
  *
  *  This function may generate minor errors in target velocity, and should only
  *  be used to compute feedholds or other cases where exact velocity is not mandatory. 
+ *
+ *  This function can fail if the length is too short to get a good answer. 
+ *  Failures return (float)-1.0  Negative velocities should never be returned.
  */
 
 float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf) 
@@ -451,7 +434,7 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
         // The return condition allows a minor error in length (in mm). 
         // Note: This comparison does NOT affect actual lengths or steps, which would be bad.
         //       The actual lengths traveled must be controlled by the caller.
-        if (fabs(l_t) < 0.001) {    
+        if (fabs(l_t) < 0.001) {
             break;
         }
         // For the first pass we tested velocity 0. If velocity 0 yields a l_t > 0, 
@@ -464,9 +447,16 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
         const float v_1x3 = 3 * v_1;
         const float recip_l_t = (2 * sqrt_delta_v_0) / ((v_0 - v_1x3) * q_recip_2_sqrt_j);
         v_1 = v_1 - (l_t * recip_l_t);
+        
+        // In some extreme cases there is no solution because the length is too short
+        if (v_1 > v_0) {
+            return (-1.0);    // cannot decelerate. Return an error
+        }
     }
     return v_1;
 }
+
+//Is there a way to derive the average slope of a deceleration given the starting velocity, length and jerk? We don't need the
 
 /*
  * _get_meet_velocity() - find intersection velocity

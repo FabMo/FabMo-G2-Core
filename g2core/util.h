@@ -25,9 +25,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* util.c/.h contains a dog's breakfast of supporting functions that are
- * not specific to g2core: including:
- *
+/* util.c/.h contains a dog's breakfast of supporting functions that are not specific 
+ *  to g2core: including:
  *  - math and min/max utilities and extensions
  *  - vector manipulation utilities
  *  - support for debugging routines
@@ -49,24 +48,12 @@ using Motate::SysTickTimer;
 #include <cmath> // isnan, isinf
 
 /****** Global Scope Variables and Functions ******/
-
-//*** debug utilities ***
-
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-//#pragma GCC reset_options
-inline void _debug_trap(const char *reason) {
-    // We might be able to put a print here, but it MIGHT interrupt other output
-    // and might be deep in an ISR, so we had better just _NOP() and hope for the best.
-    __NOP();
-#if IN_DEBUGGER == 1
-    __asm__("BKPT");
-#endif
-}
-#pragma GCC reset_options
-
-void LAGER(const char * msg);
-void LAGER_cm(const char * msg);
+/*
+#pragma GCC push_options        // DIAGNOSTIC +++++
+#pragma GCC optimize ("O0")     // DIAGNOSTIC +++++
+// insert function here
+#pragma GCC reset_options       // DIAGNOSTIC +++++
+*/
 
 //*** vector utilities ***
 
@@ -152,6 +139,7 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 // Constants
 #define MAX_LONG (2147483647)
 #define MAX_ULONG (4294967295)
+#define MAX_FP_INTEGER (8388608)  // maximum integer 32 bit FP will represent exactly (23 bits)
 #define MM_PER_INCH (25.4)
 #define INCHES_PER_MM (1/25.4)
 #define MICROSECONDS_PER_MINUTE ((float)60000000)
@@ -172,10 +160,105 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 #define M_SQRT3 (1.73205080756888)
 #endif
 
+// Fraction part
+constexpr float c_atof_frac_(char *&p_, float v_, float m_) {
+    return ((*p_ >= '0') && (*p_ <= '9')) ? (v_ = ((v_) + ((*p_) - '0') * m_), c_atof_frac_(++p_, v_, m_ / 10.0)) : v_;
+}
+
+// Integer part
+template <typename int_type>
+constexpr float c_atof_int_(char *&p_, int_type v_) {
+    return (*p_ == '.')
+    ? (float)(v_) + c_atof_frac_(++p_, 0, 1.0 / 10.0)
+    : (((*p_ >= '0') && (*p_ <= '9')) ? ((v_ = ((*p_) - '0') + (v_ * 10)), c_atof_int_(++p_, v_)) : v_);
+}
+
+// Start portion
+constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) * -1.0) : ( (*p_ == '+') ? c_atof_int_(++p_, 0) : (c_atof_int_(p_, 0))); }
 
 // It's assumed that the string buffer contains at lest count_ non-\0 chars
 //constexpr int c_strreverse(char * const t, const int count_, char hold = 0) {
 //    return count_>1 ? (hold=*t, *t=*(t+(count_-1)), *(t+(count_-1))=hold), c_strreverse(t+1, count_-2), count_ : count_;
 //}
+
+/*** Debug and DIAGNOSTICS  ***
+ *
+ *  This section collects debug and DIAGNOSTIC functions used by the project. 
+ *
+ *  The debug levels are set in the build line and may be one of:
+ *    <omitted>  - debug is off, IN_DEBUGGER == 0 (See Makefile for the logic)
+ *     DEBUG=0   - debug is off, IN_DEBUGGER == 0
+ *     DEBUG=1   - debug is on,  IN_DEBUGGER == 0
+ *     DEBUG=2   - debug is on,  IN_DEBUGGER == 1. Requires HW debugger to be connected
+ *     DEBUG=3   - debug is on,  IN_DEBUGGER == 1. Requires HW debugger and Semihosting to be enabled and running in the debugger
+ *   
+ *  These settings are applied in the Makefile.
+ *  In addition, MotateDebug.h contains the bulk of the Semihosting definitions
+ *
+ *  The *reason value is provided as it will be shown in the __asm__("BKPT") backtrace, 
+ *  or on the __NOP() if a breakpoint is set
+ *
+ *  Try to use the functions provided below for debug statements to keep the code clean. If these 
+ *  are insufficient you can bracket diagnostics like so to enable then for any non-zero debug level:
+ *
+ #if IN_DEBUGGER == 1
+     if (block->exit_velocity > block->cruise_velocity)  {
+         __asm__("BKPT");   // exit > cruise after calculate_block
+     }
+ #endif
+ * 
+ * ...or add a new debug functions to the ones below
+ */
+
+/*
+ * debug_trap() - trap unconditionally
+ * debug_trap_if_zero() - trap if floating point value is zero
+ * debug_trap_if_true() - trap if condition is true
+ *
+ *  The 'reason' value will display in GDB (but maybe not in AS7), and can also be passed
+ *  to a downstream logger if these are introduced into the function.
+ *
+ *  Note that it may be possible to print or generate exceptions in debug_trap(), but  
+ *  it MIGHT interrupt other output, or might have been called deep in an ISR, 
+ *  so we had better just _NOP() and hope for the best.
+ */
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
+inline void debug_trap(const char *reason) {
+#if IN_DEBUGGER == 1
+    __NOP();
+    __asm__("BKPT");
+#endif
+}
+
+inline void debug_trap_if_zero(float value, const char *reason) {
+#if IN_DEBUGGER == 1
+    if (fp_ZERO(value)) {
+        __NOP();
+        __asm__("BKPT");
+    }
+#endif
+}
+
+inline void debug_trap_if_true(bool condition, const char *reason) {
+#if IN_DEBUGGER == 1
+    if (condition) {
+        __NOP();
+        __asm__("BKPT");
+    }    
+#endif
+}
+
+#pragma GCC reset_options
+
+void LAGER(const char * msg);
+void LAGER_cm(const char * msg);
+
+template <int32_t length>
+void str_concat(char *&dest, const char (&data)[length]) {
+    // length includes the \0
+    strncpy(dest, data, length); dest += length-1;
+};
 
 #endif    // End of include guard: UTIL_H_ONCE

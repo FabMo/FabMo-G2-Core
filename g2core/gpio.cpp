@@ -143,7 +143,7 @@ struct ioDigitalInputExt {
         if (in->homing_mode) {
             if (in->edge == INPUT_EDGE_LEADING) {   // we only want the leading edge to fire
                 en_take_encoder_snapshot();
-                cm_start_hold();
+                cm_request_feedhold(FEEDHOLD_TYPE_SKIP, FEEDHOLD_EXIT_STOP);
             }
             return;
         }
@@ -153,8 +153,10 @@ struct ioDigitalInputExt {
             // We want to capture either way.
             // Probing tests the start condition for the correct direction ahead of time.
             // If we see any edge, it's the right one.
-            en_take_encoder_snapshot();
-            cm_start_hold();
+            if ((in->edge == INPUT_EDGE_LEADING) || (in->edge == INPUT_EDGE_TRAILING)) {
+                en_take_encoder_snapshot();
+                cm_request_feedhold(FEEDHOLD_TYPE_SKIP, FEEDHOLD_EXIT_STOP);
+            }
             return;
         }
 
@@ -163,13 +165,13 @@ struct ioDigitalInputExt {
         // trigger the action on leading edges
         if (in->edge == INPUT_EDGE_LEADING) {
             if (in->action == INPUT_ACTION_STOP) {
-                cm_start_hold();
+                cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
             }
             if (in->action == INPUT_ACTION_FAST_STOP) {
-                cm_start_hold();                        // for now is same as STOP
+                cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
             }
             if (in->action == INPUT_ACTION_HALT) {
-                cm_halt_all();                            // hard stop, including spindle and coolant
+                cm_halt();                              // hard stop, including spindle, coolant and heaters
             }
             if (in->action == INPUT_ACTION_ALARM) {
                 char msg[10];
@@ -477,43 +479,59 @@ bool gpio_read_input(const uint8_t input_num_ext)
  * These functions are not part of the NIST defined functions
  ***********************************************************************************/
 
-static stat_t _input_set_helper(nvObj_t *nv, const int8_t lower_bound, const int8_t upper_bound)
+/* HELPERS
+ * _io() - get IO number from the token as an array index (reduce by one)
+ */
+
+static uint8_t _io(const index_t index)
 {
-    if ((nv->value < lower_bound) || (nv->value >= upper_bound)) {
-        return (STAT_INPUT_VALUE_RANGE_ERROR);
-    }
-    set_ui8(nv);        // will this work if -1 is a valid value?
+    const char *ptr = cfgArray[index].token; 
+    
+    do {
+        if (isdigit(*ptr)) { 
+            return (atoi(ptr)-1);   // need to reduce by 1 for internal 0-based arrays
+        }
+    } while (++ptr != NUL);
+
+    return (0);
+}
+
+/*
+ * io_get_mo() - get input mode
+ * io_set_mo() - set input mode
+ * io_get_ac() - get input action
+ * io_set_ac() - set input action
+ * io_get_fn() - get input function
+ * io_set_fn() - set input function
+ */
+stat_t io_get_mo(nvObj_t *nv) { return(get_integer(nv, d_in[_io(nv->index)].mode)); }
+stat_t io_set_mo(nvObj_t *nv) 
+{
+    ritorno(set_integer(nv, (uint8_t &)d_in[_io(nv->index)].mode, 0, IO_MODE_MAX));
     if (cm_get_machine_state() != MACHINE_INITIALIZING) {
         inputs_reset();
     }
     return (STAT_OK);
 }
 
-static stat_t _output_set_helper(nvObj_t *nv, const int8_t lower_bound, const int8_t upper_bound)
+stat_t io_get_ac(nvObj_t *nv) { return(get_integer(nv, d_in[_io(nv->index)].action)); }
+stat_t io_set_ac(nvObj_t *nv) 
 {
-    if ((nv->value < lower_bound) || (nv->value >= upper_bound)) {
-        return (STAT_INPUT_VALUE_RANGE_ERROR);
-    }
-    set_ui8(nv);        // will this work in -1 is a valid value?
+    ritorno(set_integer(nv, (uint8_t &)d_in[_io(nv->index)].action, 0, INPUT_ACTION_MAX));
     if (cm_get_machine_state() != MACHINE_INITIALIZING) {
-        outputs_reset();
+        inputs_reset();
     }
     return (STAT_OK);
 }
 
-stat_t io_set_mo(nvObj_t *nv)            // input type or disabled
+stat_t io_get_fn(nvObj_t *nv) { return(get_integer(nv, d_in[_io(nv->index)].function)); }
+stat_t io_set_fn(nvObj_t *nv) 
 {
-    return (_input_set_helper(nv, IO_ACTIVE_LOW, IO_MODE_MAX));
-}
-
-stat_t io_set_ac(nvObj_t *nv)            // input action
-{
-    return (_input_set_helper(nv, INPUT_ACTION_NONE, INPUT_ACTION_MAX));
-}
-
-stat_t io_set_fn(nvObj_t *nv)            // input function
-{
-    return (_input_set_helper(nv, INPUT_FUNCTION_NONE, INPUT_FUNCTION_MAX));
+    ritorno(set_integer(nv, (uint8_t &)d_in[_io(nv->index)].function, 0, INPUT_FUNCTION_MAX));
+    if (cm_get_machine_state() != MACHINE_INITIALIZING) {
+        inputs_reset();
+    }
+    return (STAT_OK);
 }
 
 /*
@@ -521,59 +539,43 @@ stat_t io_set_fn(nvObj_t *nv)            // input function
  */
 stat_t io_get_input(nvObj_t *nv)
 {
-    char *num_start = nv->token;
-    if (*(nv->group) == 0) {
-        // if we don't have a group, then the group name is in the token
-        // skip over "in"
-        num_start+=2;
-    }
-    nv->value = d_in[strtol(num_start, NULL, 10)-1].state;
-
-    if (nv->value > 1.1) {
-        nv->valuetype = TYPE_NULL;
-    } else {
-        nv->valuetype = TYPE_BOOL;
-    }
+    nv->value_int = d_in[_io(nv->index)].state;
+    nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
 
-stat_t io_set_domode(nvObj_t *nv)            // output function
+/*
+ * io_get_domode() - get digital output mode
+ * io_set_domode() - set digital output mode
+ */
+stat_t io_get_domode(nvObj_t *nv) { return(get_integer(nv, d_out[_io(nv->index)].mode)); }
+stat_t io_set_domode(nvObj_t *nv)           // output function
 {
-    char *num_start = nv->token;
-    if (*(nv->group) == 0) {
-        // if we don't have a group, then the group name is in the token
-        // skip over "out"
-        num_start+=3;
-    }
-    // the token has been stripped down to an ASCII digit string - use it as an index
-    uint8_t output_num = strtol(num_start, NULL, 10);
-
-    if (output_num > D_OUT_CHANNELS) {
-        nv->valuetype = TYPE_NULL;
-        return(STAT_NO_GPIO);
-    }
+    uint8_t output_num = _io(nv->index);    // returns 1 based output number (arrays)
 
     // Force pins that aren't available to be "disabled"
-    switch (output_num) {
-        case 1:  if (output_1_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 2:  if (output_2_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 3:  if (output_3_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 4:  if (output_4_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 5:  if (output_5_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 6:  if (output_6_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 7:  if (output_7_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 8:  if (output_8_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 9:  if (output_9_pin.isNull())  { nv->value = IO_MODE_DISABLED; } break;
-        case 10: if (output_10_pin.isNull()) { nv->value = IO_MODE_DISABLED; } break;
-        case 11: if (output_11_pin.isNull()) { nv->value = IO_MODE_DISABLED; } break;
-        case 12: if (output_12_pin.isNull()) { nv->value = IO_MODE_DISABLED; } break;
-        case 13: if (output_13_pin.isNull()) { nv->value = IO_MODE_DISABLED; } break;
-
-        default:
-            break;
+    switch (output_num+1) {                 // add 1 to get logical pin numbers
+        case 1:  if (output_1_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 2:  if (output_2_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 3:  if (output_3_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 4:  if (output_4_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 5:  if (output_5_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 6:  if (output_6_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 7:  if (output_7_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 8:  if (output_8_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 9:  if (output_9_pin.isNull())  { nv->value_int = IO_MODE_DISABLED; } break;
+        case 10: if (output_10_pin.isNull()) { nv->value_int = IO_MODE_DISABLED; } break;
+        case 11: if (output_11_pin.isNull()) { nv->value_int = IO_MODE_DISABLED; } break;
+        case 12: if (output_12_pin.isNull()) { nv->value_int = IO_MODE_DISABLED; } break;
+        case 13: if (output_13_pin.isNull()) { nv->value_int = IO_MODE_DISABLED; } break;
+        default: {}
     }
 
-    return (_output_set_helper(nv, IO_ACTIVE_LOW, IO_MODE_MAX));
+    ritorno(set_integer(nv, (uint8_t &)d_out[output_num].mode, 0, IO_MODE_MAX));
+    if (cm_get_machine_state() != MACHINE_INITIALIZING) {
+        outputs_reset();
+    }
+    return (STAT_OK);
 }
 
 /*
@@ -581,81 +583,54 @@ stat_t io_set_domode(nvObj_t *nv)            // output function
  */
 stat_t io_get_output(nvObj_t *nv)
 {
-    char *num_start = nv->token;
-    if (*(nv->group) == 0) {
-        // if we don't have a group, then the group name is in the token
-        // skip over "out"
-        num_start+=3;
-    }
-    // the token has been stripped down to an ASCII digit string - use it as an index
-    uint8_t output_num = strtol(num_start, NULL, 10);
+    uint8_t output_num = _io(nv->index);
 
-    if (output_num > D_OUT_CHANNELS) {
-        nv->valuetype = TYPE_NULL;
-        return(STAT_NO_GPIO);
-    }
-
-    ioMode outMode = d_out[output_num-1].mode;
+    ioMode outMode = d_out[output_num].mode;
     if (outMode == IO_MODE_DISABLED) {
-//        nv->value = 0;
         nv->valuetype = TYPE_NULL;   // reports back as NULL
     } else {
         nv->valuetype = TYPE_FLOAT;
         nv->precision = 2;
-        bool invert = (outMode == 0);
-        // Note: !! forces a value to boolean 0 or 1
-        switch (output_num) {
-            case 1:  { nv->value = (float)output_1_pin; } break;
-            case 2:  { nv->value = (float)output_2_pin; } break;
-            case 3:  { nv->value = (float)output_3_pin; } break;
-            case 4:  { nv->value = (float)output_4_pin; } break;
-            case 5:  { nv->value = (float)output_5_pin; } break;
-            case 6:  { nv->value = (float)output_6_pin; } break;
-            case 7:  { nv->value = (float)output_7_pin; } break;
-            case 8:  { nv->value = (float)output_8_pin; } break;
-            case 9:  { nv->value = (float)output_9_pin; } break;
-            case 10: { nv->value = (float)output_10_pin; } break;
-            case 11: { nv->value = (float)output_11_pin; } break;
-            case 12: { nv->value = (float)output_12_pin; } break;
-            case 13: { nv->value = (float)output_13_pin; } break;
-
-            default:
-                {
-//                  nv->value = 0;              // inactive
-                    nv->valuetype = TYPE_NULL;  // reports back as NULL
-                }
+        
+        switch (output_num+1) {                 // add 1 to get logical pin numbers
+            case 1:  { nv->value_flt = (float)output_1_pin; } break;
+            case 2:  { nv->value_flt = (float)output_2_pin; } break;
+            case 3:  { nv->value_flt = (float)output_3_pin; } break;
+            case 4:  { nv->value_flt = (float)output_4_pin; } break;
+            case 5:  { nv->value_flt = (float)output_5_pin; } break;
+            case 6:  { nv->value_flt = (float)output_6_pin; } break;
+            case 7:  { nv->value_flt = (float)output_7_pin; } break;
+            case 8:  { nv->value_flt = (float)output_8_pin; } break;
+            case 9:  { nv->value_flt = (float)output_9_pin; } break;
+            case 10: { nv->value_flt = (float)output_10_pin; } break;
+            case 11: { nv->value_flt = (float)output_11_pin; } break;
+            case 12: { nv->value_flt = (float)output_12_pin; } break;
+            case 13: { nv->value_flt = (float)output_13_pin; } break;
+            default: { nv->valuetype = TYPE_NULL;  }    // reports back as NULL
         }
-        if (invert) {
-            nv->value = 1.0 - nv->value;
+        if (outMode == IO_ACTIVE_LOW) {
+            nv->value_flt = 1.0 - nv->value_flt;        // invert output sense
         }
     }
     return (STAT_OK);
 }
 
 /*
- *  io_set_output() - return input state given an nv object
+ *  io_set_output() - read and return output state given an nv object
  */
+
 stat_t io_set_output(nvObj_t *nv)
 {
-    char *num_start = nv->token;
-    if (*(nv->group) == 0) {
-        // if we don't have a group, then the group name is in the token
-        // skip over "out"
-        num_start+=3;
-    }
-    // the token has been stripped down to an ASCII digit string - use it as an index
-    uint8_t output_num = strtol(num_start, NULL, 10);
+    uint8_t output_num = _io(nv->index);
 
     ioMode outMode = d_out[output_num-1].mode;
     if (outMode == IO_MODE_DISABLED) {
-        nv->value = 0; // Inactive?
+       nv->valuetype = TYPE_NULL;   // reports back as NULL
+
     } else {
-        bool invert = (outMode == 0);
-        float value = nv->value;
-        if (invert) {
-            value = 1.0 - value;
-        }
-        switch (output_num) {
+        // send normal or inverted value to output
+        float value = (outMode == IO_ACTIVE_HIGH) ? nv->value_flt : 1.0 - nv->value_flt;
+        switch (output_num+1) {                 // add 1 to get logical pin numbers
             // Generated with:
             // perl -e 'for($i=1;$i<14;$i++) { print "case ${i}:  { output_${i}_pin = value; } break;\n";}'
             // BEGIN generated
@@ -668,12 +643,11 @@ stat_t io_set_output(nvObj_t *nv)
             case 7:  { output_7_pin = value; } break;
             case 8:  { output_8_pin = value; } break;
             case 9:  { output_9_pin = value; } break;
-            case 10:  { output_10_pin = value; } break;
-            case 11:  { output_11_pin = value; } break;
-            case 12:  { output_12_pin = value; } break;
-            case 13:  { output_13_pin = value; } break;
-            // END generated
-            default: { nv->value = 0; } // inactive
+            case 10: { output_10_pin = value; } break;
+            case 11: { output_11_pin = value; } break;
+            case 12: { output_12_pin = value; } break;
+            case 13: { output_13_pin = value; } break;   // END generated
+            default: { nv->value_flt = 0; }     // inactive
         }
     }
     return (STAT_OK);
@@ -696,20 +670,20 @@ stat_t io_set_output(nvObj_t *nv)
 
     static void _print_di(nvObj_t *nv, const char *format)
     {
-        sprintf(cs.out_buf, format, nv->group, (int)nv->value);
+        sprintf(cs.out_buf, format, nv->group, nv->value_int);
         xio_writeline(cs.out_buf);
     }
     void io_print_mo(nvObj_t *nv) {_print_di(nv, fmt_gpio_mo);}
     void io_print_ac(nvObj_t *nv) {_print_di(nv, fmt_gpio_ac);}
     void io_print_fn(nvObj_t *nv) {_print_di(nv, fmt_gpio_fn);}
     void io_print_in(nvObj_t *nv) {
-        sprintf(cs.out_buf, fmt_gpio_in, nv->token, (int)nv->value);
+        sprintf(cs.out_buf, fmt_gpio_in, nv->token, (int)nv->value_int);
         xio_writeline(cs.out_buf);
     }
 
     void io_print_domode(nvObj_t *nv) {_print_di(nv, fmt_gpio_domode);}
     void io_print_out(nvObj_t *nv) {
-        sprintf(cs.out_buf, fmt_gpio_out, nv->token, (int)nv->value);
+        sprintf(cs.out_buf, fmt_gpio_out, nv->token, (int)nv->value_int);
         xio_writeline(cs.out_buf);
     }
 #endif
