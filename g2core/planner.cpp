@@ -107,15 +107,7 @@ struct _json_commands_t {
     // Constructor (initializer)
     // Note, reset routines handle zeroing out all of the above
     _json_commands_t() {
-        json_command_buffer_t *js_pv = &_json_bf[JSON_COMMAND_BUFFER_SIZE - 1];
-        for (uint8_t i=0; i < JSON_COMMAND_BUFFER_SIZE; i++) {
-            _json_bf[i].nx = &_json_bf[((i+1 == JSON_COMMAND_BUFFER_SIZE) ? 0 : i+1)];
-            _json_bf[i].pv = js_pv;
-            js_pv = &_json_bf[i];
-        }
-        _json_r = &_json_bf[0];
-        _json_w = _json_r;
-        available = JSON_COMMAND_BUFFER_SIZE;
+        reset();
     };
 
     // Write a json command to the buffer, using up one slot
@@ -134,6 +126,18 @@ struct _json_commands_t {
     void free_buffer() {
         _json_r = _json_r->nx;
         available++;
+    }
+
+    void reset() {
+        json_command_buffer_t *js_pv = &_json_bf[JSON_COMMAND_BUFFER_SIZE - 1];
+        for (uint8_t i=0; i < JSON_COMMAND_BUFFER_SIZE; i++) {
+            _json_bf[i].nx = &_json_bf[((i+1 == JSON_COMMAND_BUFFER_SIZE) ? 0 : i+1)];
+            _json_bf[i].pv = js_pv;
+            js_pv = &_json_bf[i];
+        }
+        _json_r = &_json_bf[0];
+        _json_w = _json_r;
+        available = JSON_COMMAND_BUFFER_SIZE;
     }
 };
 _json_commands_t jc;
@@ -203,6 +207,7 @@ void planner_reset(mpPlanner_t *_mp)        // reset planner queue, cease MR act
     // selectively reset mpPlanner and mpPlannerRuntime w/o actually wiping them
     _mp->reset();
     _mp->mr->reset();
+    jc.reset();
     _init_planner_queue(_mp, _mp->q.bf, _mp->q.queue_size); // reset planner buffers
 }
 
