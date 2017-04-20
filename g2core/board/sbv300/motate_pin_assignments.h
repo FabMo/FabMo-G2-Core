@@ -147,7 +147,7 @@ pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
 
-pin_number kSpindle_EnablePinNumber = 124;  // TODO enable spindle
+pin_number kSpindle_EnablePinNumber = -1;  // TODO enable spindle
 pin_number kSpindle_DirPinNumber    = -1;
 
 pin_number kCoolant_EnablePinNumber = -1;

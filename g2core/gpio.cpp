@@ -165,7 +165,7 @@ struct ioDigitalInputExt {
         // trigger the action on leading edges
         if (in->edge == INPUT_EDGE_LEADING) {
             if (in->action == INPUT_ACTION_STOP) {
-                cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
+                cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_CYCLE);
             }
             if (in->action == INPUT_ACTION_FAST_STOP) {
                 cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
