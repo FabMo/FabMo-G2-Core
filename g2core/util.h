@@ -50,9 +50,15 @@ using Motate::SysTickTimer;
 /****** Global Scope Variables and Functions ******/
 /*
 #pragma GCC push_options        // DIAGNOSTIC +++++
-#pragma GCC optimize ("O0")     // DIAGNOSTIC +++++
+#pragma GCC optimize ("O0")
 // insert function here
-#pragma GCC reset_options       // DIAGNOSTIC +++++
+static void _hold_everything (uint32_t n1, uint32_t n2) // example of function
+{
+    if (n1 == n2) {
+        cm1.gm.linenum +=1;
+    }
+}
+#pragma GCC reset_options
 */
 
 //*** vector utilities ***
