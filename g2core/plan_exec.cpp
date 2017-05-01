@@ -920,6 +920,11 @@ static stat_t _exec_aline_segment()
     // Convert target position to steps
     // Bucket-brigade the old target down the chain before getting the new target from kinematics
     //
+    // Very small travels of less than 0.01 step are truncated to zero. This is to correct a condition
+    // where a rounding error in kinematics could reverse the direction of a move in the extreme head or tail.
+    // Truncating the move contributes to positional error, but this is corrected by encoder feedback should
+    // it ever accumulate to more than one step.
+    //
     // NB: The direct manipulation of steps to compute travel_steps only works for Cartesian kinematics.
     //     Other kinematics may require transforming travel distance as opposed to simply subtracting steps.
 
@@ -930,9 +935,12 @@ static stat_t _exec_aline_segment()
         mr->following_error[m] = mr->encoder_steps[m] - mr->commanded_steps[m];
     }
     kn_inverse_kinematics(mr->gm.target, mr->target_steps); // now determine the target steps...
+
     for (uint8_t m=0; m<MOTORS; m++) {                      // and compute the distances to be traveled
-//        mr->travel_steps[m] = mr->target_steps[m] - mr->position_steps[m];
         travel_steps[m] = mr->target_steps[m] - mr->position_steps[m];
+        if (fabs(travel_steps[m]) < 0.01) {                 // truncate very small moves to deal with rounding errors
+            travel_steps[m] = 0;
+        }
     }
 
     // Update the mb->run_time_remaining -- we know it's missing the current segment's time before it's loaded, that's ok.
@@ -942,7 +950,6 @@ static stat_t _exec_aline_segment()
     }
 
     // Call the stepper prep function
-//    ritorno(st_prep_line(mr->travel_steps, mr->following_error, mr->segment_time));
     ritorno(st_prep_line(travel_steps, mr->following_error, mr->segment_time));
     copy_vector(mr->position, mr->gm.target);               // update position from target
     if (mr->segment_count == 0) {
