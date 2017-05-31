@@ -443,6 +443,17 @@ static void _load_move()
 
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
+
+                if (cm->motion_state == MOTION_RUN)  {
+#if IN_DEBUGGER == 1
+//#warning debbugger REQUIRED for running this firmware!
+//            __asm__("BKPT"); // attempted to _load_move with PREP_BUFFER_OWNED_BY_EXEC and cm.motion_state == MOTION_RUN
+#endif
+            st_request_exec_move();
+            return;
+        }
+
+
         motor_1.motionStopped();    // ...start motor power timeouts
         motor_2.motionStopped();
 #if (MOTORS > 2)
