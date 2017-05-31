@@ -685,6 +685,7 @@ static void _feedhold_actions_done_callback(float* vect, bool* flag)
 
 static stat_t _feedhold_with_actions()          // Execute Case (5)
 {
+    float f;
     // if entered while OFF start a feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {
         cm1.hold_type = FEEDHOLD_TYPE_ACTIONS;
@@ -706,11 +707,15 @@ static stat_t _feedhold_with_actions()          // Execute Case (5)
 
         // execute feedhold actions
         if (fp_NOT_ZERO(cm->feedhold_z_lift)) {                 // optional Z lift
-            cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
-            bool flags[] = { 0,0,1,0,0,0 };
-            float target[] = { 0,0, _to_inches(cm->feedhold_z_lift), 0,0,0 };   // convert to inches if in inches mode
-            cm_straight_traverse(target, flags, PROFILE_NORMAL);
-            cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting
+            f = cm_get_combined_offset(AXIS_Z) + cm->feedhold_z_lift;
+            //cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
+            if(cm->gmx.position[2] <= f) {
+                cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
+                bool flags[] = { 0,0,1,0,0,0 };
+                float target[] = { 0,0, _to_inches(cm->feedhold_z_lift), 0,0,0 };   // convert to inches if in inches mode
+                cm_straight_traverse(target, flags, PROFILE_NORMAL);
+                cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting                
+            }            
         }
         spindle_control_sync(SPINDLE_PAUSE);                    // optional spindle pause
         coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);      // optional coolant pause
