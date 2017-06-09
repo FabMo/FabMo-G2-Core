@@ -1585,7 +1585,7 @@ static void _exec_program_finalize(float *value, bool *flag)
     cm_set_motion_state(MOTION_STOP);                       // also changes active model back to MODEL
 
     // Allow update in the alarm state, to accommodate queue flush (RAS)
-    if ((cm->cycle_type == CYCLE_MACHINING || cm->cycle_type == CYCLE_NONE) &&
+    if ((cm->cycle_type == CYCLE_MACHINING || cm->cycle_type == CYCLE_NONE || cm->cycle_type == CYCLE_PROBE) &&
 //      (cm->machine_state != MACHINE_ALARM) &&             // omitted by OMC (RAS)
         (cm->machine_state != MACHINE_SHUTDOWN)) {
         cm->machine_state = machine_state;                  // don't update macs/cycs if we're in the middle of a canned cycle,
