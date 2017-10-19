@@ -149,6 +149,8 @@ void output_reset(void);
 void gpio_set_homing_mode(const uint8_t input_num, const bool is_homing);
 void gpio_set_probing_mode(const uint8_t input_num, const bool is_probing);
 int8_t gpio_get_probing_input(void);
+bool gpio_read_input(const uint8_t input_num);
+stat_t gpio_set_output(uint8_t output_num, float value);
 
 bool gpio_read_input(const uint8_t input_num);
 stat_t gpio_set_output(uint8_t output_num, float value);

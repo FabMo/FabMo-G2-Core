@@ -78,6 +78,25 @@ Motate::SysTickEvent dwell_systick_event {[&] {
     }
 }, nullptr};
 
+/* Note on the above:
+It's a lambda function creating a closure function. 
+The full implementation that uses it is small and may help: 
+https://github.com/synthetos/Motate/blob/41e5b92a98de4b268d1804bf6eadf3333298fc75/MotateProject/motate/Atmel_sam_common/SamTimers.h#L1147-L1218
+It's just like a function, and is used as a function pointer.
+
+But the closure part means that whatever variables that were in scope where the 
+[&](parameters){code} is will be captured by the compiler as references in the generated 
+function and used wherever the function gets called. In this particular use, there isn't 
+anything that wouldn't be available anywhere in that file, but they're not being called 
+from that file. They're being called by the systick interrupt which is over in SamTmers.cpp
+So this saves a bunch of work exposing bits that the systick would need to call and encapsulates it.
+And there's almost no runtime overhead. Just a check for a valid function pointer and then a call of it.
+I'd like to get rid of that check but it's more work than its worth.
+
+See here for some good info on lambda functions in C++
+http://www.cprogramming.com/c++11/c++11-lambda-closures.html
+http://en.cppreference.com/w/cpp/language/lambda
+*/
 
 /************************************************************************************
  **** CODE **************************************************************************
@@ -116,11 +135,11 @@ void stepper_init()
     dda_timer.setInterrupts(kInterruptOnOverflow | kInterruptPriorityHighest);
 
     // setup software interrupt exec timer & initial condition
-    exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityMedium);
+    exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityHigh);
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_EXEC;
 
     // setup software interrupt forward plan timer & initial condition
-    fwd_plan_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityLow);
+    fwd_plan_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityMedium);
 
     // setup motor power levels and apply power level to stepper drivers
     for (uint8_t motor=0; motor<MOTORS; motor++) {
@@ -203,6 +222,7 @@ stat_t st_clc(nvObj_t *nv)    // clear diagnostic counters, reset stepper prep
  *
  *  Handles motor power-down timing, low-power idle, and adaptive motor power
  */
+
 stat_t st_motor_power_callback()     // called by controller
 {
     if (!mp_is_phat_city_time()) {   // don't process this if you are time constrained in the planner
@@ -210,7 +230,9 @@ stat_t st_motor_power_callback()     // called by controller
     }
 
     bool have_actually_stopped = false;
-    if ((!st_runtime_isbusy()) && (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER)) {    // if there are no moves to load...
+    if ((!st_runtime_isbusy()) &&
+        (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) &&
+        (cm_get_machine_state() != MACHINE_CYCLE)) {    // if there are no moves to load...
         have_actually_stopped = true;
     }
 
@@ -249,10 +271,6 @@ void dda_timer_type::interrupt()
     dda_timer.getInterruptCause();  // clear interrupt condition
 
     // clear all steps from the previous interrupt
-	// for (uint8_t motor=0; motor<MOTORS; motor++) {
-	//	  Motors[motor]->stepEnd();
-	// }
-	// loop unrolled version (it's actually faster)
     motor_1.stepEnd();
     motor_2.stepEnd();
 #if MOTORS > 2
@@ -284,43 +302,43 @@ void dda_timer_type::interrupt()
 //    }
 
     // process DDAs for each motor
-        if  ((st_run.mot[MOTOR_1].substep_accumulator += st_run.mot[MOTOR_1].substep_increment) > 0) {
-            motor_1.stepStart();        // turn step bit on
-            st_run.mot[MOTOR_1].substep_accumulator -= st_run.dda_ticks_X_substeps;
-            INCREMENT_ENCODER(MOTOR_1);
-        }
-        if ((st_run.mot[MOTOR_2].substep_accumulator += st_run.mot[MOTOR_2].substep_increment) > 0) {
-            motor_2.stepStart();        // turn step bit on
-            st_run.mot[MOTOR_2].substep_accumulator -= st_run.dda_ticks_X_substeps;
-            INCREMENT_ENCODER(MOTOR_2);
-        }
+    if  ((st_run.mot[MOTOR_1].substep_accumulator += st_run.mot[MOTOR_1].substep_increment) > 0) {
+        motor_1.stepStart();        // turn step bit on
+        st_run.mot[MOTOR_1].substep_accumulator -= st_run.dda_ticks_X_substeps;
+        INCREMENT_ENCODER(MOTOR_1);
+    }
+    if ((st_run.mot[MOTOR_2].substep_accumulator += st_run.mot[MOTOR_2].substep_increment) > 0) {
+        motor_2.stepStart();        // turn step bit on
+        st_run.mot[MOTOR_2].substep_accumulator -= st_run.dda_ticks_X_substeps;
+        INCREMENT_ENCODER(MOTOR_2);
+    }
 #if MOTORS > 2
-        if ((st_run.mot[MOTOR_3].substep_accumulator += st_run.mot[MOTOR_3].substep_increment) > 0) {
-            motor_3.stepStart();        // turn step bit on
-            st_run.mot[MOTOR_3].substep_accumulator -= st_run.dda_ticks_X_substeps;
-            INCREMENT_ENCODER(MOTOR_3);
-        }
+    if ((st_run.mot[MOTOR_3].substep_accumulator += st_run.mot[MOTOR_3].substep_increment) > 0) {
+        motor_3.stepStart();        // turn step bit on
+        st_run.mot[MOTOR_3].substep_accumulator -= st_run.dda_ticks_X_substeps;
+        INCREMENT_ENCODER(MOTOR_3);
+    }
 #endif
 #if MOTORS > 3
-        if ((st_run.mot[MOTOR_4].substep_accumulator += st_run.mot[MOTOR_4].substep_increment) > 0) {
-            motor_4.stepStart();        // turn step bit on
-            st_run.mot[MOTOR_4].substep_accumulator -= st_run.dda_ticks_X_substeps;
-            INCREMENT_ENCODER(MOTOR_4);
-        }
+    if ((st_run.mot[MOTOR_4].substep_accumulator += st_run.mot[MOTOR_4].substep_increment) > 0) {
+        motor_4.stepStart();        // turn step bit on
+        st_run.mot[MOTOR_4].substep_accumulator -= st_run.dda_ticks_X_substeps;
+        INCREMENT_ENCODER(MOTOR_4);
+    }
 #endif
 #if MOTORS > 4
-        if ((st_run.mot[MOTOR_5].substep_accumulator += st_run.mot[MOTOR_5].substep_increment) > 0) {
-            motor_5.stepStart();        // turn step bit on
-            st_run.mot[MOTOR_5].substep_accumulator -= st_run.dda_ticks_X_substeps;
-            INCREMENT_ENCODER(MOTOR_5);
-        }
+    if ((st_run.mot[MOTOR_5].substep_accumulator += st_run.mot[MOTOR_5].substep_increment) > 0) {
+        motor_5.stepStart();        // turn step bit on
+        st_run.mot[MOTOR_5].substep_accumulator -= st_run.dda_ticks_X_substeps;
+        INCREMENT_ENCODER(MOTOR_5);
+    }
 #endif
 #if MOTORS > 5
-        if ((st_run.mot[MOTOR_6].substep_accumulator += st_run.mot[MOTOR_6].substep_increment) > 0) {
-            motor_6.stepStart();        // turn step bit on
-            st_run.mot[MOTOR_6].substep_accumulator -= st_run.dda_ticks_X_substeps;
-            INCREMENT_ENCODER(MOTOR_6);
-        }
+    if ((st_run.mot[MOTOR_6].substep_accumulator += st_run.mot[MOTOR_6].substep_increment) > 0) {
+        motor_6.stepStart();        // turn step bit on
+        st_run.mot[MOTOR_6].substep_accumulator -= st_run.dda_ticks_X_substeps;
+        INCREMENT_ENCODER(MOTOR_6);
+    }
 #endif
 
     // Process end of segment. 
@@ -359,6 +377,11 @@ namespace Motate {    // Define timer inside Motate namespace
         }
     }
 } // namespace Motate
+
+/****************************************************************************************
+ * st_request_forward_plan  - performs forward planning on penultimate block
+ * fwd_plan interrupt       - interrupt handler for calling forward planning function
+ */
 
 void st_request_forward_plan()
 {
@@ -420,11 +443,17 @@ static void _load_move()
 
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
-    //	for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
-    //		Motors[motor]->motionStopped();
-    //  }
 
-        // loop unrolled version
+                if (cm->motion_state == MOTION_RUN)  {
+#if IN_DEBUGGER == 1
+//#warning debbugger REQUIRED for running this firmware!
+//            __asm__("BKPT"); // attempted to _load_move with PREP_BUFFER_OWNED_BY_EXEC and cm.motion_state == MOTION_RUN
+#endif
+            st_request_exec_move();
+            return;
+        }
+
+
         motor_1.motionStopped();    // ...start motor power timeouts
         motor_2.motionStopped();
 #if (MOTORS > 2)
@@ -442,11 +471,12 @@ static void _load_move()
         return;
     } // if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER)
 
-    // handle aline loads first (most common case)  NB: there are no more lines, only alines
+    // handle aline loads first (most common case)
     if (st_pre.block_type == BLOCK_TYPE_ALINE) {
 
         //**** setup the new segment ****
 
+        debug_trap_if_true((st_run.dda_ticks_downcount != 0), "_load_move() downcount is not zero");
         st_run.dda_ticks_downcount = st_pre.dda_ticks;
         st_run.dda_ticks_X_substeps = st_pre.dda_ticks_X_substeps;
 
@@ -634,15 +664,12 @@ stat_t st_prep_line(float travel_steps[], float following_error[], float segment
         return (cm_panic(STAT_PREP_LINE_MOVE_TIME_IS_INFINITE, "st_prep_line()"));
     } else if (isnan(segment_time)) {                           // never supposed to happen
         return (cm_panic(STAT_PREP_LINE_MOVE_TIME_IS_NAN, "st_prep_line()"));
-//    } else if (segment_time < EPSILON) {
-//        return (STAT_MINIMUM_TIME_MOVE);
     }
     // setup segment parameters
     // - dda_ticks is the integer number of DDA clock ticks needed to play out the segment
     // - ticks_X_substeps is the maximum depth of the DDA accumulator (as a negative number)
 
-    //st_pre.dda_period = _f_to_period(FREQUENCY_DDA);                // FYI: this is a constant
-    st_pre.dda_ticks = (int32_t)(segment_time * 60 * FREQUENCY_DDA);// NB: converts minutes to seconds
+    st_pre.dda_ticks = (int32_t)(segment_time * 60 * FREQUENCY_DDA);  // NB: converts minutes to seconds
     st_pre.dda_ticks_X_substeps = st_pre.dda_ticks * DDA_SUBSTEPS;
 
     // setup motor parameters
@@ -668,11 +695,11 @@ stat_t st_prep_line(float travel_steps[], float following_error[], float segment
         }
 
         // Detect segment time changes and setup the accumulator correction factor and flag.
-        // Putting this here computes the correct factor even if the motor was dormant for some
-        // number of previous moves. Correction is computed based on the last segment time actually used.
+        // Putting this here computes the correct factor even if the motor was dormant for some number
+        // of previous moves. Correction is computed based on the last segment time actually used.
 
         if (fabs(segment_time - st_pre.mot[motor].prev_segment_time) > 0.0000001) { // highly tuned FP != compare
-            if (fp_NOT_ZERO(st_pre.mot[motor].prev_segment_time)) {                    // special case to skip first move
+            if (fp_NOT_ZERO(st_pre.mot[motor].prev_segment_time)) {                 // special case to skip first move
                 st_pre.mot[motor].accumulator_correction_flag = true;
                 st_pre.mot[motor].accumulator_correction = segment_time / st_pre.mot[motor].prev_segment_time;
             }
@@ -681,6 +708,7 @@ stat_t st_prep_line(float travel_steps[], float following_error[], float segment
 
         // 'Nudge' correction strategy. Inject a single, scaled correction value then hold off
         // NOTE: This clause can be commented out to test for numerical accuracy and accumulating errors
+
         if ((--st_pre.mot[motor].correction_holdoff < 0) &&
             (fabs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
 

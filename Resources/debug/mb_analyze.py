@@ -163,6 +163,3 @@ def print_pool(pool):
                 float(buffer['jerk'])/1000000.0
                 )
 
-if __name__ == "__main__":
-    pool = check_pool(sys.argv[1])
-    print_pool(pool)

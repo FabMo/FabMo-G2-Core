@@ -58,7 +58,7 @@ static stat_t _run_program_end(void);
 static stat_t _run_alarm(void);
 static stat_t _run_shutdown(void);
 static stat_t _run_interlock(void);
-
+ 
 /****************************************************************************************
  * OPERATIONS AND ACTIONS
  *
@@ -203,7 +203,7 @@ void cm_operation_init()
  * 
  *  Feedhold processing performs the following (in rough sequence order):
  *
- *  (0) - Feedhold is request bu calling cm_feedhold_reqeust() 
+ *  (0) - Feedhold is request by calling cm_feedhold_request() 
  *
  * Control transfers to plan_exec.cpp feedhold functions:
  *
@@ -273,7 +273,7 @@ stat_t cm_operation_runner_callback()
         _start_cycle_restart();
     }
 
-    // run the operation or operation continuation
+    // run the operation or operation continuation (callback)
     return (op.run_operation());
 }
 
@@ -305,7 +305,6 @@ stat_t cm_feedhold_command_blocker()
 static stat_t _run_program_stop()
 {
     cm_cycle_end();                         // end cycle and run program stop
-//    cm_program_stop();
     return (STAT_OK);
 }
 
@@ -315,20 +314,9 @@ static stat_t _run_program_end()
     return (STAT_OK);
 }
 
-static stat_t _run_alarm()
-{
-    return (STAT_OK);
-}
-
-static stat_t _run_shutdown()
-{
-    return (STAT_OK);
-}
-
-static stat_t _run_interlock()
-{
-    return (STAT_OK);
-}
+static stat_t _run_alarm() { return (STAT_OK); }
+static stat_t _run_shutdown() { return (STAT_OK); }
+static stat_t _run_interlock() { return (STAT_OK); }
 
 /****************************************************************************************
  * cm_request_cycle_start() - set request enum only
@@ -363,35 +351,13 @@ static void _start_cycle_restart()
             default: {}
         }
         switch (cm1.hold_exit) {
-            case FEEDHOLD_EXIT_CYCLE: { 
-                op.add_action(_run_restart_cycle); 
-                break; 
-            }
-            case FEEDHOLD_EXIT_FLUSH: {
-                op.add_action(_run_queue_flush);
-                op.add_action(_run_program_stop);
-                break; 
-            }
-            case FEEDHOLD_EXIT_STOP: { 
-                op.add_action(_run_program_stop); 
-                break;
-            }
-            case FEEDHOLD_EXIT_END: { 
-                op.add_action(_run_program_end); 
-                break; 
-            }
-            case FEEDHOLD_EXIT_ALARM: { 
-                op.add_action(_run_alarm); 
-                break; 
-            }
-            case FEEDHOLD_EXIT_SHUTDOWN: { 
-                op.add_action(_run_shutdown); 
-                break; 
-            }
-            case FEEDHOLD_EXIT_INTERLOCK: { 
-                op.add_action(_run_interlock); 
-                break; 
-            }
+            case FEEDHOLD_EXIT_CYCLE:     { op.add_action(_run_restart_cycle); break; }
+            case FEEDHOLD_EXIT_FLUSH:     { op.add_action(_run_queue_flush); } // no break
+            case FEEDHOLD_EXIT_STOP:      { op.add_action(_run_program_stop); break; }
+            case FEEDHOLD_EXIT_END:       { op.add_action(_run_program_end); break; }
+            case FEEDHOLD_EXIT_ALARM:     { op.add_action(_run_alarm); break; }
+            case FEEDHOLD_EXIT_SHUTDOWN:  { op.add_action(_run_shutdown); break; }
+            case FEEDHOLD_EXIT_INTERLOCK: { op.add_action(_run_interlock); break; }
             default: {}
         }
     } 
@@ -399,8 +365,11 @@ static void _start_cycle_restart()
 
 /****************************************************************************************
  * cm_request_queue_flush() - set request enum only
- * _start_queue_flush()  - run a queue flush from a %
- * _restart_flush()         - run a queue flush from an action
+ * _start_queue_flush()     - run a queue flush from a %
+ * _run_queue_flush()       - run a queue flush from an action
+ *
+ * cm_request_queue_flush() should be called concurrently with xio_flush_to_command(), like this:
+ *      { cm_request_queue_flush(); xio_flush_to_command(); }
  */
 
 void cm_request_queue_flush()
@@ -427,6 +396,10 @@ static void _start_queue_flush()
     }
 }
 
+// _run_queue_flush() should not be called until motion has stopped.
+// It is completely synchronous so it can be called directly;
+// it does not need to be part of an operation().
+
 static stat_t _run_queue_flush()            // typically runs from cm1 planner
 {
     cm_abort_arc(cm);                       // kill arcs so they don't just create more alines
@@ -439,17 +412,22 @@ static stat_t _run_queue_flush()            // typically runs from cm1 planner
 
 /****************************************************************************************
  * cm_request_job_kill() - Control-D handler - set request flag only by ^d
- * _run_job_kill_final() - perform the job kill. queue flush, enter alarm with no movement
+ * _run_job_kill()       - perform the job kill. queue flush, program_end
  * _start_job_kill()     - invoke the job kill function, which may start from various states
  *
- *  Job kill cases:
- *  Job kill from machining cycle   (1) hold, flush and enter ALARM state
- *  Job kill from PROBE             (2) flush and enter ALARM state
- *  Job kill from HOMING            (3) flush and enter ALARM state
- *  Job kill from JOGGING           (4) flush and enter ALARM state
- *  Job kill from feedhold          (5) flush and enter ALARM state
- *  Job kill from interlock         (6) flush and enter ALARM state
- *  job kill has no action if from: (7) READY, STOP, END, ALARM, SHUTDOWN, PANIC states
+ * cm_request_job_kill() should be called concurrently with xio_flush_to_command(), like this:
+ *      { cm_request_job_kill(); xio_flush_to_command(); }
+ *
+ *  Job kill cases:                             Actions:
+ *  (0)  job kill from ALARM, SHUTDOWN, PANIC   no action, end request
+ *  (1)  job kill from READY, STOP, END         perform PROGRAM_END
+ *  (2a) Job kill from machining cycle          hold, flush, perform PROGRAM_END
+ *  (2b) Job kill from pending hold             wait for hold to complete 
+ *  (2c) Job kill from finished hold            flush, perform PROGRAM_END
+ *  (3)  Job kill from PROBE                    flush, perform PROGRAM_END
+ *  (4)  Job kill from HOMING                   flush, perform PROGRAM_END
+ *  (5)  Job kill from JOGGING                  flush, perform PROGRAM_END
+ *  (6)  job kill from INTERLOCK                perform PROGRAM_END
  */
 
 void cm_request_job_kill()
@@ -457,37 +435,62 @@ void cm_request_job_kill()
     cm1.job_kill_state = JOB_KILL_REQUESTED;
 }
 
-static stat_t _run_job_kill_final()
+// _run_job_kill() should not be called until motion has stopped.
+// It is completely synchronous so it can be called directly;
+// it does not need to be part of an operation().
+
+static stat_t _run_job_kill()
 {
-    // switch to p1 (may already be in it)
-    cm = &cm1;                              // return to primary planner (p1)
-    mp = (mpPlanner_t *)cm->mp;             // cm->mp is a void pointer
-    mr = mp->mr;
+    // if in p2 switch to p1 and copy actual position back to p1
+    if (cm == &cm2) {
+        cm = &cm1;                                      // return to primary planner (p1)
+        mp = (mpPlanner_t *)cm->mp;                     // cm->mp is a void pointer
+        mr = mp->mr;
+        
+        copy_vector(cm1.gmx.position, mr2.position);    // transfer actual position back to p1
+        copy_vector(cm1.gm.target, mr2.position);
+        copy_vector(mp1.position, mr2.position);
+        copy_vector(mr1.position, mr2.position);
+    }
+
+    _run_queue_flush();
 
     coolant_control_immediate(COOLANT_OFF, COOLANT_BOTH); // stop coolant
     spindle_control_immediate(SPINDLE_OFF);               // stop spindle
 
-    cm_set_motion_state(MOTION_STOP);       // set to stop and set the active model
+    cm_set_motion_state(MOTION_STOP);                     // set to stop and set the active model
     cm->hold_state = FEEDHOLD_OFF;
     cm_program_end();
 
     rpt_exception(STAT_KILL_JOB, "Job killed by ^d");
     sr_request_status_report(SR_REQUEST_IMMEDIATE);    
+    cm->job_kill_state = JOB_KILL_OFF;
     return (STAT_OK);
 }
 
+// _start_job_kill() will be entered multiple times until the REQUEST is reset to OFF
+
 static void _start_job_kill()
 {
-    // Cases (1 - 4)
-    if (cm1.machine_state == MACHINE_CYCLE) {
-        if (cm1.hold_state == FEEDHOLD_OFF) {
-            op.add_action(_feedhold_no_actions);
-        }        
-        op.add_action(_run_queue_flush);
-        op.add_action(_run_job_kill_final); // Case (5)
-        op.run_operation();
+    switch (cm1.machine_state) {
+        case MACHINE_ALARM:                             // Case 0's - nothing to do. turn off the request
+        case MACHINE_SHUTDOWN:
+        case MACHINE_PANIC: {
+            cm1.job_kill_state = JOB_KILL_OFF;
+            return;
+        }
+        case MACHINE_CYCLE: {                           // Case 2's 
+            if (cm1.hold_state == FEEDHOLD_OFF) {       // Case 2a - in cycle and not in a hold
+                op.add_action(_feedhold_no_actions);
+//                op.add_action(_run_job_kill);
+            }
+            if (cm1.hold_state == FEEDHOLD_HOLD) {      // Case 2c - in a finished hold
+                _run_job_kill();
+            }
+            return;                                     // Case 2b - hold is in progress. Wait for hold to reach HOLD
+        }
+        default: { _run_job_kill(); }                   // Cases 1,3,4,5,6 
     }
-    cm1.job_kill_state = JOB_KILL_OFF;      // nothing to do. turn off the request
 }
 
 /****************************************************************************************
@@ -504,8 +507,12 @@ static void _start_job_kill()
 
 void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 {
-    // Can only initiate a feedhold if you are in a machining cycle not already in a feedhold
-    if ((cm1.hold_state == FEEDHOLD_OFF) && (cm1.machine_state == MACHINE_CYCLE)) {
+    // Can only initiate a feedhold if you are in a machining cycle, running, and not already in a feedhold
+
+    // +++++ This needs to be extended to allow HOLDs to be requested when motion has stopped
+    if ((cm1.hold_state == FEEDHOLD_OFF) &&
+        (cm1.machine_state == MACHINE_CYCLE) && (cm1.motion_state == MOTION_RUN)) {
+
         cm1.hold_type = type;
         cm1.hold_exit = exit;
         cm1.hold_profile = ((type == FEEDHOLD_TYPE_ACTIONS) || (type == FEEDHOLD_TYPE_HOLD)) ?
@@ -525,7 +532,6 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
             case FEEDHOLD_EXIT_INTERLOCK: { op.add_action(_run_interlock); break; }
             default: {}
         }
-        cm1.hold_state = FEEDHOLD_SYNC;     // start feedhold state machine in aline exec
         return;
     }
 
@@ -538,12 +544,12 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
     
     // Reset the request if it's invalid
     if ((cm1.machine_state != MACHINE_CYCLE) || (cm1.motion_state == MOTION_STOP)) {
-        cm->hold_state = FEEDHOLD_OFF;      // cannot honor the feedhold request. reset it
+        cm->hold_state = FEEDHOLD_OFF;          // cannot honor the feedhold request. reset it
     }
 
 }
 /*
-static void _start_feedhold()
+static void _start_p2_feedhold()
 {
     // P2 feedholds only allow skip types
     if ((cm2.hold_state == FEEDHOLD_REQUESTED) && (cm2.motion_state == MOTION_RUN)) {
@@ -552,82 +558,164 @@ static void _start_feedhold()
     }
 }
 */
+
+/*  
+ * _enter_p2()  - enter p2 planner with proper state transfer from p1
+ * _exit_p2()   - reenter p1 planner with proper state transfer from p2
+ *
+ * Encapsulate entering and exiting p2, as this is tricky and must be done exactly right
+ */
+
+static void _enter_p2()
+{
+    // Copy the primary canonical machine to the secondary. Here it's OK to co a memcpy.
+    // Set parameters in cm, gm and gmx so you can actually use it
+    memcpy(&cm2, &cm1, sizeof(cmMachine_t));
+    cm2.hold_state = FEEDHOLD_OFF;
+    cm2.gm.motion_mode = MOTION_MODE_CANCEL_MOTION_MODE;
+    cm2.gm.absolute_override = ABSOLUTE_OVERRIDE_OFF;
+    cm2.queue_flush_state = QUEUE_FLUSH_OFF;
+    cm2.gm.feed_rate = 0;
+    cm2.arc.run_state = BLOCK_INACTIVE;     // Stop a running p1 arc from continuing to execute in p2
+
+    // Set mp planner to p2 and reset it
+    cm2.mp = &mp2;
+    planner_reset((mpPlanner_t *)cm2.mp);   // mp is a void pointer
+
+    // Clear the target and set the positions to the current hold position
+    memset(&(cm2.return_flags), 0, sizeof(cm2.return_flags));
+    memset(&(cm2.gm.target), 0, sizeof(cm2.gm.target));
+    memset(&(cm2.gm.target_comp), 0, sizeof(cm2.gm.target_comp)); // zero Kahan compensation
+
+    copy_vector(cm2.gmx.position, mr1.position);
+    copy_vector(mp2.position, mr1.position);
+    copy_vector(mr2.position, mr1.position);
+
+    // Copy MR position and encoder terms - needed for following error correction state
+    copy_vector(mr2.target_steps, mr1.target_steps);
+    copy_vector(mr2.position_steps, mr1.position_steps);
+    copy_vector(mr2.commanded_steps, mr1.commanded_steps);
+    copy_vector(mr2.encoder_steps, mr1.encoder_steps);  // NB: following error is re-computed in p2
+
+    // Reassign the globals to the secondary CM
+    cm = &cm2;
+    mp = (mpPlanner_t *)cm2.mp;     // mp is a void pointer
+    mr = mp2.mr;
+}
+
+static void _exit_p2()
+{
+    cm = &cm1;                          // return to primary planner (p1)
+    mp = (mpPlanner_t *)cm1.mp;         // cm->mp is a void pointer
+    mr = mp1.mr;
+}
+
+static void _check_motion_stopped()
+{
+    if (mp_runtime_is_idle()) {                         // wait for steppers to actually finish
+            
+        mpBuf_t *bf = mp_get_r();
+            
+        // Motion has stopped, so we can rely on positions and other values to be stable
+        // If SKIP type, discard the remainder of the block and position to the next block
+        if (cm->hold_type == FEEDHOLD_TYPE_SKIP) {
+            copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
+            mp_free_run_buffer();                       // advance to next block, discarding the rest of the move
+        } else { // Otherwise setup the block to complete motion (regardless of how hold will ultimately be exited)
+            bf->length = get_axis_vector_length(mr->position, mr->target); // update bf w/remaining length in move
+            bf->block_state = BLOCK_INITIAL_ACTION;     // tell _exec to re-use the bf buffer
+            bf->buffer_state = MP_BUFFER_BACK_PLANNED;  // so it can be forward planned again
+            bf->plannable = true;                       // needed so block can be re-planned
+        }
+        mr->reset();                                    // reset MR for next use and for forward planning
+        cm_set_motion_state(MOTION_STOP);
+        cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+        sr_request_status_report(SR_REQUEST_IMMEDIATE);
+    }
+}
+
 static stat_t _feedhold_skip()
 {
-    if (cm1.hold_state == FEEDHOLD_OFF) {   // if entered while OFF start a feedhold
-        cm1.hold_state = FEEDHOLD_SYNC;
+    if (cm1.hold_state == FEEDHOLD_OFF) {       // if entered while OFF start a feedhold
+        cm1.hold_type = FEEDHOLD_TYPE_SKIP;
+//        cm1.hold_exit = FEEDHOLD_EXIT_FLUSH;    // default exit for SKIP is FLUSH...
+        cm1.hold_state = FEEDHOLD_SYNC;         // ...FLUSH can be overridden by setting hold_exit after this function
     }
     if (cm1.hold_state < FEEDHOLD_MOTION_STOPPED) {
         return (STAT_EAGAIN);
     }
-    cm1.hold_state = FEEDHOLD_OFF;          // cannot be in HOLD or command won't plan (see mp_plan_block_list())
-    mp_replan_queue(mp_get_r());            // unplan current forward plan (bf head block), and reset all blocks
-    st_request_forward_plan();              // replan from the new bf buffer
+    cm1.hold_state = FEEDHOLD_OFF;              // cannot be in HOLD or command won't plan (see mp_plan_block_list())
+    mp_replan_queue(mp_get_r());                // unplan current forward plan (bf head block), and reset all blocks
+    st_request_forward_plan();                  // replan from the new bf buffer
     return (STAT_OK);
 }
 
 static stat_t _feedhold_no_actions()
 {
-    if (cm1.hold_state == FEEDHOLD_OFF) {   // start a feedhold
-        cm1.hold_state = FEEDHOLD_SYNC;
+    // initiate the feedhold
+    if (cm1.hold_state == FEEDHOLD_OFF) {       // start a feedhold
+        cm1.hold_type = FEEDHOLD_TYPE_HOLD;
+//      cm1.hold_exit = FEEDHOLD_EXIT_STOP;     // default exit for NO_ACTIONS is STOP...
+
+        if (cm1.motion_state == MOTION_STOP) {  // if motion has already stopped declare that you are in a feedhold
+            _check_motion_stopped();
+            cm1.hold_state = FEEDHOLD_HOLD;
+        } else {
+            cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
+            return (STAT_EAGAIN);
+        }
     }
-    if (cm1.hold_state < FEEDHOLD_MOTION_STOPPED) { // wait until it reaches the hold point
+    
+    // wait until feedhold reaches the hold point
+    if (cm1.hold_state < FEEDHOLD_MOTION_STOPPED) {
         return (STAT_EAGAIN);
     }
-    mp_replan_queue(mp_get_r());            // unplan current forward plan (bf head block), and reset all blocks
-    st_request_forward_plan();              // replan from the new bf buffer
+    // complete the feedhold
+    mp_replan_queue(mp_get_r());                // unplan current forward plan (bf head block), and reset all blocks
+    st_request_forward_plan();                  // replan from the new bf buffer
     cm1.hold_state = FEEDHOLD_HOLD;
     return (STAT_OK);
 }
 
 static void _feedhold_actions_done_callback(float* vect, bool* flag)
 {
-    cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_COMPLETE;    // penultimate state before transitioning to FEEDHOLD_HOLD
+    cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_COMPLETE; // penultimate state before transitioning to FEEDHOLD_HOLD
     sr_request_status_report(SR_REQUEST_IMMEDIATE);
 }
 
-static stat_t _feedhold_with_actions()   // Execute Case (5)
+static stat_t _feedhold_with_actions()          // Execute Case (5)
 {
-    // Check to run first-time code
+    float f;
+    // if entered while OFF start a feedhold
+    if (cm1.hold_state == FEEDHOLD_OFF) {
+        cm1.hold_type = FEEDHOLD_TYPE_ACTIONS;
+//      cm1.hold_exit = FEEDHOLD_EXIT_STOP;     // default exit for ACTIONS is STOP...
+        if (cm1.motion_state == MOTION_STOP) {  // if motion has already stopped declare that you are in a feedhold
+            _check_motion_stopped();
+            cm1.hold_state = FEEDHOLD_HOLD;
+        } else {
+            cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
+            return (STAT_EAGAIN);
+        }
+    }
+
+    // Code to run once motion has stopped 
     if (cm1.hold_state == FEEDHOLD_MOTION_STOPPED) {
-        cm->hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;  // next state
-
-        // copy the primary canonical machine to the secondary,
-        // fix the planner pointer, and reset the secondary planner
-        memcpy(&cm2, &cm1, sizeof(cmMachine_t));
-        cm2.mp = &mp2;
-        planner_reset((mpPlanner_t *)cm2.mp);   // mp is a void pointer
-
-        // set parameters in cm, gm and gmx so you can actually use it
-        cm2.hold_state = FEEDHOLD_OFF;
-        cm2.gm.motion_mode = MOTION_MODE_CANCEL_MOTION_MODE;
-        cm2.gm.absolute_override = ABSOLUTE_OVERRIDE_OFF;
-        cm2.queue_flush_state = QUEUE_FLUSH_OFF;
-        cm2.gm.feed_rate = 0;
-
-        // clear the target and set the positions to the current hold position
-        memset(&(cm2.gm.target), 0, sizeof(cm2.gm.target));
-        memset(&(cm2.return_flags), 0, sizeof(cm2.return_flags));
-        copy_vector(cm2.gm.target_comp, cm1.gm.target_comp); // preserve original Kahan compensation
-        copy_vector(cm2.gmx.position, mr1.position);
-        copy_vector(mp2.position, mr1.position);
-        copy_vector(mr2.position, mr1.position);
-
-        // reassign the globals to the secondary CM
-        cm = &cm2;
-        mp = (mpPlanner_t *)cm->mp;     // mp is a void pointer
-        mr = mp->mr;
-
-        // set a return position
-        cm_set_g30_position();
+        cm->hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;         // next state
+        _enter_p2();                                            // enter p2 correctly
+        cm_set_g30_position();                                  // set position to return to on exit
 
         // execute feedhold actions
         if (fp_NOT_ZERO(cm->feedhold_z_lift)) {                 // optional Z lift
-            cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
-            bool flags[] = { 0,0,1,0,0,0 };
-            float target[] = { 0,0, _to_inches(cm->feedhold_z_lift), 0,0,0 };   // convert to inches if in inches mode
-            cm_straight_traverse(target, flags, PROFILE_NORMAL);
-            cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting
+            f = cm_get_combined_offset(AXIS_Z) + cm->feedhold_z_lift;
+            //cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
+            if(cm->gmx.position[2] <= f) {
+                cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
+                bool flags[] = { 0,0,1,0,0,0 };
+                float target[] = { 0,0, _to_inches(cm->feedhold_z_lift), 0,0,0 };   // convert to inches if in inches mode
+                cm_straight_traverse(target, flags, PROFILE_NORMAL);
+                cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting                
+            }            
         }
         spindle_control_sync(SPINDLE_PAUSE);                    // optional spindle pause
         coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);      // optional coolant pause
@@ -660,6 +748,7 @@ static void _feedhold_restart_actions_done_callback(float* vect, bool* flag)
     sr_request_status_report(SR_REQUEST_IMMEDIATE);
 }
 
+//+++++ Make this more robust so it handles being called before reaching HOLD state
 static stat_t _feedhold_restart_no_actions()
 {
     if (cm1.hold_state == FEEDHOLD_OFF) {
@@ -698,9 +787,7 @@ static stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
     
     // finalize feedhold exit
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_COMPLETE) {
-        cm = &cm1;                          // return to primary planner (p1)
-        mp = (mpPlanner_t *)cm->mp;         // cm->mp is a void pointer
-        mr = mp->mr;
+        _exit_p2();                         // re-enter p1 correctly
         return (STAT_OK);
     }
     

@@ -46,7 +46,7 @@
 
 #define AXES 6         // number of axes supported in this version
 #define HOMING_AXES 4  // number of axes that can be homed (assumes Zxyabc sequence)
-#define MOTORS 4       // number of motors on the board
+#define MOTORS 5       // number of motors on the board
 #define COORDS 6       // number of supported coordinate systems (1-6)
 #define PWMS 2         // number of supported PWM channels
 #define TOOLS 32        // number of entries in tool table (index starts at 1)
@@ -120,8 +120,8 @@ typedef TimerChannel<5,0> fwd_plan_timer_type;	// request exec timer in stepper.
 
 // Pin assignments
 
-pin_number indicator_led_pin_num = Motate::kLED_USBRXPinNumber;
-static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
+pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
+static OutputPin<indicator_led_pin_num> IndicatorLed;
 
 // Init these to input to keep them high-z
 static Pin<Motate::kSPI0_MISOPinNumber> spi_miso_pin(Motate::kInput);

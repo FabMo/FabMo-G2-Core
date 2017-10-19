@@ -48,7 +48,7 @@
 #define SPINDLE_ENABLE_POLARITY     1       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_DWELL_TIME          1.0
+#define SPINDLE_DWELL_TIME          2.5
 
 #define COOLANT_MIST_POLARITY       1       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1       // 0=active low, 1=active high
@@ -303,7 +303,7 @@
 #define DO3_MODE IO_ACTIVE_HIGH
 // Fan1B_PWM
 #define DO4_MODE IO_ACTIVE_HIGH
-#define DO5_MODE IO_ACTIVE_HIGH
+#define DO5_MODE IO_ACTIVE_LOW
 #define DO6_MODE IO_ACTIVE_HIGH
 #define DO7_MODE IO_ACTIVE_HIGH
 #define DO8_MODE IO_ACTIVE_HIGH

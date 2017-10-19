@@ -154,20 +154,20 @@ static void _init_forward_diffs(float v_0, float v_1);
  *
  *       (Note: all COMMAND(s) in 2j. should be in PLANNED state)
  */
-
-// _plan_aline() - mp_forward_plan() helper
-//
-// Calculate ramps for the current planning block and the next PREPPED buffer
-// The PREPPED buffer will be set to PLANNED later...
-//
-// Pass in the bf buffer that will "link" with the planned block
-// The block and the buffer are implicitly linked for exec_aline()
-//
-// Note that that can only be one PLANNED move at a time.
-// This is to help sync mr->p to point to the next planned mr->bf
-// mr->p is only advanced in mp_exec_aline(), after mp.r = mr->p.
-// This code aligns the buffers and the blocks for exec_aline().
-
+/*
+ * _plan_aline() - mp_forward_plan() helper
+ *
+ * Calculate ramps for the current planning block and the next PREPPED buffer
+ * The PREPPED buffer will be set to PLANNED later...
+ *
+ * Pass in the bf buffer that will "link" with the planned block
+ * The block and the buffer are implicitly linked for exec_aline()
+ *
+ * Note that that can only be one PLANNED move at a time.
+ * This is to help sync mr->p to point to the next planned mr->bf
+ * mr->p is only advanced in mp_exec_aline(), after mp.r = mr->p.
+ * This code aligns the buffers and the blocks for exec_aline().
+ */
 static stat_t _plan_aline(mpBuf_t *bf, float entry_velocity)
 {
     mpBlockRuntimeBuf_t* block = mr->p;             // set a local planning block so it doesn't change on you
@@ -265,9 +265,9 @@ stat_t mp_exec_move()
         return (STAT_NOOP);
     }
 
-    if (bf->block_type == BLOCK_TYPE_ALINE) {             // cycle auto-start for lines only
-//    if ((bf->block_type == BLOCK_TYPE_ALINE) || (bf->block_type == BLOCK_TYPE_COMMAND)) {
+    if (bf->block_type == BLOCK_TYPE_ALINE) {           // cycle auto-start for lines only
         // first-time operations
+
         if (bf->buffer_state != MP_BUFFER_RUNNING) {
             if ((bf->buffer_state < MP_BUFFER_BACK_PLANNED) && (cm->motion_state == MOTION_RUN)) {
 //                debug_trap("mp_exec_move() buffer is not prepped. Starvation"); // IMPORTANT: can't rpt_exception from here!
@@ -305,9 +305,6 @@ stat_t mp_exec_move()
         if (bf->nx->buffer_state >= MP_BUFFER_BACK_PLANNED) {
             st_request_forward_plan();
         }
-
-        // Perform motion state transition. Also sets active model to RUNTIME
-//        if (cm->motion_state != MOTION_RUN) { cm_set_motion_state(MOTION_RUN); }
     }
     if (bf->bf_func == NULL) {
         return(cm_panic(STAT_INTERNAL_ERROR, "mp_exec_move()")); // never supposed to get here
@@ -923,6 +920,11 @@ static stat_t _exec_aline_segment()
     // Convert target position to steps
     // Bucket-brigade the old target down the chain before getting the new target from kinematics
     //
+    // Very small travels of less than 0.01 step are truncated to zero. This is to correct a condition
+    // where a rounding error in kinematics could reverse the direction of a move in the extreme head or tail.
+    // Truncating the move contributes to positional error, but this is corrected by encoder feedback should
+    // it ever accumulate to more than one step.
+    //
     // NB: The direct manipulation of steps to compute travel_steps only works for Cartesian kinematics.
     //     Other kinematics may require transforming travel distance as opposed to simply subtracting steps.
 
@@ -933,8 +935,12 @@ static stat_t _exec_aline_segment()
         mr->following_error[m] = mr->encoder_steps[m] - mr->commanded_steps[m];
     }
     kn_inverse_kinematics(mr->gm.target, mr->target_steps); // now determine the target steps...
+
     for (uint8_t m=0; m<MOTORS; m++) {                      // and compute the distances to be traveled
         travel_steps[m] = mr->target_steps[m] - mr->position_steps[m];
+        if (fabs(travel_steps[m]) < 0.01) {                 // truncate very small moves to deal with rounding errors
+            travel_steps[m] = 0;
+        }
     }
 
     // Update the mb->run_time_remaining -- we know it's missing the current segment's time before it's loaded, that's ok.
@@ -1031,25 +1037,39 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
 
 static stat_t _exec_aline_feedhold(mpBuf_t *bf) 
 {
-    // Case (4) - Completing the feedhold - Wait for the steppers to stop
+    // Case (4) - Wait for the steppers to stop and complete the feedhold
     if (cm->hold_state == FEEDHOLD_MOTION_STOPPING) {
         if (mp_runtime_is_idle()) {                         // wait for steppers to actually finish
- 
+
             // Motion has stopped, so we can rely on positions and other values to be stable
-            // If SKIP type, discard the remainder of the block and position to the next block
+            
+            // If hold was SKIP type, discard the remainder of the block and position to the next block
             if (cm->hold_type == FEEDHOLD_TYPE_SKIP) {
                 copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
                 mp_free_run_buffer();                       // advance to next block, discarding the rest of the move
-            } else { // Otherwise setup the block to complete motion (regardless of how hold will ultimately be exited)
-                bf->length = get_axis_vector_length(mr->position, mr->target); // update bf w/remaining length in move
-                bf->block_state = BLOCK_INITIAL_ACTION;     // tell _exec to re-use the bf buffer
-                bf->plannable = true;                       // needed so block can be replanned
+            }
+            
+            // Otherwise setup the block to complete motion (regardless of how hold will ultimately be exited)      
+            else { 
+                bf->length = get_axis_vector_length(mr->position, mr->target);  // update bf w/remaining length in move
+                
+                // If length ~= 0 it's because the deceleration was exact. Handle this exception to avoid planning errors
+                if (bf->length < EPSILON4) {
+                    copy_vector(mp->position, mr->position);// update planner position to the final runtime position
+                    mp_free_run_buffer();                   // advance to next block, discarding the zero-length move
+                } else {
+                    bf->block_state = BLOCK_INITIAL_ACTION;   // tell _exec to re-use the bf buffer
+                    while (bf->buffer_state > MP_BUFFER_BACK_PLANNED) {
+                        bf->buffer_state = MP_BUFFER_BACK_PLANNED;// revert from RUNNING so it can be forward planned again
+                        bf->plannable = true;               // needed so block can be re-planned
+                        bf = mp_get_next_buffer(bf);
+                    }
+                }
             }
             mr->reset();                                    // reset MR for next use and for forward planning
             cm_set_motion_state(MOTION_STOP);
             cm->hold_state = FEEDHOLD_MOTION_STOPPED;
             sr_request_status_report(SR_REQUEST_IMMEDIATE);
-//          cs.controller_state = CONTROLLER_READY; // Can this be removed? +++++ // remove controller readline() PAUSE
         }
         return (STAT_NOOP);                                 // hold here. leave with a NOOP so it does not attempt another load and exec.
     }

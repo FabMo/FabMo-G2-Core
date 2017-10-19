@@ -194,7 +194,8 @@ typedef uint16_t index_t;               // use this if there are > 255 indexed o
 typedef enum {
     TEXT_MODE = 0,                      // sticky text mode
     JSON_MODE,                          // sticky JSON mode
-    AUTO_MODE                           // auto-configure communications mode
+    AUTO_MODE,                          // auto-configure communications mode
+    MARLIN_COMM_MODE,                   // sticky marlin-compatibility mode (if compiled in)
 } commMode;
 
 typedef enum {
@@ -222,7 +223,6 @@ typedef enum {                      // value typing for config and JSON
 
     // transient types and types used during JSON processing
     TYPE_PARENT                     // object is a parent to a sub-object
-//    TYPE_NEW_LEVEL,                 // 'value' is actually child key at new nesting level
 //    TYPE_NULL_STRING,               // empty string - treated as null
 //    TYPE_TYPE_ERROR                 // none of the above
 } valueType;

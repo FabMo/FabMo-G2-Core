@@ -49,10 +49,17 @@ using Motate::SysTickTimer;
 
 /****** Global Scope Variables and Functions ******/
 /*
-#pragma GCC push_options        // DIAGNOSTIC +++++
-#pragma GCC optimize ("O0")     // DIAGNOSTIC +++++
+// +++++ DIAGNOSTIC +++++
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 // insert function here
-#pragma GCC reset_options       // DIAGNOSTIC +++++
+static void _hold_everything (uint32_t n1, uint32_t n2) // example of function
+{
+    if (n1 == n2) {
+        cm1.gm.linenum +=1;
+    }
+}
+#pragma GCC reset_options
 */
 
 //*** vector utilities ***
@@ -160,6 +167,21 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 #define M_SQRT3 (1.73205080756888)
 #endif
 
+// Fraction part
+constexpr float c_atof_frac_(char *&p_, float v_, float m_) {
+    return ((*p_ >= '0') && (*p_ <= '9')) ? (v_ = ((v_) + ((*p_) - '0') * m_), c_atof_frac_(++p_, v_, m_ / 10.0)) : v_;
+}
+
+// Integer part
+template <typename int_type>
+constexpr float c_atof_int_(char *&p_, int_type v_) {
+    return (*p_ == '.')
+    ? (float)(v_) + c_atof_frac_(++p_, 0, 1.0 / 10.0)
+    : (((*p_ >= '0') && (*p_ <= '9')) ? ((v_ = ((*p_) - '0') + (v_ * 10)), c_atof_int_(++p_, v_)) : v_);
+}
+
+// Start portion
+constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) * -1.0) : ( (*p_ == '+') ? c_atof_int_(++p_, 0) : (c_atof_int_(p_, 0))); }
 
 // It's assumed that the string buffer contains at lest count_ non-\0 chars
 //constexpr int c_strreverse(char * const t, const int count_, char hold = 0) {
@@ -240,5 +262,10 @@ inline void debug_trap_if_true(bool condition, const char *reason) {
 void LAGER(const char * msg);
 void LAGER_cm(const char * msg);
 
+template <int32_t length>
+void str_concat(char *&dest, const char (&data)[length]) {
+    // length includes the \0
+    strncpy(dest, data, length); dest += length-1;
+};
 
 #endif    // End of include guard: UTIL_H_ONCE
