@@ -423,6 +423,7 @@ uint8_t nv_get_type(nvObj_t *nv)
 /*
  * nv_coerce_types() - change types based on type field in configApp table
  */
+
 void nv_coerce_types(nvObj_t *nv)
 {
     if (nv->valuetype == TYPE_NULL) {               // don't change type if it's a GET query
@@ -687,7 +688,7 @@ nvObj_t *nv_add_conditional_message(const char *string)    // conditionally add 
 
 void nv_print_list(stat_t status, uint8_t text_flags, uint8_t json_flags)
 {
-    if (js.json_mode == JSON_MODE) {
+    if ((js.json_mode == JSON_MODE) || (js.json_mode == MARLIN_COMM_MODE)) {
         json_print_list(status, json_flags);
     } else {
         text_print_list(status, text_flags);

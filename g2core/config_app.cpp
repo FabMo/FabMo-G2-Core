@@ -1186,6 +1186,7 @@ const cfgItem_t cfgArray[] = {
     { "","pid2",_f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // PID 2 group
     { "","pid3",_f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // PID 3 group
 
+
 #ifdef __USER_DATA
 #define USER_DATA_GROUPS 4
     { "","uda", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // user data group
@@ -1548,14 +1549,8 @@ static stat_t get_tick(nvObj_t *nv)
 
 static const char fmt_rx[] = "rx:%d\n";
 static const char fmt_ex[] = "[ex]  enable flow control%10d [0=off,1=XON/XOFF, 2=RTS/CTS]\n";
-//static const char fmt_ec[] = "[ec]  expand LF to CRLF on TX%6d [0=off,1=on]\n";
-//static const char fmt_ee[] = "[ee]  enable echo%18d [0=off,1=on]\n";
-//static const char fmt_baud[] = "[baud] USB baud rate%15d [1=9600,2=19200,3=38400,4=57600,5=115200,6=230400]\n";
 
 void cfg_print_rx(nvObj_t *nv) { text_print(nv, fmt_rx);}       // TYPE_INT
 void cfg_print_ex(nvObj_t *nv) { text_print(nv, fmt_ex);}       // TYPE_INT
-//void cfg_print_ec(nvObj_t *nv) { text_print(nv, fmt_ec);}       // TYPE_INT
-//void cfg_print_ee(nvObj_t *nv) { text_print(nv, fmt_ee);}       // TYPE_INT
-//void cfg_print_baud(nvObj_t *nv) { text_print(nv, fmt_baud);}   // TYPE_INT
 
 #endif // __TEXT_MODE

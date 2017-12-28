@@ -352,9 +352,21 @@ void cm_set_model_linenum(int32_t linenum)
     nv_add_object((const char *)"n");   // then add the line number to the nv list
 }
 
+/*
+ * cm_check_linenum() - Check line number for Marlin protocol
+ */
+
+stat_t cm_check_linenum() {
+    if (cm->gmx.last_line_number != cm->gm.linenum) {
+        debug_trap("line number out of sequence");
+        return STAT_LINE_NUMBER_OUT_OF_SEQUENCE;
+    }
+    cm->gmx.last_line_number = cm->gm.linenum;
+    return STAT_OK;
+}
+
 /****************************************************************************************
- **** COORDINATE SYSTEMS AND OFFSETS ****************************************************
- ****************************************************************************************
+ * COORDINATE SYSTEMS AND OFFSETS
  * Functions to get, set and report coordinate systems and work offsets
  * These functions are not part of the NIST defined functions
  ****************************************************************************************/
@@ -646,6 +658,28 @@ stat_t cm_set_tram(nvObj_t *nv)
 }
 
 /****************************************************************************************
+ * cm_set_nxt_line() - JSON command to set the next line number
+ * cm_get_nxt_line() - JSON query to get the next expected line number
+ */
+
+stat_t cm_set_nxln(nvObj_t *nv)
+{
+    if (nv->valuetype == TYPE_INTEGER || nv->valuetype == TYPE_FLOAT)
+    {
+        cm->gmx.last_line_number = nv->value_int - 1;
+        return (STAT_OK);
+    }
+    return (STAT_INPUT_VALUE_RANGE_ERROR);
+}
+
+stat_t cm_get_nxln(nvObj_t *nv)
+{
+    nv->value_int = cm->gmx.last_line_number+1;
+    nv->valuetype = TYPE_INTEGER;
+    return (STAT_OK);
+}
+
+/****************************************************************************************
  * cm_set_model_target() - set target vector in GM model
  *
  * This is a core routine. It handles:
@@ -674,7 +708,8 @@ static float _calc_ABC(const uint8_t axis, const float target[])
     if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
         return(target[axis]);    // no mm conversion - it's in degrees
     }
-    return(_to_millimeters(target[axis]) * 360 / (2 * M_PI * cm->a[axis].radius));
+    // radius mode
+    return (_to_millimeters(target[axis]) * 360.0 / (2 * M_PI * cm->a[axis].radius));
 }
 
 void cm_set_model_target(const float target[], const bool flags[])
@@ -705,9 +740,29 @@ void cm_set_model_target(const float target[], const bool flags[])
         } else {
             tmp = _calc_ABC(axis, target);
         }
+
+#if MARLIN_COMPAT_ENABLED == true
+        // If we are in absolute mode (generally), but the extruder is relative,
+        // then we adjust the extruder to a relative position
+        if (mst.marlin_flavor && (cm->a[axis].axis_mode == AXIS_RADIUS)) {
+            if ((cm->gm.distance_mode == INCREMENTAL_DISTANCE_MODE) || (mst.extruder_mode == EXTRUDER_MOVES_RELATIVE)) {
+                cm->gm.target[axis] += tmp;
+            }
+            else { // if (cm.gmx.extruder_mode == EXTRUDER_MOVES_NORMAL)
+                cm->gm.target[axis] = tmp + cm_get_combined_offset(axis);
+            }
+            // TODO - volumetric filament conversion
+//            else {
+//                cm->gm.target[axis] += tmp * cm.gmx.volume_to_filament_length[axis-3];
+//            }
+        }
+        else
+#endif // MARLIN_COMPAT_ENABLED
+
         if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
             cm->gm.target[axis] = tmp + cm_get_combined_offset(axis); // sacidu93's fix to Issue #22
-        } else {
+        }
+        else {
             cm->gm.target[axis] += tmp;
         }
         cm->return_flags[axis] = true;
@@ -903,7 +958,7 @@ stat_t cm_set_tl_offset(const uint8_t H_word, const bool H_flag, const bool appl
         for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
             cm->tool_offset[axis] += tt.tt_offset[tool][axis];
         }
-    } else {
+        } else {
         for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
             cm->tool_offset[axis] = tt.tt_offset[tool][axis];
         }
@@ -1128,7 +1183,7 @@ stat_t _goto_stored_position(const float stored_position[],     // always in mm
     copy_vector(target, stored_position);
 
     if (cm->gm.units_mode == INCHES) {
-        for (uint8_t i=0; i<AXES; i++) {
+        for (uint8_t i=0; i<AXIS_A; i++) {                  // Only convert linears (not rotaries)
             target[i] *= INCHES_PER_MM;
         }
     }
@@ -1530,7 +1585,7 @@ static void _exec_program_finalize(float *value, bool *flag)
     cm_set_motion_state(MOTION_STOP);                       // also changes active model back to MODEL
 
     // Allow update in the alarm state, to accommodate queue flush (RAS)
-    if ((cm->cycle_type == CYCLE_MACHINING || cm->cycle_type == CYCLE_NONE) &&
+    if ((cm->cycle_type == CYCLE_MACHINING || cm->cycle_type == CYCLE_NONE || cm->cycle_type == CYCLE_PROBE) &&
 //      (cm->machine_state != MACHINE_ALARM) &&             // omitted by OMC (RAS)
         (cm->machine_state != MACHINE_SHUTDOWN)) {
         cm->machine_state = machine_state;                  // don't update macs/cycs if we're in the middle of a canned cycle,
@@ -1615,6 +1670,17 @@ stat_t cm_json_command(char *json_string)
     return mp_json_command(json_string);
 }
 
+/*
+ * cm_json_command_immediate() - M100.1
+ */
+stat_t cm_json_command_immediate(char *json_string)
+{
+    return mp_json_command_immediate(json_string);
+}
+
+/*
+ * cm_json_wait() - M102
+ */
 stat_t cm_json_wait(char *json_string)
 {
     return mp_json_wait(json_string);
@@ -1841,12 +1907,18 @@ static const char msg_hold0[] = "Off";
 static const char msg_hold1[] = "Requested";
 static const char msg_hold2[] = "Sync";
 static const char msg_hold3[] = "Decel Continue";
-static const char msg_hold4[] = "Decel to Zero";
-static const char msg_hold5[] = "Decel Done";
-static const char msg_hold6[] = "Pending";
-static const char msg_hold7[] = "Hold";
-static const char *const msg_hold[] = { msg_hold0, msg_hold1, msg_hold2, msg_hold3,
-                                        msg_hold4, msg_hold5, msg_hold6, msg_hold7 };
+static const char msg_hold4[] = "Decel To Zero";
+static const char msg_hold5[] = "Decel Complete";
+static const char msg_hold6[] = "Motion Stopping";
+static const char msg_hold7[] = "Motion Stopped";
+static const char msg_hold8[] = "Hold Actions Pending";
+static const char msg_hold9[] = "Hold Actions Complete";
+static const char msg_hold10[] = "Holding";
+static const char msg_hold11[] = "Hold Exit Actions Pending";
+static const char msg_hold12[] = "Hold Exit Actions Complete";
+static const char *const msg_hold[] = { msg_hold0, msg_hold1, msg_hold2, msg_hold3, msg_hold4, 
+                                        msg_hold5, msg_hold6, msg_hold7, msg_hold8, msg_hold9, 
+                                        msg_hold10, msg_hold11, msg_hold12 };
 
 static const char msg_home0[] = "Not Homed";
 static const char msg_home1[] = "Homed";
@@ -2357,6 +2429,7 @@ static const char fmt_fro[]  = "[fro]  feedrate override%15.3f [0.05 < mfo < 2.0
 static const char fmt_troe[] = "[troe] traverse over enable%8d [0=disable,1=enable]\n";
 static const char fmt_tro[]  = "[tro]  traverse override%15.3f [0.05 < mto < 1.00]\n";
 static const char fmt_tram[] = "[tram] is coordinate space rotated to be tram %s\n";
+static const char fmt_nxln[] = "[nxln] next line number %lu\n";
 
 void cm_print_m48(nvObj_t *nv)  { text_print(nv, fmt_m48);}    // TYPE_INT
 void cm_print_froe(nvObj_t *nv) { text_print(nv, fmt_froe);}    // TYPE INT
@@ -2364,6 +2437,7 @@ void cm_print_fro(nvObj_t *nv)  { text_print(nv, fmt_fro);}     // TYPE FLOAT
 void cm_print_troe(nvObj_t *nv) { text_print(nv, fmt_troe);}    // TYPE INT
 void cm_print_tro(nvObj_t *nv)  { text_print(nv, fmt_tro);}     // TYPE FLOAT
 void cm_print_tram(nvObj_t *nv) { text_print(nv, fmt_tram);};   // TYPE BOOL
+void cm_print_nxln(nvObj_t *nv) { text_print(nv, fmt_nxln);};   // TYPE INT
 
 /*
  * axis print functions

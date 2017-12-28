@@ -80,7 +80,6 @@ mpBuf_t mp2_queue[SECONDARY_QUEUE_SIZE];    // storage allocation for secondary 
 // Execution routines (NB: These are called from the LO interrupt)
 static stat_t _exec_dwell(mpBuf_t *bf);
 static stat_t _exec_command(mpBuf_t *bf);
-static stat_t _exec_json_wait(mpBuf_t *bf);
 
 // DIAGNOSTICS
 //static void _planner_time_accounting();
@@ -106,7 +105,6 @@ struct _json_commands_t {
     int8_t available;
 
     // Constructor (initializer)
-    // Note, reset routines handle zeroing out all of the above
     _json_commands_t() {
         json_command_buffer_t *js_pv = &_json_bf[JSON_COMMAND_BUFFER_SIZE - 1];
         for (uint8_t i=0; i < JSON_COMMAND_BUFFER_SIZE; i++) {
@@ -114,9 +112,7 @@ struct _json_commands_t {
             _json_bf[i].pv = js_pv;
             js_pv = &_json_bf[i];
         }
-        _json_r = &_json_bf[0];
-        _json_w = _json_r;
-        available = JSON_COMMAND_BUFFER_SIZE;
+        reset();
     };
 
     // Write a json command to the buffer, using up one slot
@@ -135,6 +131,13 @@ struct _json_commands_t {
     void free_buffer() {
         _json_r = _json_r->nx;
         available++;
+    }
+    
+    // Reset the JSON command queue
+    void reset() {
+        _json_r = &_json_bf[0];
+        _json_w = _json_r;
+        available = JSON_COMMAND_BUFFER_SIZE;
     }
 };
 _json_commands_t jc;
@@ -204,6 +207,7 @@ void planner_reset(mpPlanner_t *_mp)        // reset planner queue, cease MR act
     // selectively reset mpPlanner and mpPlannerRuntime w/o actually wiping them
     _mp->reset();
     _mp->mr->reset();
+    jc.reset();
     _init_planner_queue(_mp, _mp->q.bf, _mp->q.queue_size); // reset planner buffers
 }
 
@@ -332,14 +336,15 @@ stat_t mp_runtime_command(mpBuf_t *bf)
 }
 
 /****************************************************************************************
+ * _exec_json_command() - execute json string (from exec system)
  * mp_json_command()    - queue a json command
- * _exec_json_command() - execute json string
+ * mp_json_command_immediate() - execute a json command with response suppressed
  */
 
 static void _exec_json_command(float *value, bool *flag)
 {
     char *json_string = jc.read_buffer();
-    json_parse_for_exec(json_string, true); // process it
+    json_parse_for_exec(json_string, true);         // process it
     jc.free_buffer();
 }
 
@@ -351,10 +356,45 @@ stat_t mp_json_command(char *json_string)
     return (STAT_OK);
 }
 
+stat_t mp_json_command_immediate(char *json_string)
+{
+    return json_parser(json_string);
+}
+
 /****************************************************************************************
- * mp_json_wait()    - queue a json wait command
  * _exec_json_wait() - execute json wait string
+ * mp_json_wait()    - queue a json wait command
  */
+
+static stat_t _exec_json_wait(mpBuf_t *bf)
+{
+    char *json_string = jc.read_buffer();
+
+    // process it
+    json_parse_for_exec(json_string, false); // do NOT execute
+
+    nvObj_t *nv = nv_exec;
+    while ((nv != NULL) && (nv->valuetype != TYPE_EMPTY)) {
+        // For now we ignore non-BOOL
+        if (nv->valuetype == TYPE_BOOLEAN) {
+            bool old_value = (bool)nv->value_int;         // force it to bool
+
+            nv_get_nvObj(nv);
+            bool new_value = (bool)nv->value_int;
+            if (old_value != new_value) {
+                st_prep_dwell((uint32_t)(0.1 * 1000000.0));// 1ms converted to uSec
+                return STAT_OK;
+            }
+        }
+        nv = nv->nx;
+    }
+    jc.free_buffer();
+
+    if (mp_free_run_buffer()) {
+        cm_cycle_end();                                    // free buffer & perform cycle_end if planner is empty
+    }
+    return (STAT_OK);
+}
 
 stat_t mp_json_wait(char *json_string)
 {
@@ -374,37 +414,6 @@ stat_t mp_json_wait(char *json_string)
     return (STAT_OK);
 }
 
-static stat_t _exec_json_wait(mpBuf_t *bf)
-{
-    char *json_string = jc.read_buffer();
-
-    // process it
-    json_parse_for_exec(json_string, false); // do NOT execute
-
-    nvObj_t *nv = nv_exec;
-    while ((nv != NULL) && (nv->valuetype != TYPE_EMPTY)) {
-        // For now we ignore non-BOOL
-        if (nv->valuetype == TYPE_BOOLEAN) {
-//            bool old_value = !fp_ZERO(nv->value); // force it to bool
-            bool old_value = (bool)nv->value_int;         // force it to bool
-
-            nv_get_nvObj(nv);
-//            bool new_value = !fp_ZERO(nv->value);
-            bool new_value = (bool)nv->value_int;
-            if (old_value != new_value) {
-                st_prep_dwell((uint32_t)(0.1 * 1000000.0));// 1ms converted to uSec
-                return STAT_OK;
-            }
-        }
-        nv = nv->nx;
-    }
-    jc.free_buffer();
-
-    if (mp_free_run_buffer()) {
-        cm_cycle_end();                                    // free buffer & perform cycle_end if planner is empty
-    }
-    return (STAT_OK);
-}
 
 /****************************************************************************************
  * mp_dwell()    - queue a dwell
@@ -433,7 +442,7 @@ static stat_t _exec_dwell(mpBuf_t *bf)
 {
     st_prep_dwell((uint32_t)(bf->block_time * 1000000.0));// convert seconds to uSec
     if (mp_free_run_buffer()) {
-        cm_cycle_end();                 // free buffer & perform cycle_end if planner is empty
+        cm_cycle_end();                             // free buffer & perform cycle_end if planner is empty
     }
     return (STAT_OK);
 }

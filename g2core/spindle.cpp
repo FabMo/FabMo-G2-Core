@@ -30,12 +30,14 @@
 #include "canonical_machine.h"  // #3
 #include "text_parser.h"        // #4
 
+#include "gpio.h"
 #include "spindle.h"
 #include "planner.h"
 #include "hardware.h"
 #include "settings.h"
 #include "pwm.h"
 #include "util.h"
+
 
 /**** Allocate structures ****/
 
@@ -209,9 +211,11 @@ static void _exec_spindle_control(float *value, bool *flag)
 
     // set spindle enable
     if (enable_bit ^ spindle.enable_polarity) {
-        spindle_enable_pin.clear();         // drive pin LO
+        //spindle_enable_pin.clear();              // drive pin LO
+        gpio_set_output(0,0);
     } else {
-        spindle_enable_pin.set();           // drive pin HI
+        //    spindle_enable_pin.set();           // drive pin HI
+        gpio_set_output(0,1);
     }
     pwm_set_duty(PWM_1, _get_spindle_pwm(spindle, pwm));
 
@@ -368,7 +372,6 @@ void spindle_end_override(const float ramp_time)
 {
     return;
 }
-
 
 /****************************
  * END OF SPINDLE FUNCTIONS *
