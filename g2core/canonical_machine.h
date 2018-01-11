@@ -318,7 +318,7 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     cmProbeState probe_state[PROBES_STORED];  // probing state machine (simple)
     float probe_results[PROBES_STORED][AXES]; // probing results
 
-    float rotation_matrix[3][3];            // three-by-three rotation matrix. We ignore rotary axes.
+    float rotation_matrix[3][3];            // three-by-three rotation matrix. We ignore UVW and ABC rotary axes
     float rotation_z_offset;                // separately handle a z-offset to maintain consistent distance to bed
 
     float jogging_dest;                     // jogging destination as a relative move from current position
@@ -648,6 +648,9 @@ stat_t cm_set_troe(nvObj_t *nv);        // set traverse override enable
 stat_t cm_get_tro(nvObj_t *nv);         // get traverse override factor
 stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
 
+stat_t cm_get_plmo(nvObj_t *nv);        // get planner mode - 2d/3d
+stat_t cm_set_plmo(nvObj_t *nv);        // set planner mode - 2d/3d
+
 stat_t cm_set_tram(nvObj_t *nv);        // attempt setting the rotation matrix
 stat_t cm_get_tram(nvObj_t *nv);        // return if the rotation matrix is non-identity
 
@@ -715,6 +718,7 @@ stat_t cm_set_gdi(nvObj_t *nv);         // set gcode default distance mode
     void cm_print_troe(nvObj_t *nv);
     void cm_print_tro(nvObj_t *nv);
 
+    void cm_print_plmo(nvObj_t *nv);
     void cm_print_tram(nvObj_t *nv);        // print if the axis has been rotated
     void cm_print_nxln(nvObj_t *nv);    // print the value of the next line number expected
 
@@ -782,6 +786,7 @@ stat_t cm_set_gdi(nvObj_t *nv);         // set gcode default distance mode
     #define cm_print_fro tx_print_stub
     #define cm_print_troe tx_print_stub
     #define cm_print_tro tx_print_stub
+    #define cm_print_plmo tx_print_stub
     #define cm_print_tram tx_print_stub
 
     #define cm_print_tram tx_print_stub

@@ -21,7 +21,7 @@
 #ifndef G2CORE_INFO_H_ONCE
 #define G2CORE_INFO_H_ONCE
 
-#define G2CORE_FIRMWARE_BUILD			100.26  // Merged fixes for #267 and PR #258
+#define G2CORE_FIRMWARE_BUILD			100.33  // Merged fixes for #267 and PR #258; +ted's attemp to include 2d-planning mode from Alden-b branch
 #define G2CORE_FIRMWARE_VERSION         0.99
 
 #ifdef GIT_VERSION

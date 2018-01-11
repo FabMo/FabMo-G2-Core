@@ -143,8 +143,8 @@ bool mp_runtime_is_idle() { return (!st_runtime_isbusy()); }
 
 stat_t mp_aline(GCodeState_t* _gm)
 {
-    float target_rotated[AXES] = {0,0,0,0,0,0};
-    float axis_square[AXES]    = {0,0,0,0,0,0};
+    float target_rotated[AXES] = { 0,0,0,0,0,0,0,0,0 };
+    float axis_square[AXES]    = { 0,0,0,0,0,0,0,0,0 };
     float axis_length[AXES];
     bool  flags[AXES];
     float length_square = 0;
@@ -169,23 +169,28 @@ stat_t mp_aline(GCodeState_t* _gm)
     //  c being target[2],
     //  x_1 being cm->rotation_matrix[1][0]
 
-    target_rotated[0] = _gm->target[0] * cm->rotation_matrix[0][0] + 
-                        _gm->target[1] * cm->rotation_matrix[0][1] +
-                        _gm->target[2] * cm->rotation_matrix[0][2];
+    target_rotated[AXIS_X] = _gm->target[AXIS_X] * cm->rotation_matrix[0][0] + 
+                             _gm->target[AXIS_Y] * cm->rotation_matrix[0][1] +
+                             _gm->target[AXIS_Z] * cm->rotation_matrix[0][2];
 
-    target_rotated[1] = _gm->target[0] * cm->rotation_matrix[1][0] + 
-                        _gm->target[1] * cm->rotation_matrix[1][1] +
-                        _gm->target[2] * cm->rotation_matrix[1][2];
+    target_rotated[AXIS_Y] = _gm->target[AXIS_X] * cm->rotation_matrix[1][0] + 
+                             _gm->target[AXIS_Y] * cm->rotation_matrix[1][1] +
+                             _gm->target[AXIS_Z] * cm->rotation_matrix[1][2];
 
-    target_rotated[2] = _gm->target[0] * cm->rotation_matrix[2][0] + 
-                        _gm->target[1] * cm->rotation_matrix[2][1] +
-                        _gm->target[2] * cm->rotation_matrix[2][2] + 
-                        cm->rotation_z_offset;
+    target_rotated[AXIS_Z] = _gm->target[AXIS_X] * cm->rotation_matrix[2][0] + 
+                             _gm->target[AXIS_Y] * cm->rotation_matrix[2][1] +
+                             _gm->target[AXIS_Z] * cm->rotation_matrix[2][2] + 
+                             cm->rotation_z_offset;
+
+    // copy rotation axes for UVW (no changes)
+    target_rotated[AXIS_U] = _gm->target[AXIS_U];
+    target_rotated[AXIS_V] = _gm->target[AXIS_V];
+    target_rotated[AXIS_W] = _gm->target[AXIS_W];
 
     // copy rotation axes for ABC (no changes)
-    target_rotated[3] = _gm->target[3];
-    target_rotated[4] = _gm->target[4];
-    target_rotated[5] = _gm->target[5];
+    target_rotated[AXIS_A] = _gm->target[AXIS_A];
+    target_rotated[AXIS_B] = _gm->target[AXIS_B];
+    target_rotated[AXIS_B] = _gm->target[AXIS_C];
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
         axis_length[axis] = target_rotated[axis] - mp->position[axis];
@@ -617,6 +622,12 @@ static void _calculate_jerk(mpBuf_t* bf)
  *      F = ma
  *      S(z) / V(xy)
  */
+/*
+ *  Feedrate / move time planning
+ *    - 3D feed rate: Compute feed time as Cartesian sum of XYZUVW axes, or 3 rotary axes if no linear component
+ *    - 2D feed rate: Compute feed time as Cartesian sum of XYUV axes, or 3 rotary axes if no linear component
+ *    - Velocity limit: Find the slowest axis and reduce move time if necessary 
+ */
 static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[]) 
 {
     float feed_time = 0;        // one of: XYZ time, ABC time or inverse time. Mutually exclusive
@@ -631,8 +642,22 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
             feed_time = bf->gm.feed_rate;  // NB: feed rate was un-inverted to minutes by cm_set_feed_rate()
             bf->gm.feed_rate_mode = UNITS_PER_MINUTE_MODE;
         } else {
-            // compute length of linear move in millimeters. Feed rate is provided as mm/min
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / bf->gm.feed_rate;
+            // compute length of linear move in millimeters divided by the feed rate provided as mm/min
+            if (cm->gmx.planning_mode == PLAN_3D) {
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + 
+                                 axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W])
+                                 / bf->gm.feed_rate;
+            }            
+            // in 2D mode the XY/UV plane is used to set feed rate
+            // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
+            else { // 2D planning mode
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] +
+                                 axis_square[AXIS_U] + axis_square[AXIS_V])
+                                 / bf->gm.feed_rate;
+                if (fp_ZERO(feed_time)) {
+                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+                }                    
+            }
             // if no linear axes, compute length of multi-axis rotary move in degrees. 
             // Feed rate is provided as degrees/min
             if (fp_ZERO(feed_time)) {
@@ -721,6 +746,13 @@ static void _calculate_junction_vmax(mpBuf_t* bf)
     // cmAxes jerk_axis = AXIS_X;   // a diagnostic in case you want to find the limiting axis
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
+
+        if (cm->gmx.planning_mode == PLAN_2DB) {    // do not incorporate Z/W cornering if in 2D mode B 
+            if (axis == AXIS_Z || axis == AXIS_W) { 
+                continue;
+            }
+        }
+
         if (bf->axis_flags[axis] || bf->nx->axis_flags[axis]) {       // skip axes with no movement
             float delta = fabs(bf->unit[axis] - bf->nx->unit[axis]);  // formula (1)
 

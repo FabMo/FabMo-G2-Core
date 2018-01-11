@@ -64,13 +64,25 @@ typedef enum {
     AXIS_X = 0,
     AXIS_Y,
     AXIS_Z,
+    AXIS_U,
+    AXIS_V,
+    AXIS_W,
     AXIS_A,
     AXIS_B,
-    AXIS_C,
-    AXIS_U,     // reserved
-    AXIS_V,     // reserved
-    AXIS_W      // reserved
+    AXIS_C
 } cmAxes;
+
+typedef enum {  // external representation of axes (used in initialization)
+    AXIS_X_EXTERNAL = 0,
+    AXIS_Y_EXTERNAL,
+    AXIS_Z_EXTERNAL,
+    AXIS_A_EXTERNAL,
+    AXIS_B_EXTERNAL,
+    AXIS_C_EXTERNAL,
+    AXIS_U_EXTERNAL,
+    AXIS_V_EXTERNAL,
+    AXIS_W_EXTERNAL
+} cmAxesExternal;
 
 typedef enum {
     OFS_I = 0,
@@ -94,6 +106,12 @@ typedef enum {
     PWM_1 = 0,
     PWM_2
 } cmPWMs;
+
+typedef enum {
+    PLAN_2D = 2,
+    PLAN_3D = 3,
+    PLAN_2DB = 4
+} cmPlanningMode;
 
 /**********************************************************************************
  * AVR/ARM Compatibility
