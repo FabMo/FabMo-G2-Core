@@ -435,17 +435,53 @@ stat_t mp_dwell(float seconds)
     bf->block_time = seconds;                       // in seconds, not minutes
     bf->block_state = BLOCK_INITIAL_ACTION;
     mp_commit_write_buffer(BLOCK_TYPE_DWELL);       // must be final operation before exit
+
     return (STAT_OK);
 }
 
 static stat_t _exec_dwell(mpBuf_t *bf)
 {
-    st_prep_dwell((uint32_t)(bf->block_time * 1000000.0));// convert seconds to uSec
-    if (mp_free_run_buffer()) {
-        cm_cycle_end();                             // free buffer & perform cycle_end if planner is empty
+    if (bf->block_state == BLOCK_INITIAL_ACTION && cm->hold_state == FEEDHOLD_OFF) {
+        bf->block_state = BLOCK_ACTIVE;
+
+        st_prep_dwell((uint32_t)(bf->block_time * 1000000.0));// convert seconds to uSec
+
+        cm_set_motion_state(MOTION_RUN);         // Perform motion state transition. Also sets active model to RUNTIME
+    } else if (cm->hold_state == FEEDHOLD_MOTION_STOPPING) {
+        if (mp_runtime_is_idle()) {                         // wait for steppers / dwell to actually finish
+            mr->reset();                                    // reset MR for next use and for forward planning
+            cm_set_motion_state(MOTION_STOP);
+            cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+            sr_request_status_report(SR_REQUEST_IMMEDIATE);
+        }
+        return (STAT_NOOP);                                 // hold here. leave with a NOOP so it does not attempt another load and exec.
+    } else if (bf->block_state == BLOCK_ACTIVE) {
+        if (mp_free_run_buffer()) {
+            cm_cycle_end();                      // free buffer & perform cycle_end if planner is empty
+        }
     }
+
     return (STAT_OK);
 }
+
+// static stat_t _exec_dwell(mpBuf_t *bf)
+// {
+//     if (bf->block_state == BLOCK_INITIAL_ACTION && (cm->hold_state == FEEDHOLD_OFF/* || cm->hold_state == FEEDHOLD_SYNC*/)) {
+//         bf->block_state = BLOCK_ACTIVE;
+
+//         st_prep_dwell((uint32_t)(bf->block_time * 1000000.0));// convert seconds to uSec
+
+//         cm_set_motion_state(MOTION_RUN);         // Perform motion state transition. Also sets active model to RUNTIME
+//     } else if (bf->block_state == BLOCK_ACTIVE) {
+//         if (mp_free_run_buffer()) {
+//             cm_cycle_end();                      // free buffer & perform cycle_end if planner is empty
+//         }
+//     } else {
+//         asm(" nop;");
+//     }
+
+//     return (STAT_OK);
+// }
 
 /****************************************************************************************
  * mp_request_out_of_band_dwell() - request a dwell outside of the planner queue

@@ -659,7 +659,7 @@ static stat_t _feedhold_no_actions()
 
         if (cm1.motion_state == MOTION_STOP) {  // if motion has already stopped declare that you are in a feedhold
             _check_motion_stopped();
-            cm1.hold_state = FEEDHOLD_HOLD;
+            return (STAT_EAGAIN);
         } else {
             cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
             return (STAT_EAGAIN);
@@ -692,7 +692,7 @@ static stat_t _feedhold_with_actions()          // Execute Case (5)
 //      cm1.hold_exit = FEEDHOLD_EXIT_STOP;     // default exit for ACTIONS is STOP...
         if (cm1.motion_state == MOTION_STOP) {  // if motion has already stopped declare that you are in a feedhold
             _check_motion_stopped();
-            cm1.hold_state = FEEDHOLD_HOLD;
+            return (STAT_EAGAIN);
         } else {
             cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
             return (STAT_EAGAIN);

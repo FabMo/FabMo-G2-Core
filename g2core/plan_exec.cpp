@@ -255,6 +255,7 @@ stat_t mp_exec_move()
     // Run an out of band dwell. It was probably set in the previous st_load_move()
     if (mr->out_of_band_dwell_flag) {
         mr->out_of_band_dwell_flag = false;
+        //cm_set_motion_state(MOTION_RUN);
         st_prep_out_of_band_dwell(mr->out_of_band_dwell_seconds * 1000000);
         return (STAT_OK);
     }
@@ -552,8 +553,8 @@ stat_t mp_exec_aline(mpBuf_t *bf)
         if (bf->block_state == BLOCK_ACTIVE) {
             if (mp_free_run_buffer()) {                 // returns true of the buffer is empty
                 if (cm->hold_state == FEEDHOLD_OFF) {
-                    cm_set_motion_state(MOTION_STOP);   // also sets active model to RUNTIME
                     cm_cycle_end();                     // free buffer & end cycle if planner is empty
+                                                        // also calls cm_set_motion_state(MOTION_STOP);
                 }
             } else {
                 st_request_forward_plan();

@@ -73,7 +73,14 @@ fwd_plan_timer_type fwd_plan_timer; // triggers planning of next block
 // SystickEvent for handling dwells (must be registered before it is active)
 Motate::SysTickEvent dwell_systick_event {[&] {
     if (--st_run.dwell_ticks_downcount == 0) {
+        SysTickTimer.unregisterEvent(&dwell_systick_event);        
+        _load_move();       // load the next move at the current interrupt level
+    }
+    else if (cm->hold_state == FEEDHOLD_SYNC) {
+        st_run.dwell_ticks_downcount = 0;        // ensure st_runtime_isbusy() returns false
         SysTickTimer.unregisterEvent(&dwell_systick_event);
+        //cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+        cm->hold_state = FEEDHOLD_MOTION_STOPPING;
         _load_move();       // load the next move at the current interrupt level
     }
 }, nullptr};
@@ -444,7 +451,7 @@ static void _load_move()
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
 
-                if (cm->motion_state == MOTION_RUN)  {
+        if (cm->motion_state == MOTION_RUN)  {
 #if IN_DEBUGGER == 1
 //#warning debbugger REQUIRED for running this firmware!
 //            __asm__("BKPT"); // attempted to _load_move with PREP_BUFFER_OWNED_BY_EXEC and cm.motion_state == MOTION_RUN
@@ -779,9 +786,10 @@ void st_prep_dwell(float microseconds)
 
 void st_prep_out_of_band_dwell(float microseconds)
 {
+
     if (!st_runtime_isbusy()) {
+        cm_set_motion_state(MOTION_RUN);
         st_prep_dwell(microseconds);
-        st_pre.buffer_state = PREP_BUFFER_OWNED_BY_LOADER;    // signal that prep buffer is ready
         st_request_load_move();
     }    
 }
