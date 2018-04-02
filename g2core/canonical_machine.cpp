@@ -2304,11 +2304,7 @@ stat_t cm_get_gpl(nvObj_t *nv) { return(get_integer(nv, cm->default_select_plane
 stat_t cm_set_gpl(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_select_plane, CANON_PLANE_XY, CANON_PLANE_YZ)); }
 
 stat_t cm_get_gun(nvObj_t *nv) { return(get_integer(nv, cm->default_units_mode)); }
-stat_t cm_set_gun(nvObj_t *nv) { 
-    stat_t status;
-    status = set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS);
-    return (status == STAT_OK) ? cm_set_units_mode(cm->default_units_mode) : status;
-}
+stat_t cm_set_gun(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS)); }
 
 stat_t cm_get_gco(nvObj_t *nv) { return(get_integer(nv, cm->default_coord_system)); }
 stat_t cm_set_gco(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_coord_system, G54, G59)); }
