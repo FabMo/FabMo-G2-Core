@@ -169,6 +169,8 @@ stat_t io_set_domode(nvObj_t *nv);			// output sense
 stat_t io_get_output(nvObj_t *nv);
 stat_t io_set_output(nvObj_t *nv);
 
+void gpio_check_inputs();
+
 #ifdef __TEXT_MODE
     void io_print_mo(nvObj_t *nv);
     void io_print_ac(nvObj_t *nv);

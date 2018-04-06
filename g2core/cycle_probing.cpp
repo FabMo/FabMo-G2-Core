@@ -205,6 +205,10 @@ uint8_t cm_probing_cycle_callback(void)
 static void _motion_end_callback(float* vect, bool* flag)
 {
     pb.waiting_for_motion_complete = false;
+    if (cm->hold_state != FEEDHOLD_OFF) {
+        cm_set_motion_state(MOTION_STOP);
+        cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+    }
 }
 
 static stat_t _probe_move(const float target[], const bool flags[])

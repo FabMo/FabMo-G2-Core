@@ -64,6 +64,8 @@ d_out_t  d_out[D_OUT_CHANNELS];
 a_in_t   a_in[A_IN_CHANNELS];
 a_out_t  a_out[A_OUT_CHANNELS];
 
+
+
 /**** Extended DI structure ****/
 
 // To be merged with ioDigitalInput later.
@@ -103,6 +105,10 @@ struct ioDigitalInputExt {
         bool pin_value = (bool)input_pin;
         int8_t pin_value_corrected = (pin_value ^ ((int)in->mode ^ 1));    // correct for NO or NC mode
         in->state = (ioState)pin_value_corrected;
+    }
+
+    void check() {
+        pin_changed();
     }
 
     void pin_changed() {
@@ -662,7 +668,22 @@ stat_t io_set_output(nvObj_t *nv)
 
 }
 
-
+    
+void gpio_check_inputs()
+{
+    _din1.check();
+    _din2.check();
+    _din3.check();
+    _din4.check();
+    _din5.check();
+    _din6.check();
+    _din7.check();
+    _din8.check();
+    _din9.check();
+    _din10.check();
+    _din11.check();
+    _din12.check(); 
+}
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table

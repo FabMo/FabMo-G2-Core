@@ -33,6 +33,7 @@
 #include "controller.h"
 #include "text_parser.h"
 #include "board_xio.h"
+#include "gpio.h"
 
 #include "MotateUtilities.h"
 #include "MotateUniqueID.h"
@@ -54,6 +55,7 @@ void hardware_init()
 
 stat_t hardware_periodic()
 {
+    gpio_check_inputs();
     return STAT_OK;
 }
 
