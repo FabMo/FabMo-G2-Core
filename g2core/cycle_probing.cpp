@@ -205,6 +205,7 @@ uint8_t cm_probing_cycle_callback(void)
 static void _motion_end_callback(float* vect, bool* flag)
 {
     pb.waiting_for_motion_complete = false;
+    gpio_set_probing_mode(pb.probe_input, false);
     if (cm->hold_state != FEEDHOLD_OFF) {
         cm_set_motion_state(MOTION_STOP);
         cm->hold_state = FEEDHOLD_MOTION_STOPPED;
