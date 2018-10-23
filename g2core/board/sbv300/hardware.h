@@ -151,6 +151,8 @@ static OutputPin<Motate::kSpindle_DirPinNumber> spindle_dir_pin;
 static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
 static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
 
+static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;
+
 // Input pins are defined in gpio.cpp
 
 /********************************
