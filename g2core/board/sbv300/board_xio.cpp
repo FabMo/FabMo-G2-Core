@@ -70,7 +70,7 @@ Motate::UART<Motate::kSerial_RXPinNumber, Motate::kSerial_TXPinNumber, Motate::k
 void board_hardware_init(void) // called 1st
 {
 
-resolution_multiplier_pin = 0; //set multiplier pin to low for alpha tools
+resolution_multiplier_pin = 1; //set multiplier pin to low for alpha tools
 #if XIO_HAS_USB
     // Init USB
     usb.attach();
