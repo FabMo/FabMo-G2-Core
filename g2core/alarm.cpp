@@ -2,8 +2,8 @@
  * alarm.cpp - canonical machine alarm handlers
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S Hart, Jr.
- * Copyright (c) 2014 - 2017 Robert Giseburt
+ * Copyright (c) 2010 - 2018 Alden S Hart, Jr.
+ * Copyright (c) 2014 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -30,6 +30,7 @@
 #include "config.h"     // #2
 #include "gcode.h"      // #3
 #include "canonical_machine.h"
+#include "safety_manager.h"
 #include "planner.h"
 #include "report.h"
 #include "spindle.h"
@@ -82,15 +83,20 @@ stat_t cm_clr(nvObj_t *nv)                // clear alarm or shutdown from comman
 void cm_clear()
 {
     if (cm->machine_state == MACHINE_ALARM) {
+        // immediately clear the alarm, then reset the rest of the stuff
         cm->machine_state = MACHINE_PROGRAM_STOP;
+        cm_program_stop();
     } else if (cm->machine_state == MACHINE_SHUTDOWN) {
+        // immediately clear the shutdown, then reset the rest of the stuff
         cm->machine_state = MACHINE_READY;
+        cm_program_end();
     }
+
 }
 
 void cm_parse_clear(const char *s)
 {
-    if (cm->machine_state == MACHINE_ALARM) {
+    if (safety_manager->can_clear()) {
         if (toupper(s[0]) == 'M') {
             if (( (s[1]=='3') && (s[2]=='0') && (s[3]==0)) || ((s[1]=='2') && (s[2]==0) )) {
                 cm_clear();
@@ -105,10 +111,7 @@ void cm_parse_clear(const char *s)
 
 stat_t cm_is_alarmed()
 {
-    if (cm->machine_state == MACHINE_ALARM)    { return (STAT_COMMAND_REJECTED_BY_ALARM); }
-    if (cm->machine_state == MACHINE_SHUTDOWN) { return (STAT_COMMAND_REJECTED_BY_SHUTDOWN); }
-    if (cm->machine_state == MACHINE_PANIC)    { return (STAT_COMMAND_REJECTED_BY_PANIC); }
-    return (STAT_OK);
+    return safety_manager->is_system_alarmed();
 }
 
 /****************************************************************************************
@@ -123,7 +126,7 @@ stat_t cm_is_alarmed()
 void cm_halt(void)
 {
     cm_halt_motion();
-    spindle_control_immediate(SPINDLE_OFF);
+    spindle_stop();
     coolant_control_immediate(COOLANT_OFF, COOLANT_BOTH);
     temperature_init();
 }
@@ -166,7 +169,7 @@ stat_t cm_alarm(const stat_t status, const char *msg)
         (cm->machine_state == MACHINE_PANIC)) {
         return (STAT_OK);                       // don't alarm if already in an alarm state
     }
-    cm_request_feedhold(FEEDHOLD_TYPE_SCRAM, FEEDHOLD_EXIT_ALARM);  // fast stop and alarm
+    cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_ALARM);  // fast stop and alarm
     rpt_exception(status, msg);                 // send alarm message
     sr_request_status_report(SR_REQUEST_TIMED);
     return (status);
@@ -192,14 +195,13 @@ stat_t cm_alarm(const stat_t status, const char *msg)
 stat_t cm_shutdown(const stat_t status, const char *msg)
 {
     if ((cm->machine_state == MACHINE_SHUTDOWN) || (cm->machine_state == MACHINE_PANIC)) {
-        return (STAT_OK);                       // don't shutdown if shutdown or panic'd
+        return (STAT_OK);  // don't shutdown if shutdown or panic'd
     }
-    cm_request_feedhold(FEEDHOLD_TYPE_SCRAM, FEEDHOLD_EXIT_SHUTDOWN);  // fast stop and shutdown
+    cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_SHUTDOWN);  // fast stop and shutdown
 
-//    spindle_reset();                            // stop spindle immediately and set speed to 0 RPM
-//    coolant_reset();                            // stop coolant immediately
-//    temperature_reset();                        // turn off heaters and fans
-//    cm_queue_flush(&cm1);                       // flush all queues and reset positions
+    spindle_reset();      // stop spindle immediately and set speed to 0 RPM
+    coolant_reset();      // stop coolant immediately
+    temperature_reset();  // turn off heaters and fans
 
     for (uint8_t i = 0; i < HOMING_AXES; i++) { // unhome axes and the machine
         cm->homed[i] = false;

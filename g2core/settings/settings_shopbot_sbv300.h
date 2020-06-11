@@ -2,7 +2,7 @@
  * settings_shopbot_sbv300.h - Shopbot sbv3000
  * This file is part of the g2core project
  *
- * Copyright (c) 2015 - 2017 Alden S. Hart, Jr.
+ * Copyright (c) 2015 - 2018 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -48,7 +48,7 @@
 #define SPINDLE_ENABLE_POLARITY     1       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_DWELL_TIME          2.5
+#define SPINDLE_SPINUP_DELAY        2.5
 
 #define COOLANT_MIST_POLARITY       1       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1       // 0=active low, 1=active high
@@ -91,7 +91,7 @@
 #define MOTOR_POWER_TIMEOUT         2.00                // motor power timeout in seconds
 #define MOTOR_POWER_LEVEL           0.375               // default motor power level 0.00 - 1.00
 
-#define M1_MOTOR_MAP                AXIS_X              // 1ma
+#define M1_MOTOR_MAP                AXIS_X_EXTERNAL     // 1ma
 #define M1_STEP_ANGLE               1.8                 // 1sa
 #define M1_TRAVEL_PER_REV           (0.5 * 25.4)        // 1tr
 #define M1_MICROSTEPS               10                  // 1mi        1,2,4,8
@@ -99,7 +99,7 @@
 #define M1_POWER_MODE               MOTOR_POWER_MODE    // 1pm        TRUE=low power idle enabled
 #define M1_POWER_LEVEL              MOTOR_POWER_LEVEL   // 1pl        Irrelevant to Shopbot sbv300
 
-#define M2_MOTOR_MAP                AXIS_Y
+#define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
 #define M2_TRAVEL_PER_REV           (0.5 * 25.4)
 #define M2_MICROSTEPS               10
@@ -107,7 +107,7 @@
 #define M2_POWER_MODE               MOTOR_POWER_MODE
 #define M2_POWER_LEVEL              MOTOR_POWER_LEVEL
 
-#define M3_MOTOR_MAP                AXIS_Z
+#define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
 #define M3_TRAVEL_PER_REV           (0.5 * 25.4)
 #define M3_MICROSTEPS               10
@@ -115,7 +115,7 @@
 #define M3_POWER_MODE               MOTOR_POWER_MODE
 #define M3_POWER_LEVEL              MOTOR_POWER_LEVEL
 
-#define M4_MOTOR_MAP                AXIS_A
+#define M4_MOTOR_MAP                AXIS_A_EXTERNAL
 #define M4_STEP_ANGLE               1.8
 #define M4_TRAVEL_PER_REV           (0.5 * 25.4)
 #define M4_MICROSTEPS               10
@@ -124,7 +124,7 @@
 #define M4_POWER_LEVEL              MOTOR_POWER_LEVEL
 
 #if (MOTORS >= 5)
-#define M5_MOTOR_MAP                AXIS_B
+#define M5_MOTOR_MAP                AXIS_B_EXTERNAL
 #define M5_STEP_ANGLE               1.8
 #define M5_TRAVEL_PER_REV           (0.5 * 25.4)
 #define M5_MICROSTEPS               10
@@ -132,7 +132,7 @@
 #define M5_POWER_MODE               MOTOR_POWER_MODE
 #define M5_POWER_LEVEL              MOTOR_POWER_LEVEL
 
-#define M6_MOTOR_MAP                AXIS_C
+#define M6_MOTOR_MAP                AXIS_C_EXTERNAL
 #define M6_STEP_ANGLE               1.8
 #define M6_TRAVEL_PER_REV           (0.5 * 25.4)
 #define M6_MICROSTEPS               10
@@ -251,70 +251,70 @@
 */
 
 // Xmin on v9 board
-#define DI1_MODE IO_MODE_DISABLED
+#define DI1_ENABLED IO_DISABLED
 #define DI1_ACTION INPUT_ACTION_NONE
-#define DI1_FUNCTION INPUT_FUNCTION_NONE
+//#define DI1_FUNCTION INPUT_FUNCTION_NONE
 
 // Xmax
-#define DI2_MODE IO_MODE_DISABLED
+#define DI2_ENABLED IO_DISABLED
 #define DI2_ACTION INPUT_ACTION_NONE
-#define DI2_FUNCTION INPUT_FUNCTION_NONE
+//#define DI2_FUNCTION INPUT_FUNCTION_NONE
 
 // Ymin
-#define DI3_MODE IO_MODE_DISABLED
+#define DI3_ENABLED IO_DISABLED
 #define DI3_ACTION INPUT_ACTION_NONE
-#define DI3_FUNCTION INPUT_FUNCTION_NONE
+//#define DI3_FUNCTION INPUT_FUNCTION_NONE
 
 // Ymax
-#define DI4_MODE IO_MODE_DISABLED
+#define DI4_ENABLED IO_DISABLED
 #define DI4_ACTION INPUT_ACTION_NONE
-#define DI4_FUNCTION INPUT_FUNCTION_NONE
+//#define DI4_FUNCTION INPUT_FUNCTION_NONE
 
 // Zmin
-#define DI5_MODE IO_MODE_DISABLED
+#define DI5_ENABLED IO_DISABLED
 #define DI5_ACTION INPUT_ACTION_NONE
-#define DI5_FUNCTION INPUT_FUNCTION_NONE
+//#define DI5_FUNCTION INPUT_FUNCTION_NONE
 
 // Zmax
-#define DI6_MODE IO_MODE_DISABLED
+#define DI6_ENABLED IO_DISABLED
 #define DI6_ACTION INPUT_ACTION_NONE
-#define DI6_FUNCTION INPUT_FUNCTION_NONE
+//#define DI6_FUNCTION INPUT_FUNCTION_NONE
 
 // Amin
-#define DI7_MODE IO_MODE_DISABLED
+#define DI7_ENABLED IO_DISABLED
 #define DI7_ACTION INPUT_ACTION_NONE
-#define DI7_FUNCTION INPUT_FUNCTION_NONE
+//#define DI7_FUNCTION INPUT_FUNCTION_NONE
 
 // Amax
-#define DI8_MODE IO_MODE_DISABLED
+#define DI8_ENABLED IO_DISABLED
 #define DI8_ACTION INPUT_ACTION_NONE
-#define DI8_FUNCTION INPUT_FUNCTION_NONE
+//#define DI8_FUNCTION INPUT_FUNCTION_NONE
 
 // Safety line
-#define DI9_MODE IO_MODE_DISABLED
+#define DI9_ENABLED IO_DISABLED
 #define DI9_ACTION INPUT_ACTION_NONE
-#define DI9_FUNCTION INPUT_FUNCTION_NONE
+//#define DI9_FUNCTION INPUT_FUNCTION_NONE
 
 // Extruder1_PWM
-#define DO1_MODE IO_ACTIVE_HIGH
+#define DO1_POLARITY IO_ACTIVE_HIGH
 // Extruder2_PWM
-#define DO2_MODE IO_ACTIVE_HIGH
+#define DO2_POLARITY IO_ACTIVE_HIGH
 // Fan1A_PWM
-#define DO3_MODE IO_ACTIVE_HIGH
+#define DO3_POLARITY IO_ACTIVE_HIGH
 // Fan1B_PWM
-#define DO4_MODE IO_ACTIVE_HIGH
-#define DO5_MODE IO_ACTIVE_LOW
-#define DO6_MODE IO_ACTIVE_HIGH
-#define DO7_MODE IO_ACTIVE_HIGH
-#define DO8_MODE IO_ACTIVE_HIGH
+#define DO4_POLARITY IO_ACTIVE_HIGH
+#define DO5_POLARITY IO_ACTIVE_LOW
+#define DO6_POLARITY IO_ACTIVE_HIGH
+#define DO7_POLARITY IO_ACTIVE_HIGH
+#define DO8_POLARITY IO_ACTIVE_HIGH
 // SAFEin (Output) signal
-#define DO9_MODE IO_ACTIVE_HIGH
-#define DO10_MODE IO_ACTIVE_HIGH
+#define DO9_POLARITY IO_ACTIVE_HIGH
+#define DO10_POLARITY IO_ACTIVE_HIGH
 // Header Bed FET
-#define DO11_MODE IO_ACTIVE_HIGH
+#define DO11_POLARITY IO_ACTIVE_HIGH
 // Indicator_LED
-#define DO12_MODE IO_ACTIVE_HIGH
-#define DO13_MODE IO_ACTIVE_HIGH
+#define DO12_POLARITY IO_ACTIVE_HIGH
+#define DO13_POLARITY IO_ACTIVE_HIGH
 
 /*** Handle optional modules that may not be in every machine ***/
 
@@ -328,4 +328,3 @@
 #define P1_CCW_PHASE_LO         0.1
 #define P1_CCW_PHASE_HI         0.1
 #define P1_PWM_PHASE_OFF        0.1
-

@@ -3,8 +3,8 @@
  * For: /board/gQuadratic
  * This file is part of the g2core project
  *
- * Copyright (c) 2016 Robert Giseburt
- * Copyright (c) 2016 Alden S. Hart Jr.
+ * Copyright (c) 2016-2018 Robert Giseburt
+ * Copyright (c) 2016-2018 Alden S. Hart Jr.
  *
  * This file is part of the Motate Library.
  *
@@ -84,12 +84,6 @@
 #define INPUT12_AVAILABLE 0
 #define INPUT13_AVAILABLE 0
 
-
-#define ADC0_AVAILABLE 0
-#define ADC1_AVAILABLE 0
-#define ADC2_AVAILABLE 0
-#define ADC3_AVAILABLE 0
-
 #define XIO_HAS_USB 1
 #define XIO_HAS_UART 1
 #define XIO_HAS_SPI 0
@@ -114,6 +108,8 @@
 #define OUTPUT11_PWM 0  // unused
 #define OUTPUT12_PWM 0  // Unused
 #define OUTPUT13_PWM 0  // Unused
+
+#define QUADRATIC_REVISION 'B'
 
 namespace Motate {
 

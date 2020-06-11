@@ -2,8 +2,8 @@
  * canonical_machine.h - rs274/ngc canonical machining functions
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart Jr.
- * Copyright (c) 2016 - 2017 Rob Giseburt
+ * Copyright (c) 2010 - 2019 Alden S. Hart Jr.
+ * Copyright (c) 2016 - 2019 Rob Giseburt
  *
  * This code is a loose implementation of Kramer, Proctor and Messina's
  * canonical machining functions as described in the NIST RS274/NGC v3
@@ -76,7 +76,7 @@ typedef enum {                      // check alignment with messages in config.c
     COMBINED_PROGRAM_END,           // [4] program end
     COMBINED_RUN,                   // [5] machine is running
     COMBINED_HOLD,                  // [6] machine is holding
-    COMBINED_PROBE,                 // [7] probe cycle activ
+    COMBINED_PROBE,                 // [7] probe cycle active
     COMBINED_CYCLE,                 // [8] reserved for canned cycles
     COMBINED_HOMING,                // [9] homing cycle active
     COMBINED_JOG,                   // [10] jogging cycle active
@@ -120,28 +120,29 @@ typedef enum {                      // feedhold type parameter
     FEEDHOLD_TYPE_SCRAM             // feedhold at high jerk and stop all active devices
 } cmFeedholdType;
 
-typedef enum {                      // feedhold final operation 
+typedef enum {                      // feedhold final operation
     FEEDHOLD_EXIT_CYCLE = 0,        // exit feedhold with cycle restart
     FEEDHOLD_EXIT_FLUSH,            // exit feedhold with flush
     FEEDHOLD_EXIT_STOP,             // perform program stop
     FEEDHOLD_EXIT_END,              // perform program end
     FEEDHOLD_EXIT_ALARM,            // perform alarm
     FEEDHOLD_EXIT_SHUTDOWN,         // perform shutdown
-    FEEDHOLD_EXIT_INTERLOCK         // report as interlock
+    FEEDHOLD_EXIT_INTERLOCK,        // report as interlock
+    FEEDHOLD_EXIT_RESET_POSITION    // reset machine positions to hold point
 } cmFeedholdExit;
 
 typedef enum {                      // feedhold state machine
-    FEEDHOLD_OFF = 0,               // no feedhold in effect
-    FEEDHOLD_REQUESTED,             // feedhold has been requested but not started yet
-    FEEDHOLD_SYNC,                  // start hold - sync to latest aline segment
-    FEEDHOLD_DECEL_CONTINUE,        // in deceleration that will not end at zero
-    FEEDHOLD_DECEL_TO_ZERO,         // in deceleration that will go to zero
-    FEEDHOLD_DECEL_COMPLETE,        // feedhold deceleration has completed, but motors may not have stopped yet
-    FEEDHOLD_MOTION_STOPPING,       // waiting for motors to have stopped at hold point (motion stop)
-    FEEDHOLD_MOTION_STOPPED,        // motion has stopped at hold point
-    FEEDHOLD_HOLD_ACTIONS_PENDING,  // wait for feedhold actions to complete
-    FEEDHOLD_HOLD_ACTIONS_COMPLETE, // 
-    FEEDHOLD_HOLD,                  // HOLDING (steady state)
+    FEEDHOLD_OFF = 0,               //  0 - no feedhold in effect
+    FEEDHOLD_REQUESTED,             //  1 - feedhold has been requested but not started yet (NOT USED)
+    FEEDHOLD_SYNC,                  //  2 - start hold - sync to latest aline segment
+    FEEDHOLD_DECEL_CONTINUE,        //  3 - in deceleration that will not end at zero
+    FEEDHOLD_DECEL_TO_ZERO,         //  4 - in deceleration that will go to zero
+    FEEDHOLD_DECEL_COMPLETE,        //  5 - feedhold deceleration has completed, but motors may not have stopped yet
+    FEEDHOLD_MOTION_STOPPING,       //  6 - waiting for motors to have stopped at hold point (motion stop)
+    FEEDHOLD_MOTION_STOPPED,        //  7 - motion has stopped at hold point
+    FEEDHOLD_HOLD_ACTIONS_PENDING,  //  8 - wait for feedhold actions to complete
+    FEEDHOLD_HOLD_ACTIONS_COMPLETE, //  9
+    FEEDHOLD_HOLD,                  // 10 - HOLDING (steady state)
     FEEDHOLD_EXIT_ACTIONS_PENDING,  // performing exit actions
     FEEDHOLD_EXIT_ACTIONS_COMPLETE  // completed exit actions
 } cmFeedholdState;
@@ -174,11 +175,6 @@ typedef enum {                      // applies to cm->probe_state
     PROBE_WAITING = 2               // probe is waiting to be started or is running
 } cmProbeState;
 
-typedef enum {
-    SAFETY_INTERLOCK_ENGAGED = 0,   // meaning the interlock input is CLOSED (low)
-    SAFETY_INTERLOCK_DISENGAGED
-} cmSafetyState;
-
 typedef enum {                      // feed override state machine
     MFO_OFF = 0,
     MFO_REQUESTED,
@@ -188,7 +184,7 @@ typedef enum {                      // feed override state machine
 typedef enum {                      // job kill state machine
     JOB_KILL_OFF = 0,
     JOB_KILL_REQUESTED,
-    JOB_KILL_RUNNING    
+    JOB_KILL_RUNNING
 } cmJobKillState;
 
 /*****************************************************************************
@@ -300,25 +296,17 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     bool return_flags[AXES];                // flags for recording which axes moved - used in feedhold exit move
 
     uint8_t limit_requested;                // set non-zero to request limit switch processing (value is input number)
-    uint8_t shutdown_requested;             // set non-zero to request shutdown in support of external estop (value is input number)
     bool deferred_write_flag;               // G10 data has changed (e.g. offsets) - flag to persist them
-    
-    bool safety_interlock_enable;           // true to enable safety interlock system
-    bool request_interlock;                 // enter interlock
-    bool request_interlock_exit;            // exit interlock
-    uint8_t safety_interlock_disengaged;    // set non-zero to start interlock processing (value is input number)
-    uint8_t safety_interlock_reengaged;     // set non-zero to end interlock processing (value is input number)
-    cmSafetyState safety_interlock_state;   // safety interlock state
-    uint32_t esc_boot_timer;                // timer for Electronic Speed Control (Spindle electronics) to boot
 
     cmHomingState homing_state;             // home: homing cycle sub-state machine
     uint8_t homed[AXES];                    // individual axis homing flags
 
     bool probe_report_enable;                 // 0=disabled, 1=enabled
     cmProbeState probe_state[PROBES_STORED];  // probing state machine (simple)
+    uint8_t probe_input;                      // probing digital input
     float probe_results[PROBES_STORED][AXES]; // probing results
 
-    float rotation_matrix[3][3];            // three-by-three rotation matrix. We ignore rotary axes.
+    float rotation_matrix[3][3];            // three-by-three rotation matrix. We ignore UVW and ABC axes
     float rotation_z_offset;                // separately handle a z-offset to maintain consistent distance to bed
 
     float jogging_dest;                     // jogging destination as a relative move from current position
@@ -327,6 +315,7 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     void *mp;                               // linked mpPlanner_t - use a void pointer to avoid circular header files
     cmArc_t arc;                            // arc parameters
     GCodeState_t *am;                       // active Gcode model is maintained by state management
+
     GCodeState_t  gm;                       // core gcode model state
     GCodeStateX_t gmx;                      // extended gcode model state
 
@@ -469,9 +458,9 @@ void cm_message(const char *message);                           // msg to consol
 
 void cm_reset_overrides(void);
 stat_t cm_m48_enable(uint8_t enable);                           // M48, M49
-stat_t cm_fro_control(const float P_word, const bool P_flag);   // M50
-stat_t cm_tro_control(const float P_word, const bool P_flag);   // M50.1
-// See spindle.cpp for cm_spo_control()                         // M51        
+// stat_t cm_fro_control(const float P_word, const bool P_flag);   // M50
+// stat_t cm_tro_control(const float P_word, const bool P_flag);   // M50.1
+// See spindle.cpp for cm_spo_control()                         // M51
 
 // Program Functions (4.3.10)
 void cm_cycle_start(void);                                      // (no Gcode)
@@ -495,7 +484,7 @@ void cm_request_alarm(void);
 void cm_request_fasthold(void);
 void cm_request_cycle_start(void);
 void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit);
-void cm_request_queue_flush(void);
+void cm_request_queue_flush();
 stat_t cm_feedhold_sequencing_callback(void);                   // process feedhold, cycle start and queue flush requests
 stat_t cm_feedhold_command_blocker(void);
 
@@ -505,11 +494,14 @@ bool cm_has_hold(void);                                         // has hold in p
 stat_t cm_homing_cycle_start(const float axes[], const bool flags[]);        // G28.2
 stat_t cm_homing_cycle_start_no_set(const float axes[], const bool flags[]); // G28.4
 stat_t cm_homing_cycle_callback(void);                          // G28.2/.4 main loop callback
+void cm_abort_homing(cmMachine_t *_cm); // called from the queue flush sequence to clean up
 
 // Probe cycles
 stat_t cm_straight_probe(float target[], bool flags[],          // G38.x
                          bool trip_sense, bool alarm_flag);
 stat_t cm_probing_cycle_callback(void);                         // G38.x main loop callback
+void cm_abort_probing(cmMachine_t *_cm); // called from the queue flush sequence to clean up
+
 stat_t cm_get_prbr(nvObj_t *nv);                                // enable/disable probe report
 stat_t cm_set_prbr(nvObj_t *nv);
 
@@ -538,20 +530,31 @@ void cm_request_job_kill(void);                                 // control-D han
 char cm_get_axis_char(const int8_t axis);
 cmAxisType cm_get_axis_type(const nvObj_t *nv);
 
-stat_t cm_get_mline(nvObj_t *nv);       // get model line number
-stat_t cm_get_line(nvObj_t *nv);        // get active (model or runtime) line number
-stat_t cm_get_stat(nvObj_t *nv);        // get combined machine state as value and string
-stat_t cm_get_stat2(nvObj_t *nv);       // get combined machine state as value and string
-stat_t cm_get_macs(nvObj_t *nv);        // get raw machine state as value and string
-stat_t cm_get_cycs(nvObj_t *nv);        // get raw cycle state
-stat_t cm_get_mots(nvObj_t *nv);        // get raw motion state
-stat_t cm_get_hold(nvObj_t *nv);        // get raw hold state
+const configSubtable *const getCmConfig_1();
+const configSubtable *const getMpoConfig_1();
+const configSubtable *const getPosConfig_1();
+const configSubtable *const getOfsConfig_1();
+const configSubtable * const getHomConfig_1();
+const configSubtable * const getPrbConfig_1();
+const configSubtable * const getJogConfig_1();
+const configSubtable *const getAxisConfig_1();
+
+// stat_t cm_get_mline(nvObj_t *nv);       // get model line number
+// stat_t cm_get_line(nvObj_t *nv);        // get active (model or runtime) line number
+// stat_t cm_get_stat(nvObj_t *nv);        // get combined machine state as value and string
+// stat_t cm_get_stat2(nvObj_t *nv);       // get combined machine state as value and string
+// stat_t cm_get_macs(nvObj_t *nv);        // get raw machine state as value and string
+// stat_t cm_get_cycs(nvObj_t *nv);        // get raw cycle state
+// stat_t cm_get_mots(nvObj_t *nv);        // get raw motion state
+// stat_t cm_get_hold(nvObj_t *nv);        // get raw hold state
 
 stat_t cm_get_home(nvObj_t *nv);        // get machine homing state
 stat_t cm_set_home(nvObj_t *nv);        // set machine homing state
 stat_t cm_get_hom(nvObj_t *nv);         // get homing state for axis
 stat_t cm_get_prob(nvObj_t *nv);        // get probe state
 stat_t cm_get_prb (nvObj_t *nv);        // get probe result for axis
+stat_t cm_get_probe_input(nvObj_t *nv);
+stat_t cm_set_probe_input(nvObj_t *nv);
 stat_t cm_run_jog(nvObj_t *nv);         // start jogging cycle
 
 stat_t cm_get_unit(nvObj_t *nv);        // get unit mode
@@ -588,40 +591,40 @@ stat_t cm_set_tof(nvObj_t *nv);         // set tool offset
 stat_t cm_get_tt(nvObj_t *nv);          // get tool table value
 stat_t cm_set_tt(nvObj_t *nv);          // set tool table value
 
-stat_t cm_get_am(nvObj_t *nv);          // get axis mode
-stat_t cm_set_am(nvObj_t *nv);          // set axis mode
-stat_t cm_get_tn(nvObj_t *nv);          // get travel minimum
-stat_t cm_set_tn(nvObj_t *nv);          // set travel minimum
-stat_t cm_get_tm(nvObj_t *nv);          // get travel maximum
-stat_t cm_set_tm(nvObj_t *nv);          // set travel maximum
-stat_t cm_get_ra(nvObj_t *nv);          // get radius
-stat_t cm_set_ra(nvObj_t *nv);          // set radius
+// stat_t cm_get_am(nvObj_t *nv);          // get axis mode
+// stat_t cm_set_am(nvObj_t *nv);          // set axis mode
+// stat_t cm_get_tn(nvObj_t *nv);          // get travel minimum
+// stat_t cm_set_tn(nvObj_t *nv);          // set travel minimum
+// stat_t cm_get_tm(nvObj_t *nv);          // get travel maximum
+// stat_t cm_set_tm(nvObj_t *nv);          // set travel maximum
+// stat_t cm_get_ra(nvObj_t *nv);          // get radius
+// stat_t cm_set_ra(nvObj_t *nv);          // set radius
 
 float cm_get_axis_jerk(const uint8_t axis);
 void cm_set_axis_max_jerk(const uint8_t axis, const float jerk);
 void cm_set_axis_high_jerk(const uint8_t axis, const float jerk);
 
-stat_t cm_get_vm(nvObj_t *nv);          // get velocity max
-stat_t cm_set_vm(nvObj_t *nv);          // set velocity max and reciprocal
-stat_t cm_get_fr(nvObj_t *nv);          // get feedrate max
-stat_t cm_set_fr(nvObj_t *nv);          // set feedrate max and reciprocal
-stat_t cm_get_jm(nvObj_t *nv);          // get jerk max with 1,000,000 correction
-stat_t cm_set_jm(nvObj_t *nv);          // set jerk max with 1,000,000 correction
-stat_t cm_get_jh(nvObj_t *nv);          // get jerk high with 1,000,000 correction
-stat_t cm_set_jh(nvObj_t *nv);          // set jerk high with 1,000,000 correction
+// stat_t cm_get_vm(nvObj_t *nv);          // get velocity max
+// stat_t cm_set_vm(nvObj_t *nv);          // set velocity max and reciprocal
+// stat_t cm_get_fr(nvObj_t *nv);          // get feedrate max
+// stat_t cm_set_fr(nvObj_t *nv);          // set feedrate max and reciprocal
+// stat_t cm_get_jm(nvObj_t *nv);          // get jerk max with 1,000,000 correction
+// stat_t cm_set_jm(nvObj_t *nv);          // set jerk max with 1,000,000 correction
+// stat_t cm_get_jh(nvObj_t *nv);          // get jerk high with 1,000,000 correction
+// stat_t cm_set_jh(nvObj_t *nv);          // set jerk high with 1,000,000 correction
 
-stat_t cm_get_hi(nvObj_t *nv);          // get homing input
-stat_t cm_set_hi(nvObj_t *nv);          // set homing input
-stat_t cm_get_hd(nvObj_t *nv);          // get homing direction
-stat_t cm_set_hd(nvObj_t *nv);          // set homing direction
-stat_t cm_get_sv(nvObj_t *nv);          // get homing search velocity
-stat_t cm_set_sv(nvObj_t *nv);          // set homing search velocity
-stat_t cm_get_lv(nvObj_t *nv);          // get homing latch velocity
-stat_t cm_set_lv(nvObj_t *nv);          // set homing latch velocity
-stat_t cm_get_lb(nvObj_t *nv);          // get homing latch backoff
-stat_t cm_set_lb(nvObj_t *nv);          // set homing latch backoff
-stat_t cm_get_zb(nvObj_t *nv);          // get homing zero backoff
-stat_t cm_set_zb(nvObj_t *nv);          // set homing zero backoff
+// stat_t cm_get_hi(nvObj_t *nv);          // get homing input
+// stat_t cm_set_hi(nvObj_t *nv);          // set homing input
+// stat_t cm_get_hd(nvObj_t *nv);          // get homing direction
+// stat_t cm_set_hd(nvObj_t *nv);          // set homing direction
+// stat_t cm_get_sv(nvObj_t *nv);          // get homing search velocity
+// stat_t cm_set_sv(nvObj_t *nv);          // set homing search velocity
+// stat_t cm_get_lv(nvObj_t *nv);          // get homing latch velocity
+// stat_t cm_set_lv(nvObj_t *nv);          // set homing latch velocity
+// stat_t cm_get_lb(nvObj_t *nv);          // get homing latch backoff
+// stat_t cm_set_lb(nvObj_t *nv);          // set homing latch backoff
+// stat_t cm_get_zb(nvObj_t *nv);          // get homing zero backoff
+// stat_t cm_set_zb(nvObj_t *nv);          // set homing zero backoff
 
 stat_t cm_get_jt(nvObj_t *nv);          // get junction integration time constant
 stat_t cm_set_jt(nvObj_t *nv);          // set junction integration time constant
@@ -633,8 +636,6 @@ stat_t cm_get_sl(nvObj_t *nv);          // get soft limit enable
 stat_t cm_set_sl(nvObj_t *nv);          // set soft limit enable
 stat_t cm_get_lim(nvObj_t *nv);         // get hard limit enable
 stat_t cm_set_lim(nvObj_t *nv);         // set hard limit enable
-stat_t cm_get_saf(nvObj_t *nv);         // get safety interlock enable
-stat_t cm_set_saf(nvObj_t *nv);         // set safety interlock enable
 
 stat_t cm_get_m48(nvObj_t *nv);         // get M48 value (enable/disable overrides)
 stat_t cm_set_m48(nvObj_t *nv);         // set M48 value (enable/disable overrides)
@@ -647,6 +648,9 @@ stat_t cm_get_troe(nvObj_t *nv);        // get traverse override enable
 stat_t cm_set_troe(nvObj_t *nv);        // set traverse override enable
 stat_t cm_get_tro(nvObj_t *nv);         // get traverse override factor
 stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
+
+stat_t cm_set_probe(nvObj_t *nv);       // store current position as the latest probe
+
 
 stat_t cm_set_tram(nvObj_t *nv);        // attempt setting the rotation matrix
 stat_t cm_get_tram(nvObj_t *nv);        // return if the rotation matrix is non-identity

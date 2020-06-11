@@ -37,9 +37,53 @@ endif
 ifeq ("$(CONFIG)","Othermill")
     ifeq ("$(BOARD)","NONE")
         BOARD=g2v9k
+        BANTAM=1
     endif
-#    SETTINGS_FILE="settings_othermill.h"
-    SETTINGS_FILE="settings_othermill_test.h"
+    SETTINGS_FILE="settings_othermill.h"
+endif
+
+ifeq ("$(CONFIG)","OthermillPro")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=g2v9k
+        BANTAM=1
+    endif
+    SETTINGS_FILE="settings_othermill_pro.h"
+endif
+
+ifeq ("$(CONFIG)","MiniMillv9")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=g2v9k
+        # BANTAM=1
+    endif
+    SETTINGS_FILE="settings_minimill.h"
+endif
+
+ifeq ("$(CONFIG)","MiniMillrevD")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-d
+    endif
+    SETTINGS_FILE="settings_minimill.h"
+endif
+
+ifeq ("$(CONFIG)","MiniMill")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-g
+    endif
+    SETTINGS_FILE="settings_minimill.h"
+endif
+
+ifeq ("$(CONFIG)","MiniMillgShield")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gShield
+    endif
+    SETTINGS_FILE="settings_minimill.h"
+endif
+
+ifeq ("$(CONFIG)","CheapoLaser")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-d
+    endif
+    SETTINGS_FILE="settings_cheapo_laser.h"
 endif
 
 ifeq ("$(CONFIG)","ProbotixV90")
@@ -70,13 +114,26 @@ ifeq ("$(CONFIG)","TestV9")
     SETTINGS_FILE="settings_test.h"
 endif
 
-ifeq ("$(CONFIG)","TestQuintic")
+ifeq ("$(CONFIG)","TestQuintic-b")
     ifeq ("$(BOARD)","NONE")
         BOARD=gquintic-b
     endif
     SETTINGS_FILE="settings_test.h"
 endif
 
+ifeq ("$(CONFIG)","TestQuintic")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-c
+    endif
+    SETTINGS_FILE="settings_test.h"
+endif
+
+ifeq ("$(CONFIG)","Quintic-Xcarve-Extended")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-c
+    endif
+    SETTINGS_FILE="settings_xcarve_extended.h"
+endif
 
 ifeq ("$(CONFIG)","TestQuadratic")
     ifeq ("$(BOARD)","NONE")
@@ -133,14 +190,21 @@ ifeq ("$(CONFIG)","PrintrbotPlay")
     SETTINGS_FILE="settings_Printrbot_Play.h"
 endif
 
+ifeq ("$(CONFIG)","PrintrbotPlayQuintic")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-c
+    endif
+    SETTINGS_FILE="settings_Printrbot_Play.h"
+endif
+
 ##########
 # Ultimaker configs:
 
-ifeq ("$(CONFIG)","Ultimakerv9k")
+ifeq ("$(CONFIG)","Ultimaker2Plus")
     ifeq ("$(BOARD)","NONE")
-        BOARD=g2v9k
+        BOARD=gquintic-d
     endif
-    SETTINGS_FILE="settings_ultimaker.h"
+    SETTINGS_FILE="settings_Ultimaker_2_Plus.h"
 endif
 
 ##########
@@ -155,11 +219,64 @@ endif
 
 ifeq ("$(CONFIG)","EggBot")
     ifeq ("$(BOARD)","NONE")
-        BOARD=gquadratic-b
+        BOARD=gquadratic-c
     endif
     SETTINGS_FILE="settings_eggbot.h"
 endif
+ifeq ("$(CONFIG)","AxiDrawv3")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquadratic-c
+    endif
+    SETTINGS_FILE="settings_axidraw_v3.h"
+endif
+ifeq ("$(CONFIG)","AxiDrawv3-quint")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-d
+    endif
+    SETTINGS_FILE="settings_axidraw_v3.h"
+endif
 
+##########
+# Ender config:
+# http://www.gearbest.com/3d-printers-3d-printer-kits/pp_620372.html
+
+ifeq ("$(CONFIG)","Quintic-Ender")
+   ifeq ("$(BOARD)","NONE")
+       BOARD=gquintic-c
+   endif
+   SETTINGS_FILE="settings_ender.h"
+endif
+
+##########
+# SMW3D r7 config:
+# https://sites.google.com/site/smw3dr7/
+
+ifeq ("$(CONFIG)","r7")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-d
+    endif
+    SETTINGS_FILE="settings_smw3d_r7.h"
+endif
+
+##########
+# Synthetos Pendulum v2 config:
+
+ifeq ("$(CONFIG)","pendulum")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-d
+    endif
+    SETTINGS_FILE="settings_synthetos_pendulum_v2.h"
+endif
+
+##########
+# Synthetos  config:
+
+ifeq ("$(CONFIG)","fourcable")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=gquintic-d
+    endif
+    SETTINGS_FILE="settings_fourcable.h"
+endif
 
 include $(wildcard ./board/$(STAR).mk)
 

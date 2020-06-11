@@ -2,8 +2,8 @@
  * gcode_parser.cpp - rs274/ngc Gcode parser
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2016 - 2017 Rob Giseburt
+ * Copyright (c) 2010 - 2019 Alden S. Hart, Jr.
+ * Copyright (c) 2016 - 2019 Rob Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -27,13 +27,13 @@
 #include "coolant.h"
 #include "util.h"
 #include "xio.h"                    // for char definitions
+#include "json_parser.h"
 
 #if MARLIN_COMPAT_ENABLED == true
 #include "marlin_compatibility.h"
-#include "json_parser.h"            // so we can switch js.comm_mode on a marlin M-code
 #endif
 
-// Helpers 
+// Helpers
 
 static stat_t _execute_gcode_block_marlin(void);
 
@@ -60,7 +60,7 @@ typedef enum {                          // Used for detecting gcode errors. See 
 #define MODAL_GROUP_COUNT (MODAL_GROUP_M9+1)
 // Note 1: Our G0 omits G4,G30,G53,G92.1,G92.2,G92.3 as these have no axis components to error check
 
-/* The difference between NextAction and MotionMode (in canonical machine) is that 
+/* The difference between NextAction and MotionMode (in canonical machine) is that
 *  NextAction is used by the current block, and may carry non-modal commands, whereas
  * MotionMode persists across blocks (as G modal group 1)
  */
@@ -106,6 +106,7 @@ typedef enum {                                  // these are in order to optimiz
     NEXT_ACTION_MARLIN_REPORT_VERSION,          // M115
     NEXT_ACTION_MARLIN_DISPLAY_ON_SCREEN,       // M117
     NEXT_ACTION_MARLIN_SET_BED_TEMP,            // M140, M190
+    NEXT_ACTION_MARLIN_SET_JERK,                // M205
 #endif
 
 } gpNextAction;
@@ -137,14 +138,14 @@ typedef struct GCodeInputValue {    // Gcode inputs - meaning depends on context
     uint8_t arc_distance_mode;      // G90.1=use absolute IJK offsets, G91.1=incremental IJK offsets
     uint8_t origin_offset_mode;     // G92...TRUE=in origin offset mode
     uint8_t absolute_override;      // G53 TRUE = move using machine coordinates - this block only (G53)
-    
+
     uint8_t tool;                   // Tool after T and M6 (tool_select and tool_change)
     uint8_t tool_select;            // T value - T sets this value
     uint8_t tool_change;            // M6 tool change flag - moves "tool_select" to "tool"
     uint8_t coolant_mist;           // TRUE = mist on (M7)
     uint8_t coolant_flood;          // TRUE = flood on (M8)
     uint8_t coolant_off;            // TRUE = turn off all coolants (M9)
-    uint8_t spindle_control;        // 0=OFF (M5), 1=CW (M3), 2=CCW (M4)
+    spDirection spindle_control;    // 0=OFF (M5), 1=CW (M3), 2=CCW (M4)
 
     bool m48_enable;                // M48/M49 input (enables for feed and spindle)
     bool fro_control;               // M50 feedrate override control
@@ -197,7 +198,7 @@ typedef struct GCodeFlags {         // Gcode input flags
     bool fro_control;
     bool tro_control;
     bool spo_control;
-    
+
     bool checksum;
 
 #if MARLIN_COMPAT_ENABLED == true
@@ -262,6 +263,9 @@ stat_t gcode_parser(char *block)
     // TODO, now MSG is put in the active comment, handle that.
 
     if (str[0] == NUL) {                    // normalization returned null string
+        if ((active_comment != nullptr) && (active_comment[0] == '{')) {
+            json_parser(active_comment);
+        }
         return (STAT_OK);                   // most likely a comment line
     }
 
@@ -612,7 +616,7 @@ static stat_t _get_next_gcode_word(char **pstr, char *letter, float *value, int3
 
 static uint8_t _point(const float value)
 {
-    return((uint8_t)(value*10 - trunc(value)*10));    // isolate the decimal point as an int
+    return((uint8_t)(std::round(value*10.0) - std::trunc(value)*10.0));    // isolate the decimal point as an int
 }
 
 /****************************************************************************************
@@ -840,6 +844,8 @@ static stat_t _parse_gcode_block(char *buf, char *active_comment)
 
                 case 115: SET_NON_MODAL (next_action, NEXT_ACTION_MARLIN_REPORT_VERSION);   // report version information
                 case 117: status = STAT_COMPLETE; break;  //SET_NON_MODAL (next_action, NEXT_ACTION_MARLIN_DISPLAY_ON_SCREEN);
+
+                case 205: SET_NON_MODAL (next_action, NEXT_ACTION_MARLIN_SET_JERK);         // set jerk
 #endif // MARLIN_COMPAT_ENABLED
 
                 default: status = STAT_MCODE_COMMAND_UNSUPPORTED;
@@ -856,9 +862,11 @@ static stat_t _parse_gcode_block(char *buf, char *active_comment)
             case 'A': SET_NON_MODAL (target[AXIS_A], value);
             case 'B': SET_NON_MODAL (target[AXIS_B], value);
             case 'C': SET_NON_MODAL (target[AXIS_C], value);
-        //  case 'U': SET_NON_MODAL (target[AXIS_U], value);        // reserved
-        //  case 'V': SET_NON_MODAL (target[AXIS_V], value);        // reserved
-        //  case 'W': SET_NON_MODAL (target[AXIS_W], value);        // reserved
+#if (AXES == 9)
+            case 'U': SET_NON_MODAL (target[AXIS_U], value);
+            case 'V': SET_NON_MODAL (target[AXIS_V], value);
+            case 'W': SET_NON_MODAL (target[AXIS_W], value);
+#endif
             case 'H': SET_NON_MODAL (H_word, value);
             case 'I': SET_NON_MODAL (arc_offset[0], value);
             case 'J': SET_NON_MODAL (arc_offset[1], value);
@@ -866,7 +874,7 @@ static stat_t _parse_gcode_block(char *buf, char *active_comment)
             case 'L': SET_NON_MODAL (L_word, value);
             case 'R': SET_NON_MODAL (arc_radius, value);
             case 'N': SET_NON_MODAL (linenum, value_int);           // line number handled as special case to preserve integer value
-            
+
 #if MARLIN_COMPAT_ENABLED == true
             case 'E': SET_NON_MODAL (E_word, value);                // extruder value
 #endif
@@ -926,23 +934,21 @@ stat_t _execute_gcode_block(char *active_comment)
 {
     stat_t status = STAT_OK;
 
-    cm_cycle_start();   // any G, M or other word will autostart cycle if not already started
-
     if (gf.linenum) {
         cm_set_model_linenum(gv.linenum);
     }
-        
+
     EXEC_FUNC(cm_m48_enable, m48_enable);
 
-    if (gf.fro_control) {                                   // feedrate override
-        ritorno(cm_fro_control(gv.P_word, gf.P_word));
-    }
-    if (gf.tro_control) {                                   // traverse override
-        ritorno(cm_tro_control(gv.P_word, gf.P_word));
-    }
-    if (gf.spo_control) {                                   // spindle speed override
-        ritorno(spindle_override_control(gv.P_word, gf.P_word));
-    }
+    // if (gf.fro_control) {                                   // feedrate override
+    //     ritorno(cm_fro_control(gv.P_word, gf.P_word));
+    // }
+    // if (gf.tro_control) {                                   // traverse override
+    //     ritorno(cm_tro_control(gv.P_word, gf.P_word));
+    // }
+    // if (gf.spo_control) {                                   // spindle speed override
+    //     ritorno(spindle_override_control(gv.P_word, gf.P_word));
+    // }
 
     EXEC_FUNC(cm_set_feed_rate_mode, feed_rate_mode);       // G93, G94
     EXEC_FUNC(cm_set_feed_rate, F_word);                    // F
@@ -951,13 +957,13 @@ stat_t _execute_gcode_block(char *active_comment)
     if (gf.linenum && gf.checksum) {
         ritorno(cm_check_linenum());
     }
-        
-    EXEC_FUNC(spindle_speed_sync, S_word);                  // S
+
+    EXEC_FUNC(spindle_set_speed, S_word);                  // S
     EXEC_FUNC(cm_select_tool, tool_select);                 // T - tool_select is where it's written
     EXEC_FUNC(cm_change_tool, tool_change);                 // M6 - is where it's effected
 
     if (gf.spindle_control) {                               // M3, M4, M5 (spindle OFF, CW, CCW)
-        ritorno(spindle_control_sync((spControl)gv.spindle_control));
+        ritorno(spindle_set_direction(gv.spindle_control));
     }
     if (gf.coolant_mist) {
         ritorno(coolant_control_sync((coControl)gv.coolant_mist, COOLANT_MIST));    // M7
@@ -1028,7 +1034,7 @@ stat_t _execute_gcode_block(char *active_comment)
         case NEXT_ACTION_JSON_COMMAND_SYNC:       { status = cm_json_command(active_comment); break;}               // M100.0
         case NEXT_ACTION_JSON_COMMAND_ASYNC:      { status = cm_json_command_immediate(active_comment); break;}     // M100.1
         case NEXT_ACTION_JSON_WAIT:               { status = cm_json_wait(active_comment); break;}                  // M101
-        
+
         case NEXT_ACTION_DEFAULT: {
             cm_set_absolute_override(MODEL, gv.absolute_override); // apply absolute override & display as absolute
             switch (gv.motion_mode) {
@@ -1101,10 +1107,18 @@ static stat_t _execute_gcode_block_marlin()
         cm->gm.tool = cm->gm.tool_select;     // Also, in Marlin, tool changes are effective immediately :facepalm:
     }
 
+    if (mst.marlin_flavor &&
+        (gv.next_action == NEXT_ACTION_DWELL) &&
+        gf.P_word
+        )
+    { // G4 - dwell - adjust for Marlin
+        gv.P_word = gv.P_word / 1000.0;     // In marlin, the P word is in microseconds, convert to seconds
+    }
+
     // Deal with E
     if (gf.marlin_relative_extruder_mode) {                 // M82, M83
         marlin_set_extruder_mode(gv.marlin_relative_extruder_mode);
-    }    
+    }
     if (gf.E_word) {
         // Ennn T0 -> Annn
         if (cm->gm.tool_select == 1) {
@@ -1215,7 +1229,25 @@ static stat_t _execute_gcode_block_marlin()
             break;
         }
         case NEXT_ACTION_MARLIN_RESET_LINE_NUMBERS:{        // M110
-            js.json_mode = MARLIN_COMM_MODE;                // we already did this above in if (gf.linenum) {}
+            js.json_mode = MARLIN_COMM_MODE;
+            return (STAT_OK);
+        }
+        case NEXT_ACTION_MARLIN_SET_JERK:{                  // M205
+            mst.marlin_flavor = true;                       // these gcodes are ONLY in marlin flavor
+            // example: M205 X20
+            // This should translate to, roughly, {xjm:5832} + {yjm:5832}
+            if (gf.target[AXIS_X]) {
+                gf.target[AXIS_X] = false; // make sure nothing else picks it up
+                gv.target[AXIS_X] = (gv.target[AXIS_X] * gv.target[AXIS_X] * gv.target[AXIS_X]) * 0.216; // (X^3 * 60^3) / 1000000
+                if (gv.target[AXIS_X] < JERK_INPUT_MIN) {
+                    return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+                }
+                if (gv.target[AXIS_X] > JERK_INPUT_MAX) {
+                    return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+                }
+                cm_set_axis_jerk(AXIS_X, gv.target[AXIS_X]);
+                cm_set_axis_jerk(AXIS_Y, gv.target[AXIS_X]);
+            }
             return (STAT_OK);
         }
         case NEXT_ACTION_DEFAULT: {

@@ -3,8 +3,8 @@
  * For: /board/sbv300
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2016 Robert Giseburt
- * Copyright (c) 2013 - 2016 Alden S. Hart Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
+ * Copyright (c) 2013 - 2018 Alden S. Hart Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -47,11 +47,6 @@
 #define INPUT11_AVAILABLE 1
 #define INPUT12_AVAILABLE 1
 #define INPUT13_AVAILABLE 1
-
-#define ADC0_AVAILABLE 0
-#define ADC1_AVAILABLE 0
-#define ADC2_AVAILABLE 0
-#define ADC3_AVAILABLE 0
 
 #define XIO_HAS_USB 1
 #define XIO_HAS_UART 0

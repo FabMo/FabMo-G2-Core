@@ -2,7 +2,7 @@
  * coolant.cpp - canonical machine coolant driver
  * This file is part of the g2core project
  *
- * Copyright (c) 2015 - 2017 Alden S. Hart, Jr.
+ * Copyright (c) 2015 - 2019 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -30,6 +30,7 @@
 #include "canonical_machine.h"  // #3
 #include "text_parser.h"        // #4
 
+#include "gpio.h"
 #include "coolant.h"
 #include "planner.h"
 #include "hardware.h"
@@ -38,6 +39,21 @@
 /**** Allocate structures ****/
 
 coCoolant_t coolant;
+
+// gpioDigitalOutput *mist_enable_output = nullptr;
+// gpioDigitalOutput *flood_enable_output = nullptr;
+
+#ifndef MIST_ENABLE_OUTPUT_NUMBER
+#warning MIST_ENABLE_OUTPUT_NUMBER is defaulted to 0 (off)!
+#warning MIST_ENABLE_OUTPUT_NUMBER should be defined in settings or a board file!
+#define MIST_ENABLE_OUTPUT_NUMBER 0
+#endif
+
+#ifndef FLOOD_ENABLE_OUTPUT_NUMBER
+#warning FLOOD_ENABLE_OUTPUT_NUMBER is defaulted to 0 (off)!
+#warning FLOOD_ENABLE_OUTPUT_NUMBER should be defined in settings or a board file!
+#define FLOOD_ENABLE_OUTPUT_NUMBER 0
+#endif
 
 /**** Static functions ****/
 
@@ -48,6 +64,17 @@ static void _exec_coolant_control(float* value, bool* flag);
  * coolant_reset()
  */
 void coolant_init() {
+    if (MIST_ENABLE_OUTPUT_NUMBER > 0) {
+        coolant.mist.output = d_out[MIST_ENABLE_OUTPUT_NUMBER-1];
+        coolant.mist.output->setEnabled(IO_ENABLED);
+        coolant.mist.output->setPolarity((ioPolarity)COOLANT_MIST_POLARITY);
+    }
+    if (FLOOD_ENABLE_OUTPUT_NUMBER > 0) {
+        coolant.flood.output = d_out[FLOOD_ENABLE_OUTPUT_NUMBER-1];
+        coolant.flood.output->setEnabled(IO_ENABLED);
+        coolant.flood.output->setPolarity((ioPolarity)COOLANT_FLOOD_POLARITY);
+    }
+
     coolant.mist.state  = COOLANT_OFF;
     coolant.flood.state = COOLANT_OFF;
 }
@@ -68,17 +95,17 @@ stat_t coolant_control_immediate(coControl control, coSelect select)
     float value[] = { (float)control };
     bool flags[] = { (select & COOLANT_MIST), (select & COOLANT_FLOOD) };
     _exec_coolant_control(value, flags);
-    return(STAT_OK);       
-}    
+    return(STAT_OK);
+}
 
 stat_t coolant_control_sync(coControl control, coSelect select)
 {
     // Skip the PAUSE operation if pause_enable is not enabled (pause-on-hold)
     // The pause setting in mist coolant is treated as the master even though it's replicated in flood
-    if ((control == COOLANT_PAUSE) && (!coolant.mist.pause_enable)) {   
+    if ((control == COOLANT_PAUSE) && (!coolant.mist.pause_enable)) {
         return (STAT_OK);
     }
-    
+
     // queue the coolant control
     float value[] = { (float)control };
     bool flags[]  = { (select & COOLANT_MIST), (select & COOLANT_FLOOD) };
@@ -119,24 +146,14 @@ static void _exec_coolant_helper(coCoolantChannel_t &co, coControl control) {
         }
     }
     if (action) {
-        if (&co == &coolant.mist) {
-            if (!(enable_bit ^ coolant.mist.polarity)) {  // inverted XOR
-                mist_enable_pin.set();
-            } else {
-                mist_enable_pin.clear();
-            }
-        } else {
-            if (!(enable_bit ^ coolant.flood.polarity)) {  // inverted XOR
-                flood_enable_pin.set();
-            } else {
-                flood_enable_pin.clear();
-            }
-        }        
+        if (co.output != nullptr) {
+            co.output->setValue(enable_bit);
+        }
     }
 }
 
 static void _exec_coolant_control(float* value, bool* flag) {
-    
+
     coControl control = (coControl)value[0];
     if (control > COOLANT_ACTION_MAX) {
         return;
@@ -150,6 +167,12 @@ static void _exec_coolant_control(float* value, bool* flag) {
 }
 
 /****************************************************************************************
+ * coolant_ready() - is the coolant able to start - currently, the answer is yes
+ */
+
+bool coolant_ready() { return true; }
+
+/****************************************************************************************
  **** Coolant Settings ******************************************************************
  ****************************************************************************************/
 
@@ -159,16 +182,28 @@ stat_t co_get_cof(nvObj_t *nv) { return(get_integer(nv, coolant.flood.state)); }
 stat_t co_set_cof(nvObj_t *nv) { return(coolant_control_immediate((coControl)nv->value_int, COOLANT_FLOOD)); }
 
 stat_t co_get_coph(nvObj_t *nv) { return(get_integer(nv, coolant.mist.pause_enable)); }
-stat_t co_set_coph(nvObj_t *nv) 
-{ 
+stat_t co_set_coph(nvObj_t *nv)
+{
     ritorno(set_integer(nv, (uint8_t &)coolant.mist.pause_enable, 0, 1));
     return (set_integer(nv, (uint8_t &)coolant.flood.pause_enable, 0, 1));
 }
 
 stat_t co_get_comp(nvObj_t *nv) { return(get_integer(nv, coolant.mist.polarity)); }
-stat_t co_set_comp(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)coolant.mist.polarity, 0, 1)); }
+stat_t co_set_comp(nvObj_t *nv) {
+    stat_t ret = set_integer(nv, (uint8_t &)coolant.mist.polarity, 0, 1);
+    if (ret == STAT_OK && coolant.mist.output) {
+        coolant.mist.output->setPolarity((ioPolarity) coolant.mist.polarity);
+    }
+    return ret;
+}
 stat_t co_get_cofp(nvObj_t *nv) { return(get_integer(nv, coolant.flood.polarity)); }
-stat_t co_set_cofp(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)coolant.flood.polarity, 0, 1)); }
+stat_t co_set_cofp(nvObj_t *nv) {
+    stat_t ret = set_integer(nv, (uint8_t &)coolant.flood.polarity, 0, 1);
+    if (ret == STAT_OK && coolant.flood.output) {
+        coolant.flood.output->setPolarity((ioPolarity) coolant.flood.polarity);
+    }
+    return ret;
+}
 
 /****************************************************************************************
  * TEXT MODE SUPPORT

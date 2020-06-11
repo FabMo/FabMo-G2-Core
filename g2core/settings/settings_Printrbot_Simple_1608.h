@@ -2,8 +2,8 @@
  * settings_printrbot_simple_1608.h - New Simple, 2016 version
  * This file is part of the the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2010 - 2017 Robert Giseburt
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -33,6 +33,10 @@
 // ***> NOTE: The init message must be a single line with no CRs or LFs
 #define INIT_MESSAGE                      "Initializing configs to Printrbot Simple 1608 profile"
 
+#ifndef PI
+#define PI 3.14159628
+#endif
+
 //**** GLOBAL / GENERAL SETTINGS ******************************************************
 
 #define JUNCTION_INTEGRATION_TIME         1.15                    // cornering - between 0.10 and 2.00 (higher is faster)
@@ -45,7 +49,7 @@
 #define SPINDLE_ENABLE_POLARITY           1                       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY              0                       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD             true
-#define SPINDLE_DWELL_TIME                1.0
+#define SPINDLE_SPINUP_DELAY              1.0
 
 #define COOLANT_MIST_POLARITY             1                       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY            1                       // 0=active low, 1=active high
@@ -70,8 +74,8 @@
 
 // Defaults for 3DP
 #define STATUS_REPORT_DEFAULTS            \
-    "line","posx","posy","posz","posa","vel","he1t","he1st","he1at","he1op","feed","vel","unit","path","stat", \
-    "he2t","he2st","he2at","he2op","he3t","he3st","he3at","he3op"
+"line","posx","posy","posz","posa","vel","he1t","he1st","he1at","he1op","feed","vel","unit","path","stat", \
+"he2t","he2st","he2at","he2op","he3t","he3st","he3at","he3op"
 
 // Defaults for motion debugging
 //#define STATUS_REPORT_DEFAULTS "line","posx","posy","posz","posa","he1t","he1st","he1at","he2t","he2st","he2at","he3t","he3st","he3at","_fe5","_fe4","feed","vel","unit","path","stat"
@@ -110,16 +114,16 @@
 
 #define MOTOR_POWER_MODE                  MOTOR_POWERED_IN_CYCLE  // default motor power mode (see cmMotorPowerMode in stepper.h)
 // 80 steps/mm at 1/16 microstepping = 40 mm/rev
-#define M1_MOTOR_MAP                      AXIS_X                  // 1ma
+#define M1_MOTOR_MAP                      AXIS_X_EXTERNAL         // 1ma
 #define M1_STEP_ANGLE                     1.8                     // 1sa
 #define M1_TRAVEL_PER_REV                 40.011604               // 1tr
 #define M1_MICROSTEPS                     32                      // 1mi        1,2,4,8,16,32
 #define M1_POLARITY                       0                       // 1po        0=normal, 1=reversed
 #define M1_POWER_MODE                     MOTOR_POWER_MODE        // 1pm        standard
-#define M1_POWER_LEVEL                    0.35                    // 1pl:   0.0=no power, 1.0=max power
+#define M1_POWER_LEVEL              0.35                     // 1mp
 
 // 80 steps/mm at 1/16 microstepping = 40 mm/rev
-#define M3_MOTOR_MAP                      AXIS_Y
+#define M3_MOTOR_MAP                      AXIS_Y_EXTERNAL
 #define M3_STEP_ANGLE                     1.8
 #define M3_TRAVEL_PER_REV                 40.011604
 #define M3_MICROSTEPS                     32
@@ -128,7 +132,7 @@
 #define M3_POWER_LEVEL                    0.35
 
 // 2020 steps/mm at 1/16 microstepping = 1.58416 mm/rev
-#define M2_MOTOR_MAP                      AXIS_Z
+#define M2_MOTOR_MAP                      AXIS_Z_EXTERNAL
 #define M2_STEP_ANGLE                     1.8
 #define M2_TRAVEL_PER_REV                 8
 #define M2_MICROSTEPS                     32
@@ -137,7 +141,7 @@
 #define M2_POWER_LEVEL                    0.3
 
 // 96 steps/mm at 1/16 microstepping = 33.3333 mm/rev
-#define M4_MOTOR_MAP                      AXIS_A
+#define M4_MOTOR_MAP                      AXIS_A_EXTERNAL
 #define M4_STEP_ANGLE                     1.8
 #define M4_TRAVEL_PER_REV                 360                     // degrees moved per motor rev
 #define M4_MICROSTEPS                     32
@@ -146,7 +150,7 @@
 #define M4_POWER_LEVEL                    0.3
 
 // 96 steps/mm at 1/16 microstepping = 33.3333 mm/rev
-#define M5_MOTOR_MAP                      AXIS_B
+#define M5_MOTOR_MAP                      AXIS_B_EXTERNAL
 #define M5_STEP_ANGLE                     1.8
 #define M5_TRAVEL_PER_REV                 360                     // degrees moved per motor rev
 #define M5_MICROSTEPS                     32
@@ -237,8 +241,7 @@
 #define B_FEEDRATE_MAX                    B_VELOCITY_MAX
 #define B_TRAVEL_MIN                      0
 #define B_TRAVEL_MAX                      -1
-//#define B_JERK_MAX            20000000
-#define B_JERK_MAX                        20
+#define B_JERK_MAX                        162000                  // 250 million mm/min^3 = 324000
 #define B_HOMING_INPUT                    0
 #define B_HOMING_DIRECTION                0
 #define B_SEARCH_VELOCITY                 600
@@ -249,6 +252,55 @@
 
 
 //*** Input / output settings ***
+
+//** Temperature Sensors **
+
+#define HAS_TEMPERATURE_SENSOR_1  true
+#if HAS_TEMPERATURE_SENSOR_1
+    #define TEMPERATURE_SENSOR_1_CIRCUIT_TYPE ADCCircuitSimplePullup
+    #define TEMPERATURE_SENSOR_1_CIRCUIT_INIT { /*pullup_resistance:*/ 4700 }
+    #define TEMPERATURE_SENSOR_1_TYPE  Thermistor<ADCPin<Motate::kADC1_PinNumber>>
+    #define TEMPERATURE_SENSOR_1_INIT { \
+        /*T1:*/     20.0, /*T2:*/   190.0,  /*T3:*/ 255.0, \
+        /*R1:*/ 144700.0, /*R2:*/  5190.0, /*R3:*/ 4809.0, \
+        &temperature_sensor_1_circuit \
+    }
+#endif // HAS_TEMPERATURE_SENSOR_1
+
+#define EXTRUDER_1_OUTPUT_PIN kHeaterOutput1_PinNumber
+#define EXTRUDER_1_FAN_PIN    kOutput3_PinNumber
+
+#define HAS_TEMPERATURE_SENSOR_2  false
+#if HAS_TEMPERATURE_SENSOR_2
+    #define TEMPERATURE_SENSOR_2_CIRCUIT_TYPE ADCCircuitSimplePullup
+    #define TEMPERATURE_SENSOR_2_CIRCUIT_INIT { /*pullup_resistance:*/ 4700 }
+    #define TEMPERATURE_SENSOR_2_TYPE  Thermistor<ADCPin<Motate::kADC2_PinNumber>>
+    #define TEMPERATURE_SENSOR_2_INIT { \
+        /*T1:*/     20.0, /*T2:*/   190.0,  /*T3:*/ 255.0, \
+        /*R1:*/ 144700.0, /*R2:*/  5190.0, /*R3:*/ 4809.0, \
+        &temperature_sensor_2_circuit \
+    }
+#endif // HAS_TEMPERATURE_SENSOR_2
+
+// Warning - the PrintrBoardG2 doesn't have a Output2
+#define EXTRUDER_2_OUTPUT_PIN kHeaterOutput2_PinNumber
+
+#define HAS_TEMPERATURE_SENSOR_3  false
+#if HAS_TEMPERATURE_SENSOR_3
+    #define TEMPERATURE_SENSOR_3_CIRCUIT_TYPE ADCCircuitSimplePullup
+    #define TEMPERATURE_SENSOR_3_CIRCUIT_INIT { /*pullup_resistance:*/ 4700 }
+    #define TEMPERATURE_SENSOR_3_TYPE  Thermistor<ADCPin<Motate::kADC3_PinNumber>>
+    #define TEMPERATURE_SENSOR_3_INIT { \
+        /*T1:*/     20.0, /*T2:*/   190.0,  /*T3:*/ 255.0, \
+        /*R1:*/ 144700.0, /*R2:*/  5190.0, /*R3:*/ 4809.0, \
+        &temperature_sensor_3_circuit \
+    }
+#endif // HAS_TEMPERATURE_SENSOR_3
+
+#define BED_OUTPUT_PIN kHeaterOutput11_PinNumber
+
+//** Digital Inputs **
+
 /*
  IO_MODE_DISABLED
  IO_ACTIVE_LOW    aka NORMALLY_OPEN
@@ -347,7 +399,8 @@
 
 #define TEMP_MIN_BED_RISE_DEGREES_OVER_TIME 0.5
 
-#define MIN_FAN_VALUE                     0.4                     // (he1fm) at MIN_FAN_TEMP the fan comes on at this spped (0.0-1.0)
+
+#define MIX_FAN_VALUE                     0.4   // (he1fm) at MIN_FAN_TEMP the fan comes on at this spped (0.0-1.0)
 #define MAX_FAN_VALUE                     0.75                    // (he1fp) at MAX_FAN_TEMP the fan is at this spped (0.0-1.0)
 #define MIN_FAN_TEMP                      50.0                    // (he1fl) at this temp the fan starts to ramp up linearly
 #define MAX_FAN_TEMP                      100.0                   // (he1fh) at this temperature the fan is at "full speed" (MAX_FAN_VALUE)

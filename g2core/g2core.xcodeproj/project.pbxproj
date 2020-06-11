@@ -232,6 +232,20 @@
 			passBuildSettingsInEnvironment = 1;
 			productName = g3_due;
 		};
+		D43DFE011E8C84B400A2030D /* G2 gQuadratic Ultimaker2+ */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION) VERBOSE=1 COLOR=0 CONFIG=Ultimaker2Plus DEBUG=0";
+			buildConfigurationList = D43DFE021E8C84B400A2030D /* Build configuration list for PBXLegacyTarget "G2 gQuadratic Ultimaker2+" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = .;
+			dependencies = (
+			);
+			name = "G2 gQuadratic Ultimaker2+";
+			passBuildSettingsInEnvironment = 1;
+			productName = g3_due;
+		};
 		D43FF7141D537A5C00FB5B53 /* G2 gQuadratic Test */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION) VERBOSE=1 COLOR=0 CONFIG=TestQuadratic DEBUG=2";
@@ -288,6 +302,20 @@
 			passBuildSettingsInEnvironment = 1;
 			productName = g3_due;
 		};
+		D492E5AE1E54C2B4005ED97D /* G2 gQuadratic AxiDraw v3 */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION) VERBOSE=1 COLOR=0 CONFIG=AxiDrawv3 DEBUG=0";
+			buildConfigurationList = D492E5AF1E54C2B4005ED97D /* Build configuration list for PBXLegacyTarget "G2 gQuadratic AxiDraw v3" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = .;
+			dependencies = (
+			);
+			name = "G2 gQuadratic AxiDraw v3";
+			passBuildSettingsInEnvironment = 1;
+			productName = g3_due;
+		};
 		D4AC391A1C7BAB8E0098D685 /* G2 sbv300 */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION) VERBOSE=1 COLOR=0 CONFIG=sbv300 DEBUG=2";
@@ -313,6 +341,20 @@
 			dependencies = (
 			);
 			name = "G2 V9 Shapeoko Dual-Y";
+			passBuildSettingsInEnvironment = 1;
+			productName = g3_due;
+		};
+		D4C9C2FD20164DE200487D7F /* G2 gQuadratic SMW3D r7 */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION) VERBOSE=1 COLOR=0 CONFIG=r7 DEBUG=0";
+			buildConfigurationList = D4C9C2FE20164DE200487D7F /* Build configuration list for PBXLegacyTarget "G2 gQuadratic SMW3D r7" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = .;
+			dependencies = (
+			);
+			name = "G2 gQuadratic SMW3D r7";
 			passBuildSettingsInEnvironment = 1;
 			productName = g3_due;
 		};
@@ -384,7 +426,7 @@
 		D45710B8170532AC00EA19A8 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0910;
 				ORGANIZATIONNAME = "Rob Giseburt";
 			};
 			buildConfigurationList = D45710BB170532AC00EA19A8 /* Build configuration list for PBXProject "g2core" */;
@@ -411,6 +453,9 @@
 				D4782AAE1D9B16BE00B32136 /* G2 Probotix */,
 				D457112317053BFB00EA19A8 /* index */,
 				D4782AB61D9E39EC00B32136 /* G2 EggBot */,
+				D492E5AE1E54C2B4005ED97D /* G2 gQuadratic AxiDraw v3 */,
+				D43DFE011E8C84B400A2030D /* G2 gQuadratic Ultimaker2+ */,
+				D4C9C2FD20164DE200487D7F /* G2 gQuadratic SMW3D r7 */,
 			);
 		};
 /* End PBXProject section */
@@ -490,6 +535,22 @@
 			};
 			name = Release;
 		};
+		D43DFE031E8C84B400A2030D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D43DFE041E8C84B400A2030D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		D43FF7161D537A5C00FB5B53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -509,12 +570,18 @@
 		D45710BD170532AC00EA19A8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -534,12 +601,18 @@
 		D45710BE170532AC00EA19A8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -685,6 +758,22 @@
 			};
 			name = Release;
 		};
+		D492E5B01E54C2B4005ED97D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D492E5B11E54C2B4005ED97D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		D4AC391C1C7BAB8E0098D685 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -714,6 +803,22 @@
 			buildSettings = {
 				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
 				PRODUCT_NAME = "TinyG2 V9 Shapeoko Dual-Y";
+			};
+			name = Release;
+		};
+		D4C9C2FF20164DE200487D7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D4C9C30020164DE200487D7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$PATH:/usr/local/gcc-arm-none-eabi/bin";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -786,6 +891,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		D43DFE021E8C84B400A2030D /* Build configuration list for PBXLegacyTarget "G2 gQuadratic Ultimaker2+" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D43DFE031E8C84B400A2030D /* Debug */,
+				D43DFE041E8C84B400A2030D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D43FF7151D537A5C00FB5B53 /* Build configuration list for PBXLegacyTarget "G2 gQuadratic Test" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -840,6 +954,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		D492E5AF1E54C2B4005ED97D /* Build configuration list for PBXLegacyTarget "G2 gQuadratic AxiDraw v3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D492E5B01E54C2B4005ED97D /* Debug */,
+				D492E5B11E54C2B4005ED97D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D4AC391B1C7BAB8E0098D685 /* Build configuration list for PBXLegacyTarget "G2 sbv300" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -854,6 +977,15 @@
 			buildConfigurations = (
 				D4B485B41AB1F3CB00C6614F /* Debug */,
 				D4B485B51AB1F3CB00C6614F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D4C9C2FE20164DE200487D7F /* Build configuration list for PBXLegacyTarget "G2 gQuadratic SMW3D r7" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D4C9C2FF20164DE200487D7F /* Debug */,
+				D4C9C30020164DE200487D7F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

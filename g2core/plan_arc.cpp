@@ -2,7 +2,7 @@
  * plan_arc.c - arc planning and motion execution
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2019 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -105,7 +105,7 @@ stat_t cm_arc_feed(const float target[], const bool target_f[],     // target en
                    const cmMotionMode motion_mode)                  // defined motion mode
 {
     // Start setting up the arc and trapping arc specification errors
-    
+
     // Trap some precursor cases. Since motion mode (MODAL_GROUP_G1) persists from the
     // previous move it's possible for non-modal commands such as F or P to arrive here
     // when no motion has actually been specified. It's also possible to run an arc as
@@ -173,7 +173,7 @@ stat_t cm_arc_feed(const float target[], const bool target_f[],     // target en
     // test radius arcs for radius tolerance
     if (radius_f) {
         cm->arc.radius = _to_millimeters(radius);           // set radius to internal format (mm)
-        if (fabs(cm->arc.radius) < MIN_ARC_RADIUS) {        // radius value must be > minimum radius
+        if (std::abs(cm->arc.radius) < MIN_ARC_RADIUS) {        // radius value must be > minimum radius
             return (STAT_ARC_RADIUS_OUT_OF_TOLERANCE);
         }
     }
@@ -216,8 +216,8 @@ stat_t cm_arc_feed(const float target[], const bool target_f[],     // target en
 
     // *** now get down to the rest of the work setting up the arc for execution ***
     cm->gm.motion_mode = motion_mode;
-    cm_set_display_offsets(&cm->gm);                        // capture the fully resolved offsets to gm
-    memcpy(&(cm->arc.gm), &cm->gm, sizeof(GCodeState_t));   // copy GCode context to arc singleton - some will be overwritten to run segments
+    cm_set_display_offsets(MODEL);                        // capture the fully resolved offsets to gm
+    memcpy(&(cm->arc.gm), MODEL, sizeof(GCodeState_t));   // copy GCode context to arc singleton - some will be overwritten to run segments
     copy_vector(cm->arc.position, cm->gmx.position);        // set initial arc position from gcode model
 
     // setup offsets if in center format mode
@@ -290,15 +290,15 @@ static stat_t _compute_arc(const bool radius_f)
     //  center by more than (.05 inch/.5 mm) OR ((.0005 inch/.005mm) AND .1% of radius)."
 
     // Compute end radius from the center of circle (offsets) to target endpoint
-    float end_0 = cm->arc.gm.target[cm->arc.plane_axis_0] - 
-                  cm->arc.position[cm->arc.plane_axis_0] - 
+    float end_0 = cm->arc.gm.target[cm->arc.plane_axis_0] -
+                  cm->arc.position[cm->arc.plane_axis_0] -
                   cm->arc.ijk_offset[cm->arc.plane_axis_0];
-                  
-    float end_1 = cm->arc.gm.target[cm->arc.plane_axis_1] - 
-                  cm->arc.position[cm->arc.plane_axis_1] - 
+
+    float end_1 = cm->arc.gm.target[cm->arc.plane_axis_1] -
+                  cm->arc.position[cm->arc.plane_axis_1] -
                   cm->arc.ijk_offset[cm->arc.plane_axis_1];
-                  
-    float err = fabs(hypotf(end_0, end_1) - cm->arc.radius);   // end radius - start radius
+
+    float err = std::abs(hypotf(end_0, end_1) - cm->arc.radius);   // end radius - start radius
     if ((err > ARC_RADIUS_ERROR_MAX) ||
        ((err > ARC_RADIUS_ERROR_MIN) && (err > cm->arc.radius * ARC_RADIUS_TOLERANCE))) {
         return (STAT_ARC_HAS_IMPOSSIBLE_CENTER_POINT);
@@ -322,7 +322,7 @@ static stat_t _compute_arc(const bool radius_f)
         // add in travel for rotations
         if (cm->arc.angular_travel >= 0) { cm->arc.angular_travel += 2*M_PI * cm->arc.rotations; }
         else                             { cm->arc.angular_travel -= 2*M_PI * cm->arc.rotations; }
-    } 
+    }
     // Compute full-circle arcs
     else {
         if (cm->arc.gm.motion_mode == MOTION_MODE_CCW_ARC) { cm->arc.rotations *= -1; }
@@ -338,15 +338,15 @@ static stat_t _compute_arc(const bool radius_f)
     // Length is the total mm of travel of the helix (or just the planar arc)
     cm->arc.linear_travel = cm->arc.gm.target[cm->arc.linear_axis] - cm->arc.position[cm->arc.linear_axis];
     cm->arc.planar_travel = cm->arc.angular_travel * cm->arc.radius;
-    cm->arc.length = hypotf(cm->arc.planar_travel, fabs(cm->arc.linear_travel));
+    cm->arc.length = hypotf(cm->arc.planar_travel, std::abs(cm->arc.linear_travel));
 
     // Find the minimum number of segments that meet accuracy and time constraints...
     // Note: removed segment_length test as segment_time accounts for this (build 083.37)
-    float arc_time;
+    float arc_time = 0;
     float segments_for_minimum_time = _estimate_arc_time(arc_time) * (MICROSECONDS_PER_MINUTE / MIN_ARC_SEGMENT_USEC);
     float segments_for_chordal_accuracy = cm->arc.length / sqrt(4*cm->chordal_tolerance * (2 * cm->arc.radius - cm->chordal_tolerance));
-    cm->arc.segments = floor(min(segments_for_chordal_accuracy, segments_for_minimum_time));
-    cm->arc.segments = max(cm->arc.segments, (float)1.0);        //...but is at least 1 segment
+    cm->arc.segments = std::floor(std::min(segments_for_chordal_accuracy, segments_for_minimum_time));
+    cm->arc.segments = std::max(cm->arc.segments, (float)1.0);        //...but is at least 1 segment
 
     if (cm->arc.gm.feed_rate_mode == INVERSE_TIME_MODE) {
         cm->arc.gm.feed_rate /= cm->arc.segments;
@@ -497,10 +497,10 @@ static float _estimate_arc_time (float arc_time)
     }
 
     // Downgrade the time if there is a rate-limiting axis
-    arc_time = max(arc_time, (float)fabs(cm->arc.planar_travel/cm->a[cm->arc.plane_axis_0].feedrate_max));
-    arc_time = max(arc_time, (float)fabs(cm->arc.planar_travel/cm->a[cm->arc.plane_axis_1].feedrate_max));
-    if (fabs(cm->arc.linear_travel) > 0) {
-        arc_time = max(arc_time, (float)fabs(cm->arc.linear_travel/cm->a[cm->arc.linear_axis].feedrate_max));
+    arc_time = std::max(arc_time, (float)std::abs(cm->arc.planar_travel/cm->a[cm->arc.plane_axis_0].feedrate_max));
+    arc_time = std::max(arc_time, (float)std::abs(cm->arc.planar_travel/cm->a[cm->arc.plane_axis_1].feedrate_max));
+    if (std::abs(cm->arc.linear_travel) > 0) {
+        arc_time = std::max(arc_time, (float)std::abs(cm->arc.linear_travel/cm->a[cm->arc.linear_axis].feedrate_max));
     }
     return (arc_time);
 }

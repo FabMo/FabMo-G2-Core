@@ -2,8 +2,8 @@
  * util.h - a random assortment of useful functions
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2016 - 2017 Robert Giseburt
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2016 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -25,20 +25,17 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* util.c/.h contains a dog's breakfast of supporting functions that are not specific 
+/* util.c/.h contains a dog's breakfast of supporting functions that are not specific
  *  to g2core: including:
  *  - math and min/max utilities and extensions
  *  - vector manipulation utilities
  *  - support for debugging routines
  */
 
-#include "hardware.h" // for AXES
-
 #ifndef UTIL_H_ONCE
 #define UTIL_H_ONCE
 
 #include <stdint.h>
-//#include "sam.h"
 #include "MotateTimers.h"
 using Motate::delay;
 using Motate::SysTickTimer;
@@ -74,12 +71,28 @@ uint8_t vector_equal(const float a[], const float b[]);
 float *set_vector(float x, float y, float z, float a, float b, float c);
 float *set_vector_by_axis(float value, uint8_t axis);
 
+// *** canned initializers ***
+
+#if (AXES == 9)
+#define INIT_AXES_ZEROES {0,0,0,0,0,0,0,0,0}
+#define INIT_AXES_ONES   {1,1,1,1,1,1,1,1,1}
+#define INIT_AXES_FALSE  INIT_AXES_ZEROES
+#define INIT_AXES_TRUE   INIT_AXES_ONES
+#elif (AXES == 6)
+#define INIT_AXES_ZEROES {0,0,0,0,0,0}
+#define INIT_AXES_ONES   {1,1,1,1,1,1}
+#define INIT_AXES_FALSE  INIT_AXES_ZEROES
+#define INIT_AXES_TRUE   INIT_AXES_ONES
+#else
+#error UNSUPPORTED AXES SETTING!
+#endif
+
 //*** math utilities ***
 
-float min3(float x1, float x2, float x3);
-float min4(float x1, float x2, float x3, float x4);
-float max3(float x1, float x2, float x3);
-float max4(float x1, float x2, float x3, float x4);
+//float min3(float x1, float x2, float x3);
+//float min4(float x1, float x2, float x3, float x4);
+//float max3(float x1, float x2, float x3);
+//float max4(float x1, float x2, float x3, float x4);
 //float std_dev(float a[], uint8_t n, float *mean);
 
 //*** string utilities ***
@@ -87,12 +100,9 @@ float max4(float x1, float x2, float x3, float x4);
 uint8_t isnumber(char c);
 char *escape_string(char *dst, char *src);
 uint16_t compute_checksum(char const *string, const uint16_t length);
+uint32_t crc32(uint32_t crc, const void *buf, size_t size);
 char floattoa(char *buffer, float in, int precision, int maxlen = 16);
 char inttoa(char *str, int n);
-
-//*** other utilities ***
-
-uint32_t SysTickTimer_getValue(void);
 
 //**** Math Support *****
 
@@ -100,13 +110,13 @@ uint32_t SysTickTimer_getValue(void);
 
 using std::isnan;
 using std::isinf;
-using std::min;
-using std::max;
+// using std::min;
+// using std::max;
 
 template <typename T>
 inline T square(const T x) { return (x)*(x); }        /* UNSAFE */
 
-inline float abs(const float a) { return fabs(a); }
+//inline float abs(const float a) { return std::abs(a); }
 
 #ifndef avg
 template <typename T>
@@ -122,19 +132,19 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 
 // These functions all require math.h to be included in each file that uses them
 #ifndef fp_EQ
-#define fp_EQ(a,b) (fabs(a-b) < EPSILON)
+#define fp_EQ(a,b) (std::abs(a-b) < EPSILON)
 #endif
 #ifndef fp_NE
-#define fp_NE(a,b) (fabs(a-b) > EPSILON)
+#define fp_NE(a,b) (std::abs(a-b) > EPSILON)
 #endif
 #ifndef fp_GE
-#define fp_GE(a,b) (fabs(a-b) < EPSILON || a-b > EPSILON)
+#define fp_GE(a,b) (std::abs(a-b) < EPSILON || a-b > EPSILON)
 #endif
 #ifndef fp_ZERO
-#define fp_ZERO(a) (fabs(a) < EPSILON)
+#define fp_ZERO(a) (std::abs(a) < EPSILON)
 #endif
 #ifndef fp_NOT_ZERO
-#define fp_NOT_ZERO(a) (fabs(a) > EPSILON)
+#define fp_NOT_ZERO(a) (std::abs(a) > EPSILON)
 #endif
 #ifndef fp_FALSE
 #define fp_FALSE(a) (a < EPSILON)
@@ -190,7 +200,7 @@ constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) 
 
 /*** Debug and DIAGNOSTICS  ***
  *
- *  This section collects debug and DIAGNOSTIC functions used by the project. 
+ *  This section collects debug and DIAGNOSTIC functions used by the project.
  *
  *  The debug levels are set in the build line and may be one of:
  *    <omitted>  - debug is off, IN_DEBUGGER == 0 (See Makefile for the logic)
@@ -198,14 +208,14 @@ constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) 
  *     DEBUG=1   - debug is on,  IN_DEBUGGER == 0
  *     DEBUG=2   - debug is on,  IN_DEBUGGER == 1. Requires HW debugger to be connected
  *     DEBUG=3   - debug is on,  IN_DEBUGGER == 1. Requires HW debugger and Semihosting to be enabled and running in the debugger
- *   
+ *
  *  These settings are applied in the Makefile.
  *  In addition, MotateDebug.h contains the bulk of the Semihosting definitions
  *
- *  The *reason value is provided as it will be shown in the __asm__("BKPT") backtrace, 
+ *  The *reason value is provided as it will be shown in the __asm__("BKPT") backtrace,
  *  or on the __NOP() if a breakpoint is set
  *
- *  Try to use the functions provided below for debug statements to keep the code clean. If these 
+ *  Try to use the functions provided below for debug statements to keep the code clean. If these
  *  are insufficient you can bracket diagnostics like so to enable then for any non-zero debug level:
  *
  #if IN_DEBUGGER == 1
@@ -213,7 +223,7 @@ constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) 
          __asm__("BKPT");   // exit > cruise after calculate_block
      }
  #endif
- * 
+ *
  * ...or add a new debug functions to the ones below
  */
 
@@ -225,8 +235,8 @@ constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) 
  *  The 'reason' value will display in GDB (but maybe not in AS7), and can also be passed
  *  to a downstream logger if these are introduced into the function.
  *
- *  Note that it may be possible to print or generate exceptions in debug_trap(), but  
- *  it MIGHT interrupt other output, or might have been called deep in an ISR, 
+ *  Note that it may be possible to print or generate exceptions in debug_trap(), but
+ *  it MIGHT interrupt other output, or might have been called deep in an ISR,
  *  so we had better just _NOP() and hope for the best.
  */
 #pragma GCC push_options
@@ -253,7 +263,7 @@ inline void debug_trap_if_true(bool condition, const char *reason) {
     if (condition) {
         __NOP();
         __asm__("BKPT");
-    }    
+    }
 #endif
 }
 

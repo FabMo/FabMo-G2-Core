@@ -3,8 +3,8 @@
  * For: /board/printrboardg2
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2016 Robert Giseburt
- * Copyright (c) 2013 - 2016 Alden S. Hart Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
+ * Copyright (c) 2013 - 2018 Alden S. Hart Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -179,8 +179,10 @@ pin_number kGRBL_CommonEnablePinNumber = -1;
 
 // g2ref extensions
 // These first 5 may replace the Spindle and Coolant pins, above
-pin_number kOutput1_PinNumber = 130;  // DO_1: Extruder1_PWM
-pin_number kOutput2_PinNumber = 131;  // DO_2: Extruder2_PWM
+pin_number kHeaterOutput1_PinNumber = 130;  // DO_1: Extruder1_PWM
+pin_number kHeaterOutput2_PinNumber = 131;  // DO_2: Extruder2_PWM
+pin_number kOutput1_PinNumber = -1;  // DO_1:
+pin_number kOutput2_PinNumber = -1;  // DO_2:
 pin_number kOutput3_PinNumber = 132;  // DO_3: Fan1A_PWM
 pin_number kOutput4_PinNumber = 133;  // DO_4: Fan1B_PWM
 pin_number kOutput5_PinNumber = 134;  // DO_5: Fan2A_PWM
@@ -191,28 +193,29 @@ pin_number kOutput8_PinNumber  = 137;  // See Coolant Enable
 pin_number kOutput9_PinNumber  = 138;  // SAFE signal
 pin_number kOutput10_PinNumber = 139;  // DO_10: Fan2B_PWM
 
-pin_number kOutput11_PinNumber = 140;  // DO_11: Heated Bed FET
+pin_number kHeaterOutput11_PinNumber = 140;  // DO_11: Heated Bed FET
+pin_number kOutput11_PinNumber = -1;  // DO_11:
 pin_number kOutput12_PinNumber = 141;  // DO_12: Indicator_LED
 pin_number kOutput13_PinNumber = -1;   // 142;
 pin_number kOutput14_PinNumber = -1;   // 143;
 pin_number kOutput15_PinNumber = -1;   // 144;
 pin_number kOutput16_PinNumber = -1;   // 145;
 
-pin_number kADC0_PinNumber  = 150;  // Heated bed thermistor ADC
-pin_number kADC1_PinNumber  = 151;  // Extruder1_ADC
-pin_number kADC2_PinNumber  = 152;  // Extruder2_ADC
-pin_number kADC3_PinNumber  = 153;  // Aux ADC
-pin_number kADC4_PinNumber  = 154;  // Not physically pinned out
-pin_number kADC5_PinNumber  = 155;  // Not physically pinned out
-pin_number kADC6_PinNumber  = 156;  // Not physically pinned out
-pin_number kADC7_PinNumber  = 157;  // Not physically pinned out
-pin_number kADC8_PinNumber  = 158;  // Not physically pinned out
-pin_number kADC9_PinNumber  = 159;  // Not physically pinned out
-pin_number kADC10_PinNumber = 160;  // Not physically pinned out
-pin_number kADC11_PinNumber = 161;  // Not physically pinned out
-pin_number kADC12_PinNumber = 162;  // Not physically pinned out
-pin_number kADC13_PinNumber = 163;  // Not physically pinned out
-pin_number kADC14_PinNumber = 164;  // Not physically pinned out
+pin_number kADC1_PinNumber  = 150;  // Heated bed thermistor ADC
+pin_number kADC2_PinNumber  = 151;  // Extruder1_ADC
+pin_number kADC3_PinNumber  = 152;  // Extruder2_ADC
+pin_number kADC4_PinNumber  = 153;  // Aux ADC
+pin_number kADC5_PinNumber  = 154;  // Not physically pinned out
+pin_number kADC6_PinNumber  = 155;  // Not physically pinned out
+pin_number kADC7_PinNumber  = 156;  // Not physically pinned out
+pin_number kADC8_PinNumber  = 157;  // Not physically pinned out
+pin_number kADC9_PinNumber  = 158;  // Not physically pinned out
+pin_number kADC10_PinNumber  = 159;  // Not physically pinned out
+pin_number kADC11_PinNumber = 160;  // Not physically pinned out
+pin_number kADC12_PinNumber = 161;  // Not physically pinned out
+pin_number kADC13_PinNumber = 162;  // Not physically pinned out
+pin_number kADC14_PinNumber = 163;  // Not physically pinned out
+pin_number kADC15_PinNumber = 164;  // Not physically pinned out
 
 // start next sequence at 170
 
@@ -247,19 +250,13 @@ pin_number kUnassigned1  = 254;  // 254 is the max.. Do not exceed this number
 
 }  // namespace Motate
 
-// For the SAM3X8C boards, we actually use the same NUMBERING, but have different number to pin linkages
-
-// We're putting this in to make the autocomplete work for XCode,
-// since it doesn't understand the special syntax coming up.
-#ifdef XCODE_INDEX
-#include <pboard-a-pinout.h>
-#endif
-
 #ifdef MOTATE_BOARD
-#define MOTATE_BOARD_PINOUT < MOTATE_BOARD-pinout.h >
+#define MOTATE_BOARD_PINOUT <MOTATE_BOARD-pinout.h>
 #include MOTATE_BOARD_PINOUT
 #else
 #error Unknown board layout $(MOTATE_BOARD)
+// This next include is for IDEs only
+#include <printrboardG2v3-pinout.h>
 #endif
 
 #endif

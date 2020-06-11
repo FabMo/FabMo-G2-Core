@@ -2,8 +2,8 @@
  * planner.h - cartesian trajectory planning and motion execution
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2013 - 2017 Robert Giseburt
+ * Copyright (c) 2013 - 2019 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2019 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -28,7 +28,7 @@
 /*x
  * --- Planner Background ---
  *
- *  The planner is a complicated beast that takes a lot of things into account. 
+ *  The planner is a complicated beast that takes a lot of things into account.
  *  Planner documentation is scattered about and co-located with the functions
  *  that perform the actions. Key files are:
  *
@@ -42,31 +42,31 @@
  *
  * --- Planner Overview ---
  *
- * At high level the planner's job is to reconstruct smooth motion from a set of linear 
- * approximations while observing and operating within the physical constraints of the 
- * machine and the physics of motion. Gcode - which consists of a series of into linear 
- * motion segments - is interpreted, queued to the planner, and joined together to produce 
- * continuous, synchronized motion. Non-motion commands such as pauses (dwells) and 
- * peripheral controls such as spindles can also be synchronized in the queue. Arcs are 
+ * At high level the planner's job is to reconstruct smooth motion from a set of linear
+ * approximations while observing and operating within the physical constraints of the
+ * machine and the physics of motion. Gcode - which consists of a series of into linear
+ * motion segments - is interpreted, queued to the planner, and joined together to produce
+ * continuous, synchronized motion. Non-motion commands such as pauses (dwells) and
+ * peripheral controls such as spindles can also be synchronized in the queue. Arcs are
  * just a special case consisting of many linear moves. Arcs are not interpreted directly.
  *
- * The planner sits in the middle of three system layers: 
+ * The planner sits in the middle of three system layers:
  *  - The Gcode interpreter and canonical machine (the 'model'), which feeds...
  *  - The planner - taking generic commands from the model and queuing them for...
  *  - The runtime layer - pulling from the planner and driving stepper motors or other devices
- * 
+ *
  * The planner queue is the heart of the planner. It's a circular list of ~48 complex structures
  * that carry the state of the system needs to execute a linear motion, run a pre-planned command,
  * like turning on a spindle, or executing an arbitrary JSON command such as an active comment.
  *
  * The queue can be viewed as a list of instructions that will execute in exact sequence.
- * Some instructions control motion and need to be joined to their forward and backwards 
- * neighbors so that position, velocity, acceleration, and jerk constraints are not 
- * violated when moving from one motion to the next. 
+ * Some instructions control motion and need to be joined to their forward and backwards
+ * neighbors so that position, velocity, acceleration, and jerk constraints are not
+ * violated when moving from one motion to the next.
  *
  * Others are "commands" that are actually just function callbacks that happen to execute
  * at a particular point in time (synchronized with motion commands). Commands can control
- * anything you can reasonably program, such as digital IO, serial communications, or 
+ * anything you can reasonably program, such as digital IO, serial communications, or
  * interpreted commands encoded in JSON.
  *
  * The buffers in the planner queue are treated as a 'closure' - with all state needed for
@@ -79,56 +79,56 @@
  *  - mp_aline()         - plan and queue a move with acceleration management
  *  - mp_dwell()         - plan and queue a pause (dwell) to the planner queue
  *  - mp_queue_command() - queue a canned command
- *  - mp_json_command()  - queue a JSON command for run-time interpretation and execution (M100)  
+ *  - mp_json_command()  - queue a JSON command for run-time interpretation and execution (M100)
  *  - mp_json_wait()     - queue a JSON wait for run-time interpretation and execution (M101)
- *  - 
- * In addition, cm_arc_feed() valaidates and sets up a arc paramewters and calls mp_aline() 
+ *  -
+ * In addition, cm_arc_feed() valaidates and sets up a arc paramewters and calls mp_aline()
  * repeatedly to spool out the arc segments into the planner queue.
  *
  * All the above queueing commands other than mp_aline() are relatively trivial; they just
- * post callbacks into the next available planner buffer. Command functions are in 2 parts: 
- * the part that posts to the queue, and the callback that is executed when the command is 
+ * post callbacks into the next available planner buffer. Command functions are in 2 parts:
+ * the part that posts to the queue, and the callback that is executed when the command is
  * finally reached in the queue - the _exec().
  *
- * All mp_aline() does is some preliminary math and then posts an initialized buffer to 
+ * All mp_aline() does is some preliminary math and then posts an initialized buffer to
  * the planner queue. The rest of the move planning operations takes place in background;
- * via mp_planner_callback() called from the main loop, and as 'pulls' from the runtime 
+ * via mp_planner_callback() called from the main loop, and as 'pulls' from the runtime
  * stepper operations.
  *
- * Motion planning is separated into backward planning and forward planning stages. 
- * Backward planning is initiated by mp_planner_callback() which is called repeatedly 
- * from the main loop. Backwards planning is performed by mp_plan_block_list() and 
- * _plan_block(). It starts at the most recently arrived Gcode block. Backward 
- * planning can occur multiple times for a given buffer, as new moves arriving 
+ * Motion planning is separated into backward planning and forward planning stages.
+ * Backward planning is initiated by mp_planner_callback() which is called repeatedly
+ * from the main loop. Backwards planning is performed by mp_plan_block_list() and
+ * _plan_block(). It starts at the most recently arrived Gcode block. Backward
+ * planning can occur multiple times for a given buffer, as new moves arriving
  * can make the motion profile more optimal.
  *
  * Backward planning uses velocity and jerk constraints to set maximum entry,
- * travel (cruise) and exit velocities for the moves in the queue. In addition, 
- * it observes the maximum cornering velocities that adjoining moves can sustain 
- * in a corner or a 'kink' to ensure that the jerk limit of any axis participating 
+ * travel (cruise) and exit velocities for the moves in the queue. In addition,
+ * it observes the maximum cornering velocities that adjoining moves can sustain
+ * in a corner or a 'kink' to ensure that the jerk limit of any axis participating
  * in the move is not violated. See mp_planner_callback() header comments for more detail.
  *
- * Forward planning is performed just-in-time and only once, right before the 
+ * Forward planning is performed just-in-time and only once, right before the
  * planner runtime needs the next buffer. Forward planning provides the final
- * contouring of the move. It is invoked by mp_forward_plan() and executed by 
+ * contouring of the move. It is invoked by mp_forward_plan() and executed by
  * mp_calculate_ramps() in plan_zoid.cpp.
  *
  * Planner timing operates at a few different levels:
  *
- *  - New lines of ASCII containing commands and moves arriving from the USB are 
+ *  - New lines of ASCII containing commands and moves arriving from the USB are
  *    parsed and executed as the lowest priority background task from the main loop.
  *
- *  - Backward planning is invoked by a main loop callback, so it also executes as 
+ *  - Backward planning is invoked by a main loop callback, so it also executes as
  *    a background task, albeit a higher priority one.
  *
- *  - Forward planning and the ultimate preparation of the move for the runtime runs 
- *    as an interrupt as a 'pull' from the planner queue that uses a series of 
- *    interrupts at progressively lower priorities to ensure that the next planner 
+ *  - Forward planning and the ultimate preparation of the move for the runtime runs
+ *    as an interrupt as a 'pull' from the planner queue that uses a series of
+ *    interrupts at progressively lower priorities to ensure that the next planner
  *    buffer is ready before the runtime runs out of forward-planned moves and starves.
  *
  * Some other functions performed by the planner include:
  *
- *  - Velocity throttling to ensure that very short moves do not execute faster 
+ *  - Velocity throttling to ensure that very short moves do not execute faster
  *    than the serial interface can deliver them
  *
  *  - Feed hold and cycle start (resume) operations
@@ -150,6 +150,7 @@
 #define PLANNER_H_ONCE
 
 #include "canonical_machine.h"    // used for GCodeState_t
+#include "hardware.h"             // for MIN_SEGMENT_MS
 
 using Motate::Timeout;
 
@@ -174,8 +175,6 @@ typedef enum {                      // bf->buffer_state values in incresing orde
     MP_BUFFER_BACK_PLANNED,         // buffer ready for final planning; velocities have been set
     MP_BUFFER_FULLY_PLANNED,        // buffer fully planned. May still be replanned
     MP_BUFFER_RUNNING,              // current running buffer
-    MP_BUFFER_POLAND,               // Hitler used Poland as a buffer state
-    MP_BUFFER_UKRAINE               // Later Stalin did the same to Ukraine
 } bufferState;
 
 typedef enum {                      // bf->block_type values
@@ -228,8 +227,15 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 
 /*** Most of these factors are the result of a lot of tweaking. Change with caution.***/
 
+#ifdef PLANNER_BUFFER_POOL_SIZE
+#error Please change PLANNER_BUFFER_POOL_SIZE define to PLANNER_QUEUE_SIZE (found elsewhere, unfortunately)
+#endif
+#ifndef PLANNER_QUEUE_SIZE
 #define PLANNER_QUEUE_SIZE          ((uint8_t)48)       // Suggest 12 min. Limit is 255
+#endif
+#ifndef SECONDARY_QUEUE_SIZE
 #define SECONDARY_QUEUE_SIZE        ((uint8_t)12)       // Secondary planner queue for feedhold operations
+#endif
 #define PLANNER_BUFFER_HEADROOM     ((uint8_t)4)        // Buffers to reserve in planner before processing new input line
 #define JERK_MULTIPLIER             ((float)1000000)    // DO NOT CHANGE - must always be 1 million
 
@@ -239,9 +245,8 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #ifndef MIN_SEGMENT_MS                                  // boards can override this value in hardware.h
 #define MIN_SEGMENT_MS              ((float)0.75)       // minimum segment milliseconds
 #endif
-#define NOM_SEGMENT_MS              ((float)MIN_SEGMENT_MS * 2) // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
-#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS * 2) // minimum block (whole move) milliseconds
-
+#define NOM_SEGMENT_MS              ((float)MIN_SEGMENT_MS*2.0)        // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
+#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS*2.0)        // minimum block (whole move) milliseconds
 #define BLOCK_TIMEOUT_MS            ((float)30.0)       // MS before deciding there are no new blocks arriving
 #define PHAT_CITY_MS                ((float)100.0)      // if you have at least this much time in the planner
 
@@ -254,7 +259,6 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #define FEED_OVERRIDE_ENABLE        false               // initial value
 #define FEED_OVERRIDE_MIN           (0.05)              // 5% minimum
 #define FEED_OVERRIDE_MAX           (2.00)              // 200% maximum
-#define FEED_OVERRIDE_RAMP_TIME     (0.500/60)          // ramp time for feed overrides
 #define FEED_OVERRIDE_FACTOR        (1.00)              // initial value
 
 #define TRAVERSE_OVERRIDE_ENABLE    false               // initial value
@@ -267,13 +271,13 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 //// RG: Simulation shows +-0.001 is about as much as we should allow.
 //      VELOCITY_EQ(v0,v1) reads: "True if v0 is within 0.0001 of v1"
 //      VELOCITY_LT(v0,v1) reads: "True if v0 is less than v1 by at least 0.0001"
-#define VELOCITY_EQ(v0,v1) ( fabs(v0-v1) < 0.0001 )
+#define VELOCITY_EQ(v0,v1) ( std::abs(v0-v1) < 0.0001 )
 #define VELOCITY_LT(v0,v1) ( (v1 - v0) > 0.0001 )
 
 #define Vthr2 300.0
 #define Veq2_hi 10.0
 #define Veq2_lo 1.0
-#define VELOCITY_ROUGHLY_EQ(v0,v1) ( (v0 > Vthr2) ? fabs(v0-v1) < Veq2_hi : fabs(v0-v1) < Veq2_lo )
+#define VELOCITY_ROUGHLY_EQ(v0,v1) ( (v0 > Vthr2) ? std::abs(v0-v1) < Veq2_hi : std::abs(v0-v1) < Veq2_lo )
 
 /* Planner Diagnostics */
 
@@ -285,7 +289,7 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #define UPDATE_BF_DIAGNOSTICS(bf)   { bf->linenum = bf->gm.linenum; \
                                       bf->block_time_ms = bf->block_time*60000; \
                                       bf->plannable_time_ms = bf->plannable_time*60000; }
-                                    
+
 #define UPDATE_MP_DIAGNOSTICS       { mp->plannable_time_ms = mp->plannable_time*60000; }
 #define SET_PLANNER_ITERATIONS(i)   { bf->iterations = i; }
 #define INC_PLANNER_ITERATIONS      { bf->iterations++; }
@@ -313,14 +317,14 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 
 //**** Planner Queue Structures ****
 
-typedef struct mpBuffer {
+struct mpBuf_t { // mpBuf_t
 
     // *** CAUTION *** These two pointers are not reset by _clear_buffer()
-    struct mpBuffer *pv;                // static pointer to previous buffer
-    struct mpBuffer *nx;                // static pointer to next buffer
+    struct mpBuf_t *pv;                // static pointer to previous buffer
+    struct mpBuf_t *nx;                // static pointer to next buffer
     uint8_t buffer_number;              // DIAGNOSTIC for easier debugging
 
-    stat_t (*bf_func)(struct mpBuffer *bf); // callback to buffer exec function
+    stat_t (*bf_func)(struct mpBuf_t *bf); // callback to buffer exec function
     cm_exec_t cm_func;                  // callback to canonical machine execution function
 
 #ifdef __PLANNER_DIAGNOSTICS
@@ -338,14 +342,17 @@ typedef struct mpBuffer {
     blockHint hint;                     // hint the block for zoid and other planning operations. Must be accurate or NO_HINT
 
     // block parameters
-    float unit[AXES];                   // unit vector for axis scaling & planning
-    bool axis_flags[AXES];              // set true for axes participating in the move & for command parameters
+    float unit[AXES];               // unit vector for axis scaling & planning
+    bool axis_flags[AXES];          // set true for axes participating in the move & for command parameters
 
-    bool plannable;                     // set true when this block can be used for planning
+    float junction_unit[AXES];      // unit vector delta at the junction for cornering. Needed for groups of small moves.
+    float junction_length_since;    // length total of the moves since the junction_unit was captured. See _calculate_junction_vmax() comments.
 
-    float length;                       // total length of line or helix in mm
-    float block_time;                   // computed move time for entire block (move)
-    float override_factor;              // feed rate or rapid override factor for this block ("override" is a reserved word)
+    bool plannable;                 // set true when this block can be used for planning
+
+    float length;                   // total length of line or helix in mm
+    float block_time;               // computed move time for entire block (move)
+    float override_factor;          // feed rate or rapid override factor for this block ("override" is a reserved word)
 
     // *** SEE NOTES ON THESE VARIABLES, in aline() ***
     // We removed all entry_* values.
@@ -391,6 +398,8 @@ typedef struct mpBuffer {
 
         for (uint8_t i = 0; i< AXES; i++) {
             unit[i] = 0;
+            junction_unit[i] = 0;
+            junction_length_since = 0;
             axis_flags[i] = 0;
         }
         plannable = false;
@@ -411,7 +420,7 @@ typedef struct mpBuffer {
         q_recip_2_sqrt_j = 0.0;
         gm.reset();
     }
-} mpBuf_t;
+};
 
 typedef struct mpPlannerQueue {         // control structure for queue
     magic_t magic_start;                // magic number to test memory integrity
@@ -473,7 +482,8 @@ typedef struct mpPlannerRuntime {       // persistent runtime variables
 
     float segments;                     // number of segments in line (also used by arc generation)
     uint32_t segment_count;             // count of running segments
-    float segment_velocity;             // computed velocity for aline segment
+    float segment_velocity;             // computed start velocity for aline segment
+    float target_velocity;              // computed end velocity for aline segment
     float segment_time;                 // actual time increment per aline segment
 
     float forward_diff_1;               // forward difference level 1
@@ -536,9 +546,9 @@ typedef struct mpPlanner {              // common variables for a planner contex
     mpBuf_t *planning_return;           // buffer to return to once back-planning is complete
     mpPlannerRuntime_t *mr;             // bind to mr associated with this planner
     mpPlannerQueue_t q;                 // embed a planner buffer queue manager
-    
+
     magic_t magic_end;
-    
+
     // clears mpPlanner structure but leaves position alone
     void reset() {
         run_time_remaining = 0;
@@ -555,15 +565,15 @@ typedef struct mpPlanner {              // common variables for a planner contex
 
 // Reference global scope structures
 
-extern mpPlanner_t *mp;                 // currently active planner (global variable)
-extern mpPlanner_t mp1;                 // primary planning context
-extern mpPlanner_t mp2;                 // secondary planning context
+extern mpPlanner_t *mp HOT_DATA;                 // currently active planner (global variable)
+extern mpPlanner_t mp1 HOT_DATA;                 // primary planning context
+extern mpPlanner_t mp2 HOT_DATA;                 // secondary planning context
 
-extern mpPlannerRuntime_t *mr;          // context for block runtime
-extern mpPlannerRuntime_t mr1;          // primary planner runtime context
-extern mpPlannerRuntime_t mr2;          // secondary planner runtime context
+extern mpPlannerRuntime_t *mr HOT_DATA;          // context for block runtime
+extern mpPlannerRuntime_t mr1 HOT_DATA;          // primary planner runtime context
+extern mpPlannerRuntime_t mr2 HOT_DATA;          // secondary planner runtime context
 
-extern mpBuf_t mp1_queue[PLANNER_QUEUE_SIZE];   // storage allocation for primary planner queue buffers
+extern mpBuf_t mp1_queue[PLANNER_QUEUE_SIZE] HOT_DATA;   // storage allocation for primary planner queue buffers
 extern mpBuf_t mp2_queue[SECONDARY_QUEUE_SIZE]; // storage allocation for secondary planner queue buffers
 
 /*
@@ -581,6 +591,8 @@ void mp_halt_runtime(void);
 void mp_set_planner_position(uint8_t axis, const float position);
 void mp_set_runtime_position(uint8_t axis, const float position);
 void mp_set_steps_to_runtime_position(void);
+stat_t mp_set_target_steps(const float target_steps[]) HOT_FUNC;
+stat_t mp_set_target_steps(const float target_steps[MOTORS], const float start_velocities[MOTORS], const float end_velocities[MOTORS], const float segment_time) HOT_FUNC;
 
 void mp_queue_command(void(*cm_exec)(float *, bool *), float *value, bool *flag);
 stat_t mp_runtime_command(mpBuf_t *bf);
@@ -600,11 +612,11 @@ bool mp_has_runnable_buffer(const mpPlanner_t *_mp);
 bool mp_is_phat_city_time(void);
 
 stat_t mp_planner_callback();
-void mp_replan_queue(mpBuf_t *bf);
-void mp_start_feed_override(const float ramp_time, const float override);
-void mp_end_feed_override(const float ramp_time);
-void mp_start_traverse_override(const float ramp_time, const float override);
-void mp_end_traverse_override(const float ramp_time);
+void mp_replan_queue(mpBuf_t *bf, bool back_too=false);
+// void mp_start_feed_override(const float ramp_time, const float override);
+// void mp_end_feed_override(const float ramp_time);
+// void mp_start_traverse_override(const float ramp_time, const float override);
+// void mp_end_traverse_override(const float ramp_time);
 void mp_planner_time_accounting(void);
 
 //**** planner buffer primitives
@@ -619,10 +631,10 @@ mpBuf_t * mp_get_r(void);
 #define mp_get_prev_buffer(b) ((mpBuf_t *)(b->pv))
 #define mp_get_next_buffer(b) ((mpBuf_t *)(b->nx))
 
-mpBuf_t * mp_get_write_buffer(void);
-void mp_commit_write_buffer(const blockType block_type);
-mpBuf_t * mp_get_run_buffer(void);
-bool mp_free_run_buffer(void);
+mpBuf_t * mp_get_write_buffer(void)  HOT_FUNC;
+void mp_commit_write_buffer(const blockType block_type)  HOT_FUNC;
+mpBuf_t * mp_get_run_buffer(void)  HOT_FUNC;
+bool mp_free_run_buffer(void)  HOT_FUNC;
 
 //**** plan_line.c functions
 void mp_zero_segment_velocity(void);                    // getters and setters...

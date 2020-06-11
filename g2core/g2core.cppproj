@@ -5,7 +5,7 @@
     <ProjectVersion>7.0</ProjectVersion>
     <ToolchainName>com.Atmel.ARMGCC.CPP</ToolchainName>
     <ProjectGuid>{44ea8fec-55d7-4149-8a78-a574fc26bf51}</ProjectGuid>
-    <avrdevice>ATSAM3X8C</avrdevice>
+    <avrdevice>ATSAM3X8E</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
     <Language>CPP</Language>
@@ -22,11 +22,12 @@
     <eraseonlaunchrule>1</eraseonlaunchrule>
     <AsfVersion>3.5.0</AsfVersion>
     <avrtoolinterface>SWD</avrtoolinterface>
-    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
+    <avrtool>
+    </avrtool>
     <com_atmel_avrdbg_tool_samice>
       <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
       <ToolName>J-Link</ToolName>
-      <ToolNumber>58003445</ToolNumber>
+      <ToolNumber>50107300</ToolNumber>
       <Channel>
         <host>127.0.0.1</host>
         <port>1063</port>
@@ -44,7 +45,7 @@
           <JtagDevicesAfter>0</JtagDevicesAfter>
           <JtagInstrBitsBefore>0</JtagInstrBitsBefore>
           <JtagInstrBitsAfter>0</JtagInstrBitsAfter>
-          <SwdClock>0</SwdClock>
+          <SwdClock>4000000</SwdClock>
         </InterfaceProperties>
       </ToolOptions>
     </com_atmel_avrdbg_tool_samice>
@@ -56,7 +57,7 @@
         <documentation help="" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.10.1" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.34.1" />
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
@@ -68,12 +69,12 @@
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>10000000</SwdClock>
+          <SwdClock>0</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800036434</ToolNumber>
+      <ToolNumber>J41800019454</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
     <UseGdb>True</UseGdb>
@@ -100,9 +101,9 @@
       <HWProgramCounterSampling>True</HWProgramCounterSampling>
     </PercepioTrace>
     <preserveEEPROM>true</preserveEEPROM>
-    <avrtoolserialnumber>J41800036434</avrtoolserialnumber>
+    <avrtoolserialnumber>50107300</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x284E0A60</avrdeviceexpectedsignature>
-    <avrtoolinterfaceclock>10000000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>4000000</avrtoolinterfaceclock>
     <custom>
       <ToolOptions xmlns="">
         <InterfaceProperties>
@@ -117,6 +118,8 @@
     <UseGdbCustomPath>False</UseGdbCustomPath>
     <GdbCustomPath>
     </GdbCustomPath>
+    <ResetRule>0</ResetRule>
+    <EraseKey />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'gShield' ">
     <ToolchainSettings>
@@ -1520,11 +1523,152 @@
     <ExternalMakeFilePath>Makefile</ExternalMakeFilePath>
     <OutputPath>bin\TestQuadratic\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'qQuintic on AxiDraw v3' ">
+    <ToolchainSettings>
+      <ArmGccCpp xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+        <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+        <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+        <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+        <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+        <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+        <armgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL\sam3xa\include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam3xa\include</Value>
+          </ListValues>
+        </armgcc.compiler.directories.IncludePaths>
+        <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
+        <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+        <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
+        <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+        <armgcccpp.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL\sam3xa\include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam3xa\include</Value>
+          </ListValues>
+        </armgcccpp.compiler.directories.IncludePaths>
+        <armgcccpp.compiler.optimization.level>Optimize (-O1)</armgcccpp.compiler.optimization.level>
+        <armgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>
+        <armgcccpp.compiler.optimization.DebugLevel>Maximum (-g3)</armgcccpp.compiler.optimization.DebugLevel>
+        <armgcccpp.compiler.warnings.AllWarnings>True</armgcccpp.compiler.warnings.AllWarnings>
+        <armgcccpp.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </armgcccpp.linker.libraries.Libraries>
+        <armgcccpp.linker.optimization.GarbageCollectUnusedSections>True</armgcccpp.linker.optimization.GarbageCollectUnusedSections>
+        <armgcccpp.linker.miscellaneous.LinkerFlags>-Tsam3x8c_flash.ld</armgcccpp.linker.miscellaneous.LinkerFlags>
+        <armgcccpp.assembler.debugging.DebugLevel>Default (-g)</armgcccpp.assembler.debugging.DebugLevel>
+        <armgcccpp.preprocessingassembler.general.IncludePaths>
+          <ListValues>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam3xa\include</Value>
+          </ListValues>
+        </armgcccpp.preprocessingassembler.general.IncludePaths>
+        <armgcccpp.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcccpp.preprocessingassembler.debugging.DebugLevel>
+      </ArmGccCpp>
+    </ToolchainSettings>
+    <UsesExternalMakeFile>True</UsesExternalMakeFile>
+    <OutputDirectory />
+    <BuildTarget>CONFIG=AxiDrawv3 BOARD=gquintic-b COLOR=0 VERBOSE=1</BuildTarget>
+    <CleanTarget>clean CONFIG=AxiDrawv3 BOARD=gquintic-b</CleanTarget>
+    <ExternalMakeFilePath>Makefile</ExternalMakeFilePath>
+    <OutputPath>bin\qQuintic on AxiDraw v3\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'gQuadratic on AxiDraw v3' ">
+    <ToolchainSettings>
+      <ArmGccCpp xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+        <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+        <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+        <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+        <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+        <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+        <armgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL\sam3xa\include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam3xa\include</Value>
+          </ListValues>
+        </armgcc.compiler.directories.IncludePaths>
+        <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
+        <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+        <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
+        <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+        <armgcccpp.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\ARMGCC\3.3.1.128\ARMSupportFiles\Device\ATMEL\sam3xa\include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam3xa\include</Value>
+          </ListValues>
+        </armgcccpp.compiler.directories.IncludePaths>
+        <armgcccpp.compiler.optimization.level>Optimize (-O1)</armgcccpp.compiler.optimization.level>
+        <armgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>
+        <armgcccpp.compiler.optimization.DebugLevel>Maximum (-g3)</armgcccpp.compiler.optimization.DebugLevel>
+        <armgcccpp.compiler.warnings.AllWarnings>True</armgcccpp.compiler.warnings.AllWarnings>
+        <armgcccpp.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </armgcccpp.linker.libraries.Libraries>
+        <armgcccpp.linker.optimization.GarbageCollectUnusedSections>True</armgcccpp.linker.optimization.GarbageCollectUnusedSections>
+        <armgcccpp.linker.miscellaneous.LinkerFlags>-Tsam3x8c_flash.ld</armgcccpp.linker.miscellaneous.LinkerFlags>
+        <armgcccpp.assembler.debugging.DebugLevel>Default (-g)</armgcccpp.assembler.debugging.DebugLevel>
+        <armgcccpp.preprocessingassembler.general.IncludePaths>
+          <ListValues>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL</Value>
+            <Value>C:\Program Files\Atmel\Atmel Toolchain\ARM GCC\Native\4.7.2.87\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam3xa\include</Value>
+          </ListValues>
+        </armgcccpp.preprocessingassembler.general.IncludePaths>
+        <armgcccpp.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcccpp.preprocessingassembler.debugging.DebugLevel>
+      </ArmGccCpp>
+    </ToolchainSettings>
+    <UsesExternalMakeFile>True</UsesExternalMakeFile>
+    <OutputDirectory />
+    <BuildTarget>CONFIG=AxiDrawv3 BOARD=gquadratic-b COLOR=0 VERBOSE=1</BuildTarget>
+    <CleanTarget>clean CONFIG=AxiDrawv3 BOARD=gquadratic-b</CleanTarget>
+    <ExternalMakeFilePath>Makefile</ExternalMakeFilePath>
+    <OutputPath>bin\gQuadratic on AxiDraw v3\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="alarm.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="board\Archim\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="board\Archim\Archim-pinout.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\Archim\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\Archim\board_gpio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\Archim\board_stepper.cpp">
@@ -1539,13 +1683,19 @@
     <Compile Include="board\Archim\board_xio.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\Archim\hardware.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="board\Archim\hardware.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\Archim\motate_pin_assignments.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\ArduinoDue\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\ArduinoDue\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\ArduinoDue\board_gpio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\ArduinoDue\board_stepper.cpp">
@@ -1563,9 +1713,6 @@
     <Compile Include="board\ArduinoDue\gShield-pinout.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\ArduinoDue\hardware.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="board\ArduinoDue\hardware.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1573,6 +1720,18 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\ArduinoDue\shopbotShield-pinout.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\g2v9\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\g2v9\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\g2v9\board_gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\g2v9\board_spi.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\g2v9\board_stepper.cpp">
@@ -1590,13 +1749,19 @@
     <Compile Include="board\g2v9\g2v9k-pinout.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\g2v9\hardware.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="board\g2v9\hardware.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\g2v9\motate_pin_assignments.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquadratic\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquadratic\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquadratic\board_gpio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\gquadratic\board_stepper.cpp">
@@ -1614,13 +1779,22 @@
     <Compile Include="board\gquadratic\gquadratic-b-pinout.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\gquadratic\hardware.cpp">
+    <Compile Include="board\gquadratic\gquadratic-c-pinout.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\gquadratic\hardware.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\gquadratic\motate_pin_assignments.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquintic\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquintic\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquintic\board_gpio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\gquintic\board_stepper.cpp">
@@ -1638,13 +1812,25 @@
     <Compile Include="board\gquintic\gquintic-b-pinout.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\gquintic\hardware.cpp">
+    <Compile Include="board\gquintic\gquintic-c-pinout.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\gquintic\gquintic-d-pinout.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\gquintic\hardware.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\gquintic\motate_pin_assignments.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\printrboardg2\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\printrboardg2\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\printrboardg2\board_gpio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\printrboardg2\board_stepper.cpp">
@@ -1659,9 +1845,6 @@
     <Compile Include="board\printrboardg2\board_xio.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\printrboardg2\hardware.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="board\printrboardg2\hardware.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1669,6 +1852,15 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\printrboardg2\printrboardG2v3-pinout.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\sbv300\0_hardware.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\sbv300\board_gpio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="board\sbv300\board_gpio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="board\sbv300\board_stepper.cpp">
@@ -1683,9 +1875,6 @@
     <Compile Include="board\sbv300\board_xio.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\sbv300\hardware.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="board\sbv300\hardware.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1698,16 +1887,67 @@
     <Compile Include="cycle_feedhold.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="device\bantam_safety_manager\bantam_safety_manager.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\bantam_safety_manager\bantam_safety_manager.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\esc_spindle\esc_spindle.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\i2c_as5601\i2c_as5601.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\i2c_eeprom\i2c_eeprom.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\i2c_multiplexer\i2c_multiplexer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\laser_toolhead\laser_toolhead.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\laser_toolhead\laser_toolhead.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\max31865\max31865.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="device\neopixel\neopixel.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="device\step_dir_driver\step_dir_driver.cpp">
+    <Compile Include="device\sd_card\diskio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\diskio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\ff.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\ff.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\ffconf.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\sd_card.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\sd_persistence.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\sd_persistence.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="device\sd_card\syscall.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="device\step_dir_driver\step_dir_driver.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="device\trinamic\tmc2130.cpp">
+    <Compile Include="device\step_dir_hobbyservo\step_dir_hobbyservo.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="device\trinamic\tmc2130.h">
@@ -1719,13 +1959,52 @@
     <Compile Include="g2core_info.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="gcode_parser.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="kinematics_cartesian.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="kinematics_four_cable.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="marlin_compatibility.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="marlin_compatibility.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="safety_manager.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="safety_manager.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_axidraw_v3.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_cheapo_laser.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_drosmm_v1.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_eggbot.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_ender.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_fourcable.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="settings\settings_makeblock.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_minimill.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_othermill_pro.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="settings\settings_printrbot_play.h">
@@ -1738,6 +2017,18 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="settings\settings_Printrbot_Simple_1608.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_shapeoko2dualY.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_shapeoko375_Dual.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_smw3d_r7.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_synthetos_pendulum_v2.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="settings\settings_ultimaker.h">
@@ -1890,6 +2181,15 @@
     <Compile Include="settings\settings_test.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="settings\settings_Ultimaker_2_Plus.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_watercolorbot_v2.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="settings\settings_xcarve_extended.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="settings\settings_zen7x12.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1940,7 +2240,16 @@
     <Folder Include="board\printrboardg2\" />
     <Folder Include="board\sbv300\" />
     <Folder Include="device\" />
+    <Folder Include="device\bantam_safety_manager\" />
+    <Folder Include="device\esc_spindle\" />
+    <Folder Include="device\i2c_as5601\" />
+    <Folder Include="device\i2c_eeprom\" />
+    <Folder Include="device\i2c_multiplexer\" />
+    <Folder Include="device\laser_toolhead\" />
+    <Folder Include="device\max31865\" />
     <Folder Include="device\neopixel" />
+    <Folder Include="device\sd_card" />
+    <Folder Include="device\step_dir_hobbyservo" />
     <Folder Include="device\step_dir_driver\" />
     <Folder Include="device\trinamic\" />
     <Folder Include="settings" />
@@ -1971,6 +2280,9 @@
       <SubType>compile</SubType>
     </None>
     <None Include="board\g2v9.mk">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="board\g2v9\bantam-checksum-flash.ld">
       <SubType>compile</SubType>
     </None>
     <None Include="board\g2_default.gdb">

@@ -2,7 +2,7 @@
  * pwm.h - pulse width modulation drivers
  * This file is part of the g2core project
  *
- * Copyright (c) 2012 - 2016 Alden S. Hart, Jr.
+ * Copyright (c) 2012 - 2018 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -27,7 +27,7 @@
 
 #ifndef PWM_H_ONCE
 #define PWM_H_ONCE
-
+#if 0
 typedef struct pwmConfigChannel {
     float frequency;                // base frequency for PWM driver, in Hz
     float cw_speed_lo;              // minimum clockwise spindle speed [0..N]
@@ -87,5 +87,5 @@ stat_t pwm_set_pwm(nvObj_t *nv);
     #define pwm_print_p1pof tx_print_stub
 
 #endif // __TEXT_MODE
-
+#endif // 0
 #endif    // End of include guard: PWM_H_ONCE

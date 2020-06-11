@@ -1,0 +1,198 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug CONFIG=fourcable (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/fourcable-gquintic-d/g2core.elf",
+      "device": "ATSAMS70N19",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sams70/ATSAMS70N19.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=fourcable"
+    },
+    {
+      "name": "Debug CONFIG=r7 (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/r7-gquintic-d/g2core.elf",
+      "device": "ATSAMS70N19",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sams70/ATSAMS70N19.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=r7 Debug"
+    },
+    {
+      "name": "Debug CONFIG=MiniMillgShield (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/MiniMillgShield-gShield/g2core.elf",
+      "device": "ATSAMS3X8E",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sam3x/ATSAM3X8E.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=MiniMillgShield Debug"
+    },
+    {
+      "name": "Debug CONFIG=ShapeokoDualY (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/ShapeokoDualY-g2v9k/g2core.elf",
+      "device": "ATSAM3X8E",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sam3x/ATSAM3X8E.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=ShapeokoDualY"
+    },
+    {
+      "name": "Debug CONFIG=MiniMillv9 (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/MiniMillv9-g2v9k/g2core.elf",
+      "device": "ATSAM3X8E",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sam3x/ATSAM3X8E.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=MiniMillv9 Debug"
+    },
+    {
+      "name": "Debug CONFIG=MiniMill (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/MiniMill-gquintic-d/g2core.elf",
+      "device": "ATSAMS70N19",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sams70/ATSAMS70N19.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=MiniMill Debug"
+    },
+    {
+      "name": "Debug CONFIG=MiniMill Quintic revG (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/MiniMill-gquintic-g/g2core.elf",
+      "device": "ATSAMS70N20",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sams70/ATSAMS70N20B.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=MiniMill Debug"
+    },
+    {
+      "name": "Debug CONFIG=CheapoLaser (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/CheapoLaser-gquintic-d/g2core.elf",
+      "device": "ATSAMS70N19",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sams70/ATSAMS70N19.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=CheapoLaser Debug"
+    },
+    {
+      "name": "Debug CONFIG=OthermillPro (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/OthermillPro-g2v9k/g2core.elf",
+      "device": "ATSAM3X8E",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sam3x/ATSAM3X8E.svd",
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=OthermillPro Debug"
+    },
+    {
+      "name": "Debug CONFIG=AxiDrawv3-quint (J-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+      "cwd": "${workspaceRoot}/g2core/",
+      "executable": "./bin/AxiDrawv3-quint-gquintic-d/g2core.elf",
+      "device": "ATSAMS70N19",
+      "svdFile": "${workspaceRoot}/Motate/MotateProject/motate/cmsis/TARGET_Atmel/sams70/ATSAMS70N19.svd",
+      "interface": "swd",
+      "showDevDebugOutput": false,
+      "osx": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/osx/gcc-arm-none-eabi-7u2/bin/"
+      },
+      "linux": {
+        "armToolchainPath": "${workspaceRoot}/Motate/Tools/linux/gcc-arm-none-eabi-9m/bin/"
+      },
+      "preLaunchTask": "Build CONFIG=AxiDrawv3-quint Debug"
+    }
+  ]
+}

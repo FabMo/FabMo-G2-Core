@@ -2,7 +2,7 @@
  * report.h - Status reports and other reporting functions
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2016 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -57,20 +57,28 @@ typedef enum {                      // planner queue enable and verbosity
     QR_TRIPLE                       // queue depth reported for buffers, buffers added, buffered removed
 } qrVerbosity;
 
-typedef struct srSingleton {
 
+struct status_report_item { // structure to hold the cached status report items, saving time for lookup
+    char group[GROUP_LEN + 1];
+    char token[TOKEN_LEN + 1];
+    index_t index;
+    // uint8_t flags;                      // operations flags - see defines below
+    int8_t precision;                   // decimal precision for display (JSON)
+    double value;
+    fptrCmd get;                        // GET binding aka uint8_t (*get)(nvObj_t *nv)
+};
+
+typedef struct srSingleton {
     /*** config values (PUBLIC) ***/
     srVerbosity status_report_verbosity;
     int32_t status_report_interval;                     // in milliseconds
 
     /*** runtime values (PRIVATE) ***/
     srVerbosity status_report_request;                  // flag that SR has been requested, and what type
-    uint32_t status_report_systick;                     // SysTick value for next status report
+    Motate::Timeout status_report_systick;                     // SysTick value for next status report
     index_t stat_index;                                 // table index value for stat - determined during initialization
     uint8_t throttle_counter;                           // slow down SRs when in a constrained time (not phat_city)
-    index_t status_report_list[NV_STATUS_REPORT_LEN];   // status report elements to report
-    float status_report_value[NV_STATUS_REPORT_LEN];    // previous values for filtered reporting
-
+    status_report_item status_report_list[NV_STATUS_REPORT_LEN];   // status report elements to report
 } srSingleton_t;
 
 typedef struct qrSingleton {        // data for queue reports

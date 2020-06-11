@@ -43,7 +43,7 @@
 #define SPINDLE_ENABLE_POLARITY     1                       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0                       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_DWELL_TIME          1.0
+#define SPINDLE_SPINUP_DELAY        1.0
 
 #define COOLANT_MIST_POLARITY       1                       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1                       // 0=active low, 1=active high
@@ -80,7 +80,7 @@
 #define GCODE_DEFAULT_PLANE         CANON_PLANE_XY          // CANON_PLANE_XY, CANON_PLANE_XZ, or CANON_PLANE_YZ
 #define GCODE_DEFAULT_COORD_SYSTEM  G54                     // G54, G55, G56, G57, G58 or G59
 #define GCODE_DEFAULT_PATH_CONTROL  PATH_CONTINUOUS
-#define GCODE_DEFAULT_DISTANCE_MODE ABSOLUTE_MODE
+#define GCODE_DEFAULT_DISTANCE_MODE ABSOLUTE_DISTANCE_MODE
 
 // *** motor settings ************************************************************************************
 

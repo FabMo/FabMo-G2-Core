@@ -38,10 +38,10 @@
 #include "MotateUSBCDC.h"
 
 #if USB_SERIAL_PORTS_EXPOSED == 1
-typedef Motate::USBDevice< Motate::USBCDC > XIOUSBDevice_t;
+typedef Motate::USBDevice< Motate::USBDeviceHardware, Motate::USBCDC > XIOUSBDevice_t;
 #endif
 #if USB_SERIAL_PORTS_EXPOSED == 2
-typedef Motate::USBDevice<Motate::USBCDC, Motate::USBCDC> XIOUSBDevice_t;
+typedef Motate::USBDevice< Motate::USBDeviceHardware, Motate::USBCDC, Motate::USBCDC > XIOUSBDevice_t;
 #endif
 
 extern XIOUSBDevice_t usb;
@@ -68,3 +68,4 @@ void board_hardware_init(void);  // called 1st
 void board_xio_init(void);       // called later
 
 #endif  // board_xio_h
+

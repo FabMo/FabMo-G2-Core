@@ -1,9 +1,9 @@
 /*
- * step_dir_driver.cpp - control over a Step/Direction/Enable stepper motor driver
- * This file is part of the G2 project
+ *  * gpio.h - SPI definitions for this board
+ * For: /board/g2v9
+ * This file is part of the g2core project
  *
- * Copyright (c) 2016 Alden S. Hart, Jr.
- * Copyright (c) 2016 Robert Giseburt
+ * Copyright (c) 2019 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -25,3 +25,18 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef BOARD_SPI_H_ONCE
+#define BOARD_SPI_H_ONCE
+
+#include "MotateSPI.h"
+#include "sd_card.h"
+
+/**** SPI Setup ****/
+typedef Motate::SPIBus<Motate::kSPI_MISOPinNumber, Motate::kSPI_MOSIPinNumber, Motate::kSPI_SCKPinNumber> SPIBus_used_t;
+extern SPIBus_used_t spiBus;
+
+typedef SDCard<SPIBus_used_t::SPIBusDevice, Motate::SPIChipSelectPin<Motate::kSD_ChipSelectPinNumber>> SDCard_used_t;
+extern SDCard_used_t sd_card;
+
+#endif // BOARD_SPI_H_ONCE

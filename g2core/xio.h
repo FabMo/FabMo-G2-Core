@@ -2,8 +2,8 @@
  * xio.h - extended IO functions
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2017 Alden S. Hart Jr.
- * Copyright (c) 2013 - 2017 Robert Giseburt
+ * Copyright (c) 2013 - 2018 Alden S. Hart Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -124,6 +124,7 @@ void xio_flush_to_command();
 #if MARLIN_COMPAT_ENABLED == true
 void xio_exit_fake_bootloader();
 #endif
+void xio_flush_device(devflags_t &flags);
 
 stat_t xio_set_spi(nvObj_t *nv);
 

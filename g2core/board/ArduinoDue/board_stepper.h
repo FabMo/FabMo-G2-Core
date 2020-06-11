@@ -3,8 +3,8 @@
  * For: /board/ArduinoDue
  * This file is part of the g2core project
  *
- * Copyright (c) 2016 Alden S. Hart, Jr.
- * Copyright (c) 2016 Robert Giseburt
+ * Copyright (c) 2016 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2016 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -86,7 +86,14 @@ extern StepDirStepper<Motate::kSocket4_StepPinNumber,
 //    Motate::kSocket6_Microstep_2PinNumber,
 //    Motate::kSocket6_VrefPinNumber> motor_6 {};
 
-extern Stepper* Motors[MOTORS];
+#if HAS_LASER
+#include "laser_toolhead.h"
+#include "kinematics_cartesian.h"
+typedef LaserTool<BASE_KINEMATICS, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
+extern LaserTool_used_t &motor_5;
+#endif
+
+extern Stepper* const Motors[MOTORS];
 
 void board_stepper_init();
 

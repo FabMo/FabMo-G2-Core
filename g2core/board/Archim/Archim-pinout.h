@@ -3,8 +3,8 @@
  * For: /board/Archim
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2016 Robert Giseburt
- * Copyright (c) 2013 - 2016 Alden S. Hart Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
+ * Copyright (c) 2013 - 2018 Alden S. Hart Jr.
  *
  * This file is part of the Motate Library.
  *
@@ -49,11 +49,6 @@
 #define INPUT11_AVAILABLE 1
 #define INPUT12_AVAILABLE 1
 #define INPUT13_AVAILABLE 0
-
-#define ADC0_AVAILABLE 0
-#define ADC1_AVAILABLE 0
-#define ADC2_AVAILABLE 0
-#define ADC3_AVAILABLE 0
 
 #define XIO_HAS_USB 1
 #define XIO_HAS_UART 1
@@ -224,21 +219,21 @@ pin_number kOutput14_PinNumber = -1;  // 143;
 pin_number kOutput15_PinNumber = -1;  // 144;
 pin_number kOutput16_PinNumber = -1;  // 145;
 
-pin_number kADC0_PinNumber  = 11;  // Heated bed thermistor ADC
-pin_number kADC1_PinNumber  = 10;  // Extruder1_ADC
-pin_number kADC2_PinNumber  = 8;   // Extruder2_ADC
-pin_number kADC3_PinNumber  = -1;  // 153;
-pin_number kADC4_PinNumber  = -1;  // 154;
-pin_number kADC5_PinNumber  = -1;  // 155;
-pin_number kADC6_PinNumber  = -1;  // 156;
-pin_number kADC7_PinNumber  = -1;  // 157;
-pin_number kADC8_PinNumber  = -1;  // 158;
-pin_number kADC9_PinNumber  = -1;  // 159;
-pin_number kADC10_PinNumber = -1;  // 160;
-pin_number kADC11_PinNumber = -1;  // 161;
-pin_number kADC12_PinNumber = -1;  // 162;
-pin_number kADC13_PinNumber = -1;  // Not physially pinned out
+pin_number kADC1_PinNumber  = 11;  // Heated bed thermistor ADC
+pin_number kADC2_PinNumber  = 10;  // Extruder1_ADC
+pin_number kADC3_PinNumber  =  8;  // Extruder2_ADC
+pin_number kADC4_PinNumber  = -1;  // 153;
+pin_number kADC5_PinNumber  = -1;  // 154;
+pin_number kADC6_PinNumber  = -1;  // 155;
+pin_number kADC7_PinNumber  = -1;  // 156;
+pin_number kADC8_PinNumber  = -1;  // 157;
+pin_number kADC9_PinNumber  = -1;  // 158;
+pin_number kADC10_PinNumber = -1;  // 159;
+pin_number kADC11_PinNumber = -1;  // 160;
+pin_number kADC12_PinNumber = -1;  // 161;
+pin_number kADC13_PinNumber = -1;  // 162;
 pin_number kADC14_PinNumber = -1;  // Not physially pinned out
+pin_number kADC15_PinNumber = -1;  // Not physially pinned out
 
 
 // GRBL / gShield compatibility pins -- Due board ONLY

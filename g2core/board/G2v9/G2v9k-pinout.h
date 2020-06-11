@@ -3,8 +3,8 @@
  * For: /board/g2v9
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2017 Robert Giseburt
- * Copyright (c) 2013 - 2017 Alden S. Hart Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
+ * Copyright (c) 2013 - 2018 Alden S. Hart Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -82,11 +82,6 @@
 #define INPUT12_AVAILABLE 0
 #define INPUT13_AVAILABLE 0
 
-#define ADC0_AVAILABLE 1
-#define ADC1_AVAILABLE 1
-#define ADC2_AVAILABLE 0
-#define ADC3_AVAILABLE 0
-
 #define XIO_HAS_USB 1
 #define XIO_HAS_UART 0
 #define XIO_HAS_SPI 0
@@ -98,9 +93,9 @@
 // So we have to explicitly enable them as PWM pins.
 // Generated with:
 // perl -e 'for($i=1;$i<14;$i++) { print "#define OUTPUT${i}_PWM 0\n";}'
-#define OUTPUT1_PWM 0
+#define OUTPUT1_PWM 1
 #define OUTPUT2_PWM 0
-#define OUTPUT3_PWM 0
+#define OUTPUT3_PWM 1
 #define OUTPUT4_PWM 0
 #define OUTPUT5_PWM 0
 #define OUTPUT6_PWM 0
@@ -116,14 +111,14 @@ namespace Motate {
 
 // Pin name and function
 _MAKE_MOTATE_PIN(kUnassigned1, 'A', 0);                       // unassigned and disconnected
-_MAKE_MOTATE_PIN(kCoolant_EnablePinNumber, 'A', 1);           // Coolant_EnablePinNumber
+_MAKE_MOTATE_PIN(kOutput4_PinNumber, 'A', 1);                 // Coolant_EnablePinNumber
 _MAKE_MOTATE_PIN(kSocket4_VrefPinNumber, 'A', 2);             // Socket4_VrefPinNumber
 _MAKE_MOTATE_PIN(kSocket5_VrefPinNumber, 'A', 3);             // Socket5_VrefPinNumber
 _MAKE_MOTATE_PIN(kSocket2_Microstep_2PinNumber, 'A', 4);      // Socket2_Microstep_2PinNumber
-_MAKE_MOTATE_PIN(kSpindle_EnablePinNumber, 'A', 5);           // Spindle_EnablePinNumber
+_MAKE_MOTATE_PIN(kOutput1_PinNumber , 'A', 5);                // Spindle_EnablePinNumber
 _MAKE_MOTATE_PIN(kSocket1_DirPinNumber, 'A', 6);              // Socket1_DirPinNumber
-_MAKE_MOTATE_PIN(kSpindle_DirPinNumber, 'A', 7);              // Spindle_DirPinNumber
-_MAKE_MOTATE_PIN(kSpindle_PwmPinNumber, 'A', 8);              // Spindle_PwmPinNumber
+_MAKE_MOTATE_PIN(kOutput2_PinNumber, 'A', 7);                 // Spindle_DirPinNumber
+_MAKE_MOTATE_PIN(kOutput3_PinNumber, 'A', 8);                 // Spindle_PwmPinNumber
 _MAKE_MOTATE_PIN(kInput2_PinNumber, 'A', 9);                  // XAxis_MaxPinNumber
 _MAKE_MOTATE_PIN(kInput3_PinNumber, 'A', 10);                 // YAxis_MinPinNumber
 _MAKE_MOTATE_PIN(kInput4_PinNumber, 'A', 11);                 // YAxis_MaxPinNumber
@@ -132,7 +127,7 @@ _MAKE_MOTATE_PIN(kInput6_PinNumber, 'A', 13);                 // ZAxis_MaxPinNum
 _MAKE_MOTATE_PIN(kInput7_PinNumber, 'A', 14);                 // AAxis_MinPinNumber
 _MAKE_MOTATE_PIN(kInput8_PinNumber, 'A', 15);                 // AAxis_MaxPinNumber
 _MAKE_MOTATE_PIN(kSocket1_Microstep_1PinNumber, 'A', 16);     // Socket1_Microstep_1PinNumber
-_MAKE_MOTATE_PIN(kSD_ChipSelectPinNumber, 'A', 17);           // Interlock_In
+_MAKE_MOTATE_PIN(kInput9_PinNumber, 'A', 17);                 // Interlock_In
 _MAKE_MOTATE_PIN(kLED_USBRXPinNumber, 'A', 18);               // LED_USBRXPinNumber
 _MAKE_MOTATE_PIN(kLED_USBTXPinNumber, 'A', 19);               // LED_USBTXPinNumber
 _MAKE_MOTATE_PIN(kUnassigned2, 'A', 20);                      // unassigned and disconnected
@@ -143,7 +138,7 @@ _MAKE_MOTATE_PIN(kSocket1_Microstep_0PinNumber, 'A', 24);     // Socket1_Microst
 _MAKE_MOTATE_PIN(kSPI0_MISOPinNumber, 'A', 25);               // SPI0_MISOPinNumber
 _MAKE_MOTATE_PIN(kSPI0_MOSIPinNumber, 'A', 26);               // SPI0_MOSIPinNumber
 _MAKE_MOTATE_PIN(kSPI0_SCKPinNumber, 'A', 27);                // SPI0_SCKPinNumber
-_MAKE_MOTATE_PIN(kSocket1_SPISlaveSelectPinNumber, 'A', 28);  // Socket1_SPISlaveSelectPinNumber
+_MAKE_MOTATE_PIN(kSD_ChipSelectPinNumber, 'A', 28);           // SD_ChipSelectPinNumber
 _MAKE_MOTATE_PIN(kSocket2_Microstep_0PinNumber, 'A', 29);     // Socket2_Microstep_0PinNumber
 
 _MAKE_MOTATE_PIN(kSocket2_StepPinNumber, 'B', 0);             // Socket2_StepPinNumber
@@ -166,10 +161,10 @@ _MAKE_MOTATE_PIN(kSocket1_Microstep_2PinNumber, 'B', 16);     // Socket1_Microst
 _MAKE_MOTATE_PIN(kSocket1_VrefPinNumber, 'B', 17);            // Socket1_VrefPinNumber
 _MAKE_MOTATE_PIN(kSocket2_VrefPinNumber, 'B', 18);            // Socket2_VrefPinNumber
 _MAKE_MOTATE_PIN(kSocket3_VrefPinNumber, 'B', 19);            // Socket3_VrefPinNumber
-_MAKE_MOTATE_PIN(kADC0_PinNumber, 'B', 20);                   // Socket2_SPISlaveSelectPinNumber
-_MAKE_MOTATE_PIN(kADC1_PinNumber, 'B', 21);                   // Socket3_SPISlaveSelectPinNumber
+_MAKE_MOTATE_PIN(kSocket1_SPISlaveSelectPinNumber, 'B', 20);  // Socket1_SPISlaveSelectPinNumber - CS1
+_MAKE_MOTATE_PIN(kSocket2_SPISlaveSelectPinNumber, 'B', 21);  // Socket2_SPISlaveSelectPinNumber - CS2
 _MAKE_MOTATE_PIN(kSocket4_EnablePinNumber, 'B', 22);          // Socket4_EnablePinNumber
-_MAKE_MOTATE_PIN(kSocket4_SPISlaveSelectPinNumber, 'B', 23);  // Socket4_SPISlaveSelectPinNumber
+_MAKE_MOTATE_PIN(kSocket3_SPISlaveSelectPinNumber, 'B', 23);  // Socket3_SPISlaveSelectPinNumber - no exposed
 _MAKE_MOTATE_PIN(kSocket4_DirPinNumber, 'B', 24);             // Socket4_DirPinNumber
 _MAKE_MOTATE_PIN(kUnassigned5, 'B', 25);                      // unassigned and disconnected
 _MAKE_MOTATE_PIN(kInput1_PinNumber, 'B', 26);                 // XAxis_MinPinNumber

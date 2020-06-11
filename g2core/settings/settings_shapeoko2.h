@@ -2,7 +2,7 @@
  * settings_shapeoko2.h - Shapeoko2 500mm table
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2016 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -46,7 +46,8 @@
 #define SPINDLE_ENABLE_POLARITY     1                       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0                       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_DWELL_TIME          1.0
+#define SPINDLE_SPINUP_DELAY        1.0
+#define SPINDLE_SPEED_CHANGE_PER_MS 7.0
 
 #define COOLANT_MIST_POLARITY       1                       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1                       // 0=active low, 1=active high
@@ -54,7 +55,7 @@
 
 // Communications and reporting settings
 
-#define USB_SERIAL_PORTS_EXPOSED	2						// 1=single endpoint usb, 2=dual endpoint usb
+#define USB_SERIAL_PORTS_EXPOSED	1						// 1=single endpoint usb, 2=dual endpoint usb
 #define COMM_MODE                   JSON_MODE               // one of: TEXT_MODE, JSON_MODE
 #define XIO_ENABLE_FLOW_CONTROL FLOW_CONTROL_RTS            // FLOW_CONTROL_OFF, FLOW_CONTROL_RTS
 
@@ -86,7 +87,7 @@
 #define MOTOR_POWER_MODE            MOTOR_POWERED_IN_CYCLE  // default motor power mode (see cmMotorPowerMode in stepper.h)
 #define MOTOR_POWER_TIMEOUT         2.00                    // motor power timeout in seconds
 
-#define M1_MOTOR_MAP                AXIS_X                  // 1ma
+#define M1_MOTOR_MAP                AXIS_X_EXTERNAL         // 1ma
 #define M1_STEP_ANGLE               1.8                     // 1sa
 #define M1_TRAVEL_PER_REV           40.00                   // 1tr
 #define M1_MICROSTEPS               8                       // 1mi  1,2,4,8,16,32
@@ -94,7 +95,7 @@
 #define M1_POWER_MODE               MOTOR_POWER_MODE        // 1pm  TRUE=low power idle enabled
 #define M1_POWER_LEVEL              0.500
 
-#define M2_MOTOR_MAP                AXIS_Y
+#define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
 #define M2_TRAVEL_PER_REV           40.00
 #define M2_MICROSTEPS               8
@@ -102,7 +103,7 @@
 #define M2_POWER_MODE               MOTOR_POWER_MODE
 #define M2_POWER_LEVEL              0.500
 
-#define M3_MOTOR_MAP                AXIS_Z
+#define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
 #define M3_TRAVEL_PER_REV           1.25
 #define M3_MICROSTEPS               8
@@ -156,70 +157,86 @@
 #define Z_LATCH_BACKOFF             4
 #define Z_ZERO_BACKOFF              2
 
-//*** Input / output settings ***
-/*
-    IO_MODE_DISABLED
+/* Legend of valid options:
+
+INPUTS
+---------------------
+  DIn_ENABLED
+    IO_UNAVAILABLE   // input/output is missing/used/unavailable
+    IO_DISABLED      // input/output is disabled
+    IO_ENABLED       // input/output enabled
+
+  DIn_POLARITY:
     IO_ACTIVE_LOW    aka NORMALLY_OPEN
     IO_ACTIVE_HIGH   aka NORMALLY_CLOSED
 
+  DIn_ACTION:
     INPUT_ACTION_NONE
-    INPUT_ACTION_STOP
-    INPUT_ACTION_FAST_STOP
-    INPUT_ACTION_HALT
-    INPUT_ACTION_RESET
+    INPUT_ACTION_STOP        - stop at normal jerk - preserves positional accuracy
+    INPUT_ACTION_FAST_STOP   - stop at high jerk - preserves positional accuracy
+    INPUT_ACTION_HALT        - stop immediately - not guaranteed to preserve position
+    INPUT_ACTION_CYCLE_START - start / restart cycle after feedhold (RESERVED)
+    INPUT_ACTION_ALARM       - initiate an alarm. stops everything immediately - preserves position
+    INPUT_ACTION_SHUTDOWN    - initiate a shutdown. stops everything immediately - does not preserve position
+    INPUT_ACTION_PANIC       - initiate a panic. stops everything immediately - does not preserve position
+    INPUT_ACTION_RESET       - reset system
 
-    INPUT_FUNCTION_NONE
-    INPUT_FUNCTION_LIMIT
-    INPUT_FUNCTION_INTERLOCK
-    INPUT_FUNCTION_SHUTDOWN
-    INPUT_FUNCTION_PANIC
+    INPUT_ACTION_LIMIT       - limit switch processing
+    INPUT_ACTION_INTERLOCK   - interlock processing
+
+OUTPUTS
+---------------------
+  DOn_ENABLED
+    IO_UNAVAILABLE   // input/output is missing/used/unavailable
+    IO_DISABLED      // input/output is disabled
+    IO_ENABLED       // input/output enabled
+
+  DOn_POLARITY:
+    IO_ACTIVE_LOW    aka NORMALLY_OPEN
+    IO_ACTIVE_HIGH   aka NORMALLY_CLOSED
+
 */
-// Xmin on v9 board
-#define DI1_MODE                    NORMALLY_CLOSED
+#define DI1_ENABLED                 IO_ENABLED
+#define DI1_POLARITY                NORMALLY_CLOSED
 //#define DI1_ACTION                  INPUT_ACTION_STOP
-#define DI1_ACTION                  INPUT_ACTION_NONE
-#define DI1_FUNCTION                INPUT_FUNCTION_LIMIT
+#define DI1_ACTION                  INPUT_ACTION_LIMIT
 
-// Xmax
-#define DI2_MODE                    NORMALLY_CLOSED
+#define DI2_ENABLED                 IO_ENABLED
+#define DI2_POLARITY                NORMALLY_CLOSED
 //#define DI2_ACTION                  INPUT_ACTION_STOP
-#define DI2_ACTION                  INPUT_ACTION_NONE
-#define DI2_FUNCTION                INPUT_FUNCTION_LIMIT
+#define DI2_ACTION                  INPUT_ACTION_LIMIT
 
-// Ymin
-#define DI3_MODE                    NORMALLY_CLOSED
+#define DI3_ENABLED                 IO_ENABLED
+#define DI3_POLARITY                NORMALLY_CLOSED
 //#define DI3_ACTION                  INPUT_ACTION_STOP
-#define DI3_ACTION                  INPUT_ACTION_NONE
-#define DI3_FUNCTION                INPUT_FUNCTION_LIMIT
+#define DI3_ACTION                  INPUT_ACTION_LIMIT
 
-// Ymax
-#define DI4_MODE                    NORMALLY_CLOSED
+#define DI4_ENABLED                 IO_ENABLED
+#define DI4_POLARITY                NORMALLY_CLOSED
 //#define DI4_ACTION                  INPUT_ACTION_STOP
-#define DI4_ACTION                  INPUT_ACTION_NONE
-#define DI4_FUNCTION                INPUT_FUNCTION_LIMIT
+#define DI4_ACTION                  INPUT_ACTION_LIMIT
 
-// Zmin
-#define DI5_MODE                    IO_ACTIVE_HIGH   // Z probe
+#define DI5_ENABLED                 IO_ENABLED
+#define DI5_POLARITY                IO_ACTIVE_HIGH   // Z probe
 #define DI5_ACTION                  INPUT_ACTION_NONE
-#define DI5_FUNCTION                INPUT_FUNCTION_NONE
 
-// Zmax
-#define DI6_MODE                    NORMALLY_CLOSED
+#define DI6_ENABLED                 IO_ENABLED
+#define DI6_POLARITY                NORMALLY_CLOSED
 //#define DI6_ACTION                  INPUT_ACTION_STOP
-#define DI6_ACTION                  INPUT_ACTION_NONE
-#define DI6_FUNCTION                INPUT_FUNCTION_LIMIT
+#define DI6_ACTION                  INPUT_ACTION_LIMIT
 
-// Amin
-#define DI7_MODE                    IO_MODE_DISABLED
+#define DI7_ENABLED                 IO_DISABLED
+#define DI7_POLARITY                IO_ACTIVE_LOW
 #define DI7_ACTION                  INPUT_ACTION_NONE
-#define DI7_FUNCTION                INPUT_FUNCTION_NONE
 
-// Amax
-#define DI8_MODE                    IO_MODE_DISABLED
+#define DI8_ENABLED                 IO_DISABLED
+#define DI8_POLARITY                IO_ACTIVE_LOW
 #define DI8_ACTION                  INPUT_ACTION_NONE
-#define DI8_FUNCTION                INPUT_FUNCTION_NONE
 
-// Hardware interlock input
-#define DI9_MODE                    IO_MODE_DISABLED
+#define DI9_ENABLED                 IO_DISABLED
+#define DI9_POLARITY                IO_ACTIVE_LOW
 #define DI9_ACTION                  INPUT_ACTION_NONE
-#define DI9_FUNCTION                INPUT_FUNCTION_NONE
+
+#define DI10_ENABLED                 IO_DISABLED
+#define DI10_POLARITY                IO_ACTIVE_LOW
+#define DI10_ACTION                  INPUT_ACTION_NONE

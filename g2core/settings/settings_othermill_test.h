@@ -42,7 +42,7 @@
 #define SPINDLE_ENABLE_POLARITY     1       // 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_DWELL_TIME          1.5     // after unpausing and turning the spindle on, dwell for 1.5s
+#define SPINDLE_SPINUP_DELAY        1.5     // after unpausing and turning the spindle on, dwell for 1.5s
 
 #define ESC_BOOT_TIME               5000    // how long the ESC takes to boot, in milliseconds
 #define ESC_LOCKOUT_TIME            900     // how long the interlock needs to be engaged before killing power... actually 1s, but be conservative
@@ -94,18 +94,18 @@
 #define MOTOR_POWER_LEVEL_DISABLED  0.05
 
 #define MOTOR_POWER_MODE            MOTOR_POWERED_IN_CYCLE
-#define MOTOR_POWER_TIMEOUT         2.00                // motor power timeout in seconds
+#define MOTOR_POWER_TIMEOUT         2.00                    // motor power timeout in seconds
 
-#define M1_MOTOR_MAP                AXIS_X              // 1ma
-#define M1_STEP_ANGLE               1.8                 // 1sa
-#define M1_TRAVEL_PER_REV           4.8768              // 1tr
-#define M1_MICROSTEPS               8                   // 1mi  1,2,4,8,16,32
-#define M1_POLARITY                 1                   // 1po  0=normal, 1=reversed
-#define M1_POWER_MODE               MOTOR_POWER_MODE    // 1pm  See enum cmMotorPowerMode in stepper.h
-#define M1_POWER_LEVEL              MOTOR_POWER_LEVEL_XY  // 0.00=off, 1.00=max
+#define M1_MOTOR_MAP                AXIS_X_EXTERNAL         // 1ma
+#define M1_STEP_ANGLE               1.8                     // 1sa
+#define M1_TRAVEL_PER_REV           4.8768                  // 1tr
+#define M1_MICROSTEPS               8                       // 1mi  1,2,4,8,16,32
+#define M1_POLARITY                 1                       // 1po  0=normal, 1=reversed
+#define M1_POWER_MODE               MOTOR_POWER_MODE        // 1pm  See enum cmMotorPowerMode in stepper.h
+#define M1_POWER_LEVEL              MOTOR_POWER_LEVEL_XY    // 0.00=off, 1.00=max
 #define M1_POWER_LEVEL_IDLE         MOTOR_POWER_LEVEL_XY_IDLE
 
-#define M2_MOTOR_MAP                AXIS_Y
+#define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
 #define M2_TRAVEL_PER_REV           4.8768
 #define M2_MICROSTEPS               8
@@ -114,7 +114,7 @@
 #define M2_POWER_LEVEL              MOTOR_POWER_LEVEL_XY
 #define M2_POWER_LEVEL_IDLE         MOTOR_POWER_LEVEL_XY_IDLE
 
-#define M3_MOTOR_MAP                AXIS_Z
+#define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
 #define M3_TRAVEL_PER_REV           4.8768
 #define M3_MICROSTEPS               8
@@ -123,7 +123,7 @@
 #define M3_POWER_LEVEL              MOTOR_POWER_LEVEL_Z
 #define M3_POWER_LEVEL_IDLE         MOTOR_POWER_LEVEL_Z_IDLE
 
-#define M4_MOTOR_MAP                AXIS_A
+#define M4_MOTOR_MAP                AXIS_A_EXTERNAL
 #define M4_STEP_ANGLE               1.8
 #define M4_TRAVEL_PER_REV           360  // degrees moved per motor rev
 #define M4_MICROSTEPS               8
@@ -132,7 +132,7 @@
 #define M4_POWER_LEVEL              MOTOR_POWER_LEVEL_DISABLED
 #define M4_POWER_LEVEL_IDLE         MOTOR_POWER_LEVEL_DISABLED
 
-#define M5_MOTOR_MAP                AXIS_B
+#define M5_MOTOR_MAP                AXIS_B_EXTERNAL
 #define M5_STEP_ANGLE               1.8
 #define M5_TRAVEL_PER_REV           360  // degrees moved per motor rev
 #define M5_MICROSTEPS               8
@@ -141,7 +141,7 @@
 #define M5_POWER_LEVEL              MOTOR_POWER_LEVEL_DISABLED
 #define M5_POWER_LEVEL_IDLE         MOTOR_POWER_LEVEL_DISABLED
 
-#define M6_MOTOR_MAP                AXIS_C
+#define M6_MOTOR_MAP                AXIS_C_EXTERNAL
 #define M6_STEP_ANGLE               1.8
 #define M6_TRAVEL_PER_REV           360  // degrees moved per motor rev
 #define M6_MICROSTEPS               8
@@ -269,7 +269,7 @@
 */
 
 // Xmin on v9 board                 // X homing - see X axis setup
-#define DI1_MODE                    NORMALLY_CLOSED
+#define DI1_MODE                    IO_ACTIVE_HIGH      // Normally CLosed
 #define DI1_ACTION                  INPUT_ACTION_NONE
 #define DI1_FUNCTION                INPUT_FUNCTION_NONE
 
@@ -279,22 +279,22 @@
 #define DI2_FUNCTION                INPUT_FUNCTION_SHUTDOWN
 
 // Ymin                             // Y homing - see Y axis setup
-#define DI3_MODE                    NORMALLY_CLOSED
+#define DI3_MODE                    IO_ACTIVE_HIGH
 #define DI3_ACTION                  INPUT_ACTION_NONE
 #define DI3_FUNCTION                INPUT_FUNCTION_NONE
 
 // Ymax                             // Safety interlock
 #define DI4_MODE                    IO_ACTIVE_HIGH
-#define DI4_ACTION                  INPUT_ACTION_NONE  // (hold is performed by Interlock function)
+#define DI4_ACTION                  INPUT_ACTION_NONE   // (hold is performed by Interlock function)
 #define DI4_FUNCTION                INPUT_FUNCTION_INTERLOCK
 
 // Zmin                             // Z probe
-#define DI5_MODE                    IO_ACTIVE_LOW
+#define DI5_MODE                    IO_ACTIVE_LOW       // Normally Open
 #define DI5_ACTION                  INPUT_ACTION_NONE
 #define DI5_FUNCTION                INPUT_FUNCTION_PROBE
 
 // Zmax                             // Z homing - see Z axis for setup
-#define DI6_MODE                    NORMALLY_CLOSED
+#define DI6_MODE                    IO_ACTIVE_HIGH
 #define DI6_ACTION                  INPUT_ACTION_NONE
 #define DI6_FUNCTION                INPUT_FUNCTION_NONE
 

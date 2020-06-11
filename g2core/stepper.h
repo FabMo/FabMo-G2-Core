@@ -2,8 +2,8 @@
  * stepper.h - stepper motor interface
  * This file is part of g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2013 - 2017 Robert Giseburt
+ * Copyright (c) 2010 - 2019 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2019 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -245,52 +245,44 @@
  *  degrees of phase angle results in a step being generated.
  */
 
-// These includes must be BEFORE the STEPPER_H_ONCE is defined
-#include "g2core.h"
-#include "report.h"
-#include "board_stepper.h"  // include board specific stuff, in particular the Stepper objects
-
-// NOW we can do this:
 #ifndef STEPPER_H_ONCE
 #define STEPPER_H_ONCE
 
+#include "g2core.h"
+#include "report.h"
+
+#include "MotateUtilities.h" // for HOT_DATA and HOT_FUNC
+
 #include "planner.h"    // planner.h must precede stepper.h for moveType typedef
+
+#include "gpio.h" // for ioPolarity
+
+// Note: "board_stepper.h" is inlcluded at the end of this file
 
 /*********************************
  * Stepper configs and constants *
  *********************************/
 //See hardware.h for platform specific stepper definitions
 
-typedef enum {
+enum prepBufferState {
     PREP_BUFFER_OWNED_BY_LOADER = 0,    // staging buffer is ready for load
     PREP_BUFFER_OWNED_BY_EXEC           // staging buffer is being loaded
-} prepBufferState;
+};
 
-typedef enum {                          // used w/start and stop flags to sequence motor power
-    MOTOR_OFF = 0,                      // motor is stopped and deenergized
-    MOTOR_IDLE,                         // motor is stopped and may be partially energized for torque maintenance
-    MOTOR_RUNNING,                      // motor is running (and fully energized)
-    MOTOR_POWER_TIMEOUT_START,          // transitional state to start power-down timeout
-    MOTOR_POWER_TIMEOUT_COUNTDOWN       // count down the time to de-energizing motor
-} stPowerState;
-
-typedef enum {
+enum stPowerMode {
     MOTOR_DISABLED = 0,                 // motor enable is deactivated
     MOTOR_ALWAYS_POWERED,               // motor is always powered while machine is ON
     MOTOR_POWERED_IN_CYCLE,             // motor fully powered during cycles, de-powered out of cycle
-    MOTOR_POWERED_ONLY_WHEN_MOVING      // motor only powered while moving - idles shortly after it's stopped - even in cycle
-} stPowerMode;
-#define MOTOR_POWER_MODE_MAX_VALUE    MOTOR_POWERED_ONLY_WHEN_MOVING
-
-// Stepper power management settings
-#define Vcc         3.3                 // volts
-#define MaxVref    2.25                 // max vref for driver circuit. Our ckt is 2.25 volts
-#define POWER_LEVEL_SCALE_FACTOR ((MaxVref/Vcc)) // scale power level setting for voltage range
+    MOTOR_POWERED_ONLY_WHEN_MOVING,     // motor only powered while moving - idles shortly after it's stopped - even in cycle
+    MOTOR_POWER_REDUCED_WHEN_IDLE       // enable Vref current reduction for idle
+};
+#define MOTOR_POWER_MODE_MAX_VALUE    MOTOR_POWER_REDUCED_WHEN_IDLE
 
 // Min/Max timeouts allowed for motor disable. Allow for inertial stop; must be non-zero
 #define MOTOR_TIMEOUT_SECONDS_MIN   (float)0.1      // seconds !!! SHOULD NEVER BE ZERO !!!
 #define MOTOR_TIMEOUT_SECONDS_MAX   (float)4294967  // (4294967295/1000) -- for conversion to uint32_t
                                                     // 1 dog year (7 weeks)
+
 // Step generation constants
 #define STEP_INITIAL_DIRECTION        DIRECTION_CW
 
@@ -314,7 +306,7 @@ typedef enum {
  *  The ARM is roughly the same as the DDA clock rate is 4x higher but the segment time is ~1/5
  *  Decreasing the nominal segment time increases the number precision.
  */
-#define DDA_SUBSTEPS ((MAX_LONG * 0.90) / (FREQUENCY_DDA * (NOM_SEGMENT_TIME * 60)))
+#define DDA_SUBSTEPS (INT64_MAX-100)
 
 /* Step correction settings
  *
@@ -336,7 +328,7 @@ typedef enum {
  *  There are 5 main structures involved in stepper operations;
  *
  *  data structure:                   found in:      runs primarily at:
- *    mpBuffer planning buffers (bf)    planner.c       main loop
+ *    mpBuf_t planning buffers (bf)    planner.c       main loop
  *    mrRuntimeSingleton (mr)           planner.c      MED ISR
  *    stConfig (st_cfg)                 stepper.c      write=bkgd, read=ISRs
  *    stPrepSingleton (st_pre)          stepper.c      MED ISR
@@ -351,17 +343,15 @@ typedef enum {
 
 typedef struct cfgMotor {                   // per-motor configs
     // public
-    uint8_t motor_map;                      // map motor to axis
-    uint8_t microsteps;                     // microsteps to apply for each axis (ex: 8)
-    uint8_t polarity;                       // 0=normal polarity, 1=reverse motor direction
-    float power_level;                      // set 0.000 to 1.000 for PMW vref setting
+    uint8_t  motor_map;                     // map motor to axis
+    uint32_t microsteps;                    // microsteps to apply for each axis (ex: 8)
+    uint8_t  polarity;                      // 0=normal polarity, 1=reverse motor direction
+    float power_level;                      // set 0.000 to 1.000 for PWM vref setting
+    float power_level_idle;                 // set 0.000 to 1.000 for PWM vref idle setting
     float step_angle;                       // degrees per whole step (ex: 1.8)
     float travel_rev;                       // mm or deg of travel per motor revolution
     float steps_per_unit;                   // microsteps per mm (or degree) of travel
     float units_per_step;                   // mm or degrees of travel per microstep
-
-    // private
-    float power_level_scaled;               // scaled to internal range - must be between 0 and 1
 } cfgMotor_t;
 
 typedef struct stConfig {                   // stepper configs
@@ -372,8 +362,9 @@ typedef struct stConfig {                   // stepper configs
 // Motor runtime structure. Used exclusively by step generation ISR (HI)
 
 typedef struct stRunMotor {                 // one per controlled motor
-    uint32_t substep_increment;             // total steps in axis times substeps factor
-    int32_t substep_accumulator;            // DDA phase angle accumulator
+    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
+    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+    int64_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
     uint32_t power_systick;                 // sys_tick for next motor power state transition
     float power_level_dynamic;              // power level for this segment of idle
@@ -383,7 +374,6 @@ typedef struct stRunSingleton {             // Stepper static values and axis pa
     magic_t magic_start;                    // magic number to test memory integrity
     uint32_t dda_ticks_downcount;           // dda tick down-counter (unscaled)
     uint32_t dwell_ticks_downcount;         // dwell tick down-counter (unscaled)
-    uint32_t dda_ticks_X_substeps;          // ticks multiplied by scaling factor
     stRunMotor_t mot[MOTORS];               // runtime motor structures
     magic_t magic_end;
 } stRunSingleton_t;
@@ -392,7 +382,8 @@ typedef struct stRunSingleton {             // Stepper static values and axis pa
 // Must be careful about volatiles in this one
 
 typedef struct stPrepMotor {
-    uint32_t substep_increment;             // total steps in axis times substep factor
+    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
+    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     bool motor_flag;                        // true if motor is participating in this move
 
     // direction and direction change
@@ -413,32 +404,27 @@ typedef struct stPrepMotor {
 typedef struct stPrepSingleton {
     magic_t magic_start;                    // magic number to test memory integrity
     volatile prepBufferState buffer_state;  // prep buffer state - owned by exec or loader
-    struct mpBuffer *bf;                    // static pointer to relevant buffer
+    struct mpBuf_t *bf;                    // static pointer to relevant buffer
     blockType block_type;                   // move type (requires planner.h)
 
     uint32_t dda_ticks;                     // DDA ticks for the move
+    float dda_ticks_holdover;               // partial DDA ticks from previous segment
     uint32_t dwell_ticks;                   // dwell ticks remaining
-    uint32_t dda_ticks_X_substeps;          // DDA ticks scaled by substep factor
     stPrepMotor_t mot[MOTORS];              // prep time motor structs
     magic_t magic_end;
 } stPrepSingleton_t;
 
-extern stConfig_t st_cfg;                   // config struct is exposed. The rest are private
-extern stPrepSingleton_t st_pre;            // only used by config_app diagnostics
+extern stConfig_t st_cfg        HOT_DATA;   // config struct is exposed. The rest are private
+extern stPrepSingleton_t st_pre HOT_DATA;   // only used by config_app diagnostics
 
 
 /**** Stepper (base object) ****/
 
 struct Stepper {
-    Timeout _motor_disable_timeout;         // this is the timeout object that will let us know when time is u
-    uint32_t _motor_disable_timeout_ms;     // the number of ms that the timeout is reset to
-    stPowerState _power_state;              // state machine for managing motor power
-    stPowerMode _power_mode;                // See stPowerMode for values
-
     /* stepper default values */
-
+public:
     // sets default pwm freq for all motor vrefs (commented line below also sets HiZ)
-    Stepper(const uint32_t frequency = 500000)
+    Stepper()
     {
     };
 
@@ -449,113 +435,97 @@ struct Stepper {
         this->setDirection(STEP_INITIAL_DIRECTION);
     };
 
+    virtual ioPolarity getEnablePolarity() const
+    {
+        return IO_ACTIVE_LOW; // we have to say something here
+    };
+
+    virtual void setEnablePolarity(ioPolarity new_mp)
+    {
+        // do nothing
+    };
+
+    virtual ioPolarity getStepPolarity() const
+    {
+        return IO_ACTIVE_LOW; // we have to say something here
+    };
+
+    virtual void setStepPolarity(ioPolarity new_mp)
+    {
+        // do nothing
+    };
+
     virtual void setPowerMode(stPowerMode new_pm)
     {
-        _power_mode = new_pm;
-        if (_power_mode == MOTOR_ALWAYS_POWERED) {
-            enable();
-        } else if (_power_mode == MOTOR_DISABLED) {
-            disable();
-        }
+        // do nothing
     };
 
     virtual stPowerMode getPowerMode()
     {
-         return _power_mode;
+         return MOTOR_DISABLED;
     };
 
-    virtual float getCurrentPowerLevel(uint8_t motor)
+    virtual float getCurrentPowerLevel()
     {
-        if (_power_state == MOTOR_OFF) {
-            return (0.0);
-        }
-        if (_power_state == MOTOR_IDLE) {
-            return (0.0);
-        }        
-        return (st_cfg.mot[motor].power_level);
+        // Override to return a proper value
+        return (0.0);
     };
 
-//    bool isDisabled()
-//    {
-//        return (_power_mode == MOTOR_DISABLED);
-//    };
-    
     // turn on motor in all cases unless it's disabled
-    // NOTE: in the future the default assigned timeout will be the motor's default value
-    void enable(float timeout = st_cfg.motor_power_timeout)
+    // this version is called from the loader, and explicitly does NOT have floating point computations
+    // HOT - called from the DDA interrupt
+    void enable() //HOT_FUNC
     {
-        if (_power_mode == MOTOR_DISABLED) {
-            return;
-        }
         this->_enableImpl();
-        _power_state = MOTOR_RUNNING;
+    };
 
-        if ((uint8_t)timeout == 0) {
-            timeout = st_cfg.motor_power_timeout;
-        }
-        _motor_disable_timeout_ms = timeout * 1000.0;
+    virtual void enableWithTimeout(float timeout_ms) // override if wanted
+    {
+        this->_enableImpl();
     };
 
     // turn off motor in all cases unless it's permanently enabled
-    void disable()
+    // HOT - called from the DDA interrupt
+    void disable() //HOT_FUNC
     {
-        if (this->getPowerMode() == MOTOR_ALWAYS_POWERED) {
-            return;
-        }
         this->_disableImpl();
-        _motor_disable_timeout.clear();
-        _power_state = MOTOR_IDLE; // or MOTOR_OFF
     };
-    
+
     // turn off motor is only powered when moving
-    void motionStopped() {
-        if (_power_mode == MOTOR_POWERED_IN_CYCLE) {
-            this->enable();
-            _power_state = MOTOR_POWER_TIMEOUT_START;
-        } else if (_power_mode == MOTOR_POWERED_ONLY_WHEN_MOVING) {
-            if (_power_state == MOTOR_RUNNING) {
-                _power_state = MOTOR_POWER_TIMEOUT_START;
-            }
-        }
-    };
+    // HOT - called from the DDA interrupt
+    virtual void motionStopped() {};
 
-    virtual void periodicCheck(bool have_actually_stopped) // can be overridden
-    {
-        if (have_actually_stopped && _power_state == MOTOR_RUNNING) {
-            _power_state = MOTOR_POWER_TIMEOUT_START;    // ...start motor power timeouts
-        }
-
-        // start timeouts initiated during a load so the loader does not need to burn these cycles
-        if (_power_state == MOTOR_POWER_TIMEOUT_START && _power_mode != MOTOR_ALWAYS_POWERED) {
-            _power_state = MOTOR_POWER_TIMEOUT_COUNTDOWN;
-            if (_power_mode == MOTOR_POWERED_IN_CYCLE) {
-                _motor_disable_timeout.set(_motor_disable_timeout_ms);
-            } else if (_power_mode == MOTOR_POWERED_ONLY_WHEN_MOVING) {
-                _motor_disable_timeout.set(st_cfg.motor_power_timeout * 1000.0);
-          }
-        }
-
-        // count down and time out the motor
-        if (_power_state == MOTOR_POWER_TIMEOUT_COUNTDOWN) {
-            if (_motor_disable_timeout.isPast()) {
-                disable();
-				sr_request_status_report(SR_REQUEST_TIMED);
-            }
-        }
-    };
+    virtual void periodicCheck(bool have_actually_stopped) {}; // can be overridden
+    virtual void setActivityTimeout(float idle_milliseconds) {}; // can be overridden
 
     /* Functions that must be implemented in subclasses */
 
     virtual bool canStep() { return true; };
     virtual void _enableImpl() { /* must override */ };
     virtual void _disableImpl() { /* must override */ };
-    virtual void stepStart() { /* must override */ };
-    virtual void stepEnd() { /* must override */ };
-    virtual void setDirection(uint8_t new_direction) { /* must override */ };
-    virtual void setMicrosteps(const uint8_t microsteps) { /* must override */ };
-    virtual void setPowerLevel(float new_pl) { /* must override */ };
+    virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
+    virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
+    virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
+    virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };
+    virtual void setPowerLevels(float active_pl, float idle_pl) { /* must override */ };
 };
 
+/**** ExternalEncoder (base object) ****/
+
+class ExternalEncoder {
+   public:
+    using callback_t = std::function<void(bool, float)>;
+    enum ReturnFormat { ReturnDegrees, ReturnRadians, ReturnFraction };
+
+    virtual void setCallback(std::function<void(bool, float)> &&handler);
+    virtual void setCallback(std::function<void(bool, float)> &handler);
+
+    virtual void requestAngleDegrees();
+    virtual void requestAngleRadians();
+    virtual void requestAngleFraction();
+
+    virtual float getQuadratureFraction();
+};
 
 /**** FUNCTION PROTOTYPES ****/
 
@@ -569,14 +539,16 @@ stat_t st_clc(nvObj_t *nv);
 void st_set_motor_power(const uint8_t motor);
 stat_t st_motor_power_callback(void);
 
-void st_request_forward_plan(void);
-void st_request_exec_move(void);
-void st_request_load_move(void);
+void st_request_forward_plan(void) HOT_FUNC;
+void st_request_exec_move(void) HOT_FUNC;
+void st_request_load_move(void) HOT_FUNC;
 void st_prep_null(void);
 void st_prep_command(void *bf);        // use a void pointer since we don't know about mpBuf_t yet)
-void st_prep_dwell(float microseconds);
-void st_prep_out_of_band_dwell(float microseconds);
-stat_t st_prep_line(float travel_steps[], float following_error[], float segment_time);
+void st_prep_dwell(float milliseconds);
+void st_prep_out_of_band_dwell(float milliseconds);
+stat_t st_prep_line(const float start_velocity, const float end_velocity, const float travel_steps[], const float following_error[], const float segment_time)  HOT_FUNC;
+// NOTE: this version is the same, except it's passed an array of start/end velocities, one pair per motor
+stat_t st_prep_line(const float start_velocities[], const float end_velocities[], const float travel_steps[], const float following_error[], const float segment_time)  HOT_FUNC;
 
 stat_t st_get_ma(nvObj_t *nv);
 stat_t st_set_ma(nvObj_t *nv);
@@ -588,12 +560,20 @@ stat_t st_get_mi(nvObj_t *nv);
 stat_t st_set_mi(nvObj_t *nv);
 stat_t st_get_su(nvObj_t *nv);
 stat_t st_set_su(nvObj_t *nv);
+
 stat_t st_get_po(nvObj_t *nv);
 stat_t st_set_po(nvObj_t *nv);
+stat_t st_set_ep(nvObj_t *nv);
+stat_t st_get_ep(nvObj_t *nv);
+stat_t st_set_sp(nvObj_t *nv);
+stat_t st_get_sp(nvObj_t *nv);
+
 stat_t st_get_pm(nvObj_t *nv);
 stat_t st_set_pm(nvObj_t *nv);
 stat_t st_get_pl(nvObj_t *nv);
+stat_t st_get_pi(nvObj_t *nv);
 stat_t st_set_pl(nvObj_t *nv);
+stat_t st_set_pi(nvObj_t *nv);
 
 stat_t st_get_pwr(nvObj_t *nv);
 
@@ -611,8 +591,11 @@ stat_t st_get_dw(nvObj_t *nv);
     void st_print_mi(nvObj_t *nv);
     void st_print_su(nvObj_t *nv);
     void st_print_po(nvObj_t *nv);
+    void st_print_ep(nvObj_t *nv);
+    void st_print_sp(nvObj_t *nv);
     void st_print_pm(nvObj_t *nv);
     void st_print_pl(nvObj_t *nv);
+    void st_print_pi(nvObj_t *nv);
     void st_print_pwr(nvObj_t *nv);
     void st_print_mt(nvObj_t *nv);
     void st_print_me(nvObj_t *nv);
@@ -626,13 +609,18 @@ stat_t st_get_dw(nvObj_t *nv);
     #define st_print_mi tx_print_stub
     #define st_print_su tx_print_stub
     #define st_print_po tx_print_stub
+    #define st_print_ep tx_print_stub
+    #define st_print_sp tx_print_stub
     #define st_print_pm tx_print_stub
     #define st_print_pl tx_print_stub
+    #define st_print_pi tx_print_stub
     #define st_print_pwr tx_print_stub
     #define st_print_mt tx_print_stub
     #define st_print_me tx_print_stub
     #define st_print_md tx_print_stub
 
 #endif // __TEXT_MODE
+
+#include "board_stepper.h"  // include board specific stuff, in particular the Stepper objects
 
 #endif // End of include guard: STEPPER_H_ONCE

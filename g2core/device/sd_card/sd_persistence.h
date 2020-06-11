@@ -1,9 +1,9 @@
 /*
- * trinamic/tmc2130.cpp - control over a Trinamic TMC2130 stepper motor driver
- * This file is part of the G2 project
+ * sd_persistence.h - persistence code for SD cards
+ * This file is part of the g2code project
  *
- * Copyright (c) 2016 Alden S. Hart, Jr.
- * Copyright (c) 2016 Robert Giseburt
+ * Copyright (c) 2019 Matt Staniszewski
+ * Copyright (c) 2019 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -25,3 +25,10 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef SD_PERSISTENCE_H_ONCE
+#define SD_PERSISTENCE_H_ONCE
+
+void setup_sd_persistence();
+
+#endif  // End of include guard: SD_PERSISTENCE_H_ONCE

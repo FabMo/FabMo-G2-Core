@@ -5,8 +5,8 @@
  *
  * This file is part of the g2core project
  *
- * Copyright (c) 2013 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2013 - 2017 Robert Giseburt
+ * Copyright (c) 2013 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -30,6 +30,7 @@
  */
 
 #include "config.h"
+#include "settings.h"
 #include "error.h"
 
 #ifndef HARDWARE_H_ONCE
@@ -41,28 +42,34 @@
 #define G2CORE_HARDWARE_PLATFORM    "gQuadtratic"
 #define G2CORE_HARDWARE_VERSION     "b"
 
-/***** Axes, motors & PWM channels used by the application *****/
-// Axes, motors & PWM channels must be defines (not enums) so expressions like this:
+/***** Motors & PWM channels supported by this hardware *****/
+// These must be defines (not enums) so expressions like this:
 //  #if (MOTORS >= 6)  will work
 
-#define AXES 6         // number of axes supported in this version
-#define HOMING_AXES 4  // number of axes that can be homed (assumes Zxyabc sequence)
-#define MOTORS 3       // number of motors on the board
-#define COORDS 6       // number of supported coordinate systems (1-6)
-#define PWMS 2         // number of supported PWM channels
-#define TOOLS 32        // number of entries in tool table (index starts at 1)
+#define MOTORS 4                    // number of motors supported the hardware
+#define PWMS 2                      // number of PWM channels supported the hardware
+
+/*************************
+ * Global System Defines *
+ *************************/
+
+#define MILLISECONDS_PER_TICK 1     // MS for system tick (systick * N)
+#define SYS_ID_DIGITS 16            // actual digits in system ID (up to 16)
+#define SYS_ID_LEN 40               // total length including dashes and NUL
 
 /*************************
  * Motate Setup          *
  *************************/
 
 #include "MotatePins.h"
+#if QUADRATIC_REVISION == 'C'
+#define MOTOR_1_IS_TRINAMIC
+#define MOTOR_2_IS_TRINAMIC
+#include "MotateSPI.h"
+#endif
 #include "MotateTimers.h"       // for TimerChanel<> and related...
-#include "MotateServiceCall.h"  // for ServiceCall<>
 
 using Motate::TimerChannel;
-using Motate::ServiceCall;
-
 using Motate::pin_number;
 using Motate::Pin;
 using Motate::PWMOutputPin;
@@ -73,66 +80,39 @@ using Motate::OutputPin;
  *************************/
 
 #define MILLISECONDS_PER_TICK 1  // MS for system tick (systick * N)
-#define SYS_ID_DIGITS 16         // actual digits in system ID (up to 16)
-#define SYS_ID_LEN 24            // total length including dashes and NUL
-
-/************************************************************************************
- **** ARM SAM3X8E SPECIFIC HARDWARE *************************************************
- ************************************************************************************/
-
-/**** Resource Assignment via Motate ****
- *
- * This section defines resource usage for pins, timers, PWM channels, communications
- * and other resources. Please refer to /motate/utility/SamPins.h, SamTimers.h and
- * other files for pinouts and other configuration details.
- *
- * Commenting out or #ifdef'ing out definitions below will cause the compiler to
- * drop references to these resources from the compiled code. This will reduce
- * compiled code size and runtime CPU cycles. E.g. if you are compiling for a 3 motor,
- * XYZ axis config commenting out the higher motors and axes here will remove them
- * from later code (using the motate .isNull() test).
- */
-
-/* Interrupt usage and priority
- *
- * The following interrupts are defined w/indicated priorities
- *
- *	 0	DDA_TIMER (9) for step pulse generation
- *	 1	DWELL_TIMER (10) for dwell timing
- *	 2	LOADER software generated interrupt (STIR / SGI)
- *	 3	Serial read character interrupt
- *	 4	EXEC software generated interrupt (STIR / SGI)
- *	 5	Serial write character interrupt
- */
+#define SYS_ID_DIGITS 12         // actual digits in system ID (up to 16)
+#define SYS_ID_LEN 40            // total length including dashes and NUL
 
 /**** Stepper DDA and dwell timer settings ****/
 
 //#define FREQUENCY_DDA		200000UL		// Hz step frequency. Interrupts actually fire at 2x (400 KHz)
-#define FREQUENCY_DDA 150000UL  // Hz step frequency. Interrupts actually fire at 2x (300 KHz)
+#define FREQUENCY_DDA 400000UL  // Hz step frequency. Interrupts actually fire at 2x (300 KHz)
 #define FREQUENCY_DWELL 1000UL
-#define FREQUENCY_SGI 200000UL  // 200,000 Hz means software interrupts will fire 5 uSec after being called
+
+#define MIN_SEGMENT_MS ((float)0.125)       // S70 can handle much much smaller segements
+
+#define PLANNER_QUEUE_SIZE (60)
 
 /**** Motate Definitions ****/
 
 // Timer definitions. See stepper.h and other headers for setup
-typedef TimerChannel<9, 0> dda_timer_type;      // stepper pulse generation in stepper.cpp
-typedef TimerChannel<10, 0> load_timer_type;         // request load timer in stepper.cpp
-typedef ServiceCall<1> exec_timer_type;         // request exec timer in stepper.cpp
-typedef ServiceCall<2> fwd_plan_timer_type;     // request exec timer in stepper.cpp
+typedef TimerChannel<9, 0> dda_timer_type;    // stepper pulse generation in stepper.cpp
+typedef TimerChannel<10, 0> exec_timer_type;       // request exec timer in stepper.cpp
+typedef TimerChannel<11, 0> fwd_plan_timer_type;   // request exec timer in stepper.cpp
 
 // Pin assignments
-
 pin_number                              indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
 static OutputPin<indicator_led_pin_num> IndicatorLed;
 
+/**** SPI Setup ****/
+#if QUADRATIC_REVISION == 'C'
+typedef Motate::SPIBus<Motate::kSPI_MISOPinNumber, Motate::kSPI_MOSIPinNumber> SPIBus_used_t;
+extern SPIBus_used_t spiBus;
+
+#endif
+
 /**** Motate Global Pin Allocations ****/
 
-// static OutputPin<kSocket1_SPISlaveSelectPinNumber> spi_ss1_pin;
-// static OutputPin<kSocket2_SPISlaveSelectPinNumber> spi_ss2_pin;
-// static OutputPin<kSocket3_SPISlaveSelectPinNumber> spi_ss3_pin;
-// static OutputPin<kSocket4_SPISlaveSelectPinNumber> spi_ss4_pin;
-// static OutputPin<kSocket5_SPISlaveSelectPinNumber> spi_ss5_pin;
-// static OutputPin<kSocket6_SPISlaveSelectPinNumber> spi_ss6_pin;
 static OutputPin<Motate::kKinen_SyncPinNumber> kinen_sync_pin;
 
 static OutputPin<Motate::kGRBL_ResetPinNumber>      grbl_reset_pin;
@@ -140,14 +120,12 @@ static OutputPin<Motate::kGRBL_FeedHoldPinNumber>   grbl_feedhold_pin;
 static OutputPin<Motate::kGRBL_CycleStartPinNumber> grbl_cycle_start_pin;
 
 static OutputPin<Motate::kGRBL_CommonEnablePinNumber> motor_common_enable_pin;
-static OutputPin<Motate::kSpindle_EnablePinNumber>    spindle_enable_pin;
-static OutputPin<Motate::kSpindle_DirPinNumber>       spindle_dir_pin;
 
-// NOTE: In the v9 and the Due the flood and mist coolants are mapped to a the same pin
-// static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
-static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
-static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
-
+#define SPINDLE_OUTPUT_NUMBER 1           // drive our primary output as a spindle
+#define SPINDLE_ENABLE_OUTPUT_NUMBER 2    // use output 2 as the enable line for the spindle
+#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0 // no direction control
+#define MIST_ENABLE_OUTPUT_NUMBER 0 // no mist
+#define FLOOD_ENABLE_OUTPUT_NUMBER 0 // no flood
 // Input pins are defined in gpio.cpp
 
 /********************************

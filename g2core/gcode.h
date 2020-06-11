@@ -2,7 +2,7 @@
  * gcode.h - rs274/ngc Gcode model and parser support
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -21,6 +21,7 @@
 #define GCODE_H_ONCE
 
 #include "hardware.h"
+#include "spindle.h"
 
 /**** Gcode-specific definitions ****/
 
@@ -127,12 +128,12 @@ typedef enum {              // axis modes (ordered: see _cm_get_feed_time())
 /****************************************************************************************
  * GCODE MODEL - The following GCodeModel/GCodeInput structs are used:
  *
- * - gm is the core Gcode model state. It keeps the internal gcode state model in 
- *   normalized canonical form. All values are unit converted (to mm) and in the 
- *   machine coordinate system (absolute coordinate system). Gm is owned by the 
+ * - gm is the core Gcode model state. It keeps the internal gcode state model in
+ *   normalized canonical form. All values are unit converted (to mm) and in the
+ *   machine coordinate system (absolute coordinate system). Gm is owned by the
  *   canonical machine layer and should be accessed only through cm_ routines.
  *
- *   The gm core struct is copied and passed as context to the runtime where it is used 
+ *   The gm core struct is copied and passed as context to the runtime where it is used
  *   for planning, move execution, feedholds, and reporting.
  *
  * - gmx is the extended gcode model variables that are only used by the canonical
@@ -142,23 +143,23 @@ typedef enum {              // axis modes (ordered: see _cm_get_feed_time())
  *   spindle, coolant, and others (i.e. not ALL gcode global state is in gmx)
  *
  * - gn is used by the gcode interpreter and is re-initialized for each gcode block.
- *   It accepts data in the new gcode block in the formats present in the block 
- *   (pre-normalized forms). During initialization some state elements are necessarily 
+ *   It accepts data in the new gcode block in the formats present in the block
+ *   (pre-normalized forms). During initialization some state elements are necessarily
  *    restored from gm.
  *
- * - gf is used by the gcode parser interpreter to hold flags for any data that has 
- *   changed in gn during the parse. gf.target[] values are also used by the canonical 
+ * - gf is used by the gcode parser interpreter to hold flags for any data that has
+ *   changed in gn during the parse. gf.target[] values are also used by the canonical
  *   machine during set_target().
  *
  * - cfg (config struct in config.h) is also used heavily and contains some values that
- *   might be considered to be Gcode model values. The distinction is that all values 
- *   in the config are persisted and restored, whereas the gm structs are transient. 
- *   So cfg has the G54 - G59 offsets, but gm has the G92 offsets. cfg has the power-on / 
- *   reset gcode default values, but gm has the operating state for the values 
+ *   might be considered to be Gcode model values. The distinction is that all values
+ *   in the config are persisted and restored, whereas the gm structs are transient.
+ *   So cfg has the G54 - G59 offsets, but gm has the G92 offsets. cfg has the power-on /
+ *   reset gcode default values, but gm has the operating state for the values
  *   (which may have changed).
  */
 
-typedef struct GCodeState {             // Gcode model state - used by model, planning and runtime
+struct GCodeState_t {             // Gcode model state - used by model, planning and runtime
     int32_t linenum;                    // Gcode block line number
     cmMotionMode motion_mode;           // Group1: G0, G1, G2, G3, G38.2, G80, G81, G82
                                         //         G83, G84, G85, G86, G87, G88, G89
@@ -180,6 +181,9 @@ typedef struct GCodeState {             // Gcode model state - used by model, pl
     cmCoordSystem coord_system;         // G54-G59 - select coordinate system 1-9
     uint8_t tool;               // G    // M6 tool change - moves "tool_select" to "tool"
     uint8_t tool_select;        // G    // T value - T sets this value
+
+    float spindle_speed;                // S - spindle "speed" in arbitrary units, often RPM
+    spDirection spindle_direction;      // M3/M4/M5 - spindle on CW, on CCW, off setting
 
     void reset() {
         linenum = 0;
@@ -205,12 +209,10 @@ typedef struct GCodeState {             // Gcode model state - used by model, pl
         tool_select = 0;
 
     };
-} GCodeState_t;
+};
 
 typedef struct GCodeStateExtended {     // Gcode dynamic state extensions - used by model and arcs
     uint16_t magic_start;               // magic number to test memory integrity
-    uint8_t next_action;                // handles G modal group 1 moves & non-modals
-    uint8_t program_flow;               // used only by the gcode_parser
     int32_t last_line_number;           // used with line checksums
 
     float position[AXES];               // XYZABC model position (Note: not used in gn or gf)

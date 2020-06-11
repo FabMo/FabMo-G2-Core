@@ -1,8 +1,8 @@
 #
 # Makefile
 #
-# Copyright (c) 2012 - 2016 Robert Giseburt
-# Copyright (c) 2013 - 2016 Alden S. Hart Jr.
+# Copyright (c) 2012 - 2018 Robert Giseburt
+# Copyright (c) 2013 - 2018 Alden S. Hart Jr.
 #
 # This file is part of the g2core project.
 #
@@ -49,14 +49,11 @@ SETTINGS_FILE ?= settings_default.h
 
 NEEDS_PRINTF_FLOAT=1
 
-# Now invoke the Motate compile system
-include $(MOTATE_PATH)/Motate.mk
-
 ifeq ($(DEBUG),0)
-	DEVICE_DEFINES += DEBUG=0 IN_DEBUGGER=0
+DEVICE_DEFINES += DEBUG=0 IN_DEBUGGER=0
 endif
 ifeq ($(DEBUG),1)
-	DEVICE_DEFINES += DEBUG=1 IN_DEBUGGER=0
+DEVICE_DEFINES += DEBUG=1 IN_DEBUGGER=0
 endif
 ifeq ($(DEBUG),2)
 	DEVICE_DEFINES += DEBUG=1 IN_DEBUGGER=1
@@ -67,5 +64,11 @@ endif
 #ifeq ($(DEBUG),3)
 #    DEVICE_DEFINES += DEBUG=1 IN_DEBUGGER=1 DEBUG_SEMIHOSTING=1
 #endif
+
+TOOLS_VERSION = 7u2
+# TOOLS_VERSION = 9m
+
+# Now invoke the Motate compile system
+include $(MOTATE_PATH)/Motate.mk
 
 # *** EOF ***

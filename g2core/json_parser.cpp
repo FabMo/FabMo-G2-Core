@@ -2,8 +2,8 @@
  * json_parser.cpp - JSON parser
  * This file is part of the g2core project
  *
- * Copyright (c) 2011 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2016 - 2017 Rob Giseburt
+ * Copyright (c) 2011 - 2019 Alden S. Hart, Jr.
+ * Copyright (c) 2016 - 2019 Rob Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -110,20 +110,27 @@ void json_parse_for_exec(char *str, bool execute)
         nv = nv_exec;
         status = _json_parser_execute(nv);          // execute the command
     }
+    sr_request_status_report(SR_REQUEST_TIMED);     // generate incremental status report to show any changes
 }
 
 static stat_t _json_parser_execute(nvObj_t *nv) {
 
     do {
-        if (nv->valuetype == TYPE_NULL) {           // means GET the value
+        if (nv->valuetype == TYPE_PARENT) {         // added as partial fix for Issue #298:
+                                                    // Reading values with nested JSON changes values in inches mode
+            if (strcmp(nv->token, "sr") == 0) {     // Hack to execute Set Status Report (SR parent) See end note (*)
+                return (nv_set(nv));
+            }
+
+        } else if (nv->valuetype == TYPE_NULL) {    // means run the GET function to get the value
             ritorno(nv_get(nv));                    // ritorno returns w/status on any errors
             if (nv->valuetype == TYPE_PARENT) {     // This will be true if you read a group. Exit now
                 return (STAT_OK);
             }
-        } else {
+        } else {                                    // otherwise, run the SET function
             cm_parse_clear(*nv->stringp);           // parse Gcode and clear alarms if M30 or M2 is found
             ritorno(cm_is_alarmed());               // return error status if in alarm, shutdown or panic
-            ritorno(nv_set(nv));                    // set value or call a function (e.g. gcode)
+            ritorno(nv_set(nv));                    // run the SET function  to set value or execute something (e.g. gcode)
             nv_persist(nv);
         }
         if ((nv = nv->nx) == NULL) {
@@ -133,6 +140,10 @@ static stat_t _json_parser_execute(nvObj_t *nv) {
 
     return (STAT_OK);                               // only successful commands exit through this point
 }
+
+// (*) Note: The JSON / token system is essentially flat, as it was derived from a command-line flat-ASCII approach
+//     If the JSON objects had proper recursive descent handlers that just passed the remaining string (at that level)
+//     off for further processing, we would not need to do this hack. A fix is in the works. For now, this is OK.
 
 static stat_t _json_parser_kernal(nvObj_t *nv, char *str)
 {
@@ -291,16 +302,23 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
     // numbers
     } else if (isdigit(**pstr) || (**pstr == '-')) {    // value is a number
         nv->value_int = atol(*pstr);                    // get the number as an integer
-        nv->value_flt = (float)strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
+        nv->value_flt = strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
 
         if ((tmp == *pstr) ||                           // if start pointer equals end the conversion failed
             (strchr(terminators, *tmp) == NULL)) {      // terminators are the only legal chars at the end of a number
             nv->valuetype = TYPE_NULL;                  // report back an error
             return (STAT_BAD_NUMBER_FORMAT);
         }
-        nv->valuetype = TYPE_FLOAT;
 
-    // object parent
+        // if the double value is the same as the int, mark it as a TYPE_INTEGER
+        if ((int32_t)std::floor(nv->value_flt) == nv->value_int) {
+            nv->valuetype = TYPE_INTEGER;
+        } else {
+            nv->valuetype = TYPE_FLOAT;
+        }
+
+
+        // object parent
     } else if (**pstr == '{') {
         nv->valuetype = TYPE_PARENT;
 //        *depth += 1;                                  // nv_reset_nv() sets the next object's level so this is redundant
@@ -319,7 +337,7 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
         // if string begins with 0x it might be data, needs to be at least 3 chars long
         if( strlen(*pstr)>=3 && (*pstr)[0]=='0' && (*pstr)[1]=='x')
         {
-            uint32_t *v = (uint32_t*)&nv->value_flt;
+            uint32_t *v = (uint32_t*)&nv->value_int;
             *v = strtoul((const char *)*pstr, 0L, 0);
             nv->valuetype = TYPE_DATA;
         } else {
@@ -389,8 +407,6 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
  *    - Allow self-referential elements that would otherwise cause a recursive loop
  *    - Skip over empty objects (TYPE_EMPTY)
  *    - If a JSON object is empty represent it as {}
- *      --- OR ---
- *    - If a JSON object is empty omit the object altogether (no curlies)
  */
 
 uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
@@ -419,6 +435,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                     }
                 case (TYPE_PARENT): {   *str++ = '{';
                                         need_a_comma = false;
+                                        prev_depth++; // make sure empty objects are closed
                                         break;
                                     }
                 case (TYPE_FLOAT):  {   convert_outgoing_float(nv);
@@ -438,7 +455,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         *str++ = '"';
                                         break;
                                     }
-                case (TYPE_BOOLEAN):{   if (nv->value_int) {
+                case (TYPE_BOOLEAN):{   if (!nv->value_int) {
                                             strcpy(str, "false");
                                             str += 5;
                                         } else {
@@ -447,7 +464,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         }
                                         break;
                                     }
-                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_flt;
+                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_int;
                                         str += sprintf(str, "\"0x%lx\"", *v);
                                         break;
                                     }
@@ -621,7 +638,7 @@ void json_print_response(uint8_t status, const bool only_to_muted /*= false*/)
  * js_get_ej() - get JSON communications mode
  * js_set_ej() - set JSON communications mode
  *
- * This one is a bit different: 
+ * This one is a bit different:
  *  - cs.comm_mode is the setting for the *communications mode* (persistent)
  *  - js.json_mode is the actual current mode
  *
@@ -647,7 +664,7 @@ stat_t js_set_ej(nvObj_t *nv)
 stat_t js_get_jv(nvObj_t *nv) { return(get_integer(nv, js.json_verbosity)); }
 stat_t js_set_jv(nvObj_t *nv)
 {
-    ritorno (set_integer(nv, (uint8_t &)js.json_verbosity, JV_SILENT, JV_MAX_VALUE));  
+    ritorno (set_integer(nv, (uint8_t &)js.json_verbosity, JV_SILENT, JV_MAX_VALUE));
 
     js.echo_json_footer = false;
     js.echo_json_messages = false;
@@ -683,7 +700,7 @@ stat_t json_set_ej(nvObj_t *nv)
         nv->valuetype = TYPE_NULL;
         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
     }
-    
+
     // set json_mode to 0 or 1, but don't change it if comm_mode == 2
     if (commMode(nv->value) < AUTO_MODE) {
         js.json_mode = commMode(nv->value);

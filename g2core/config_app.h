@@ -2,8 +2,8 @@
  * config_app.h - application-specific part of configuration sub-system
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2016 Alden S. Hart, Jr.
- * Copyright (c) 2013 - 2016 Robert Giseburt
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -51,6 +51,12 @@ typedef struct cfgParameters {  // mostly communications variables at this point
     uint32_t user_data_c[4];
     uint32_t user_data_d[4];
 #endif
+
+    // installed fixturing information
+    float fx_coords_a[4][2];  // x/y coordinates of up to 4 points on fixturing object
+    float fx_state_a;         // state flag
+
+    uint32_t mark;            // just a rtransient value to return when asked
 
     uint16_t magic_end;
 } cfgParameters_t;

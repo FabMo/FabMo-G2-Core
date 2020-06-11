@@ -2,8 +2,8 @@
  * main.cpp - g2core - An embedded rs274/ngc CNC controller
  * This file is part of the g2core project.
  *
- * Copyright (c) 2010 - 2017 Alden S. Hart, Jr.
- * Copyright (c) 2013 - 2017 Robert Giseburt
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -30,6 +30,7 @@
 #include "report.h"
 #include "planner.h"
 #include "stepper.h"
+#include "coolant.h"
 #include "encoder.h"
 #include "spindle.h"
 #include "temperature.h"
@@ -54,13 +55,10 @@ stat_t status_code;						    // allocate a variable for the ritorno macro
 // See also: util.h for debugging and diagnostics
 
 // Using motate pins for profiling
-// Usage: https://github.com/synthetos/g2/wiki/Using-Pin-Changes-for-Timing-(and-light-debugging)
-
-using namespace Motate;
-OutputPin<kDebug1_PinNumber> debug_pin1;
-OutputPin<kDebug2_PinNumber> debug_pin2;
-OutputPin<kDebug3_PinNumber> debug_pin3;
-OutputPin<kDebug4_PinNumber> debug_pin4;
+// Usage: https://github.com/synthetos/g2/wiki/Using-Pin-Changes-for-Timing-(and-light-debugging)OutputPin<Motate::kDebug1_PinNumber> debug_pin1;
+OutputPin<Motate::kDebug2_PinNumber> debug_pin2;
+OutputPin<Motate::kDebug3_PinNumber> debug_pin3;
+OutputPin<Motate::kDebug4_PinNumber> debug_pin4;
 
 // or these to disable the pin
 //OutputPin<-1> debug_pin1;
@@ -69,12 +67,10 @@ OutputPin<kDebug4_PinNumber> debug_pin4;
 //OutputPin<-1> debug_pin4;
 
 // Put these lines in the .cpp file where you are using the debug pins (appropriately commented / uncommented)
-/*
-using namespace Motate;
-extern OutputPin<kDebug1_PinNumber> debug_pin1;
-extern OutputPin<kDebug2_PinNumber> debug_pin2;
-extern OutputPin<kDebug3_PinNumber> debug_pin3;
-extern OutputPin<kDebug4_PinNumber> debug_pin4;
+/*extern OutputPin<Motate::kDebug1_PinNumber> debug_pin1;
+extern OutputPin<Motate::kDebug2_PinNumber> debug_pin2;
+extern OutputPin<Motate::kDebug3_PinNumber> debug_pin3;
+extern OutputPin<Motate::kDebug4_PinNumber> debug_pin4;
 
 //extern OutputPin<-1> debug_pin1;
 //extern OutputPin<-1> debug_pin2;
@@ -104,12 +100,11 @@ void application_init_machine(void)
 {
     cm = &cm1;                          // set global canonical machine pointer to primary machine
     cm->machine_state = MACHINE_INITIALIZING;
+    canonical_machine_inits();          // combined inits for CMs and planner - do before anything might use cm or mr!
 
     stepper_init();                     // stepper subsystem
     encoder_init();                     // virtual encoders
     gpio_init();                        // inputs and outputs
-    pwm_init();                         // pulse width modulation drivers
-    canonical_machine_inits();          // combined inits for CMs and planner    
 }
 
 void application_init_startup(void)
@@ -121,6 +116,8 @@ void application_init_startup(void)
     gcode_parser_init();                // baseline Gcode parser
     spindle_init();                     // should be after PWM and canonical machine inits and config_init()
     spindle_reset();
+    coolant_init();
+    coolant_reset();
     temperature_init();
     gpio_reset();
 }
@@ -142,7 +139,7 @@ void setup(void)
 {
     // application setup
     application_init_services();
-    while (SysTickTimer_getValue() < 400);  // delay 400 ms for USB to come up
+    while (SysTickTimer.getValue() < 400);  // delay 400 ms for USB to come up
 
     application_init_machine();
     application_init_startup();
@@ -157,9 +154,73 @@ void loop() {
 
 /*
  * Traps for debugging. These must be in main.cpp for proper linker ordering
+ * WARNING: These are horribly ARM-specific, and should be moved to Motate!
  */
 
-void MemManage_Handler  ( void ) { __asm__("BKPT"); }
-void BusFault_Handler   ( void ) { __asm__("BKPT"); }
-void UsageFault_Handler ( void ) { __asm__("BKPT"); }
-void HardFault_Handler  ( void ) { __asm__("BKPT"); }
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
+// void MemManage_Handler  ( void ) { __asm__("BKPT"); }
+__attribute((naked)) void MemManage_Handler(void){
+
+#ifndef SCB_CFSR_IACCVIOL
+#define  SCB_CFSR_IACCVIOL                   ((uint32_t)0x00000001)        /*!< Instruction access violation */
+#define  SCB_CFSR_DACCVIOL                   ((uint32_t)0x00000002)        /*!< Data access violation */
+#define  SCB_CFSR_MUNSTKERR                  ((uint32_t)0x00000008)        /*!< Unstacking error */
+#define  SCB_CFSR_MSTKERR                    ((uint32_t)0x00000010)        /*!< Stacking error */
+#define  SCB_CFSR_MLSPERR                    ((uint32_t)0x00000020)        /*!< floating-point lazy state preservation error */
+#define  SCB_CFSR_MMARVALID                  ((uint32_t)0x00000080)        /*!< Memory Manage Address Register address valid flag */
+#endif
+
+    // Notes for use in a debugger:
+    // This is a "naked" function, so no stack can be used.
+    // This means that these values below are held in registers.
+    // This also means that, in spite of the optimization being disabled here, fault_address will be "optimized out"
+    // But that's okay, it lets us keep SCB->MMFAR here where it's handy to view.
+
+    uint32_t fault = (SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & SCB_CFSR_MEMFAULTSR_Msk;
+    if (fault & SCB_CFSR_MMARVALID) {
+        // SCB->MMFAR holds the address that was accessed (read or written -- likely written) that caused this fault.
+        // The stack trace will likely have some garbage in it, but the last few frames *might* be valid.
+        [[maybe_unused]] void *fault_address = (void *)SCB->MMFAR;
+    }
+
+    if (fault & SCB_CFSR_IACCVIOL) {
+        __asm__ volatile("BKPT 1"); // invalid instruction access
+    } else
+    if (fault & SCB_CFSR_DACCVIOL) {
+        __asm__ volatile("BKPT 2"); // invalid data access
+    } else {
+        __asm__ volatile("BKPT 3"); // other memory access violation
+    }
+
+    // __asm volatile(
+    //     " bkpt 10 \n"
+    //     " bx lr \n");
+}
+
+// void BusFault_Handler   ( void ) { __asm__("BKPT"); }
+__attribute((naked)) void BusFault_Handler(void){
+__asm volatile (
+ " bkpt 10 \n"
+ " bx lr \n"
+);
+}
+
+// void UsageFault_Handler ( void ) { __asm__("BKPT"); }
+__attribute((naked)) void UsageFault_Handler(void){
+__asm volatile (
+ " bkpt 10 \n"
+ " bx lr \n"
+);
+}
+
+// void HardFault_Handler  ( void ) { __asm__("BKPT"); }
+__attribute((naked)) void HardFault_Handler(void){
+__asm volatile (
+ " bkpt 10 \n"
+ " bx lr \n"
+);
+}
+
+#pragma GCC reset_options
