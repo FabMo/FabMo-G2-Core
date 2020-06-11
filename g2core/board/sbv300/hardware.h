@@ -43,12 +43,12 @@
 #define G2CORE_HARDWARE_PLATFORM    "ArduinoDue"
 #define G2CORE_HARDWARE_VERSION     "na"
 
-#ifndef HAS_LASER
-#if HAS_HOBBY_SERVO_MOTOR
-#error Can NOT have a laser and a hobby servo at the same time, sorry
-#endif
-#define HAS_LASER 0
-#endif
+//#ifndef HAS_LASER
+//#if HAS_HOBBY_SERVO_MOTOR
+//#error Can NOT have a laser and a hobby servo at the same time, sorry
+//#endif
+//#define HAS_LASER 0
+//#endif
 
 /***** Motors & PWM channels supported by this hardware *****/
 // These must be defines (not enums) so expressions like this:

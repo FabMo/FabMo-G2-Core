@@ -57,7 +57,6 @@
 #define SPINDLE_PWM_NUMBER 6
 #endif
 
-
 #include "safety_manager.h"
 
 SafetyManager sm{};

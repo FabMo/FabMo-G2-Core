@@ -123,7 +123,6 @@
 #define M4_POWER_MODE               MOTOR_POWER_MODE
 #define M4_POWER_LEVEL              MOTOR_POWER_LEVEL
 
-#if (MOTORS >= 5)
 #define M5_MOTOR_MAP                AXIS_B_EXTERNAL
 #define M5_STEP_ANGLE               1.8
 #define M5_TRAVEL_PER_REV           (0.5 * 25.4)
@@ -139,7 +138,6 @@
 #define M6_POLARITY                 0
 #define M6_POWER_MODE               MOTOR_POWER_MODE
 #define M6_POWER_LEVEL              MOTOR_POWER_LEVEL
-#endif
 
 // *** axis settings *********************************************************************************
 
