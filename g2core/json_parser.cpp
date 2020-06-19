@@ -26,6 +26,8 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+////** revert refactoring ...
+
 #include "g2core.h"
 #include "config.h"  // JSON sits on top of the config system
 #include "controller.h"
@@ -110,27 +112,50 @@ void json_parse_for_exec(char *str, bool execute)
         nv = nv_exec;
         status = _json_parser_execute(nv);          // execute the command
     }
-    sr_request_status_report(SR_REQUEST_TIMED);     // generate incremental status report to show any changes
+////##    sr_request_status_report(SR_REQUEST_TIMED);     // generate incremental status report to show any changes
 }
 
+////##
+// static stat_t _json_parser_execute(nvObj_t *nv) {
+
+//     do {
+//         if (nv->valuetype == TYPE_PARENT) {         // added as partial fix for Issue #298:
+//                                                     // Reading values with nested JSON changes values in inches mode
+//             if (strcmp(nv->token, "sr") == 0) {     // Hack to execute Set Status Report (SR parent) See end note (*)
+//                 return (nv_set(nv));
+//             }
+
+//         } else if (nv->valuetype == TYPE_NULL) {    // means run the GET function to get the value
+//             ritorno(nv_get(nv));                    // ritorno returns w/status on any errors
+//             if (nv->valuetype == TYPE_PARENT) {     // This will be true if you read a group. Exit now
+//                 return (STAT_OK);
+//             }
+//         } else {                                    // otherwise, run the SET function
+//             cm_parse_clear(*nv->stringp);           // parse Gcode and clear alarms if M30 or M2 is found
+//             ritorno(cm_is_alarmed());               // return error status if in alarm, shutdown or panic
+//             ritorno(nv_set(nv));                    // run the SET function  to set value or execute something (e.g. gcode)
+//             nv_persist(nv);
+//         }
+//         if ((nv = nv->nx) == NULL) {
+//             return (STAT_JSON_TOO_MANY_PAIRS);      // Not supposed to encounter a NULL
+//         }
+//     } while (nv->valuetype != TYPE_EMPTY);
+
+//     return (STAT_OK);                               // only successful commands exit through this point
+// }
+////## reversion
 static stat_t _json_parser_execute(nvObj_t *nv) {
 
     do {
-        if (nv->valuetype == TYPE_PARENT) {         // added as partial fix for Issue #298:
-                                                    // Reading values with nested JSON changes values in inches mode
-            if (strcmp(nv->token, "sr") == 0) {     // Hack to execute Set Status Report (SR parent) See end note (*)
-                return (nv_set(nv));
-            }
-
-        } else if (nv->valuetype == TYPE_NULL) {    // means run the GET function to get the value
+        if (nv->valuetype == TYPE_NULL) {           // means GET the value
             ritorno(nv_get(nv));                    // ritorno returns w/status on any errors
             if (nv->valuetype == TYPE_PARENT) {     // This will be true if you read a group. Exit now
                 return (STAT_OK);
             }
-        } else {                                    // otherwise, run the SET function
+        } else {
             cm_parse_clear(*nv->stringp);           // parse Gcode and clear alarms if M30 or M2 is found
             ritorno(cm_is_alarmed());               // return error status if in alarm, shutdown or panic
-            ritorno(nv_set(nv));                    // run the SET function  to set value or execute something (e.g. gcode)
+            ritorno(nv_set(nv));                    // set value or call a function (e.g. gcode)
             nv_persist(nv);
         }
         if ((nv = nv->nx) == NULL) {
@@ -140,6 +165,7 @@ static stat_t _json_parser_execute(nvObj_t *nv) {
 
     return (STAT_OK);                               // only successful commands exit through this point
 }
+////##
 
 // (*) Note: The JSON / token system is essentially flat, as it was derived from a command-line flat-ASCII approach
 //     If the JSON objects had proper recursive descent handlers that just passed the remaining string (at that level)
@@ -299,23 +325,37 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
         nv->valuetype = TYPE_NULL;
         nv->value_int = TYPE_NULL;
 
+////##
+    // // numbers
+    // } else if (isdigit(**pstr) || (**pstr == '-')) {    // value is a number
+    //     nv->value_int = atol(*pstr);                    // get the number as an integer
+    //     nv->value_flt = strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
+
+    //     if ((tmp == *pstr) ||                           // if start pointer equals end the conversion failed
+    //         (strchr(terminators, *tmp) == NULL)) {      // terminators are the only legal chars at the end of a number
+    //         nv->valuetype = TYPE_NULL;                  // report back an error
+    //         return (STAT_BAD_NUMBER_FORMAT);
+    //     }
+
+    //     // if the double value is the same as the int, mark it as a TYPE_INTEGER
+    //     if ((int32_t)std::floor(nv->value_flt) == nv->value_int) {
+    //         nv->valuetype = TYPE_INTEGER;
+    //     } else {
+    //         nv->valuetype = TYPE_FLOAT;
+    //     }
+////##
     // numbers
     } else if (isdigit(**pstr) || (**pstr == '-')) {    // value is a number
         nv->value_int = atol(*pstr);                    // get the number as an integer
-        nv->value_flt = strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
+        nv->value_flt = (float)strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
 
         if ((tmp == *pstr) ||                           // if start pointer equals end the conversion failed
             (strchr(terminators, *tmp) == NULL)) {      // terminators are the only legal chars at the end of a number
             nv->valuetype = TYPE_NULL;                  // report back an error
             return (STAT_BAD_NUMBER_FORMAT);
         }
-
-        // if the double value is the same as the int, mark it as a TYPE_INTEGER
-        if ((int32_t)std::floor(nv->value_flt) == nv->value_int) {
-            nv->valuetype = TYPE_INTEGER;
-        } else {
-            nv->valuetype = TYPE_FLOAT;
-        }
+        nv->valuetype = TYPE_FLOAT;
+////##
 
 
         // object parent
@@ -435,7 +475,7 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                     }
                 case (TYPE_PARENT): {   *str++ = '{';
                                         need_a_comma = false;
-                                        prev_depth++; // make sure empty objects are closed
+////##                                        prev_depth++; // make sure empty objects are closed
                                         break;
                                     }
                 case (TYPE_FLOAT):  {   convert_outgoing_float(nv);
