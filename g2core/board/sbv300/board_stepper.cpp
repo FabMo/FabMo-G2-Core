@@ -66,27 +66,33 @@ StepDirStepper<Motate::kSocket4_StepPinNumber,
                Motate::kSocket4_VrefPinNumber>
     motor_4{M4_STEP_POLARITY, M4_ENABLE_POLARITY};
 
-// StepDirStepper<
-//    Motate::kSocket5_StepPinNumber,
-//    Motate::kSocket5_DirPinNumber,
-//    Motate::kSocket5_EnablePinNumber,
-//    Motate::kSocket5_Microstep_0PinNumber,
-//    Motate::kSocket5_Microstep_1PinNumber,
-//    Motate::kSocket5_Microstep_2PinNumber,
-//    Motate::kSocket5_VrefPinNumber>
-//  motor_5 {M5_STEP_POLARITY, M5_ENABLE_POLARITY};
+StepDirStepper<Motate::kSocket5_StepPinNumber,
+               Motate::kSocket5_DirPinNumber,
+               Motate::kSocket5_EnablePinNumber,
+               Motate::kSocket5_Microstep_0PinNumber,
+               Motate::kSocket5_Microstep_1PinNumber,
+               Motate::kSocket5_Microstep_2PinNumber,
+               Motate::kSocket5_VrefPinNumber>
+    motor_5 {M5_STEP_POLARITY, M5_ENABLE_POLARITY};
 
-// StepDirStepper<
-//    Motate::kSocket6_StepPinNumber,
-//    Motate::kSocket6_DirPinNumber,
-//    Motate::kSocket6_EnablePinNumber,
-//    Motate::kSocket6_Microstep_0PinNumber,
-//    Motate::kSocket6_Microstep_1PinNumber,
-//    Motate::kSocket6_Microstep_2PinNumber,
-//    Motate::kSocket6_VrefPinNumber>
-//  motor_6 {M6_STEP_POLARITY, M6_ENABLE_POLARITY};
+StepDirStepper<Motate::kSocket6_StepPinNumber,
+               Motate::kSocket6_DirPinNumber,
+               Motate::kSocket6_EnablePinNumber,
+               Motate::kSocket6_Microstep_0PinNumber,
+               Motate::kSocket6_Microstep_1PinNumber,
+               Motate::kSocket6_Microstep_2PinNumber,
+               Motate::kSocket6_VrefPinNumber>
+    motor_6 {M6_STEP_POLARITY, M6_ENABLE_POLARITY};
 
-Stepper* Motors[MOTORS] = {&motor_1, &motor_2, &motor_3, &motor_4};
+//#if HAS_LASER
+//// laser_tool is defined over in hardware.cpp
+//extern LaserTool_used_t laser_tool;
+//LaserTool_used_t &motor_6 = laser_tool;
+//Stepper* const Motors[MOTORS] = {&motor_1, &motor_2, &motor_3, &motor_4, &motor_5};
+//#else
+//Stepper* const Motors[MOTORS] = {&motor_1, &motor_2, &motor_3, &motor_4, &motor_5, &motor_6};
+Stepper* Motors[MOTORS] = {&motor_1, &motor_2, &motor_3, &motor_4, &motor_5, &motor_6};
+//#endif
 
 void board_stepper_init() {
     for (uint8_t motor = 0; motor < MOTORS; motor++) { Motors[motor]->init(); }

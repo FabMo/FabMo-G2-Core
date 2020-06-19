@@ -68,25 +68,34 @@ extern StepDirStepper<Motate::kSocket4_StepPinNumber,
                       Motate::kSocket4_VrefPinNumber>
     motor_4;
 
-// extern StepDirStepper<
-//    Motate::kSocket5_StepPinNumber,
-//    Motate::kSocket5_DirPinNumber,
-//    Motate::kSocket5_EnablePinNumber,
-//    Motate::kSocket5_Microstep_0PinNumber,
-//    Motate::kSocket5_Microstep_1PinNumber,
-//    Motate::kSocket5_Microstep_2PinNumber,
-//    Motate::kSocket5_VrefPinNumber> motor_5;
+extern StepDirStepper<Motate::kSocket5_StepPinNumber,
+                      Motate::kSocket5_DirPinNumber,
+                      Motate::kSocket5_EnablePinNumber,
+                      Motate::kSocket5_Microstep_0PinNumber,
+                      Motate::kSocket5_Microstep_1PinNumber,
+                      Motate::kSocket5_Microstep_2PinNumber,
+                      Motate::kSocket5_VrefPinNumber>
+    motor_5;
 
-// extern StepDirStepper<
-//    Motate::kSocket6_StepPinNumber,
-//    Motate::kSocket6_DirPinNumber,
-//    Motate::kSocket6_EnablePinNumber,
-//    Motate::kSocket6_Microstep_0PinNumber,
-//    Motate::kSocket6_Microstep_1PinNumber,
-//    Motate::kSocket6_Microstep_2PinNumber,
-//    Motate::kSocket6_VrefPinNumber> motor_6 {};
+extern StepDirStepper<Motate::kSocket6_StepPinNumber,
+                      Motate::kSocket6_DirPinNumber,
+                      Motate::kSocket6_EnablePinNumber,
+                      Motate::kSocket6_Microstep_0PinNumber,
+                      Motate::kSocket6_Microstep_1PinNumber,
+                      Motate::kSocket6_Microstep_2PinNumber,
+                      Motate::kSocket6_VrefPinNumber>
+    motor_6;
+
+//#if HAS_LASER
+//#include "laser_toolhead.h"
+//#include "kinematics_cartesian.h"
+//typedef LaserTool<BASE_KINEMATICS, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
+//extern LaserTool_used_t &motor_6;
+//#endif
 
 extern Stepper* Motors[MOTORS];
+
+extern ExternalEncoder* const ExternalEncoders[0];
 
 void board_stepper_init();
 

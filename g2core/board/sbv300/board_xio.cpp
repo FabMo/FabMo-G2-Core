@@ -50,10 +50,11 @@ decltype(usb.mixin<0>::Serial) &SerialUSB = usb.mixin<0>::Serial;
 decltype(usb.mixin<1>::Serial) &SerialUSB1 = usb.mixin<1>::Serial;
 #endif
 
-MOTATE_SET_USB_VENDOR_STRING( u"Synthetos" )
-MOTATE_SET_USB_PRODUCT_STRING( u"TinyG v2" )
+MOTATE_SET_USB_VENDOR_STRING( u"ShopBot" )
+MOTATE_SET_USB_PRODUCT_STRING( u"FabMo-G2" )
 MOTATE_SET_USB_SERIAL_NUMBER_STRING_FROM_CHIPID()
 #endif // XIO_HAS_USB
+
 
 
 //******** SPI ********
@@ -64,26 +65,28 @@ Motate::SPI<kSocket4_SPISlaveSelectPinNumber> spi;
 
 //******** UART ********
 #if XIO_HAS_UART
-Motate::UART<Motate::kSerial_RXPinNumber, Motate::kSerial_TXPinNumber, Motate::kSerial_RTSPinNumber, Motate::kSerial_CTSPinNumber> Serial {115200, Motate::UARTMode::RTSCTSFlowControl};
+Motate::UART<Motate::kSerial_RXPinNumber, Motate::kSerial_TXPinNumber, Motate::kSerial_RTSPinNumber, Motate::kSerial_CTSPinNumber> Serial{
+    115200, Motate::UARTMode::RTSCTSFlowControl};
 #endif
 
-void board_hardware_init(void) // called 1st
+void board_hardware_init(void)  // called 1st
 {
 #if XIO_HAS_USB
     // Init USB
-    usb.attach();
+    usb.attach();                   // USB setup. Runs in "background" as the rest of this executes
+    usb.checkAndHandleVbusChange();
 #endif // XIO_HAS_USB
 }
 
 
-void board_xio_init(void) // called later than board_hardware_init (there are thing in between)
+void board_xio_init(void)  // called later than board_hardware_init (there are thing in between)
 {
-    // Init SPI
+// Init SPI
 #if XIO_HAS_SPI
-    // handled internally for now
+// handled internally for now
 #endif
 
-    // Init UART
+// Init UART
 #if XIO_HAS_UART
     Serial.init();
 #endif

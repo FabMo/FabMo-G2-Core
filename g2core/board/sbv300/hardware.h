@@ -30,7 +30,11 @@
  */
 
 #include "config.h"
+#include "settings.h"
 #include "error.h"
+
+#include "MotateUtilities.h" // for HOT_FUNC and HOT_DATA
+
 
 #ifndef HARDWARE_H_ONCE
 #define HARDWARE_H_ONCE
@@ -38,14 +42,26 @@
 /*--- Hardware platform enumerations ---*/
 
 #define G2CORE_HARDWARE_PLATFORM    "sbv300"
-#define G2CORE_HARDWARE_VERSION     "k"
+#define G2CORE_HARDWARE_VERSION     "na"
+
+#ifndef HAS_LASER
+#if HAS_HOBBY_SERVO_MOTOR
+#error Can NOT have a laser and a hobby servo at the same time, sorry
+#endif
+#define HAS_LASER 0
+#endif
 
 /***** Motors & PWM channels supported by this hardware *****/
 // These must be defines (not enums) so expressions like this:
 //  #if (MOTORS >= 6)  will work
 
-#define MOTORS 4                    // number of motors supported the hardware
+#if HAS_LASER
+#define MOTORS 7                    // number of motors + one "laser" motor (used for pulsing the laser in sync)
+#else
+#define MOTORS 6                    // number of motors supported the hardware
+#endif
 #define PWMS 2                      // number of PWM channels supported the hardware
+#define AXES 6                      // axes to support -- must be 6 or 9
 
 /*************************
  * Global System Defines *
@@ -61,6 +77,7 @@
 
 #include "MotatePins.h"
 #include "MotateTimers.h"           // for TimerChanel<> and related...
+#include "MotateUtilities.h"           // for TimerChanel<> and related...
 
 using Motate::TimerChannel;
 
@@ -103,6 +120,10 @@ using Motate::OutputPin;
 //#define FREQUENCY_DDA		200000UL		// Hz step frequency. Interrupts actually fire at 2x (400 KHz)
 #define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz)
 #define FREQUENCY_DWELL		1000UL
+#define MIN_SEGMENT_MS ((float)1.0)
+
+#define PLANNER_QUEUE_SIZE (48)
+#define SECONDARY_QUEUE_SIZE (10)
 
 /**** Motate Definitions ****/
 
@@ -150,8 +171,10 @@ static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
  * Function Prototypes (Common) *
  ********************************/
 
+const configSubtable *const getSysConfig_3();
+
 void hardware_init(void);			// master hardware init
-stat_t hardware_periodic();  // callback from the main loop (time sensitive)
+stat_t hardware_periodic();         // callback from the main loop (time sensitive)
 void hw_hard_reset(void);
 stat_t hw_flash(nvObj_t *nv);
 

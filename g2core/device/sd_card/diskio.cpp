@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <memory>
 
-#include "board_spi.h"
+//#include "board_spi.h"
 
 // Card Detect Pin
 Motate::InputPin<Motate::kSD_CardDetectPinNumber> cdPin;

@@ -26,7 +26,7 @@
  */
 
 /***********************************************************************/
-/**** Shopbot Test profile ******************************************/
+/**** Shopbot profile ******************************************/
 /***********************************************************************/
 /*
  * NOTES:
@@ -39,7 +39,9 @@
 //**** GLOBAL / GENERAL SETTINGS ******************************************************
 
 #define JUNCTION_INTEGRATION_TIME   0.8     // cornering - between 0.10 and 2.00 (higher is faster)
-#define CHORDAL_TOLERANCE           0.0001  // chordal accuracy for arc drawing (in mm)
+#define CHORDAL_TOLERANCE           0.001   // chordal accuracy for arc drawing (in mm)
+
+#define HAS_LASER                   0       // We don't have a laser
 
 #define SOFT_LIMIT_ENABLE           0       // 0=off, 1=on
 #define HARD_LIMIT_ENABLE           1       // 0=off, 1=on
@@ -49,10 +51,18 @@
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
 #define SPINDLE_SPINUP_DELAY        1.0
+#define SPINDLE_SPEED_CHANGE_PER_MS 7.0
 
 #define COOLANT_MIST_POLARITY       1       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1       // 0=active low, 1=active high
 #define COOLANT_PAUSE_ON_HOLD       true
+
+#define MIST_ENABLE_OUTPUT_NUMBER   0
+#define FLOOD_ENABLE_OUTPUT_NUMBER  0
+
+#define SPINDLE_ENABLE_OUTPUT_NUMBER    0
+#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
+#define SPINDLE_PWM_NUMBER              0
 
 #define FEEDHOLD_Z_LIFT             (0.5 * 25.4)
 
@@ -71,7 +81,7 @@
 #define QUEUE_REPORT_VERBOSITY      QR_TRIPLE           // one of: QR_OFF, QR_SINGLE, QR_TRIPLE
 
 #define STATUS_REPORT_VERBOSITY     SR_FILTERED         // one of: SR_OFF, SR_FILTERED, SR_VERBOSE
-#define STATUS_REPORT_MIN_MS        200                 // milliseconds - enforces a viable minimum
+#define STATUS_REPORT_MIN_MS        100                 // milliseconds - enforces a viable minimum
 #define STATUS_REPORT_INTERVAL_MS   250                 // milliseconds - set $SV=0 to disable
 
 #define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", \
@@ -123,7 +133,6 @@
 #define M4_POWER_MODE               MOTOR_POWER_MODE
 #define M4_POWER_LEVEL              MOTOR_POWER_LEVEL
 
-#if (MOTORS >= 5)
 #define M5_MOTOR_MAP                AXIS_B_EXTERNAL
 #define M5_STEP_ANGLE               1.8
 #define M5_TRAVEL_PER_REV           (0.5 * 25.4)
@@ -139,7 +148,6 @@
 #define M6_POLARITY                 0
 #define M6_POWER_MODE               MOTOR_POWER_MODE
 #define M6_POWER_LEVEL              MOTOR_POWER_LEVEL
-#endif
 
 // *** axis settings *********************************************************************************
 
@@ -251,70 +259,88 @@
 */
 
 // Xmin on v9 board
-#define DI1_MODE IO_MODE_DISABLED
+#define DI1_ENABLED IO_ENABLED
+#define DI1_POLARITY IO_ACTIVE_LOW
 #define DI1_ACTION INPUT_ACTION_NONE
-#define DI1_FUNCTION INPUT_FUNCTION_NONE
 
 // Xmax
-#define DI2_MODE IO_MODE_DISABLED
+#define DI2_ENABLED IO_ENABLED
+#define DI2_POLARITY IO_ACTIVE_LOW
 #define DI2_ACTION INPUT_ACTION_NONE
-#define DI2_FUNCTION INPUT_FUNCTION_NONE
 
 // Ymin
-#define DI3_MODE IO_MODE_DISABLED
+#define DI3_ENABLED IO_ENABLED
+#define DI3_POLARITY IO_ACTIVE_LOW
 #define DI3_ACTION INPUT_ACTION_NONE
-#define DI3_FUNCTION INPUT_FUNCTION_NONE
 
 // Ymax
-#define DI4_MODE IO_MODE_DISABLED
+#define DI4_ENABLED IO_ENABLED
+#define DI4_POLARITY IO_ACTIVE_LOW
 #define DI4_ACTION INPUT_ACTION_NONE
-#define DI4_FUNCTION INPUT_FUNCTION_NONE
 
 // Zmin
-#define DI5_MODE IO_MODE_DISABLED
+#define DI5_ENABLED IO_ENABLED
+#define DI5_POLARITY IO_ACTIVE_LOW
 #define DI5_ACTION INPUT_ACTION_NONE
-#define DI5_FUNCTION INPUT_FUNCTION_NONE
 
 // Zmax
-#define DI6_MODE IO_MODE_DISABLED
+#define DI6_ENABLED IO_ENABLED
+#define DI6_POLARITY IO_ACTIVE_LOW
 #define DI6_ACTION INPUT_ACTION_NONE
-#define DI6_FUNCTION INPUT_FUNCTION_NONE
 
 // Amin
-#define DI7_MODE IO_MODE_DISABLED
+#define DI7_ENABLED IO_ENABLED
+#define DI7_POLARITY IO_ACTIVE_LOW
 #define DI7_ACTION INPUT_ACTION_NONE
-#define DI7_FUNCTION INPUT_FUNCTION_NONE
 
 // Amax
-#define DI8_MODE IO_MODE_DISABLED
+#define DI8_ENABLED IO_ENABLED
+#define DI8_POLARITY IO_ACTIVE_LOW
 #define DI8_ACTION INPUT_ACTION_NONE
-#define DI8_FUNCTION INPUT_FUNCTION_NONE
 
 // Safety line
-#define DI9_MODE IO_MODE_DISABLED
+#define DI9_ENABLED IO_ENABLED
+#define DI9_POLARITY IO_ACTIVE_LOW
 #define DI9_ACTION INPUT_ACTION_NONE
-#define DI9_FUNCTION INPUT_FUNCTION_NONE
 
-// Extruder1_PWM
-#define DO1_MODE IO_ACTIVE_HIGH
-// Extruder2_PWM
-#define DO2_MODE IO_ACTIVE_HIGH
-// Fan1A_PWM
-#define DO3_MODE IO_ACTIVE_HIGH
-// Fan1B_PWM
-#define DO4_MODE IO_ACTIVE_HIGH
-#define DO5_MODE IO_ACTIVE_HIGH
-#define DO6_MODE IO_ACTIVE_HIGH
-#define DO7_MODE IO_ACTIVE_HIGH
-#define DO8_MODE IO_ACTIVE_HIGH
+// ?
+#define DI10_ENABLED IO_ENABLED
+#define DI10_POLARITY IO_ACTIVE_LOW
+#define DI10_ACTION INPUT_ACTION_NONE
+
+// ??Extruder1_PWM
+#define DO1_ENABLED IO_ENABLED
+#define DO1_POLARITY IO_ACTIVE_HIGH
+// ??Extruder2_PWM
+#define DO2_ENABLED IO_ENABLED
+#define DO2_POLARITY IO_ACTIVE_HIGH
+// ??Fan1A_PWM
+#define DO3_ENABLED IO_ENABLED
+#define DO3_POLARITY IO_ACTIVE_HIGH
+// ??Fan1B_PWM
+#define DO4_ENABLED IO_ENABLED
+#define DO4_POLARITY IO_ACTIVE_HIGH
+#define DO5_ENABLED IO_ENABLED
+#define DO5_POLARITY IO_ACTIVE_HIGH
+#define DO6_ENABLED IO_ENABLED
+#define DO6_POLARITY IO_ACTIVE_HIGH
+#define DO7_ENABLED IO_ENABLED
+#define DO7_POLARITY IO_ACTIVE_HIGH
+#define DO8_ENABLED IO_ENABLED
+#define DO8_POLARITY IO_ACTIVE_HIGH
 // SAFEin (Output) signal
-#define DO9_MODE IO_ACTIVE_HIGH
-#define DO10_MODE IO_ACTIVE_HIGH
+#define DO9_ENABLED IO_ENABLED
+#define DO9_POLARITY IO_ACTIVE_HIGH
+#define DO10_ENABLED IO_ENABLED
+#define DO10_POLARITY IO_ACTIVE_HIGH
 // Header Bed FET
-#define DO11_MODE IO_ACTIVE_HIGH
+#define DO11_ENABLED IO_ENABLED
+#define DO11_POLARITY IO_ACTIVE_HIGH
 // Indicator_LED
-#define DO12_MODE IO_ACTIVE_HIGH
-#define DO13_MODE IO_ACTIVE_HIGH
+#define DO12_ENABLED IO_ENABLED
+#define DO12_POLARITY IO_ACTIVE_HIGH
+#define DO13_ENABLED IO_ENABLED
+#define DO13_POLARITY IO_ACTIVE_HIGH
 
 /*** Handle optional modules that may not be in every machine ***/
 

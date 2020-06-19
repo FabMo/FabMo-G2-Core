@@ -30,7 +30,7 @@ endif
 
 
 ##########
-# The general g2core-due BASE_BOARD.
+# The general ShopBot BASE_BOARD.
 
 ifeq ("$(BASE_BOARD)","sbv300")
     _BOARD_FOUND = 1
@@ -44,7 +44,7 @@ ifeq ("$(BASE_BOARD)","sbv300")
     CHIP_LOWERCASE = sam3x8e
 
     BOARD_PATH = ./board/sbv300
-    SOURCE_DIRS += ${BOARD_PATH} device/step_dir_driver
+    SOURCE_DIRS += ${BOARD_PATH} device/step_dir_driver device/esc_spindle device/laser_toolhead
 
     PLATFORM_BASE = ${MOTATE_PATH}/platform/atmel_sam
 
