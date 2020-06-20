@@ -115,47 +115,25 @@ void json_parse_for_exec(char *str, bool execute)
 ////##    sr_request_status_report(SR_REQUEST_TIMED);     // generate incremental status report to show any changes
 }
 
-////##
-// static stat_t _json_parser_execute(nvObj_t *nv) {
-
-//     do {
-//         if (nv->valuetype == TYPE_PARENT) {         // added as partial fix for Issue #298:
-//                                                     // Reading values with nested JSON changes values in inches mode
-//             if (strcmp(nv->token, "sr") == 0) {     // Hack to execute Set Status Report (SR parent) See end note (*)
-//                 return (nv_set(nv));
-//             }
-
-//         } else if (nv->valuetype == TYPE_NULL) {    // means run the GET function to get the value
-//             ritorno(nv_get(nv));                    // ritorno returns w/status on any errors
-//             if (nv->valuetype == TYPE_PARENT) {     // This will be true if you read a group. Exit now
-//                 return (STAT_OK);
-//             }
-//         } else {                                    // otherwise, run the SET function
-//             cm_parse_clear(*nv->stringp);           // parse Gcode and clear alarms if M30 or M2 is found
-//             ritorno(cm_is_alarmed());               // return error status if in alarm, shutdown or panic
-//             ritorno(nv_set(nv));                    // run the SET function  to set value or execute something (e.g. gcode)
-//             nv_persist(nv);
-//         }
-//         if ((nv = nv->nx) == NULL) {
-//             return (STAT_JSON_TOO_MANY_PAIRS);      // Not supposed to encounter a NULL
-//         }
-//     } while (nv->valuetype != TYPE_EMPTY);
-
-//     return (STAT_OK);                               // only successful commands exit through this point
-// }
-////## reversion
+////## see below
 static stat_t _json_parser_execute(nvObj_t *nv) {
 
     do {
-        if (nv->valuetype == TYPE_NULL) {           // means GET the value
+        if (nv->valuetype == TYPE_PARENT) {         // added as partial fix for Issue #298:
+                                                    // Reading values with nested JSON changes values in inches mode
+            if (strcmp(nv->token, "sr") == 0) {     // Hack to execute Set Status Report (SR parent) See end note (*)
+                return (nv_set(nv));
+            }
+
+        } else if (nv->valuetype == TYPE_NULL) {    // means run the GET function to get the value
             ritorno(nv_get(nv));                    // ritorno returns w/status on any errors
             if (nv->valuetype == TYPE_PARENT) {     // This will be true if you read a group. Exit now
                 return (STAT_OK);
             }
-        } else {
+        } else {                                    // otherwise, run the SET function
             cm_parse_clear(*nv->stringp);           // parse Gcode and clear alarms if M30 or M2 is found
             ritorno(cm_is_alarmed());               // return error status if in alarm, shutdown or panic
-            ritorno(nv_set(nv));                    // set value or call a function (e.g. gcode)
+            ritorno(nv_set(nv));                    // run the SET function  to set value or execute something (e.g. gcode)
             nv_persist(nv);
         }
         if ((nv = nv->nx) == NULL) {
@@ -165,6 +143,29 @@ static stat_t _json_parser_execute(nvObj_t *nv) {
 
     return (STAT_OK);                               // only successful commands exit through this point
 }
+////## reversion
+////## this section first per 8/2019 then to edge (which is same as edge-preview)
+// static stat_t _json_parser_execute(nvObj_t *nv) {
+
+//     do {
+//         if (nv->valuetype == TYPE_NULL) {           // means GET the value
+//             ritorno(nv_get(nv));                    // ritorno returns w/status on any errors
+//             if (nv->valuetype == TYPE_PARENT) {     // This will be true if you read a group. Exit now
+//                 return (STAT_OK);
+//             }
+//         } else {
+//             cm_parse_clear(*nv->stringp);           // parse Gcode and clear alarms if M30 or M2 is found
+//             ritorno(cm_is_alarmed());               // return error status if in alarm, shutdown or panic
+//             ritorno(nv_set(nv));                    // set value or call a function (e.g. gcode)
+//             nv_persist(nv);
+//         }
+//         if ((nv = nv->nx) == NULL) {
+//             return (STAT_JSON_TOO_MANY_PAIRS);      // Not supposed to encounter a NULL
+//         }
+//     } while (nv->valuetype != TYPE_EMPTY);
+
+//     return (STAT_OK);                               // only successful commands exit through this point
+// }
 ////##
 
 // (*) Note: The JSON / token system is essentially flat, as it was derived from a command-line flat-ASCII approach
@@ -504,7 +505,8 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         }
                                         break;
                                     }
-                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_int;
+////## per later correction                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_int;
+                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_flt;
                                         str += sprintf(str, "\"0x%lx\"", *v);
                                         break;
                                     }
