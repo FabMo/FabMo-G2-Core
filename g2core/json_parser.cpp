@@ -505,8 +505,8 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
                                         }
                                         break;
                                     }
-////## per later correction                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_int;
-                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_flt;
+                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_int;
+////## later correction accepted                case (TYPE_DATA):   {   uint32_t *v = (uint32_t*)&nv->value_flt;
                                         str += sprintf(str, "\"0x%lx\"", *v);
                                         break;
                                     }

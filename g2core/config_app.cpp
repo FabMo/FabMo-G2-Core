@@ -474,7 +474,6 @@ constexpr cfgItem_t di_config_items_1[] = {
     // Digital input configs
     // generated with ${PROJECT_ROOT}/Resources/generate_dins_cfgArray.js
 
-
 #if (D_IN_CHANNELS >= 1)
     { "di1","di1en",_bip,   0, din_print_en, din_get_en, din_set_en, &din1,  DI1_ENABLED },
     { "di1","di1po",_iip,   0, din_print_po, din_get_po, din_set_po, &din1,  DI1_POLARITY },
