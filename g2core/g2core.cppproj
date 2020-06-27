@@ -21,22 +21,21 @@
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <eraseonlaunchrule>1</eraseonlaunchrule>
     <AsfVersion>3.5.0</AsfVersion>
-    <avrtoolinterface>SWD</avrtoolinterface>
-    <avrtool>
-    </avrtool>
+    <avrtoolinterface>JTAG</avrtoolinterface>
+    <avrtool>com.atmel.avrdbg.tool.samice</avrtool>
     <com_atmel_avrdbg_tool_samice>
       <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
-      <ToolName>J-Link</ToolName>
-      <ToolNumber>50107300</ToolNumber>
+      <ToolName>SAM-ICE</ToolName>
+      <ToolNumber>28012829</ToolNumber>
       <Channel>
         <host>127.0.0.1</host>
         <port>1063</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
-        <InterfaceName>SWD</InterfaceName>
+        <InterfaceName>JTAG</InterfaceName>
         <InterfaceProperties>
-          <JtagDbgClock>0</JtagDbgClock>
+          <JtagDbgClock>4000000</JtagDbgClock>
           <JtagProgClock>1000000</JtagProgClock>
           <IspClock>150000</IspClock>
           <JtagInChain>false</JtagInChain>
@@ -46,7 +45,11 @@
           <JtagInstrBitsBefore>0</JtagInstrBitsBefore>
           <JtagInstrBitsAfter>0</JtagInstrBitsAfter>
           <SwdClock>4000000</SwdClock>
+          <JtagSelectedDeviceIndexInChain>0</JtagSelectedDeviceIndexInChain>
+          <JtagDaisyChainDevices>
+          </JtagDaisyChainDevices>
         </InterfaceProperties>
+        <JlinkConfigFile>C:\Users\Ted\Dropbox\GitHub\FabMo-G2-Core\g2core\jlink.config</JlinkConfigFile>
       </ToolOptions>
     </com_atmel_avrdbg_tool_samice>
     <AsfFrameworkConfig>
@@ -101,8 +104,8 @@
       <HWProgramCounterSampling>True</HWProgramCounterSampling>
     </PercepioTrace>
     <preserveEEPROM>true</preserveEEPROM>
-    <avrtoolserialnumber>50107300</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x284E0A60</avrdeviceexpectedsignature>
+    <avrtoolserialnumber>28012829</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x285E0A60</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>4000000</avrtoolinterfaceclock>
     <custom>
       <ToolOptions xmlns="">

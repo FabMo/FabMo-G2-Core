@@ -1861,6 +1861,10 @@ static int8_t _axis(const nvObj_t *nv)
     // if (strcmp("sys", cfgTmp.group) == 0) {
     //     return (AXIS_TYPE_SYSTEM);
     // }
+////## uncommented th
+    if (strcmp("sys", cfgTmp.group) == 0) {
+        return (AXIS_TYPE_SYSTEM);
+    }
 
     // if the leading character of the token is a number it's a motor
     char c = cfgTmp.token[0];
@@ -1868,6 +1872,10 @@ static int8_t _axis(const nvObj_t *nv)
     // if (isdigit(c)) {
     //     return(st_cfg.mot[c-0x31].motor_map);   // return the axis associated with the motor
     // }
+//#### uncommented th
+    if (isdigit(c)) {
+        return(st_cfg.mot[c-0x31].motor_map);   // return the axis associated with the motor
+    }
 
     // otherwise it's an axis. Or undefined, which is usually a global.
     char *ptr;
