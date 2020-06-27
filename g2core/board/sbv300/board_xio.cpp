@@ -56,7 +56,6 @@ MOTATE_SET_USB_SERIAL_NUMBER_STRING_FROM_CHIPID()
 #endif // XIO_HAS_USB
 
 
-
 //******** SPI ********
 #if XIO_HAS_SPI
 Motate::SPI<kSocket4_SPISlaveSelectPinNumber> spi;

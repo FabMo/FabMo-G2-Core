@@ -134,7 +134,7 @@ typedef TimerChannel<5,0> fwd_plan_timer_type;	// request exec timer in stepper.
 
 // Pin assignments
 
-pin_number indicator_led_pin_num = Motate::kLED_USBRXPinNumber;
+pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
 static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
 
 // Init these to input to keep them high-z
@@ -164,6 +164,8 @@ static OutputPin<Motate::kSpindle_DirPinNumber> spindle_dir_pin;
 //static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
 static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
 static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
+
+static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;
 
 // Input pins are defined in gpio.cpp
 
