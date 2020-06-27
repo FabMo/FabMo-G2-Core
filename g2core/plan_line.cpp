@@ -48,7 +48,7 @@ extern OutputPin<Motate::kDebug3_PinNumber> debug_pin3;
 
 // planner helper functions
 static mpBuf_t* _plan_block(mpBuf_t* bf);
-static void _calculate_override(mpBuf_t* bf);
+//#### static void _calculate_override(mpBuf_t* bf);
 static void _calculate_jerk(mpBuf_t* bf);
 static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[]);
 static void _calculate_junction_vmax(mpBuf_t* bf);
