@@ -90,6 +90,9 @@
 
 // Some pins, if the PWM capability is turned on, it will cause timer conflicts.
 // So we have to explicity enable them as PWM pins.
+////## Don't understand what we should be doing here??? arbitrary at moment;
+////##     What PWM's wanted/needed ???
+////##     Can we make these other potential indicatiors useful in some way?
 #define OUTPUT1_PWM 0
 #define OUTPUT2_PWM 0
 #define OUTPUT3_PWM 0
@@ -107,6 +110,7 @@
 namespace Motate {
 
     _MAKE_MOTATE_PIN(kOutput1_PinNumber         , 'A',  0);
+    _MAKE_MOTATE_PIN(kUnassigned1               , 'A',  1);
     _MAKE_MOTATE_PIN(kUnassigned2               , 'A',  2);
     _MAKE_MOTATE_PIN(kUnassigned3               , 'A',  3);
     _MAKE_MOTATE_PIN(kUnassigned4               , 'A',  4);
@@ -118,17 +122,17 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kUnassigned10              , 'A', 10);
     _MAKE_MOTATE_PIN(kUnassigned11              , 'A', 11);
 
-    _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A',  12);
-    _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A',  13);
+    _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 12);
+    _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A', 13);
 
     _MAKE_MOTATE_PIN(kInput14_PinNumber         , 'A', 14);
     _MAKE_MOTATE_PIN(kInput13_PinNumber         , 'A', 15);
     _MAKE_MOTATE_PIN(kUnassigned16              , 'A', 16);
     _MAKE_MOTATE_PIN(kInput12_PinNumber         , 'A', 17);
-    _MAKE_MOTATE_PIN(kUnassigned18              , 'A', 18);
-    _MAKE_MOTATE_PIN(kUnassigned19              , 'A', 19);
+    _MAKE_MOTATE_PIN(kLED_USBRXPinNumber        , 'A', 18);
+    _MAKE_MOTATE_PIN(kLED_USBTXPinNumber        , 'A', 19);
     _MAKE_MOTATE_PIN(kUnassigned20              , 'A', 20);
-    _MAKE_MOTATE_PIN(kUnassigned21              , 'A', 21);
+    _MAKE_MOTATE_PIN(kDebug2_PinNumber          , 'A', 21);   // m50 [D5] Could be a General Indicator
     _MAKE_MOTATE_PIN(kUnassigned22              , 'A', 22);
     _MAKE_MOTATE_PIN(kUnassigned23              , 'A', 23);
     _MAKE_MOTATE_PIN(kUnassigned24              , 'A', 24);
@@ -165,14 +169,14 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kSocket2_DirPinNumber      , 'B', 24);
     _MAKE_MOTATE_PIN(kUnassigned49              , 'B', 25);
     _MAKE_MOTATE_PIN(kUnassigned50              , 'B', 26);
-    _MAKE_MOTATE_PIN(kLED_USBTXPinNumber        , 'B', 27);
+    _MAKE_MOTATE_PIN(kDebug1_PinNumber          , 'B', 27);    // m13 Heartbeat 
     _MAKE_MOTATE_PIN(kUnassigned51              , 'B', 28);
     _MAKE_MOTATE_PIN(kUnassigned52              , 'B', 29);
     _MAKE_MOTATE_PIN(kUnassigned53              , 'B', 30);
     _MAKE_MOTATE_PIN(kUnassigned54              , 'B', 31);
 
 
-    _MAKE_MOTATE_PIN(kLED_USBRXPinNumber        , 'C',  0);
+    _MAKE_MOTATE_PIN(kUnassigned18              , 'C',  0);
     _MAKE_MOTATE_PIN(kUnassigned55              , 'C',  1);
     _MAKE_MOTATE_PIN(kUnassigned56              , 'C',  2);
     _MAKE_MOTATE_PIN(kUnassigned57              , 'C',  3);
@@ -181,7 +185,7 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kUnassigned60              , 'C',  6);
     _MAKE_MOTATE_PIN(kUnassigned61              , 'C',  7);
     _MAKE_MOTATE_PIN(kUnassigned62              , 'C',  8);
-    _MAKE_MOTATE_PIN(kLEDPWM_PinNumber          , 'C',  9); // Heartbeat
+    _MAKE_MOTATE_PIN(kLEDPWM_PinNumber          , 'C',  9);    // m49 [D2] Could be a General Indicator??
     _MAKE_MOTATE_PIN(kInput3_PinNumber          , 'C', 10);
     _MAKE_MOTATE_PIN(kUnassigned64              , 'C', 11);
     _MAKE_MOTATE_PIN(kUnassigned65              , 'C', 12);
@@ -202,7 +206,7 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kSocket5_DirPinNumber      , 'C', 27);
     _MAKE_MOTATE_PIN(kSocket1_StepPinNumber     , 'C', 28);
     _MAKE_MOTATE_PIN(kUnassigned76              , 'C', 29);
-    _MAKE_MOTATE_PIN(kUnassigned77              , 'C', 30);
+    _MAKE_MOTATE_PIN(kDebug3_PinNumber          , 'C', 30);   // m51 [D6] Could be a General Indicator
     _MAKE_MOTATE_PIN(kUnassigned78              , 'C', 31);
 
     _MAKE_MOTATE_PIN(kInput11_PinNumber         , 'D',  1);

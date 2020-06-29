@@ -147,7 +147,7 @@ pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
 
-pin_number kSpindle_EnablePinNumber = 124;  // TODO enable spindle
+pin_number kSpindle_EnablePinNumber = -1;  ////## 124;  // TODO enable spindle
 pin_number kSpindle_DirPinNumber    = -1;
 
 pin_number kCoolant_EnablePinNumber = -1;
@@ -189,14 +189,14 @@ pin_number kOutput10_PinNumber = 133;
 
 pin_number kOutput11_PinNumber = 134;
 pin_number kOutput12_PinNumber = 135;
-pin_number kOutput13_PinNumber = -1;
+pin_number kOutput13_PinNumber = -1; 
 pin_number kOutput14_PinNumber = -1;
 pin_number kOutput15_PinNumber = -1;
 pin_number kOutput16_PinNumber = -1;
 
-pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC
-pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC
-pin_number kADC3_PinNumber  = -1;  // Extruder2_ADC
+pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC //?150
+pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC //?151
+pin_number kADC3_PinNumber  = -1;  // Extruder2_ADC //?152
 pin_number kADC4_PinNumber  = -1;  // 153;
 pin_number kADC5_PinNumber  = -1;  // 154;
 pin_number kADC6_PinNumber  = -1;  // 155;
@@ -207,8 +207,8 @@ pin_number kADC10_PinNumber = -1;  // 159;
 pin_number kADC11_PinNumber = -1;  // 160;
 pin_number kADC12_PinNumber = -1;  // 161;
 pin_number kADC13_PinNumber = -1;  // 162;
-pin_number kADC14_PinNumber = -1;  // Not physially pinned out
-pin_number kADC15_PinNumber = -1;  // Not physially pinned out
+pin_number kADC14_PinNumber = -1;  // Not physially pinned out //163
+pin_number kADC15_PinNumber = -1;  // Not physially pinned out //164
 
 // blank spots for unassigned pins - all unassigned pins need a unique number (do not re-use numbers)
 

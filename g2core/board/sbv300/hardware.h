@@ -118,7 +118,10 @@ using Motate::OutputPin;
 /**** Stepper DDA and dwell timer settings ****/
 
 //#define FREQUENCY_DDA		200000UL		// Hz step frequency. Interrupts actually fire at 2x (400 KHz)
-#define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz)
+#define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz) *Used in previous FabMo
+//#define FREQUENCY_DDA     100000UL        // Hz step frequency. Interrupts actually fire at 2x (200 KHz) *Speed of other boards!
+////##  this in 100.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
+
 #define FREQUENCY_DWELL		1000UL
 #define MIN_SEGMENT_MS ((float)1.0)
 
@@ -135,7 +138,8 @@ typedef TimerChannel<5,0> fwd_plan_timer_type;	// request exec timer in stepper.
 // Pin assignments
 
 pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
-static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
+////## static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
+static OutputPin<indicator_led_pin_num> IndicatorLed;
 
 // Init these to input to keep them high-z
 static Pin<Motate::kSPI0_MISOPinNumber> spi_miso_pin(Motate::kInput);
