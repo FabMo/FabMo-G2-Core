@@ -44,7 +44,7 @@
 #define HAS_LASER                   0       // We don't have a laser
 
 #define SOFT_LIMIT_ENABLE           0       // 0=off, 1=on
-#define HARD_LIMIT_ENABLE           1       // 0=off, 1=on
+#define HARD_LIMIT_ENABLE           1       // 0=off, 1=on    ////## should be on by default???
 #define SAFETY_INTERLOCK_ENABLE     1       // 0=off, 1=on
 
 #define SPINDLE_ENABLE_POLARITY     1       // 0=active low, 1=active high
@@ -89,7 +89,7 @@
                                "in1", "in2", "in3", "in4", "in5", "in6", "in7", "in8"
 
 // Gcode startup defaults
-#define GCODE_DEFAULT_UNITS         INCHES              // MILLIMETERS or INCHES
+#define GCODE_DEFAULT_UNITS         INCHES              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
 #define GCODE_DEFAULT_PLANE         CANON_PLANE_XY      // CANON_PLANE_XY, CANON_PLANE_XZ, or CANON_PLANE_YZ
 #define GCODE_DEFAULT_COORD_SYSTEM  G55                 // G54, G55, G56, G57, G58 or G59
 #define GCODE_DEFAULT_PATH_CONTROL  PATH_CONTINUOUS
