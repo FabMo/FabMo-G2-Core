@@ -120,10 +120,10 @@ using Motate::OutputPin;
 //#define FREQUENCY_DDA		200000UL		// Hz step frequency. Interrupts actually fire at 2x (400 KHz)
 #define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz) *Used in previous FabMo
 //#define FREQUENCY_DDA     100000UL        // Hz step frequency. Interrupts actually fire at 2x (200 KHz) *Speed of other boards!
-////##  this in 100.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
+////##  this in 101.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
 
 #define FREQUENCY_DWELL		1000UL
-#define MIN_SEGMENT_MS ((float)1.0)
+#define MIN_SEGMENT_MS ((float)0.5)        ////## trying shorter, default =.75 was 1.0 here but earlier at default (probably already tested)
 
 #define PLANNER_QUEUE_SIZE (48)
 #define SECONDARY_QUEUE_SIZE (10)
