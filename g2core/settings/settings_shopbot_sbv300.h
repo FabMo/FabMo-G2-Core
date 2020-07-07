@@ -78,7 +78,7 @@
 
 #define TEXT_VERBOSITY              TV_VERBOSE          // one of: TV_SILENT, TV_VERBOSE
 #define JSON_VERBOSITY              JV_CONFIGS          // one of: JV_SILENT, JV_FOOTER, JV_CONFIGS, JV_MESSAGES, JV_LINENUM, JV_VERBOSE
-#define QUEUE_REPORT_VERBOSITY      QR_TRIPLE           // one of: QR_OFF, QR_SINGLE, QR_TRIPLE
+#define QUEUE_REPORT_VERBOSITY      QR_OFF              // one of: QR_OFF, QR_SINGLE, QR_TRIPLE  ////##-to off
 
 #define STATUS_REPORT_VERBOSITY     SR_FILTERED         // one of: SR_OFF, SR_FILTERED, SR_VERBOSE
 #define STATUS_REPORT_MIN_MS        100                 // milliseconds - enforces a viable minimum
