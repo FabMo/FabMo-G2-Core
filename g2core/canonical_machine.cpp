@@ -2126,7 +2126,8 @@ stat_t cm_get_admo(nvObj_t *nv) { return(_get_msg_helper(nv, msg_admo, cm_get_ar
 stat_t cm_get_frmo(nvObj_t *nv) { return(_get_msg_helper(nv, msg_frmo, cm_get_feed_rate_mode(ACTIVE_MODEL)));}
 
 stat_t cm_get_toolv(nvObj_t *nv) { return(get_integer(nv, cm_get_tool(ACTIVE_MODEL))); }
-stat_t cm_get_mline(nvObj_t *nv) { return(get_integer(nv, cm_get_linenum(MODEL))); }
+////## stat_t cm_get_mline(nvObj_t *nv) { return(get_integer(nv, cm_get_linenum(MODEL))); }
+stat_t cm_get_mline(nvObj_t *nv) { return(get_integer(nv, cm_get_linenum(ACTIVE_MODEL))); }
 stat_t cm_get_line(nvObj_t *nv)  { return(get_integer(nv, cm_get_linenum(ACTIVE_MODEL))); }
 
 stat_t cm_get_vel(nvObj_t *nv)
