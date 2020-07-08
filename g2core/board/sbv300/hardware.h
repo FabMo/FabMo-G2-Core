@@ -123,7 +123,7 @@ using Motate::OutputPin;
 ////##  this in 101.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
 
 #define FREQUENCY_DWELL		1000UL
-#define MIN_SEGMENT_MS ((float)0.5)        ////## trying shorter, default =.75 was 1.0 here but earlier at default (probably already tested)
+#define MIN_SEGMENT_MS ((float)1.0)        ////## tryied shorter, default =.75 tried .5; did not seem to work
 
 #define PLANNER_QUEUE_SIZE (48)
 #define SECONDARY_QUEUE_SIZE (10)

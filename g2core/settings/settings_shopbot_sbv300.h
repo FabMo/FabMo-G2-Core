@@ -85,8 +85,8 @@
 #define STATUS_REPORT_INTERVAL_MS   250                 // milliseconds - set $SV=0 to disable
 
 ////##added c need inputs and outputs
-#define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", "posc",\
-                               "vel",  "stat", "hold", "line", "coor", "unit", \
+#define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", "posc", \
+                               "vel", "stat", "hold", "line", "coor", "unit", \
                                "in1", "in2", "in3", "in4", "in5", "in6", "in7", "in8"
 
 // Gcode startup defaults
