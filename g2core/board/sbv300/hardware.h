@@ -44,8 +44,8 @@
 // These must be defines (not enums) so expressions like this:
 //  #if (MOTORS >= 6)  will work
 
-#define MOTORS 4                    // number of motors supported the hardware
-#define PWMS 2                      // number of PWM channels supported the hardware
+#define MOTORS 6       // number of motors on the board
+#define PWMS 2         // number of supported PWM channels
 
 /*************************
  * Global System Defines *
@@ -116,6 +116,10 @@ typedef TimerChannel<5,0> fwd_plan_timer_type;	// request exec timer in stepper.
 
 // Pin assignments
 
+//these from older ShopBot version
+//pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
+//static OutputPin<indicator_led_pin_num> IndicatorLed;
+
 pin_number indicator_led_pin_num = Motate::kLED_USBRXPinNumber;
 static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
 
@@ -146,6 +150,8 @@ static OutputPin<Motate::kSpindle_DirPinNumber> spindle_dir_pin;
 //static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
 static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
 static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
+
+static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;
 
 // Input pins are defined in gpio.cpp
 

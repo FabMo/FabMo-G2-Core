@@ -117,6 +117,8 @@
     <UseGdbCustomPath>False</UseGdbCustomPath>
     <GdbCustomPath>
     </GdbCustomPath>
+    <ResetRule>0</ResetRule>
+    <EraseKey />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'gShield' ">
     <ToolchainSettings>
