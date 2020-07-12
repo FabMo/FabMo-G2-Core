@@ -31,6 +31,10 @@
 
 #include "config.h"
 #include "error.h"
+#include "error.h"
+
+#include "MotateUtilities.h" ////## later for HOT_FUNC and HOT_DATA ?
+
 
 #ifndef HARDWARE_H_ONCE
 #define HARDWARE_H_ONCE
@@ -38,7 +42,9 @@
 /*--- Hardware platform enumerations ---*/
 
 #define G2CORE_HARDWARE_PLATFORM    "sbv300"
-#define G2CORE_HARDWARE_VERSION     "k"
+#define G2CORE_HARDWARE_VERSION     "na"
+
+////## Laser would be added here ...
 
 /***** Motors & PWM channels supported by this hardware *****/
 // These must be defines (not enums) so expressions like this:
@@ -46,6 +52,7 @@
 
 #define MOTORS 6       // number of motors on the board
 #define PWMS 2         // number of supported PWM channels
+#define AXES 6         ////## coming axes to support ~9 (or 6)
 
 /*************************
  * Global System Defines *
@@ -53,7 +60,7 @@
 
 #define MILLISECONDS_PER_TICK 1     // MS for system tick (systick * N)
 #define SYS_ID_DIGITS 16            // actual digits in system ID (up to 16)
-#define SYS_ID_LEN 24               // total length including dashes and NUL
+#define SYS_ID_LEN 24               // total length including dashes and NUL ////## becomes 40
 
 /*************************
  * Motate Setup          *
@@ -106,6 +113,7 @@ using Motate::OutputPin;
 #define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz)
 #define FREQUENCY_DWELL		1000UL
 #define FREQUENCY_SGI		200000UL		// 200,000 Hz means software interrupts will fire 5 uSec after being called
+                                            ////## Changes with 101.06
 
 /**** Motate Definitions ****/
 
@@ -116,9 +124,10 @@ typedef TimerChannel<5,0> fwd_plan_timer_type;	// request exec timer in stepper.
 
 // Pin assignments
 
-//these from older ShopBot version
-//pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
-//static OutputPin<indicator_led_pin_num> IndicatorLed;
+////## part of heartbeat setup
+pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
+////## static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
+static OutputPin<indicator_led_pin_num> IndicatorLed;
 
 pin_number indicator_led_pin_num = Motate::kLED_USBRXPinNumber;
 static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
@@ -159,8 +168,10 @@ static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;
  * Function Prototypes (Common) *
  ********************************/
 
+////## new config table added in 101.06 and done differently
+
 void hardware_init(void);			// master hardware init
-stat_t hardware_periodic();  // callback from the main loop (time sensitive)
+stat_t hardware_periodic();         // callback from the main loop (time sensitive)
 void hw_hard_reset(void);
 stat_t hw_flash(nvObj_t *nv);
 

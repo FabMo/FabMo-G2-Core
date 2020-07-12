@@ -21,7 +21,8 @@
 #ifndef G2CORE_INFO_H_ONCE
 #define G2CORE_INFO_H_ONCE
 
-#define G2CORE_FIRMWARE_BUILD			101.03  // Issue #320, #354 - Added stepper polarity {1pl:n},  Fixed SR setting bug
+#define G2CORE_FIRMWARE_BUILD			101.53  ////## Starting ShopBot Private Build on 101.03 (aug 1, 2019)
+                                                ////## ShopBot local starts at 101.53.12
 #define G2CORE_FIRMWARE_VERSION         0.99
 
 #ifdef GIT_VERSION

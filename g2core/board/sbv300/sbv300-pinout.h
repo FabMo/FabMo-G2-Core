@@ -31,6 +31,40 @@
 #ifndef sbv300_pinout_h
 #define sbv300_pinout_h
 
+////## these from 101.06 ... we may not be up-to-date here ...
+/*
+ * USAGE NOTES
+ *
+ * Read this first:
+ * https://github.com/synthetos/g2/wiki/Adding-a-new-G2-board-(or-revision)-to-G2#making-a-new-pin-assignment
+ *
+ *  USAGE:
+ *
+ *  This file is lays out all the pin capabilities of the SAM3X8C organized by pin number.
+ *  Each pin has its associated functions listed at the bottom of the file, and is essentially
+ *  immutable for each processor.
+ *
+ *  To use, assign Motate pin numbers to the first value in the _MAKE_MOTATE_PIN() macro.
+ *  ALL PINS MUST BE ASSIGNED A NUMBER, even if they are not used. There will NOT be a
+ *  code-size or speed penalty for unused pins, but the WILL be a compiler-failure for
+ *  unassigned pins. This new restriction allows for simplification of linkages deep in
+ *  Motate.
+ */
+/*  See motate_pin_assignments.h for pin names to be used int he rest of the G2 code.
+ *  EXAMPLES:
+ *
+ *  *** Vanilla pin example ***
+ *
+ *      _MAKE_MOTATE_PIN(4, A, 'A', 27);    // SPI0_SCKPinNumber
+ *
+ *      This assigns Motate pin 4 to Port A, pin 27 (A27)
+ *      Look in motate_pin_assignments.h to see that this is kSPI_SCKPinNumber
+ *
+ *  ** Other pin functions ***
+ *
+ *      Please look in <Motate>/platform/atmel_sam/motate_chip_pin_functions.h
+ */
+
 #include <MotatePins.h>
 
 // We don't have all of the inputs, so we don't define them.
@@ -97,10 +131,10 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kInput13_PinNumber         , 'A', 15);
     _MAKE_MOTATE_PIN(kUnassigned16              , 'A', 16);
     _MAKE_MOTATE_PIN(kInput12_PinNumber         , 'A', 17);
-    _MAKE_MOTATE_PIN(kUnassigned18              , 'A', 18);
-    _MAKE_MOTATE_PIN(kUnassigned19              , 'A', 19);
+    _MAKE_MOTATE_PIN(kLED_USBRXPinNumber        , 'A', 18); ////##
+    _MAKE_MOTATE_PIN(kLED_USBTXPinNumber        , 'A', 19); ////##
     _MAKE_MOTATE_PIN(kUnassigned20              , 'A', 20);
-    _MAKE_MOTATE_PIN(kUnassigned21              , 'A', 21);
+    _MAKE_MOTATE_PIN(kDebug2_PinNumber          , 'A', 21); ////## m50 [D5] Could be a General Indicator
     _MAKE_MOTATE_PIN(kUnassigned22              , 'A', 22);
     _MAKE_MOTATE_PIN(kUnassigned23              , 'A', 23);
     _MAKE_MOTATE_PIN(kUnassigned24              , 'A', 24);
@@ -137,14 +171,14 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kSocket2_DirPinNumber      , 'B', 24);
     _MAKE_MOTATE_PIN(kUnassigned49              , 'B', 25);
     _MAKE_MOTATE_PIN(kUnassigned50              , 'B', 26);
-    _MAKE_MOTATE_PIN(kLED_USBTXPinNumber        , 'B', 27);
+    _MAKE_MOTATE_PIN(kDebug1_PinNumber          , 'B', 27);  ////## m13 ?
     _MAKE_MOTATE_PIN(kUnassigned51              , 'B', 28);
     _MAKE_MOTATE_PIN(kUnassigned52              , 'B', 29);
     _MAKE_MOTATE_PIN(kUnassigned53              , 'B', 30);
     _MAKE_MOTATE_PIN(kUnassigned54              , 'B', 31);
 
 
-    _MAKE_MOTATE_PIN(kLED_USBRXPinNumber        , 'C',  0);
+    _MAKE_MOTATE_PIN(kUnassigned18              , 'C',  0);  ////##
     _MAKE_MOTATE_PIN(kUnassigned55              , 'C',  1);
     _MAKE_MOTATE_PIN(kUnassigned56              , 'C',  2);
     _MAKE_MOTATE_PIN(kUnassigned57              , 'C',  3);
@@ -153,7 +187,7 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kUnassigned60              , 'C',  6);
     _MAKE_MOTATE_PIN(kUnassigned61              , 'C',  7);
     _MAKE_MOTATE_PIN(kUnassigned62              , 'C',  8);
-    _MAKE_MOTATE_PIN(kLEDPWM_PinNumber          , 'C',  9); // Heartbeat
+    _MAKE_MOTATE_PIN(kLEDPWM_PinNumber          , 'C',  9);  ////## m49 [D2] Heartbeat
     _MAKE_MOTATE_PIN(kInput3_PinNumber          , 'C', 10);
     _MAKE_MOTATE_PIN(kUnassigned64              , 'C', 11);
     _MAKE_MOTATE_PIN(kUnassigned65              , 'C', 12);
@@ -174,7 +208,7 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kSocket5_DirPinNumber      , 'C', 27);
     _MAKE_MOTATE_PIN(kSocket1_StepPinNumber     , 'C', 28);
     _MAKE_MOTATE_PIN(kUnassigned76              , 'C', 29);
-    _MAKE_MOTATE_PIN(kUnassigned77              , 'C', 30);
+    _MAKE_MOTATE_PIN(kDebug3_PinNumber          , 'C', 30); ////## m51 [D6] Could be a General Indicator
     _MAKE_MOTATE_PIN(kUnassigned78              , 'C', 31);
 
     _MAKE_MOTATE_PIN(kInput11_PinNumber         , 'D',  1);
