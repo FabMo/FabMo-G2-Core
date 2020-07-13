@@ -52,7 +52,7 @@
 
 #define MOTORS 6       // number of motors on the board
 #define PWMS 2         // number of supported PWM channels
-#define AXES 6         ////## coming axes to support ~9 (or 6)
+//#define AXES 6         ////## set to 9 in G2core.h support (9 or 6 with this version???)
 
 /*************************
  * Global System Defines *
@@ -129,8 +129,8 @@ pin_number indicator_led_pin_num = Motate::kLEDPWM_PinNumber;
 ////## static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
 static OutputPin<indicator_led_pin_num> IndicatorLed;
 
-pin_number indicator_led_pin_num = Motate::kLED_USBRXPinNumber;
-static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
+////## pin_number indicator_led_pin_num = Motate::kLED_USBRXPinNumber;
+////## static PWMOutputPin<indicator_led_pin_num> IndicatorLed;
 
 // Init these to input to keep them high-z
 static Pin<Motate::kSPI0_MISOPinNumber> spi_miso_pin(Motate::kInput);
