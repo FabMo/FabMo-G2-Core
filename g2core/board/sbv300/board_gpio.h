@@ -47,7 +47,7 @@
 #define INPUT_LOCKOUT_MS    10          // milliseconds to go dead after input firing
 
 // Setup spindle and coolant pin assignments
-//#define SPINDLE_ENABLE_OUTPUT_NUMBER 1 ////## first try at enabling
+#define SPINDLE_ENABLE_OUTPUT_NUMBER 1 ////## first try at enabling
 #define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
 #define SPINDLE_PWM_NUMBER 0
 #define MIST_ENABLE_OUTPUT_NUMBER 0
@@ -84,7 +84,7 @@ extern gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10;
 // extern gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11;
 // extern gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12;
 
-////## extern gpioDigitalOutputPin<OutputType<OUTPUT1_PWM,  Motate::kOutput1_PinNumber>>  dout1;
+extern gpioDigitalOutputPin<OutputType<OUTPUT1_PWM,  Motate::kOutput1_PinNumber>>  dout1;
 extern gpioDigitalOutputPin<OutputType<OUTPUT2_PWM,  Motate::kOutput2_PinNumber>>  dout2;
 extern gpioDigitalOutputPin<OutputType<OUTPUT3_PWM,  Motate::kOutput3_PinNumber>>  dout3;
 extern gpioDigitalOutputPin<OutputType<OUTPUT4_PWM,  Motate::kOutput4_PinNumber>>  dout4;

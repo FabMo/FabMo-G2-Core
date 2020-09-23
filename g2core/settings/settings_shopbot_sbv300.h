@@ -60,11 +60,11 @@
 #define MIST_ENABLE_OUTPUT_NUMBER   0
 #define FLOOD_ENABLE_OUTPUT_NUMBER  0
 
-#define SPINDLE_ENABLE_OUTPUT_NUMBER    0
+#define SPINDLE_ENABLE_OUTPUT_NUMBER    1   ////## this is also defined in board_gpio ... probably a mistake
 #define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
 #define SPINDLE_PWM_NUMBER              0
 
-#define FEEDHOLD_Z_LIFT             0.5    ////## (0.5 * 25.4)
+#define FEEDHOLD_Z_LIFT             0.5     ////## (0.5 * 25.4)
 
 #define MANUAL_FEEDRATE_OVERRIDE_ENABLE false
 #define MANUAL_FEEDRATE_OVERRIDE_PARAMETER 1.00

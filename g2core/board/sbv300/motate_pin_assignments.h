@@ -147,7 +147,7 @@ pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
 
-pin_number kSpindle_EnablePinNumber = 124;  ////## 124??;  // TODO enable spindle
+pin_number kSpindle_EnablePinNumber = -1;  ////## 124??;  // TODO enable spindle ... not this way I don't think!
 pin_number kSpindle_DirPinNumber    = -1;
 
 pin_number kCoolant_EnablePinNumber = -1;
@@ -175,7 +175,7 @@ pin_number kGRBL_CommonEnablePinNumber = -1;
 
 // g2ref extensions
 // These first 5 may replace the Spindle and Coolant pins, above
-//pin_number kOutput1_PinNumber = -1; ////## reassigned to spindle_enable 124;
+pin_number kOutput1_PinNumber = 124; ////## trying to use for spindle_enable 124;
 pin_number kOutput2_PinNumber = 125;
 pin_number kOutput3_PinNumber = 126;
 pin_number kOutput4_PinNumber = 127;
@@ -207,8 +207,8 @@ pin_number kADC10_PinNumber = -1;  // 159;
 pin_number kADC11_PinNumber = -1;  // 160;
 pin_number kADC12_PinNumber = -1;  // 161;
 pin_number kADC13_PinNumber = -1;  // 162;
-pin_number kADC14_PinNumber = -1;  // Not physially pinned out //163
-pin_number kADC15_PinNumber = -1;  // Not physially pinned out //164
+pin_number kADC14_PinNumber = -1;  // Not physically pinned out //163
+pin_number kADC15_PinNumber = -1;  // Not physically pinned out //164
 
 // blank spots for unassigned pins - all unassigned pins need a unique number (do not re-use numbers)
 
