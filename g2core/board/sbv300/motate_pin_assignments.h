@@ -175,7 +175,7 @@ pin_number kGRBL_CommonEnablePinNumber = -1;
 
 // g2ref extensions
 // These first 5 may replace the Spindle and Coolant pins, above
-pin_number kOutput1_PinNumber = 124;
+pin_number kOutput1_PinNumber = -1; ////## reassigned to spindle_enable 124;
 pin_number kOutput2_PinNumber = 125;
 pin_number kOutput3_PinNumber = 126;
 pin_number kOutput4_PinNumber = 127;
