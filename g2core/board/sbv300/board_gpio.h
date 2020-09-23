@@ -84,7 +84,7 @@ extern gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10;
 // extern gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11;
 // extern gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12;
 
-extern gpioDigitalOutputPin<OutputType<OUTPUT1_PWM,  Motate::kOutput1_PinNumber>>  dout1;
+////## extern gpioDigitalOutputPin<OutputType<OUTPUT1_PWM,  Motate::kOutput1_PinNumber>>  dout1;
 extern gpioDigitalOutputPin<OutputType<OUTPUT2_PWM,  Motate::kOutput2_PinNumber>>  dout2;
 extern gpioDigitalOutputPin<OutputType<OUTPUT3_PWM,  Motate::kOutput3_PinNumber>>  dout3;
 extern gpioDigitalOutputPin<OutputType<OUTPUT4_PWM,  Motate::kOutput4_PinNumber>>  dout4;
