@@ -31,7 +31,7 @@
 // this file is included from the bottom of gpio.h, but we do this for completeness
 // .. don't know about these two paths, inconsistent in others
 #include "gpio.h"
-#include "../../gpio.h"
+////## why? #include "../../gpio.h"
 #include "hardware.h"
 
 /*
