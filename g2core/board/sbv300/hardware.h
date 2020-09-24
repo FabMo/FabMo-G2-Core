@@ -120,7 +120,8 @@ using Motate::OutputPin;
 //#define FREQUENCY_DDA		200000UL		// Hz step frequency. Interrupts actually fire at 2x (400 KHz)
 //#define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz) ////**Used in previous FabMo
 #define FREQUENCY_DDA     100000UL        // Hz step frequency. Interrupts actually fire at 2x (200 KHz) *Speed of other boards! ////** Reverted for E-P test fix
-////##  this in 101.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
+////## This in 101.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
+////## But setting to 100000UL seemed to fix stuttering in 101.06 variants ...
 
 #define FREQUENCY_DWELL		1000UL
 #define MIN_SEGMENT_MS ((float)1.0)        ////## tryied shorter, default =.75 tried .5; did not seem to work
@@ -160,16 +161,16 @@ static OutputPin<Motate::kGRBL_ResetPinNumber> grbl_reset_pin;
 static OutputPin<Motate::kGRBL_FeedHoldPinNumber> grbl_feedhold_pin;
 static OutputPin<Motate::kGRBL_CycleStartPinNumber> grbl_cycle_start_pin;
 
-static OutputPin<Motate::kGRBL_CommonEnablePinNumber> motor_common_enable_pin;
-static OutputPin<Motate::kSpindle_EnablePinNumber> spindle_enable_pin;
-static OutputPin<Motate::kSpindle_DirPinNumber> spindle_dir_pin;
+static OutputPin<Motate::kGRBL_CommonEnablePinNumber> motor_common_enable_pin;     //tTODO  figure out how to hook this up
 
-// NOTE: In the v9 and the Due the flood and mist coolants are mapped to a the same pin
-//static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
-static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
-static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
+// NOTE: In the v9 these not mapped this way, now covered by board_gpio.h ???
+////## static OutputPin<Motate::kSpindle_EnablePinNumber> spindle_enable_pin;
+////## static OutputPin<Motate::kSpindle_DirPinNumber> spindle_dir_pin;
+////## static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
+////## static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
+////## static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
 
-static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;
+static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;                 //tTODO figure out how to hook this up
 
 // Input pins are defined in gpio.cpp
 

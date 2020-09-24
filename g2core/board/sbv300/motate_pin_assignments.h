@@ -64,7 +64,7 @@ pin_number kSPI0_SCKPinNumber  = -1;
 pin_number kSPI0_MISOPinNumber = -1;
 pin_number kSPI0_MOSIPinNumber = -1;
 
-pin_number kDebug1_PinNumber = 49;
+pin_number kDebug1_PinNumber = 49;  ////## any of these actually needed?
 pin_number kDebug2_PinNumber = 50;
 pin_number kDebug3_PinNumber = 51;
 pin_number kDebug4_PinNumber = 52;
@@ -147,16 +147,14 @@ pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
 
-pin_number kSpindle_EnablePinNumber = -1;  ////## 124??;  // TODO enable spindle ... not this way I don't think!
-pin_number kSpindle_DirPinNumber    = -1;
-
-pin_number kCoolant_EnablePinNumber = -1;
-
-pin_number kSpindle_PwmPinNumber  = -1;
-pin_number kSpindle_Pwm2PinNumber = -1;
-
-pin_number kSD_CardDetect = -1;
-pin_number kInterlock_In  = -1;
+////## per notes in v9, these now covered in board_gpio.h ... but not clear to me
+//pin_number kSpindle_EnablePinNumber = -1;  
+//pin_number kSpindle_DirPinNumber    = -1;
+//pin_number kCoolant_EnablePinNumber = -1;
+//pin_number kSpindle_PwmPinNumber  = -1;
+//pin_number kSpindle_Pwm2PinNumber = -1;
+//pin_number kSD_CardDetect = -1;
+//pin_number kInterlock_In  = -1;
 
 pin_number kLED_USBRXPinNumber     = 12;
 pin_number kLED_USBTXPinNumber     = 13;
@@ -175,7 +173,7 @@ pin_number kGRBL_CommonEnablePinNumber = -1;
 
 // g2ref extensions
 // These first 5 may replace the Spindle and Coolant pins, above
-pin_number kOutput1_PinNumber = 124; ////## trying to use for spindle_enable 124;
+pin_number kOutput1_PinNumber = 124;  ////## trying to use for spindle_enable 
 pin_number kOutput2_PinNumber = 125;
 pin_number kOutput3_PinNumber = 126;
 pin_number kOutput4_PinNumber = 127;
