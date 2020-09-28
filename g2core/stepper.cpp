@@ -81,7 +81,8 @@ Motate::SysTickEvent dwell_systick_event{
         // move the state machine along from here
         if (cm->hold_state == FEEDHOLD_SYNC) {
             st_run.dwell_ticks_downcount = 1; // this'll decerement to zero shortly
-            cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+        ////##    cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+            cm->hold_state = FEEDHOLD_MOTION_STOPPING;
         }
         if ((--st_run.dwell_ticks_downcount == 0)) {
             st_run.dwell_ticks_downcount = 0;  // in the case of stop==true, this is needed
@@ -896,9 +897,15 @@ void st_prep_dwell(float milliseconds)
 
 void st_prep_out_of_band_dwell(float milliseconds)
 {
-    st_prep_dwell(milliseconds);
+    ////##
+    // st_prep_dwell(milliseconds);
+    // st_pre.buffer_state = PREP_BUFFER_OWNED_BY_LOADER;    // signal that prep buffer is ready
+    // st_request_load_move();
+    ////## testing revert to fix dwell
+    st_pre.block_type = BLOCK_TYPE_DWELL;
+    st_pre.dwell_ticks = std::max((uint32_t)((milliseconds/1000) * FREQUENCY_DWELL), 1UL);
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_LOADER;    // signal that prep buffer is ready
-    st_request_load_move();
+
 }
 
 /*

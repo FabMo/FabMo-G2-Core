@@ -253,6 +253,12 @@ stat_t mp_exec_move()
     //     st_prep_out_of_band_dwell(mr->out_of_band_dwell_seconds * 1000);
     //     return (STAT_OK);
     // }
+    ////## Reverting this to try to fix out_of_band dwell failures in E-P
+    if (mr->out_of_band_dwell_flag) {
+        mr->out_of_band_dwell_flag = false;
+        st_prep_out_of_band_dwell(mr->out_of_band_dwell_seconds * 1000);
+        return (STAT_OK);
+    }
 
     // NULL means nothing's running - this is OK
     // If something is MP_BUFFER_BACK_PLANNED, we don't want to idle or prep_null()

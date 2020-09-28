@@ -447,7 +447,8 @@ static stat_t _exec_json_wait(mpBuf_t *bf)
             nv_get_nvObj(nv);
             bool new_value = (bool)nv->value_int;
             if (old_value != new_value) {
-                st_prep_dwell(1.0); // 1ms exactly
+                st_prep_dwell((uint32_t)(0.1 * 1000.0)); // ?
+////##                st_prep_dwell(1.0); // 1ms exactly
                 return STAT_OK;
             }
         }
@@ -503,12 +504,39 @@ stat_t mp_dwell(float seconds)
     return (STAT_OK);
 }
 
+////##
+// static stat_t _exec_dwell(mpBuf_t *bf)
+// {
+//     st_prep_dwell(bf->block_time * 1000.0);// convert seconds to ms
+//     if (mp_free_run_buffer()) {
+//         cm_cycle_end();                             // free buffer & perform cycle_end if planner is empty
+//     }
+//     return (STAT_OK);
+// }
+////##
 static stat_t _exec_dwell(mpBuf_t *bf)
 {
-    st_prep_dwell(bf->block_time * 1000.0);// convert seconds to ms
-    if (mp_free_run_buffer()) {
-        cm_cycle_end();                             // free buffer & perform cycle_end if planner is empty
+    if (bf->block_state == BLOCK_INITIAL_ACTION && cm->hold_state == FEEDHOLD_OFF) {
+        bf->block_state = BLOCK_ACTIVE;
+
+        ////##st_prep_dwell((uint32_t)(bf->block_time * 1000000.0));// convert seconds to uSec
+        st_prep_dwell((uint32_t)(bf->block_time * 1000.0));// convert seconds to mSec
+
+        cm_set_motion_state(MOTION_RUN);         // Perform motion state transition. Also sets active model to RUNTIME
+    } else if (cm->hold_state == FEEDHOLD_MOTION_STOPPING) {
+        if (mp_runtime_is_idle()) {                         // wait for steppers / dwell to actually finish
+            mr->reset();                                    // reset MR for next use and for forward planning
+            cm_set_motion_state(MOTION_STOP);
+            cm->hold_state = FEEDHOLD_MOTION_STOPPED;
+            sr_request_status_report(SR_REQUEST_IMMEDIATE);
+        }
+        return (STAT_NOOP);                                 // hold here. leave with a NOOP so it does not attempt another load and exec.
+    } else if (bf->block_state == BLOCK_ACTIVE) {
+        if (mp_free_run_buffer()) {
+            cm_cycle_end();                      // free buffer & perform cycle_end if planner is empty
+        }
     }
+
     return (STAT_OK);
 }
 
