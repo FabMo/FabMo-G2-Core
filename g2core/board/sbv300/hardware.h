@@ -31,7 +31,6 @@
 
 #include "config.h"
 #include "error.h"
-#include "error.h"
 
 #include "MotateUtilities.h" ////## later for HOT_FUNC and HOT_DATA ?
 

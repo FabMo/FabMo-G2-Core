@@ -112,7 +112,7 @@
 
 namespace Motate {
 
-    _MAKE_MOTATE_PIN(kOutput1_PinNumber         , 'A',  0);
+    _MAKE_MOTATE_PIN(kSpindle_EnablePinNumber   , 'A',  0); ////##
     _MAKE_MOTATE_PIN(kUnassigned2               , 'A',  2);
     _MAKE_MOTATE_PIN(kUnassigned3               , 'A',  3);
     _MAKE_MOTATE_PIN(kUnassigned4               , 'A',  4);

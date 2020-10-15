@@ -147,7 +147,7 @@ pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
 
-pin_number kSpindle_EnablePinNumber = -1;  ////## 124;  // TODO enable spindle
+pin_number kSpindle_EnablePinNumber = 124;  ////## 124;  // TODO enable spindle
 pin_number kSpindle_DirPinNumber    = -1;
 
 pin_number kCoolant_EnablePinNumber = -1;
@@ -175,7 +175,7 @@ pin_number kGRBL_CommonEnablePinNumber = -1;
 
 // g2ref extensions
 // These first 5 may replace the Spindle and Coolant pins, above
-pin_number kOutput1_PinNumber = 124;  
+pin_number kOutput1_PinNumber = -1;  //124  
 pin_number kOutput2_PinNumber = 125;  
 pin_number kOutput3_PinNumber = 126;  
 pin_number kOutput4_PinNumber = 127;  
