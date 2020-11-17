@@ -1396,8 +1396,10 @@ void cm_reset_overrides()
 {
     cm->gmx.m48_enable = true;
     cm->gmx.mfo_enable = false;  // feed rate overrides
+////##    cm->gmx.mfo_enable = true; ////## from 101.57  // feed rate overrides  ... tried
     cm->gmx.mfo_factor = 1.0;
     cm->gmx.mto_enable = false;  // traverse overrides
+////##    cm->gmx.mto_enable = true; ////## from 101.57  // traverse overrides  ... tried
     cm->gmx.mto_factor = 1.0;
 }
 
