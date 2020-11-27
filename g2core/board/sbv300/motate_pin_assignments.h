@@ -189,8 +189,8 @@ pin_number kOutput10_PinNumber = 133;
 
 pin_number kOutput11_PinNumber = 134;  
 pin_number kOutput12_PinNumber = 135;  
-pin_number kOutput13_PinNumber = -1;  
-pin_number kOutput14_PinNumber = -1;  
+pin_number kOutput13_PinNumber = 136;  
+pin_number kOutput14_PinNumber = 137;  
 pin_number kOutput15_PinNumber = -1;  
 pin_number kOutput16_PinNumber = -1;  
 

@@ -81,6 +81,7 @@
 #define INPUT11_AVAILABLE 1
 #define INPUT12_AVAILABLE 1
 #define INPUT13_AVAILABLE 1
+#define INPUT14_AVAILABLE 1
 
 #define ADC0_AVAILABLE 0
 #define ADC1_AVAILABLE 0
@@ -109,6 +110,7 @@
 #define OUTPUT11_PWM 1
 #define OUTPUT12_PWM 1
 #define OUTPUT13_PWM 0
+#define OUTPUT14_PWM 0
 
 namespace Motate {
 
