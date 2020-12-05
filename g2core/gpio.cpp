@@ -507,6 +507,7 @@ stat_t gpio_set_output(uint8_t output_num, float value) {
           default: { value = 0; } // inactive
       }
   }
+  sr_request_status_report(SR_REQUEST_TIMED); ////## from Rob 11/29/20; also provided fix for edge-preview; NOTE: only 13 DO's
   return STAT_OK;
 }
 
@@ -661,7 +662,6 @@ stat_t io_set_output(nvObj_t *nv)
 {
     uint8_t output_num = _io(nv->index);
     return gpio_set_output(output_num, nv->value_flt);
-
 }
 
 
