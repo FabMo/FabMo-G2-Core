@@ -2149,9 +2149,10 @@ stat_t cm_get_vel(nvObj_t *nv)
     return (STAT_OK);
 }
 
+////## fix from Rob below, seemed to work for location problem but caused zeroing to fail and probing ...
 stat_t cm_get_feed(nvObj_t *nv) { return (get_float(nv, cm_get_feed_rate(ACTIVE_MODEL))); }
-////## from Rob stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(ACTIVE_MODEL, _axis(nv)))); }
-stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
+////## fix from Rob; REVERTED stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
+stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(ACTIVE_MODEL, _axis(nv)))); }
 stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
 stat_t cm_get_ofs(nvObj_t *nv)  { return (get_float(nv, cm_get_display_offset(ACTIVE_MODEL, _axis(nv)))); }
 
