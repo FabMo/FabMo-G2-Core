@@ -598,100 +598,181 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
     bf->cruise_vmax   = bf->absolute_vmax;                  // starting value for cruise vmax to absolute highest
 }
 
+////## Test Reversion to 101.03 for junction
+////## Is this version supporting 2D Mode as per 101.03?
+// /****************************************************************************************
+//  * _calculate_junction_vmax() - Giseburt's Algorithm ;-)
+//  *
+//  *  Computes the maximum allowable junction speed by finding the velocity that will not
+//  *  violate the jerk value of any axis. We have one tunable parameter: the time we expect
+//  *  or allow the corner to take over which we apply the jerk of the relevant axes. This
+//  *  is stored in junction_integration_time.
+//  *
+//  *  In order to achieve this we take the difference of the unit vectors of the two moves
+//  *  of the corner, at the point from vector a to vector b. The unit vectors of those two
+//  *  moves are provided as the current block (a_unit) and previous block (b_unit).
+//  *
+//  *      Delta[i]       = (b_unit[i] - a_unit[i])                   (1)
+//  *
+//  *  We want to find the velocity V[i] where, when scaled by each Delta[i], the Peak Jerk of a move
+//  *  that takes T time will be at (or below) the set limit for each axis, or Max Jerk. The lowest
+//  *  velocity of all the relevant axes is the one used.
+//  *
+//  *      MaxJerk[i] = (10/sqrt(3))*(Delta[i]*V[i])/T^2
+//  *
+//  *  Solved for V[i]:
+//  *
+//  *      V[i] = sqrt(3)/10 * MaxJerk[i] * T^2 / D[i]                (2)
+//  *
+//  *
+//  *  Edge cases:
+//  *    A) One or more axes do not change. Completely degenerate case is a straight line.
+//  *        We have to detect this or we'll have a divide-by-zero.
+//  *        To deal with this, we start at the cruise vmax, and lower from there. If nothing lowers it,
+//  *        then that's our cornering velocity.
+//  *
+//  *    B) Over a series of very short (length) moves that have little angular change (a highly segmented circle with
+//  *        a very small radius, for example) then we will not slow down sufficiently.
+//  *        To deal with this, we keep track of the unit vector 0.5mm back, which may be in another move.
+//  *        We then use that.
+//  *        We will use the max delta between the current vector and that vector or that of the next move.
+//  *
+//  *    C) For the last move, where there is not a next move yet, we will compute as if the "next move" has a unit vector
+//  *       of zero.
+//  */
+
+// static void _calculate_junction_vmax(mpBuf_t* bf)
+// {
+//     // (C) special case for planning the last block
+//     if (bf->nx->buffer_state == MP_BUFFER_EMPTY) {
+//         // Compute a junction velocity to full stop
+//         float velocity = bf->absolute_vmax;  // start with our maximum possible velocity
+
+//         for (uint8_t axis = 0; axis < AXES; axis++) {
+//             if (bf->axis_flags[axis]) {       // skip axes with no movement
+//                 float delta = bf->unit[axis];
+
+//                 if (delta > EPSILON) {
+//                     velocity = std::min(velocity, ((cm->a[axis].max_junction_accel * _get_axis_jerk(bf, axis)) / delta)); // formula (2)
+//                 }
+//             }
+//         }
+
+//         bf->junction_vmax = velocity;
+//         return;
+//     }
+
+//     // (A) degenerate near-zero deltas to the lowest absolute_vmax of the two moves
+//     float velocity = std::min(bf->absolute_vmax, bf->nx->absolute_vmax);  // start with our maximum possible velocity
+
+//     // (B) special case to deal with many very short moves that are almost linear
+//     bool using_junction_unit = false;
+//     float junction_length_since = bf->junction_length_since + bf->length;
+//     if (junction_length_since < 0.5) {
+//         // push the length_since forward, and copy the junction_unit
+//         bf->nx->junction_length_since = junction_length_since;
+//         using_junction_unit = true;
+//     } else {
+//         bf->nx->junction_length_since = bf->length;
+//     }
+
+//     for (uint8_t axis = 0; axis < AXES; axis++) {
+//         if (bf->axis_flags[axis] || bf->nx->axis_flags[axis]) {       // (A) skip axes with no movement
+//             float delta = std::abs(bf->unit[axis] - bf->nx->unit[axis]);  // formula (1)
+
+//             if (using_junction_unit) { // (B) special case
+//                 // use the highest delta of the two
+//                 delta = std::max(delta, std::abs(bf->junction_unit[axis] - bf->nx->unit[axis])); // formula (1)
+
+//                 // push the junction_unit for this axis into the next block, for future (B) cases
+//                 bf->nx->junction_unit[axis] = bf->junction_unit[axis];
+//             } else { // prepare for future (B) cases
+//                 // push this unit to the next junction_unit
+//                 bf->nx->junction_unit[axis] = bf->unit[axis];
+//             }
+
+//             // (A) special case handling
+//             if (delta > EPSILON) {
+//                 velocity = std::min(velocity, ((cm->a[axis].max_junction_accel * _get_axis_jerk(bf, axis)) / delta)); // formula (2)
+//             }
+//         }
+//     }
+//     bf->junction_vmax = velocity;
+// }
+
+//// Following from 101.03
 /****************************************************************************************
  * _calculate_junction_vmax() - Giseburt's Algorithm ;-)
  *
+ *  WARNING: This description is out of date and needs to be updated.
+ *
  *  Computes the maximum allowable junction speed by finding the velocity that will not
- *  violate the jerk value of any axis. We have one tunable parameter: the time we expect
- *  or allow the corner to take over which we apply the jerk of the relevant axes. This
- *  is stored in junction_integration_time.
+ *  violate the jerk value of any axis.
  *
  *  In order to achieve this we take the difference of the unit vectors of the two moves
  *  of the corner, at the point from vector a to vector b. The unit vectors of those two
  *  moves are provided as the current block (a_unit) and previous block (b_unit).
  *
- *      Delta[i]       = (b_unit[i] - a_unit[i])                   (1)
+ *      Delta[i] = (b_unit[i] - a_unit[i])                  (1)
  *
- *  We want to find the velocity V[i] where, when scaled by each Delta[i], the Peak Jerk of a move
- *  that takes T time will be at (or below) the set limit for each axis, or Max Jerk. The lowest
- *  velocity of all the relevant axes is the one used.
+ *  We take, axis by axis, the difference in "unit velocity" to get a vector that
+ *  represents the direction of acceleration - which may be the opposite direction
+ *  as that of the "a" vector to achieve deceleration. To get the actual acceleration,
+ *  we use the corner velocity (what we intend to calculate) as the magnitude.
  *
- *      MaxJerk[i] = (10/sqrt(3))*(Delta[i]*V[i])/T^2
+ *      Acceleration[i] = UnitAccel[i] * Velocity[i]        (2)
  *
- *  Solved for V[i]:
+ *  Since we need the jerk value, which is defined as the "rate of change of acceleration,
+ *  that is, the derivative of acceleration with respect to time" (Wikipedia), we need to
+ *  have a quantum of time where the change in acceleration is actually carried out by the
+ *  physics. That will give us the time over which to "apply" the change of acceleration
+ *  in order to get a physically realistic jerk. The yields a fairly simple formula:
  *
- *      V[i] = sqrt(3)/10 * MaxJerk[i] * T^2 / D[i]                (2)
+ *      Jerk[i] = Acceleration[i] / Time                    (3)
  *
+ *  Now that we can compute the jerk for a given corner, we need to know the maximum
+ *  velocity that we can take the corner without violating that jerk for any axis.
+ *  Let's incorporate formula (2) into formula (3), and solve for Velocity, using
+ *  the known max Jerk and UnitAccel for this corner:
  *
- *  Edge cases:
- *    A) One or more axes do not change. Completely degenerate case is a straight line.
- *        We have to detect this or we'll have a divide-by-zero.
- *        To deal with this, we start at the cruise vmax, and lower from there. If nothing lowers it,
- *        then that's our cornering velocity.
+ *      Velocity[i] = (Jerk[i] * Time) / UnitAccel[i]       (4)
  *
- *    B) Over a series of very short (length) moves that have little angular change (a highly segmented circle with
- *        a very small radius, for example) then we will not slow down sufficiently.
- *        To deal with this, we keep track of the unit vector 0.5mm back, which may be in another move.
- *        We then use that.
- *        We will use the max delta between the current vector and that vector or that of the next move.
+ *  We then compute (4) for each axis, and use the smallest (most limited) result or
+ *  vmax, whichever is smaller.
+ */
+/* Note 1:
+ *  junction_integration_time is the integration Time quantum expressed in minutes.
+ *  This is roughly on the order of 1 DDA clock tick to integrate jerk to acceleration.
+ *  This is a very small number, so we multiply JT by 1,000,000 for entry and display.
+ *  A reasonable JA is therefore between 0.10 and 2.0
  *
- *    C) For the last move, where there is not a next move yet, we will compute as if the "next move" has a unit vector
- *       of zero.
+ *  In formula 4 the jerk is multiplied by 1,000,000 and JT is divided by 1,000,000,
+ *  so those terms cancel out.
  */
 
-static void _calculate_junction_vmax(mpBuf_t* bf)
+static void _calculate_junction_vmax(mpBuf_t* bf) 
 {
-    // (C) special case for planning the last block
-    if (bf->nx->buffer_state == MP_BUFFER_EMPTY) {
-        // Compute a junction velocity to full stop
-        float velocity = bf->absolute_vmax;  // start with our maximum possible velocity
+    // If we change cruise_vmax, we'll need to recompute junction_vmax, if we do this:
+//    float velocity = min(bf->cruise_vmax, bf->nx->cruise_vmax);  // start with our maximum possible velocity
+    float velocity = 8675309;
 
-        for (uint8_t axis = 0; axis < AXES; axis++) {
-            if (bf->axis_flags[axis]) {       // skip axes with no movement
-                float delta = bf->unit[axis];
-
-                if (delta > EPSILON) {
-                    velocity = std::min(velocity, ((cm->a[axis].max_junction_accel * _get_axis_jerk(bf, axis)) / delta)); // formula (2)
-                }
-            }
-        }
-
-        bf->junction_vmax = velocity;
-        return;
-    }
-
-    // (A) degenerate near-zero deltas to the lowest absolute_vmax of the two moves
-    float velocity = std::min(bf->absolute_vmax, bf->nx->absolute_vmax);  // start with our maximum possible velocity
-
-    // (B) special case to deal with many very short moves that are almost linear
-    bool using_junction_unit = false;
-    float junction_length_since = bf->junction_length_since + bf->length;
-    if (junction_length_since < 0.5) {
-        // push the length_since forward, and copy the junction_unit
-        bf->nx->junction_length_since = junction_length_since;
-        using_junction_unit = true;
-    } else {
-        bf->nx->junction_length_since = bf->length;
-    }
+    // cmAxes jerk_axis = AXIS_X;   // a diagnostic in case you want to find the limiting axis
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
-        if (bf->axis_flags[axis] || bf->nx->axis_flags[axis]) {       // (A) skip axes with no movement
-            float delta = std::abs(bf->unit[axis] - bf->nx->unit[axis]);  // formula (1)
+        if (bf->axis_flags[axis] || bf->nx->axis_flags[axis]) {       // skip axes with no movement
+            float delta = fabs(bf->unit[axis] - bf->nx->unit[axis]);  // formula (1)
 
-            if (using_junction_unit) { // (B) special case
-                // use the highest delta of the two
-                delta = std::max(delta, std::abs(bf->junction_unit[axis] - bf->nx->unit[axis])); // formula (1)
-
-                // push the junction_unit for this axis into the next block, for future (B) cases
-                bf->nx->junction_unit[axis] = bf->junction_unit[axis];
-            } else { // prepare for future (B) cases
-                // push this unit to the next junction_unit
-                bf->nx->junction_unit[axis] = bf->unit[axis];
-            }
-
-            // (A) special case handling
+            // Corner case: If an axis has zero delta, we might have a straight line.
+            // Corner case: An axis doesn't change (and it's not a straight line).
+            //   In either case, division-by-zero is bad, m'kay?
             if (delta > EPSILON) {
-                velocity = std::min(velocity, ((cm->a[axis].max_junction_accel * _get_axis_jerk(bf, axis)) / delta)); // formula (2)
+                // formula (4): (See Note 1, above)
+
+                // velocity = min(velocity, (cm->a[axis].max_junction_accel / delta));
+                if ((cm->a[axis].max_junction_accel / delta) < velocity) {
+                    velocity = (cm->a[axis].max_junction_accel / delta);
+                    // bf->jerk_axis = axis;
+                }
             }
         }
     }
