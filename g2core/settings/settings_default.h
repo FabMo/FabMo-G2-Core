@@ -103,7 +103,7 @@
 #define SPINDLE_SPINUP_DELAY SPINDLE_DWELL_TIME
 #warning Please update your settings! SPINDLE_DWELL_TIME is now SPINDLE_SPINUP_DELAY
 #else
-#define SPINDLE_SPINUP_DELAY        0     // {spde:
+#define SPINDLE_SPINUP_DELAY        2     // {spde:
 #endif
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * settings_shopbot_sbv300.h - Shopbot sbv3000
+ * settings_shopbot_sbv300.h - ShopBot sbv3000
  * This file is part of the g2core project
  *
  * Copyright (c) 2015 - 2018 Alden S. Hart, Jr.
@@ -26,15 +26,15 @@
  */
 
 /***********************************************************************/
-/**** Shopbot profile ******************************************/
+/**** ShopBot profile ******************************************/
 /***********************************************************************/
 /*
  * NOTES:
- *  - This profile supports the Shopbot sbv30x board
+ *  - This profile supports the ShopBot sbv30x board
  */
 
 // ***> NOTE: The init message must be a single line with no CRs or LFs
-#define INIT_MESSAGE "Initializing configs to Shopbot sbv300 profile"
+#define INIT_MESSAGE "Initializing configs to ShopBot sbv300 profile"
 
 //**** GLOBAL / GENERAL SETTINGS ******************************************************
 
@@ -51,7 +51,7 @@
 #define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active high, 1=active low
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_SPINUP_DELAY        1.0
+#define SPINDLE_SPINUP_DELAY        2.0
 #define SPINDLE_SPEED_CHANGE_PER_MS 7.0
 
 #define COOLANT_MIST_POLARITY       1       // 0=active low, 1=active high
@@ -85,10 +85,11 @@
 #define STATUS_REPORT_MIN_MS        100                 // milliseconds - enforces a viable minimum
 #define STATUS_REPORT_INTERVAL_MS   250                 // milliseconds - set $SV=0 to disable
 
-////##added c need inputs and outputs
+////##added c, spc, inputs, and outputs
 #define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", "posc", \
-                               "vel", "stat", "hold", "line", "coor", "unit", \
-                               "in1", "in2", "in3", "in4", "in5", "in6", "in7", "in8"
+                               "vel", "stat", "hold", "line", "coor", "unit", "spc",\
+                               "in1", "in2", "in3", "in4", "in5", "in6", "in7", "in8", "in9","in10","in11","in12",\
+                               "out1", "out2", "out3", "out4", "out5", "out6", "out7", "out8", "out9", "out10", "out11", "out12" 	
 
 // Gcode startup defaults
 #define GCODE_DEFAULT_UNITS         INCHES              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
@@ -242,91 +243,94 @@
 
 //*** Input / output settings ***
 
+// Inputs
 
-////## revised and needs updating for FabMo
-// Xmin on v9 board
 #define DI1_ENABLED IO_ENABLED
 #define DI1_POLARITY IO_ACTIVE_LOW
 #define DI1_ACTION INPUT_ACTION_NONE
 
-// Xmax
 #define DI2_ENABLED IO_ENABLED
 #define DI2_POLARITY IO_ACTIVE_LOW
 #define DI2_ACTION INPUT_ACTION_NONE
 
-// Ymin
 #define DI3_ENABLED IO_ENABLED
 #define DI3_POLARITY IO_ACTIVE_LOW
 #define DI3_ACTION INPUT_ACTION_NONE
 
-// Ymax
 #define DI4_ENABLED IO_ENABLED
 #define DI4_POLARITY IO_ACTIVE_LOW
-#define DI4_ACTION INPUT_ACTION_NONE
+#define DI4_ACTION INPUT_ACTION_STOP   //#### All ShopBots INP-4 ==> STOP ... maybe FAST_STOP
 
-// Zmin
 #define DI5_ENABLED IO_ENABLED
 #define DI5_POLARITY IO_ACTIVE_LOW
 #define DI5_ACTION INPUT_ACTION_NONE
 
-// Zmax
 #define DI6_ENABLED IO_ENABLED
 #define DI6_POLARITY IO_ACTIVE_LOW
 #define DI6_ACTION INPUT_ACTION_NONE
 
-// Amin
 #define DI7_ENABLED IO_ENABLED
 #define DI7_POLARITY IO_ACTIVE_LOW
 #define DI7_ACTION INPUT_ACTION_NONE
 
-// Amax
 #define DI8_ENABLED IO_ENABLED
 #define DI8_POLARITY IO_ACTIVE_LOW
 #define DI8_ACTION INPUT_ACTION_NONE
 
-// Safety line
 #define DI9_ENABLED IO_ENABLED
 #define DI9_POLARITY IO_ACTIVE_LOW
 #define DI9_ACTION INPUT_ACTION_NONE
 
-// ?
 #define DI10_ENABLED IO_ENABLED
 #define DI10_POLARITY IO_ACTIVE_LOW
 #define DI10_ACTION INPUT_ACTION_NONE
 
-// ??Extruder1_PWM
+#define DI11_ENABLED IO_ENABLED
+#define DI11_POLARITY IO_ACTIVE_LOW
+#define DI11_ACTION INPUT_ACTION_NONE
+
+#define DI12_ENABLED IO_ENABLED
+#define DI12_POLARITY IO_ACTIVE_LOW
+#define DI12_ACTION INPUT_ACTION_NONE
+
+//Outputs
+
 #define DO1_ENABLED IO_ENABLED
 #define DO1_POLARITY IO_ACTIVE_HIGH
-// ??Extruder2_PWM
+
 #define DO2_ENABLED IO_ENABLED
 #define DO2_POLARITY IO_ACTIVE_HIGH
-// ??Fan1A_PWM
+
 #define DO3_ENABLED IO_ENABLED
 #define DO3_POLARITY IO_ACTIVE_HIGH
-// ??Fan1B_PWM
+
 #define DO4_ENABLED IO_ENABLED
 #define DO4_POLARITY IO_ACTIVE_HIGH
+
 #define DO5_ENABLED IO_ENABLED
-#define DO5_POLARITY IO_ACTIVE_LOW   ////** Changed for LED System
+#define DO5_POLARITY IO_ACTIVE_LOW   ////** Changed for Colored-LED System; maybe do per tool?
+
 #define DO6_ENABLED IO_ENABLED
 #define DO6_POLARITY IO_ACTIVE_HIGH
+
 #define DO7_ENABLED IO_ENABLED
 #define DO7_POLARITY IO_ACTIVE_HIGH
+
 #define DO8_ENABLED IO_ENABLED
 #define DO8_POLARITY IO_ACTIVE_HIGH
-// SAFEin (Output) signal
+
 #define DO9_ENABLED IO_ENABLED
 #define DO9_POLARITY IO_ACTIVE_HIGH
+
 #define DO10_ENABLED IO_ENABLED
 #define DO10_POLARITY IO_ACTIVE_HIGH
-// Header Bed FET
+
 #define DO11_ENABLED IO_ENABLED
 #define DO11_POLARITY IO_ACTIVE_HIGH
-// Indicator_LED
+
 #define DO12_ENABLED IO_ENABLED
 #define DO12_POLARITY IO_ACTIVE_HIGH
-#define DO13_ENABLED IO_ENABLED
-#define DO13_POLARITY IO_ACTIVE_HIGH
+
 
 /*** Handle optional modules that may not be in every machine ***/
 
