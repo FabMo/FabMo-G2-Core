@@ -1877,7 +1877,7 @@ static int8_t _axis(const nvObj_t *nv)
     // if (isdigit(c)) {
     //     return(st_cfg.mot[c-0x31].motor_map);   // return the axis associated with the motor
     // }
-//#### uncommented th
+////## uncommented th
     if (isdigit(c)) {
         return(st_cfg.mot[c-0x31].motor_map);   // return the axis associated with the motor
     }
@@ -2151,6 +2151,8 @@ stat_t cm_get_vel(nvObj_t *nv)
 
 stat_t cm_get_feed(nvObj_t *nv) { return (get_float(nv, cm_get_feed_rate(ACTIVE_MODEL))); }
 stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(ACTIVE_MODEL, _axis(nv)))); }
+// fix = "RUNTIME"
+////## rob fix above stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(ACTIVE_MODEL, _axis(nv)))); }
 stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
 stat_t cm_get_ofs(nvObj_t *nv)  { return (get_float(nv, cm_get_display_offset(ACTIVE_MODEL, _axis(nv)))); }
 

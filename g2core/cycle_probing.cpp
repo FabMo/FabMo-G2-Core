@@ -224,8 +224,9 @@ uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool al
     pb.trip_sense = trip_sense;             // set to sense of "tripped" contact
     pb.func = _probing_start;               // bind probing start function
 
-    cm_set_model_target(target, flags);     // convert target to canonical form taking all offsets into account
-    copy_vector(pb.target, cm->gm.target);   // cm_set_model_target() sets target in gm, move it to pb
+////##    cm_set_model_target(target, flags);     // convert target to canonical form taking all offsets into account
+////##    copy_vector(pb.target, cm->gm.target);   // cm_set_model_target() sets target in gm, move it to pb
+    copy_vector(pb.target, target);   // cm_set_model_target() sets target in gm, move it to pb
     copy_vector(pb.flags, flags);           // set axes involved in the move
 
      _prepare_for_probe();
@@ -340,7 +341,9 @@ static uint8_t _probing_start()
 
     // set working values
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
-    cm_set_units_mode(MILLIMETERS);
+    //#### cm_set_units_mode(MILLIMETERS);
+    //#### quick test to see if this fixes probe units
+    cm_set_units_mode((cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL));
 
     // Error if the probe target is too close to the current position
     if (get_axis_vector_length(cm->gmx.position, pb.target) < MINIMUM_PROBE_TRAVEL) {
