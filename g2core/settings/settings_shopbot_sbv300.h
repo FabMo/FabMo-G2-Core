@@ -211,7 +211,7 @@
 #define A_LATCH_BACKOFF             0.25 ////##(0.125 * 25.4)
 #define A_ZERO_BACKOFF              0.25 ////##(0.375 * 25.4)
 
-#define B_AXIS_MODE                 AXIS_DISABLED
+#define B_AXIS_MODE                 AXIS_STANDARD
 #define B_VELOCITY_MAX              3600 ////##(360 * 25.4)
 #define B_FEEDRATE_MAX              4800
 #define B_TRAVEL_MAX                -1
@@ -226,7 +226,7 @@
 #define B_LATCH_BACKOFF             0.25 ////##(0.125 * 25.4)
 #define B_ZERO_BACKOFF              0.25 ////##(0.375 * 25.4)
 
-#define C_AXIS_MODE                 AXIS_DISABLED
+#define C_AXIS_MODE                 AXIS_STANDARD
 #define C_VELOCITY_MAX              3600 ////##(360 * 25.4)
 #define C_FEEDRATE_MAX              4800
 #define C_TRAVEL_MAX                -1

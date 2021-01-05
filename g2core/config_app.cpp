@@ -1723,6 +1723,12 @@ constexpr cfgItem_t groups_config_items_1[] = {
 #if (D_IN_CHANNELS >= 10)
     { "","di10", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 #endif
+#if (D_IN_CHANNELS >= 11)
+    { "","di11", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 12)
+    { "","di12", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
 
 #define DIGITAL_OUT_GROUPS 14
     { "","out", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output state
