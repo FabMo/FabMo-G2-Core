@@ -815,8 +815,17 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
                     skip_move = true;
                 }
             } else {
-                cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
-                target[AXIS_Z] = _to_inches(cm->feedhold_z_lift);
+                // cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
+                ////## for this standard pull up on FeedHold
+                ////## Need Z to pull to fixed location; 
+                ////##  and, BETTER pull to fixed location if not above
+                cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
+                if (cm->gmx.position[AXIS_Z] < cm->feedhold_z_lift) {
+                    target[AXIS_Z] = _to_inches(cm->feedhold_z_lift);
+                } else {
+                    skip_move = true;
+                }
+                //target[AXIS_Z] = _to_inches(cm->feedhold_z_lift);
             }
 
             if (!skip_move) {
