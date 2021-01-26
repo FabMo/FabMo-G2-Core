@@ -1232,15 +1232,16 @@ stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMoti
         return(STAT_OK);
     }
     cm_set_model_target(target, flags);
-    ritorno (cm_test_soft_limits(cm->gm.target));   // test soft limits; exit if thrown
+    ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
-    cm_cycle_start();                               // required here for homing & other cycles
+    cm_cycle_start();                             // required here for homing & other cycles
     stat_t status = mp_aline(MODEL);              // send the move to the planner
-    cm_update_model_position();                     // update gmx.position to ready for next incoming move
+    cm_update_model_position();                   // update gmx.position to ready for next incoming move
 
     if (status == STAT_MINIMUM_LENGTH_MOVE) {
-        if (!mp_has_runnable_buffer(mp)) {          // handle condition where zero-length move is last or only move
-            cm_cycle_end();                         // ...otherwise cycle will not end properly
+        if (!mp_has_runnable_buffer(mp) &&
+            !st_runtime_isbusy()) {  // handle condition where zero-length move is last or only move
+            cm_cycle_end();          // ...otherwise cycle will not end properly
         }
         status = STAT_OK;
     }
@@ -1394,15 +1395,16 @@ stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionPr
     }
 
     cm_set_model_target(target, flags);
-    ritorno (cm_test_soft_limits(cm->gm.target));   // test soft limits; exit if thrown
+    ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
-    cm_cycle_start();                               // required for homing & other cycles
+    cm_cycle_start();                             // required for homing & other cycles
     stat_t status = mp_aline(MODEL);              // send the move to the planner
-    cm_update_model_position();                     // <-- ONLY safe because we don't care about status...
+    cm_update_model_position();                   // <-- ONLY safe because we don't care about status...
 
     if (status == STAT_MINIMUM_LENGTH_MOVE) {
-        if (!mp_has_runnable_buffer(mp)) {          // handle condition where zero-length move is last or only move
-            cm_cycle_end();                         // ...otherwise cycle will not end properly
+        if (!mp_has_runnable_buffer(mp) &&
+            !st_runtime_isbusy()) {  // handle condition where zero-length move is last or only move
+            cm_cycle_end();          // ...otherwise cycle will not end properly
         }
         status = STAT_OK;
     }
@@ -1675,6 +1677,7 @@ static void _exec_program_finalize(float* value, bool* flag) {
         spindle_stop();             // immediate M5
         coolant_control_immediate(COOLANT_OFF,COOLANT_BOTH);// immediate M9
         temperature_reset();                                // turn off all heaters and fans
+        cm_reset_overrides();                               // enable G48, reset feed rate, traverse and spindle overrides
     }
 
     sr_request_status_report(SR_REQUEST_IMMEDIATE);         // request a final and full status report (not filtered)
@@ -1705,7 +1708,6 @@ static void _exec_program_stop_end(cmMachineState machine_state)
         cm_set_arc_distance_mode(INCREMENTAL_DISTANCE_MODE);//  always the default
         cm_set_feed_rate_mode(UNITS_PER_MINUTE_MODE);       //  G94
         cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE); // NIST specifies G1 (MOTION_MODE_STRAIGHT_FEED), but we cancel motion mode. Safer.
-        cm_reset_overrides();                               // enable G48, reset feed rate, traverse and spindle overrides
 
         // the rest will be queued and executed in _exec_program_finalize()
     }
@@ -1727,11 +1729,11 @@ void cm_cycle_start()
 
 void cm_cycle_end() {
     if (cm->cycle_type == CYCLE_MACHINING) {
-        // _exec_program_stop_end(MACHINE_PROGRAM_STOP);
-
         cm->machine_state = MACHINE_PROGRAM_STOP;
         cm->cycle_type = CYCLE_NONE;
         cm_set_motion_state(MOTION_STOP);
+
+        sr_request_status_report(SR_REQUEST_IMMEDIATE);         // request a final and full status report (not filtered)
     }
 }
 
@@ -2524,7 +2526,7 @@ constexpr cfgItem_t cm_config_items_1[] = {
     {"",  "admo",  _i0, 0, cm_print_admo, cm_get_admo,  set_ro,        nullptr, 0},  // arc distance mode
     {"",  "frmo",  _i0, 0, cm_print_frmo, cm_get_frmo,  set_ro,        nullptr, 0},  // feed rate mode
     {"",  "tool",  _i0, 0, cm_print_tool, cm_get_toolv, set_ro,        nullptr, 0},  // active tool
-    {"",  "g92e",  _i0, 0, cm_print_g92e, cm_get_g92e,  set_ro,        nullptr, 0}, // G92 enable state
+    {"",  "g92e",  _i0, 0, cm_print_g92e, cm_get_g92e,  set_ro,        nullptr, 0},  // G92 enable state
 #ifdef TEMPORARY_HAS_LEDS
     {"",  "_leds", _i0, 0, tx_print_nul, _get_leds,_set_leds,          nullptr, 0}, // TEMPORARY - change LEDs
 #endif
