@@ -58,6 +58,13 @@
 #define SPINDLE_PWM_NUMBER 6
 #endif
 
+#ifndef SPINDLE_SPEED_CHANGE_PER_MS
+#warning SPINDLE_SPEED_CHANGE_PER_MS is defaulted to 7!
+#warning SPINDLE_SPEED_CHANGE_PER_MS should be defined in settings or a board file!
+#define SPINDLE_SPEED_CHANGE_PER_MS 7
+#endif
+
+
 #include "safety_manager.h"
 
 SafetyManager sm{};
