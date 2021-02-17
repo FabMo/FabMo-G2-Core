@@ -44,6 +44,7 @@
 #define G2CORE_HARDWARE_PLATFORM    "sbv300"
 #define G2CORE_HARDWARE_VERSION     "na"
 
+#define  HAS_HOBBY_SERVO_MOTOR 0  // kludge to fix build warnings in sbv300 on linux.  rmackie
 #ifndef HAS_LASER
 #if HAS_HOBBY_SERVO_MOTOR
 #error Can NOT have a laser and a hobby servo at the same time, sorry
