@@ -68,7 +68,7 @@ constexpr cfgSubtableFromStaticArray sys_config_3{};
 const configSubtable * const getSysConfig_3() { return &sys_config_3; }
 
 #include "esc_spindle.h"
-ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDLE_DIRECTION_OUTPUT_NUMBER, SPINDLE_SPEED_CHANGE_PER_MS};
+ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDLE_DIRECTION_OUTPUT_NUMBER, SPINDLE_SPEED_CHANGE_PER_MS, SPINDLE_SPINUP_DELAY};
 
 #if HAS_LASER
 #ifndef LASER_ENABLE_OUTPUT_NUMBER

@@ -64,8 +64,10 @@ class ESCSpindle : public ToolHead {
 
     bool paused;                  // true if paused, false is not
 
-    float speed_change_per_tick;  // speed ramping rate per tick (ms)
     float spinup_delay;           // optional delay on spindle start (set to 0 to disable)
+    float spinup_count_ms;        // spinup delay counter (during delay)
+	
+    float speed_change_per_tick;  // speed ramping rate per tick (ms)
 
     struct speedToPhase {
         float speed_lo;              // minimum spindle speed [0..N]
@@ -108,13 +110,16 @@ class ESCSpindle : public ToolHead {
 
     void _handle_systick() {
         bool done = false;
-
         float target_speed = _get_target_speed();
 
         if (paused) {
             // paused may have changed since this handler was registered
             speed_actual = 0;  // just in case there was a race condition
+            spinup_count_ms = 0;
             done = true;
+        } else if (spinup_count_ms < (spinup_delay * 1000.0)) { // Convert to ms (maintain legacy spde)
+          // spin up delay
+          spinup_count_ms += 1.0;
         } else if (fp_NE(target_speed, speed_actual)) {
             if (speed_actual < target_speed) {
                 // spin up
@@ -146,7 +151,7 @@ class ESCSpindle : public ToolHead {
 
    public:
     // constructor - provide it with the default output pins - 0 means no pin
-    ESCSpindle(const uint8_t pwm_pin_number, const uint8_t enable_pin_number, const uint8_t direction_pin_number, const float change_per_tick);
+    ESCSpindle(const uint8_t pwm_pin_number, const uint8_t enable_pin_number, const uint8_t direction_pin_number, const float change_per_tick, const float esc_spinup_delay);
 
     // ToolHead overrides
     void init() override;
@@ -232,8 +237,10 @@ class ESCSpindle : public ToolHead {
 // method implementations follow
 
 ESCSpindle::ESCSpindle(const uint8_t pwm_pin_number, const uint8_t enable_pin_number,
-                       const uint8_t direction_pin_number, const float change_per_tick)
-    : speed_change_per_tick{change_per_tick},
+                       const uint8_t direction_pin_number, const float change_per_tick,
+                       const float esc_spinup_delay)
+    : spinup_delay{esc_spinup_delay},
+	    speed_change_per_tick{change_per_tick},
       pwm_output_num{pwm_pin_number},
       enable_output_num{enable_pin_number},
       direction_output_num{direction_pin_number} {}
