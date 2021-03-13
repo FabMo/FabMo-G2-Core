@@ -117,17 +117,19 @@ class ESCSpindle : public ToolHead {
             speed_actual = 0;  // just in case there was a race condition
             spinup_count_ms = 0;
             done = true;
-        } else if (spinup_count_ms < (spinup_delay * 1000.0)) { // Convert to ms (maintain legacy spde)
-          // spin up delay
-          spinup_count_ms += 1.0;
         } else if (fp_NE(target_speed, speed_actual)) {
             if (speed_actual < target_speed) {
                 // spin up
-                speed_actual += speed_change_per_tick;
-                if (speed_actual > target_speed) {
-                    speed_actual = target_speed;
-                    done = true;
-                }
+                if (spinup_count_ms < (spinup_delay * 1000.0)) { // Convert to ms (maintain legacy spde)
+                  // spin up delay
+                  spinup_count_ms += 1.0;
+                } else {
+                  speed_actual += speed_change_per_tick;
+                  if (speed_actual > target_speed) {
+                      speed_actual = target_speed;
+                      done = true;
+                  }
+                }                
             } else {
                 // spin down
                 speed_actual -= speed_change_per_tick;
@@ -141,6 +143,7 @@ class ESCSpindle : public ToolHead {
         }
         set_pwm_value();
         if (done) {
+            spinup_count_ms = 0;
             SysTickTimer.unregisterEvent(&spindle_systick_event);
             if (this_change_holds_motion) {
                 st_request_load_move();  // request to load the next move
