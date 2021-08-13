@@ -25,8 +25,8 @@
     <avrtool>com.atmel.avrdbg.tool.samice</avrtool>
     <com_atmel_avrdbg_tool_samice>
       <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
-      <ToolName>SAM-ICE</ToolName>
-      <ToolNumber>28012829</ToolNumber>
+      <ToolName>J-Link</ToolName>
+      <ToolNumber>51013548</ToolNumber>
       <Channel>
         <host>127.0.0.1</host>
         <port>1063</port>
@@ -60,7 +60,7 @@
         <documentation help="" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.34.1" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.42.0" />
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
@@ -104,7 +104,7 @@
       <HWProgramCounterSampling>True</HWProgramCounterSampling>
     </PercepioTrace>
     <preserveEEPROM>true</preserveEEPROM>
-    <avrtoolserialnumber>28012829</avrtoolserialnumber>
+    <avrtoolserialnumber>51013548</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x285E0A60</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>4000000</avrtoolinterfaceclock>
     <custom>

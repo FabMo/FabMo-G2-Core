@@ -57,6 +57,9 @@ struct pbProbingSingleton {             // persistent probing runtime variables
     bool waiting_for_motion_complete;   // true if waiting for a motion to complete
     bool probe_tripped;                 // record if we saw the probe tripped (in case it bounces)
     stat_t (*func)();                   // binding for callback function state machine
+    // BLISS
+    bool is_mm_mode_set;
+    // BLISS
 
     // saved gcode model state
     cmUnitsMode saved_units_mode;       // G20,G21 setting
@@ -224,7 +227,7 @@ uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool al
     pb.trip_sense = trip_sense;             // set to sense of "tripped" contact
     pb.func = _probing_start;               // bind probing start function
 
-    cm_set_model_target(target, flags);     // convert target to canonical form taking all offsets into account
+    cm_set_model_target(target, flags, NOT_MM_MODE);     // convert target to canonical form taking all offsets into account
     copy_vector(pb.target, cm->gm.target);   // cm_set_model_target() sets target in gm, move it to pb
 ////## partially worked    copy_vector(pb.target, target);   // cm_set_model_target() sets target in gm, move it to pb
     copy_vector(pb.flags, flags);           // set axes involved in the move
@@ -312,7 +315,7 @@ static stat_t _probe_move(const float target[], const bool flags[])
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
     pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
-    cm_straight_feed(target, flags, PROFILE_FAST);  // NB: feed rate was set earlier, so it's OK
+    cm_straight_feed(target, flags, IS_MM_MODE);  // NB: feed rate was set earlier, so it's OK
     mp_queue_command(_motion_end_callback, nullptr, nullptr); // the last two arguments are ignored anyway
     return (STAT_EAGAIN);
 }
@@ -341,7 +344,8 @@ static uint8_t _probing_start()
 
     // set working values
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
-    cm_set_units_mode(MILLIMETERS);
+    //cm_set_units_mode(MILLIMETERS);
+    cm_set_units_mode((cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL));
     ////## quick test to see if this fixes probe units
     ////## tried... cm_set_units_mode((cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL));
 
@@ -357,7 +361,7 @@ static uint8_t _probing_start()
     }
 
     din_handlers[INPUT_ACTION_INTERNAL].registerHandler(&_probing_handler);
-
+    
     // Everything checks out. Run the probe move
     _probe_move(pb.target, pb.flags);
     pb.func = _probing_backoff;
@@ -441,12 +445,12 @@ static void _send_probe_report() {
         char  buf[256];
         char* bufp = buf;
         bufp += sprintf(bufp, "{\"prb\":{\"e\":%i,", (int)cm->probe_state[0]);
-        bufp += sprintf(bufp, "\"x\":%0.5f,", cm->probe_results[0][AXIS_X]);
-        bufp += sprintf(bufp, "\"y\":%0.5f,", cm->probe_results[0][AXIS_Y]);
-        bufp += sprintf(bufp, "\"z\":%0.5f,", cm->probe_results[0][AXIS_Z]);
-        bufp += sprintf(bufp, "\"a\":%0.5f,", cm->probe_results[0][AXIS_A]);
-        bufp += sprintf(bufp, "\"b\":%0.5f,", cm->probe_results[0][AXIS_B]);
-        bufp += sprintf(bufp, "\"c\":%0.5f", cm->probe_results[0][AXIS_C]);
+        bufp += sprintf(bufp, "\"x\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_X]));
+        bufp += sprintf(bufp, "\"y\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_Y]));
+        bufp += sprintf(bufp, "\"z\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_Z]));
+        bufp += sprintf(bufp, "\"a\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_A]));
+        bufp += sprintf(bufp, "\"b\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_B]));
+        bufp += sprintf(bufp, "\"c\":%0.5f", _to_inches(cm->probe_results[0][AXIS_C]));
         bufp += sprintf(bufp, "}}\n");
         xio_writeline(buf);
     }

@@ -429,7 +429,7 @@ void controller_set_muted(bool is_muted) {
 
 /*
  * controller_parse_control() - return true if command is a control (versus data)
- * Note: parsing for control is somewhat naiive. This will need to get better
+ * Note: parsing for control is somewhat naive. This will need to get better
  */
 
 bool controller_parse_control(char *p) {

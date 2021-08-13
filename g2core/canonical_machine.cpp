@@ -817,25 +817,37 @@ static float _calc_ABC(const uint8_t axis, const float target[])
     return (_to_millimeters(target[axis]) * 360.0 / (2 * M_PI * cm->a[axis].radius));
 }
 
-void cm_set_model_target(const float target[], const bool flags[])
+void cm_set_model_target(const float target[], const bool flags[], const cmMMModeStatus is_mm_mode_set)
 {
     uint8_t axis;
     float tmp = 0;
 
     // copy position to target so it always starts correctly
     copy_vector(cm->gm.target, cm->gmx.position);
-
+    
     // process linear axes (XYZUVW) first
     for (axis=AXIS_X; axis<=LAST_LINEAR_AXIS; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
         } else if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
-            if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
-                cm->gm.target[axis] = cm_get_combined_offset(axis) + _to_millimeters(target[axis]);
-            } else {
-                cm->gm.target[axis] += _to_millimeters(target[axis]);
+            ///
+            if (!is_mm_mode_set) {
+                if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+                    cm->gm.target[axis] = cm_get_combined_offset(axis) + _to_millimeters(target[axis]);
+                } else {
+                    cm->gm.target[axis] += _to_millimeters(target[axis]);
+                }
+                cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
             }
-            cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
+            else { // Fix for issue #18
+                if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+                    cm->gm.target[axis] = cm_get_combined_offset(axis) + target[axis];
+                    } else {
+                    cm->gm.target[axis] += target[axis];
+                }
+                cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
+            }      
+            ///
         }
     }
     // FYI: The ABC loop below relies on the XYZUVW loop having been run first
@@ -948,6 +960,7 @@ stat_t cm_select_plane(const uint8_t plane)
 stat_t cm_set_units_mode(const uint8_t mode)
 {
     cm->gm.units_mode = (cmUnitsMode)mode;               // 0 = inches, 1 = mm.
+    sr_request_status_report(SR_REQUEST_IMMEDIATE);      // Sends a SR when the units change
     return(STAT_OK);
 }
 
@@ -1231,7 +1244,7 @@ stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMoti
           flags[AXIS_A] | flags[AXIS_B] | flags[AXIS_C])) {
         return(STAT_OK);
     }
-    cm_set_model_target(target, flags);
+    cm_set_model_target(target, flags, IS_MM_MODE);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
     cm_cycle_start();                             // required here for homing & other cycles
@@ -1377,7 +1390,7 @@ stat_t cm_dwell(const float seconds)
  * cm_straight_feed() - G1
  */
 
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+stat_t cm_straight_feed(const float *target, const bool *flags, const cmMMModeStatus is_mm_mode_set)
 {
     // trap zero feed rate condition
     if (fp_ZERO(cm->gm.feed_rate)) {
@@ -1393,8 +1406,8 @@ stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionPr
           flags[AXIS_A] | flags[AXIS_B] | flags[AXIS_C])) {
         return(STAT_OK);
     }
-
-    cm_set_model_target(target, flags);
+    
+    cm_set_model_target(target, flags, is_mm_mode_set);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
     cm_cycle_start();                             // required for homing & other cycles

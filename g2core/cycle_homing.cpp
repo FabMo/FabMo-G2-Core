@@ -421,7 +421,7 @@ static stat_t _homing_axis_move(int8_t axis, float target, float velocity) {
     flags[axis] = true;
     cm_set_feed_rate(velocity);
 
-    stat_t status = cm_straight_feed(vect, flags, PROFILE_FAST);
+    stat_t status = cm_straight_feed(vect, flags, IS_MM_MODE);
     if (status != STAT_OK) {
         rpt_exception(status, "Homing move failed. Check min/max settings");
         return (_homing_error_exit(axis, STAT_HOMING_CYCLE_FAILED));
