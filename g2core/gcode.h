@@ -96,8 +96,8 @@ typedef enum {                      // Motion profiles
 } cmMotionProfile;
 
 typedef enum {
-    IS_MM_MODE = 0,         //
-    NOT_MM_MODE             //
+    NOT_MM_MODE = 0,         // No further unit conversion is required
+    IS_MM_MODE               // Unit conversion is required
 } cmMMModeStatus;
 
 typedef enum {

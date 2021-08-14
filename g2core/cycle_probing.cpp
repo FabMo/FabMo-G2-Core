@@ -57,9 +57,6 @@ struct pbProbingSingleton {             // persistent probing runtime variables
     bool waiting_for_motion_complete;   // true if waiting for a motion to complete
     bool probe_tripped;                 // record if we saw the probe tripped (in case it bounces)
     stat_t (*func)();                   // binding for callback function state machine
-    // BLISS
-    bool is_mm_mode_set;
-    // BLISS
 
     // saved gcode model state
     cmUnitsMode saved_units_mode;       // G20,G21 setting
@@ -344,10 +341,7 @@ static uint8_t _probing_start()
 
     // set working values
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
-    //cm_set_units_mode(MILLIMETERS);
     cm_set_units_mode((cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL));
-    ////## quick test to see if this fixes probe units
-    ////## tried... cm_set_units_mode((cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL));
 
     // Error if the probe target is too close to the current position
     if (get_axis_vector_length(cm->gmx.position, pb.target) < MINIMUM_PROBE_TRAVEL) {
