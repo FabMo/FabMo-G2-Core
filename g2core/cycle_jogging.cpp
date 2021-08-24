@@ -183,7 +183,7 @@ static stat_t _jogging_axis_move(int8_t axis, float target, float velocity) {
     vect[axis]  = target;
     flags[axis] = true;
     cm_set_feed_rate(velocity);
-    ritorno(cm_straight_feed(vect, flags, IS_MM_MODE));
+    ritorno(cm_straight_feed(vect, flags));
     return (STAT_EAGAIN);
 }
 

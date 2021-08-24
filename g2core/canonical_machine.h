@@ -376,7 +376,7 @@ float cm_get_absolute_position(const GCodeState_t *gcode_state, const uint8_t ax
 // Critical helpers
 void cm_update_model_position(void);
 stat_t cm_deferred_write_callback(void);
-void cm_set_model_target(const float target[], const bool flag[], const cmMMModeStatus mm_mode_status);
+void cm_set_model_target(const float target[], const bool flag[], const cmUnitsModeStatus mm_mode_status = UNIT_CONVERSION_REQUIRED);
 bool cm_get_soft_limits(void);
 void cm_set_soft_limits(bool enable);
 
@@ -428,7 +428,7 @@ stat_t cm_set_feed_rate_mode(const uint8_t mode);                           // G
 stat_t cm_set_path_control(GCodeState_t *gcode_state, const uint8_t mode);  // G61, G61.1, G64
 
 // Machining Functions (4.3.6)
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmMMModeStatus mm_mode_status); // G1
+stat_t cm_straight_feed(const float *target, const bool *flags);            // G1
 stat_t cm_dwell(const float seconds);                                       // G4, P parameter
 
 stat_t cm_arc_feed(const float target[], const bool target_f[],             // G2/G3 - target endpoint

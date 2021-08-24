@@ -817,7 +817,7 @@ static float _calc_ABC(const uint8_t axis, const float target[])
     return (_to_millimeters(target[axis]) * 360.0 / (2 * M_PI * cm->a[axis].radius));
 }
 
-void cm_set_model_target(const float target[], const bool flags[], const cmMMModeStatus mm_mode_status)
+void cm_set_model_target(const float target[], const bool flags[], const cmUnitsModeStatus mm_mode_status)
 {
     uint8_t axis;
     float tmp = 0;
@@ -830,19 +830,13 @@ void cm_set_model_target(const float target[], const bool flags[], const cmMMMod
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
         } else if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
-            if (mm_mode_status) {
-                if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
-                    cm->gm.target[axis] = cm_get_combined_offset(axis) + _to_millimeters(target[axis]);
-                } else {
-                    cm->gm.target[axis] += _to_millimeters(target[axis]);
-                }
+            if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+                cm->gm.target[axis] = cm_get_combined_offset(axis);
             }
-            else { // Fix for issue #18
-                if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
-                    cm->gm.target[axis] = cm_get_combined_offset(axis) + target[axis];
-                    } else {
-                    cm->gm.target[axis] += target[axis];
-                }
+            if (mm_mode_status == UNIT_CONVERSION_REQUIRED) {
+                cm->gm.target[axis] += _to_millimeters(target[axis]);
+            } else {
+                cm->gm.target[axis] += target[axis];
             }
             cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
         }
@@ -1241,7 +1235,7 @@ stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMoti
           flags[AXIS_A] | flags[AXIS_B] | flags[AXIS_C])) {
         return(STAT_OK);
     }
-    cm_set_model_target(target, flags, IS_MM_MODE);
+    cm_set_model_target(target, flags);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
     cm_cycle_start();                             // required here for homing & other cycles
@@ -1387,7 +1381,7 @@ stat_t cm_dwell(const float seconds)
  * cm_straight_feed() - G1
  */
 
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmMMModeStatus mm_mode_status)
+stat_t cm_straight_feed(const float *target, const bool *flags)
 {
     // trap zero feed rate condition
     if (fp_ZERO(cm->gm.feed_rate)) {
@@ -1404,7 +1398,7 @@ stat_t cm_straight_feed(const float *target, const bool *flags, const cmMMModeSt
         return(STAT_OK);
     }
     
-    cm_set_model_target(target, flags, mm_mode_status);
+    cm_set_model_target(target, flags);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
     cm_cycle_start();                             // required for homing & other cycles

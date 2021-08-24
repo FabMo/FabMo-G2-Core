@@ -96,9 +96,9 @@ typedef enum {                      // Motion profiles
 } cmMotionProfile;
 
 typedef enum {
-    NOT_MM_MODE = 0,         // No further unit conversion is required
-    IS_MM_MODE               // Unit conversion is required
-} cmMMModeStatus;
+    UNIT_CONVERSION_COMPLETE,
+    UNIT_CONVERSION_REQUIRED,
+} cmUnitsModeStatus;
 
 typedef enum {
     ORIGIN_OFFSET_SET=0,    // G92 - set origin offsets

@@ -795,7 +795,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
     if (cm1.hold_state == FEEDHOLD_MOTION_STOPPED) {
         cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;         // next state
 
-        // check for re-entry into feedhold from a canceled resume
+        // check for re-entry into feedhold from a cancelled resume
         if (cm != &cm2) {
             _enter_p2();                                        // enter p2 correctly
             cm_set_g30_position();                              // set position to return to on exit
