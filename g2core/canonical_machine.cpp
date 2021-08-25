@@ -826,9 +826,9 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
     copy_vector(cm->gm.target, cm->gmx.position);
     
     // process linear axes (XYZUVW) first
-    for (axis=AXIS_X; axis<=LAST_LINEAR_AXIS; axis++) {
-        if (flags[axis] && (cm->a[axis].axis_mode == AXIS_STANDARD || cm->a[axis].axis_mode == AXIS_INHIBITED)) {
-            if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+    for (axis = AXIS_X; axis <= LAST_LINEAR_AXIS; axis++) {
+        if (flags[axis] && (AXIS_STANDARD == cm->a[axis].axis_mode || AXIS_INHIBITED == cm->a[axis].axis_mode)) {
+            if (ABSOLUTE_DISTANCE_MODE == cm->gm.distance_mode) {
                 cm->gm.target[axis] = cm_get_combined_offset(axis);
             }
             if (UNIT_CONVERSION_REQUIRED == mm_mode_status) {
@@ -840,8 +840,8 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
         }
     }
     // FYI: The ABC loop below relies on the XYZUVW loop having been run first
-    for (axis=AXIS_A; axis<=AXIS_C; axis++) {
-        if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
+    for (axis = AXIS_A; axis <= AXIS_C; axis++) {
+        if (!flags[axis] || AXIS_DISABLED == cm->a[axis].axis_mode) {
             continue;        // skip axis if not flagged for update or its disabled
         } else {
             tmp = _calc_ABC(axis, target);
@@ -850,8 +850,8 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
 #if MARLIN_COMPAT_ENABLED == true
         // If we are in absolute mode (generally), but the extruder is relative,
         // then we adjust the extruder to a relative position
-        if (mst.marlin_flavor && (cm->a[axis].axis_mode == AXIS_RADIUS)) {
-            if ((cm->gm.distance_mode == INCREMENTAL_DISTANCE_MODE) || (mst.extruder_mode == EXTRUDER_MOVES_RELATIVE)) {
+        if (mst.marlin_flavor && (AXIS_RADIUS == cm->a[axis].axis_mode)) {
+            if ((INCREMENTAL_DISTANCE_MODE == cm->gm.distance_mode) || (EXTRUDER_MOVES_RELATIVE == mst.extruder_mode)) {
                 cm->gm.target[axis] += tmp;
             }
             else { // if (cm.gmx.extruder_mode == EXTRUDER_MOVES_NORMAL)
@@ -865,7 +865,7 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
         else
 #endif // MARLIN_COMPAT_ENABLED
 
-        if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+        if (ABSOLUTE_DISTANCE_MODE == cm->gm.distance_mode) {
             cm->gm.target[axis] = tmp + cm_get_combined_offset(axis); // sacidu93's fix to Issue #22
         }
         else {
