@@ -827,13 +827,11 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
     
     // process linear axes (XYZUVW) first
     for (axis=AXIS_X; axis<=LAST_LINEAR_AXIS; axis++) {
-        if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
-            continue;        // skip axis if not flagged for update or its disabled
-        } else if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+        if (flags[axis] && (cm->a[axis].axis_mode == AXIS_STANDARD || cm->a[axis].axis_mode == AXIS_INHIBITED)) {
             if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
                 cm->gm.target[axis] = cm_get_combined_offset(axis);
             }
-            if (mm_mode_status == UNIT_CONVERSION_REQUIRED) {
+            if (UNIT_CONVERSION_REQUIRED == mm_mode_status) {
                 cm->gm.target[axis] += _to_millimeters(target[axis]);
             } else {
                 cm->gm.target[axis] += target[axis];
