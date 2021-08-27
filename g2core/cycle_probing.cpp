@@ -354,7 +354,7 @@ static uint8_t _probing_start()
     }
 
     din_handlers[INPUT_ACTION_INTERNAL].registerHandler(&_probing_handler);
-    
+
     // Everything checks out. Run the probe move
     _probe_move(pb.target, pb.flags);
     pb.func = _probing_backoff;

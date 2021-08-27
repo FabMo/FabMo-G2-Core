@@ -824,7 +824,7 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
 
     // copy position to target so it always starts correctly
     copy_vector(cm->gm.target, cm->gmx.position);
-    
+
     // process linear axes (XYZUVW) first
     for (axis = AXIS_X; axis <= LAST_LINEAR_AXIS; axis++) {
         if (flags[axis] && (AXIS_STANDARD == cm->a[axis].axis_mode || AXIS_INHIBITED == cm->a[axis].axis_mode)) {
@@ -1395,7 +1395,7 @@ stat_t cm_straight_feed(const float *target, const bool *flags)
           flags[AXIS_A] | flags[AXIS_B] | flags[AXIS_C])) {
         return(STAT_OK);
     }
-    
+
     cm_set_model_target(target, flags);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
