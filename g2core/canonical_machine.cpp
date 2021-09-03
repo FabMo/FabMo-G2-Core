@@ -829,7 +829,11 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
     for (axis = AXIS_X; axis <= LAST_LINEAR_AXIS; axis++) {
         if (flags[axis] && (AXIS_STANDARD == cm->a[axis].axis_mode || AXIS_INHIBITED == cm->a[axis].axis_mode)) {
             if (ABSOLUTE_DISTANCE_MODE == cm->gm.distance_mode) {
-                cm->gm.target[axis] = cm_get_combined_offset(axis);
+                if (UNIT_CONVERSION_REQUIRED == mm_mode_status) {
+                    cm->gm.target[axis] = cm_get_combined_offset(axis);
+                } else {
+                    cm->gm.target[axis] = _to_inches(cm_get_combined_offset(axis));
+                }
             }
             if (UNIT_CONVERSION_REQUIRED == mm_mode_status) {
                 cm->gm.target[axis] += _to_millimeters(target[axis]);
