@@ -1383,7 +1383,7 @@ stat_t cm_dwell(const float seconds)
  * cm_straight_feed() - G1
  */
 
-stat_t cm_straight_feed(const float *target, const bool *flags)
+stat_t cm_straight_feed(const float *target, const bool *flags, const cmUnitsModeStatus mm_mode_status)
 {
     // trap zero feed rate condition
     if (fp_ZERO(cm->gm.feed_rate)) {
@@ -1400,7 +1400,7 @@ stat_t cm_straight_feed(const float *target, const bool *flags)
         return(STAT_OK);
     }
 
-    cm_set_model_target(target, flags);
+    cm_set_model_target(target, flags, mm_mode_status);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
     cm_cycle_start();                             // required for homing & other cycles

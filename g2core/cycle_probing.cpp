@@ -224,7 +224,7 @@ uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool al
     pb.trip_sense = trip_sense;             // set to sense of "tripped" contact
     pb.func = _probing_start;               // bind probing start function
 
-    cm_set_model_target(target, flags, UNIT_CONVERSION_COMPLETE);     // convert target to canonical form taking all offsets into account
+    cm_set_model_target(target, flags);     // convert target to canonical form taking all offsets into account
     copy_vector(pb.target, cm->gm.target);  // cm_set_model_target() sets target in gm, move it to pb
     copy_vector(pb.flags, flags);           // set axes involved in the move
 
@@ -311,8 +311,8 @@ static stat_t _probe_move(const float target[], const bool flags[])
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
     pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
-    cm_straight_feed(target, flags);                          // NB: feed rate was set earlier, so it's OK
-    mp_queue_command(_motion_end_callback, nullptr, nullptr); // the last two arguments are ignored anyway
+    cm_straight_feed(target, flags, UNIT_CONVERSION_COMPLETE); // NB: feed rate was set earlier, so it's OK
+    mp_queue_command(_motion_end_callback, nullptr, nullptr);  // the last two arguments are ignored anyway
     return (STAT_EAGAIN);
 }
 
