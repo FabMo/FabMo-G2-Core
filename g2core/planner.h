@@ -648,6 +648,7 @@ bool mp_runtime_is_idle(void);
 stat_t mp_aline(GCodeState_t *_gm);                   // line planning...
 void mp_plan_block_list(void);
 void mp_plan_block_forward(mpBuf_t *bf);
+void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf);
 
 //**** plan_zoid.c functions
 stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const float entry_velocity);

@@ -428,7 +428,7 @@ stat_t cm_set_feed_rate_mode(const uint8_t mode);                           // G
 stat_t cm_set_path_control(GCodeState_t *gcode_state, const uint8_t mode);  // G61, G61.1, G64
 
 // Machining Functions (4.3.6)
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmUnitsModeStatus mm_mode_status = UNIT_CONVERSION_REQUIRED); // G1
+stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionProfile motion_profile, const cmUnitsModeStatus mm_mode_status = UNIT_CONVERSION_REQUIRED); // G1
 stat_t cm_dwell(const float seconds);                                       // G4, P parameter
 
 stat_t cm_arc_feed(const float target[], const bool target_f[],             // G2/G3 - target endpoint

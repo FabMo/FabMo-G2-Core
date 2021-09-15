@@ -490,6 +490,12 @@ static void _calculate_jerk(mpBuf_t* bf)
     bf->q_recip_2_sqrt_j = q / (2.0 * sqrt_j);
 }
 
+void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
+    if (PROFILE_FAST_STOP == bf->gm.motion_profile) {
+        bf->gm.motion_profile = PROFILE_FAST;
+    }
+}
+
 /****************************************************************************************
  * _calculate_vmaxes() - compute cruise_vmax and absolute_vmax based on velocity constraints
  *

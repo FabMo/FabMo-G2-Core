@@ -92,7 +92,8 @@ typedef enum {
 
 typedef enum {                      // Motion profiles
     PROFILE_NORMAL = 0,             // Normal jerk in effect
-    PROFILE_FAST                    // High speed jerk in effect
+    PROFILE_FAST,                   // High speed jerk in effect
+    PROFILE_FAST_STOP,              // Fast stop jerk in effect (for rapid stopping)
 } cmMotionProfile;
 
 typedef enum {
@@ -189,7 +190,7 @@ struct GCodeState_t {             // Gcode model state - used by model, planning
     cmDistanceMode arc_distance_mode;   // G90.1=use absolute IJK offsets, G91.1=incremental IJK offsets
     cmAbsoluteOverride absolute_override;// G53 TRUE = move using machine coordinates - this block only
     cmCoordSystem coord_system;         // G54-G59 - select coordinate system 1-9
-    cmMotionProfile motion_profile;     // NORMAL or FAST - controls what jerk is used when
+    cmMotionProfile motion_profile;     // NORMAL, FAST or FAST_STOP - controls what jerk is used when
     uint8_t tool;               // G    // M6 tool change - moves "tool_select" to "tool"
     uint8_t tool_select;        // G    // T value - T sets this value
 

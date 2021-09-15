@@ -1383,13 +1383,14 @@ stat_t cm_dwell(const float seconds)
  * cm_straight_feed() - G1
  */
 
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmUnitsModeStatus mm_mode_status)
+stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionProfile motion_profile, const cmUnitsModeStatus mm_mode_status)
 {
     // trap zero feed rate condition
     if (fp_ZERO(cm->gm.feed_rate)) {
         return (STAT_FEEDRATE_NOT_SPECIFIED);
     }
     cm->gm.motion_mode = MOTION_MODE_STRAIGHT_FEED;
+    cm->gm.motion_profile = motion_profile;
 
     // it's legal for a G0 to have no axis words but we don't want to process it
     if (!(flags[AXIS_X] | flags[AXIS_Y] | flags[AXIS_Z] |
