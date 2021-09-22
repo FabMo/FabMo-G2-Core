@@ -1213,12 +1213,12 @@ stat_t cm_resume_g92_offsets()
  **** Free Space Motion (4.3.4) *********************************************************
  ****************************************************************************************/
 /*
- * _axes_to_mm()                 - helper to convert all axes to mm if needed      
+ * cm_axes_to_mm()               - helper to convert all axes to mm if needed      
  * cm_straight_traverse_global() - G0 linear rapid, global (Gcode) units - for external use
  * cm_straight_traverse_mm()     - G0 linear rapid, mm units - for internal use
  */
 
-static void _axes_to_mm(const float *target_global, float *target_mm, const bool *flags)    // Assumes both target arrays are the same size
+void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags) // Assumes both target arrays are the same size
 {   
     for (uint8_t axis = AXIS_X; axis < AXIS_A; axis++) {                // Only convert linears (not rotaries)
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
@@ -1233,7 +1233,7 @@ stat_t cm_straight_traverse_global(const float *target, const bool *flags, const
 {
     // Convert axes to mm if needed then call internal function
     float target_mm[AXES];
-    _axes_to_mm(target, target_mm, flags);
+    cm_axes_to_mm(target, target_mm, flags);
     stat_t status = cm_straight_traverse_mm(target_mm, flags, motion_profile);
     return (status);
 }
@@ -1445,7 +1445,7 @@ stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmM
 {
     // Convert axes to mm if needed then call internal function
     float target_mm[AXES];
-    _axes_to_mm(target, target_mm, flags);
+    cm_axes_to_mm(target, target_mm, flags);
     stat_t status = cm_straight_feed_mm(target_mm, flags, motion_profile);
     return (status);
 }

@@ -416,6 +416,7 @@ stat_t cm_suspend_g92_offsets(void);                                        // G
 stat_t cm_resume_g92_offsets(void);                                         // G92.3
 
 // Free Space Motion (4.3.4)
+void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags);
 stat_t cm_straight_traverse_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G0, global (Gcode) units - for external use
 stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G0, mm units - for internal use
 stat_t cm_set_g28_position(void);                                           // G28.1
@@ -495,7 +496,7 @@ stat_t cm_homing_cycle_callback(void);                          // G28.2/.4 main
 void cm_abort_homing(cmMachine_t *_cm); // called from the queue flush sequence to clean up
 
 // Probe cycles
-stat_t cm_straight_probe(float target[], bool flags[],          // G38.x
+stat_t cm_straight_probe_global(float target[], bool flags[],   // G38.x, global (Gcode) units - for external use
                          bool trip_sense, bool alarm_flag);
 stat_t cm_probing_cycle_callback(void);                         // G38.x main loop callback
 void cm_abort_probing(cmMachine_t *_cm); // called from the queue flush sequence to clean up

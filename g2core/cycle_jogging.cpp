@@ -52,7 +52,6 @@ struct jmJoggingSingleton {         // persistent jogging runtime variables
 
     // state saved from gcode model
     float   saved_feed_rate;        // F setting
-    uint8_t saved_units_mode;       // G20,G21 global setting
     uint8_t saved_coord_system;     // G54 - G59 setting
     uint8_t saved_distance_mode;    // G90,G91 global setting
     uint8_t saved_feed_rate_mode;
@@ -86,14 +85,12 @@ static stat_t _jogging_finalize_exit(int8_t axis);
 
 stat_t cm_jogging_cycle_start(uint8_t axis) {
     // save relevant non-axis parameters from Gcode model
-    jog.saved_units_mode     = cm_get_units_mode(ACTIVE_MODEL);     // cm->gm.units_mode;
     jog.saved_coord_system   = cm_get_coord_system(ACTIVE_MODEL);   // cm->gm.coord_system;
     jog.saved_distance_mode  = cm_get_distance_mode(ACTIVE_MODEL);  // cm->gm.distance_mode;
     jog.saved_feed_rate_mode = cm_get_feed_rate_mode(ACTIVE_MODEL);
     jog.saved_feed_rate      = (ACTIVE_MODEL)->feed_rate;  // cm->gm.feed_rate;
 
     // set working values
-    cm_set_units_mode(MILLIMETERS);
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
     cm_set_coord_system(ABSOLUTE_COORDS);  // jogging is done in machine coordinates
     cm_set_feed_rate_mode(UNITS_PER_MINUTE_MODE);
@@ -192,7 +189,6 @@ static stat_t _jogging_finalize_exit(int8_t axis)  // finish a jog
     //    cm_end_hold();                                // ends hold if one is in effect
 
     cm_set_coord_system(jog.saved_coord_system);  // restore to work coordinate system
-    cm_set_units_mode(jog.saved_units_mode);
     cm_set_distance_mode(jog.saved_distance_mode);
     cm_set_feed_rate_mode(jog.saved_feed_rate_mode);
     (MODEL)->feed_rate = jog.saved_feed_rate;
