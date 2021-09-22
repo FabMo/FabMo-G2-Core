@@ -61,6 +61,7 @@ struct pbProbingSingleton {             // persistent probing runtime variables
     // saved gcode model state
     cmUnitsMode saved_units_mode;       // G20,G21 setting
     cmDistanceMode saved_distance_mode; // G90,G91 global setting
+    cmMotionProfile saved_motion_profile; // Stores the previous motion profile before probing started
     bool saved_soft_limits;             // turn off soft limits during probing
 };
 static struct pbProbingSingleton pb;
@@ -312,6 +313,7 @@ static stat_t _probe_move(const float target[], const bool flags[])
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
     pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
+    pb.saved_motion_profile = cm->gm.motion_profile;
     cm_straight_feed(target, flags, PROFILE_FAST_STOP, UNIT_CONVERSION_COMPLETE); // NB: feed rate was set earlier, so it's OK
     mp_queue_command(_motion_end_callback, nullptr, nullptr);  // the last two arguments are ignored anyway
     return (STAT_EAGAIN);
@@ -400,7 +402,7 @@ static void _probe_restore_settings()
     cm_set_distance_mode(pb.saved_distance_mode);
     cm_set_units_mode(pb.saved_units_mode);
     cm_set_soft_limits(pb.saved_soft_limits);
-
+    cm->gm.motion_profile = pb.saved_motion_profile;
     cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE);// cancel feed modes used during probing
     cm_canned_cycle_end();
     sr_request_status_report(SR_REQUEST_IMMEDIATE);         // do this last

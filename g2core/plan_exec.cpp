@@ -1058,8 +1058,8 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
     if ((cm->hold_state == FEEDHOLD_SYNC) ||
         ((cm->hold_state == FEEDHOLD_DECEL_CONTINUE) && (mr->block_state == BLOCK_INITIAL_ACTION))) {
 
-        if (cm->hold_state == FEEDHOLD_SYNC) {
-            mp_recalculate_jerk_for_feedhold(bf);
+        if (cm->hold_state == FEEDHOLD_SYNC) {    // Briefly changes the motion_profile and recalculates the jerk.
+            mp_recalculate_jerk_for_feedhold(bf); // This change won't persist, but will last the duration of the feedhold.
         }
 
         // Case (1d) - Already decelerating (in a tail), continue the deceleration.
