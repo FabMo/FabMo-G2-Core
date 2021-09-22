@@ -376,7 +376,7 @@ float cm_get_absolute_position(const GCodeState_t *gcode_state, const uint8_t ax
 // Critical helpers
 void cm_update_model_position(void);
 stat_t cm_deferred_write_callback(void);
-void cm_set_model_target(const float target[], const bool flag[], const cmUnitsModeStatus mm_mode_status = UNIT_CONVERSION_REQUIRED);
+void cm_set_model_target(const float target[], const bool flag[]);
 bool cm_get_soft_limits(void);
 void cm_set_soft_limits(bool enable);
 
@@ -416,19 +416,23 @@ stat_t cm_suspend_g92_offsets(void);                                        // G
 stat_t cm_resume_g92_offsets(void);                                         // G92.3
 
 // Free Space Motion (4.3.4)
-stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G0
+stat_t cm_straight_traverse_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G0, global (Gcode) units - for external use
+stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G0, mm units - for internal use
 stat_t cm_set_g28_position(void);                                           // G28.1
 stat_t cm_goto_g28_position(const float target[], const bool flags[]);      // G28
 stat_t cm_set_g30_position(void);                                           // G30.1
-stat_t cm_goto_g30_position(const float target[], const bool flags[]);      // G30
+stat_t cm_goto_g30_position_global(const float target[], const bool flags[]); // G30, global (Gcode) units - for external use
+stat_t cm_goto_g30_position_mm(const float target[], const bool flags[]);     // G30, mm units - for internal use
 
 // Machining Attributes (4.3.5)
-stat_t cm_set_feed_rate(const float feed_rate);                             // F parameter
+stat_t cm_set_feed_rate_global(const float feed_rate);                      // F parameter, global (Gcode) units - for external use
+stat_t cm_set_feed_rate_mm(const float feed_rate);                          // F parameter, mm units - for internal use
 stat_t cm_set_feed_rate_mode(const uint8_t mode);                           // G93, G94, (G95 unimplemented)
 stat_t cm_set_path_control(GCodeState_t *gcode_state, const uint8_t mode);  // G61, G61.1, G64
 
 // Machining Functions (4.3.6)
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionProfile motion_profile, const cmUnitsModeStatus mm_mode_status = UNIT_CONVERSION_REQUIRED); // G1
+stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G1, global (Gcode) units - for external use
+stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G1, mm units - for internal use
 stat_t cm_dwell(const float seconds);                                       // G4, P parameter
 
 stat_t cm_arc_feed(const float target[], const bool target_f[],             // G2/G3 - target endpoint

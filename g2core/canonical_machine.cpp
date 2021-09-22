@@ -814,10 +814,10 @@ static float _calc_ABC(const uint8_t axis, const float target[])
         return(target[axis]);    // no mm conversion - it's in degrees
     }
     // radius mode
-    return (_to_millimeters(target[axis]) * 360.0 / (2 * M_PI * cm->a[axis].radius));
+    return ((target[axis]) * 360.0 / (2 * M_PI * cm->a[axis].radius));
 }
 
-void cm_set_model_target(const float target[], const bool flags[], const cmUnitsModeStatus mm_mode_status)
+void cm_set_model_target(const float target[], const bool flags[])
 {
     uint8_t axis;
     float tmp = 0;
@@ -827,17 +827,12 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
 
     // process linear axes (XYZUVW) first
     for (axis = AXIS_X; axis <= LAST_LINEAR_AXIS; axis++) {
-        if (flags[axis] && (AXIS_STANDARD == cm->a[axis].axis_mode || AXIS_INHIBITED == cm->a[axis].axis_mode)) {
-            if (ABSOLUTE_DISTANCE_MODE == cm->gm.distance_mode) {
-                if (UNIT_CONVERSION_REQUIRED == mm_mode_status) {
-                    cm->gm.target[axis] = cm_get_combined_offset(axis);
+        if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
+            continue;        // skip axis if not flagged for update or its disabled
+        } else if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+            if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+                cm->gm.target[axis] = cm_get_combined_offset(axis) + target[axis];
                 } else {
-                    cm->gm.target[axis] = _to_inches(cm_get_combined_offset(axis));
-                }
-            }
-            if (UNIT_CONVERSION_REQUIRED == mm_mode_status) {
-                cm->gm.target[axis] += _to_millimeters(target[axis]);
-            } else {
                 cm->gm.target[axis] += target[axis];
             }
             cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
@@ -845,7 +840,7 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
     }
     // FYI: The ABC loop below relies on the XYZUVW loop having been run first
     for (axis = AXIS_A; axis <= AXIS_C; axis++) {
-        if (!flags[axis] || AXIS_DISABLED == cm->a[axis].axis_mode) {
+        if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
         } else {
             tmp = _calc_ABC(axis, target);
@@ -854,8 +849,8 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
 #if MARLIN_COMPAT_ENABLED == true
         // If we are in absolute mode (generally), but the extruder is relative,
         // then we adjust the extruder to a relative position
-        if (mst.marlin_flavor && (AXIS_RADIUS == cm->a[axis].axis_mode)) {
-            if ((INCREMENTAL_DISTANCE_MODE == cm->gm.distance_mode) || (EXTRUDER_MOVES_RELATIVE == mst.extruder_mode)) {
+        if (mst.marlin_flavor && (cm->a[axis].axis_mode == AXIS_RADIUS)) {
+            if ((cm->gm.distance_mode == INCREMENTAL_DISTANCE_MODE) || (mst.extruder_mode == EXTRUDER_MOVES_RELATIVE)) {
                 cm->gm.target[axis] += tmp;
             }
             else { // if (cm.gmx.extruder_mode == EXTRUDER_MOVES_NORMAL)
@@ -869,7 +864,7 @@ void cm_set_model_target(const float target[], const bool flags[], const cmUnits
         else
 #endif // MARLIN_COMPAT_ENABLED
 
-        if (ABSOLUTE_DISTANCE_MODE == cm->gm.distance_mode) {
+        if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
             cm->gm.target[axis] = tmp + cm_get_combined_offset(axis); // sacidu93's fix to Issue #22
         }
         else {
@@ -1213,14 +1208,37 @@ stat_t cm_resume_g92_offsets()
     return (STAT_OK);
 }
 
+
 /****************************************************************************************
  **** Free Space Motion (4.3.4) *********************************************************
  ****************************************************************************************/
 /*
- * cm_straight_traverse() - G0 linear rapid
+ * _axes_to_mm()                 - helper to convert all axes to mm if needed      
+ * cm_straight_traverse_global() - G0 linear rapid, global (Gcode) units - for external use
+ * cm_straight_traverse_mm()     - G0 linear rapid, mm units - for internal use
  */
 
-stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+static void _axes_to_mm(const float *target_global, float *target_mm, const bool *flags)    // Assumes both target arrays are the same size
+{   
+    for (uint8_t axis = AXIS_X; axis < AXIS_A; axis++) {                // Only convert linears (not rotaries)
+        if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
+            continue;                                                   // skip axis if not flagged for update or its disabled
+        } else {
+            target_mm[axis] = _to_millimeters(target_global[axis]);
+        }
+    }
+}
+
+stat_t cm_straight_traverse_global(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+{
+    // Convert axes to mm if needed then call internal function
+    float target_mm[AXES];
+    _axes_to_mm(target, target_mm, flags);
+    stat_t status = cm_straight_traverse_mm(target_mm, flags, motion_profile);
+    return (status);
+}
+
+stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile)
 {
     cm->gm.motion_mode = MOTION_MODE_STRAIGHT_TRAVERSE;
 #ifdef TRAVERSE_AT_HIGH_JERK
@@ -1255,20 +1273,22 @@ stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMoti
 }
 
 /****************************************************************************************
- * cm_goto_g28_position()  - G28
- * cm_set_g28_position()   - G28.1
- * cm_goto_g30_position()  - G30
- * cm_set_g30_position()   - G30.1
- * _goto_stored_position() - helper
+ * cm_goto_g28_position()         - G28
+ * cm_set_g28_position()          - G28.1
+ * cm_goto_g30_position_global()  - G30, global (Gcode) units - for external use
+ * cm_goto_g30_position_mm()      - G30, mm units - for internal use
+ * cm_set_g30_position()          - G30.1
+ * _goto_stored_position_global() - helper, global (Gcode) units - for external use
+ * _goto_stored_position_mm()     - helper, mm units - for internal use
  */
 
-stat_t _goto_stored_position(const float stored_position[],     // always in mm
-                             const float intermediate_target[], // in current units (G20/G21)
-                             const bool flags[])                // all false if no intermediate move
+stat_t _goto_stored_position_global(const float stored_position[],     // always in mm
+                                    const float intermediate_target[], // in current units (G20/G21)
+                                    const bool flags[])                // all false if no intermediate move
 {
     // Go through intermediate point if one is provided
     while (mp_planner_is_full(mp));                             // Make sure you have available buffers
-    ritorno(cm_straight_traverse(intermediate_target, flags, PROFILE_NORMAL));  // w/no action if no axis flags
+    ritorno(cm_straight_traverse_global(intermediate_target, flags, PROFILE_NORMAL));  // w/no action if no axis flags
 
     // If G20 adjust stored position (always in mm) to inches so traverse will be correct
     float target[AXES]; // make a local stored position as it may be modified
@@ -1288,7 +1308,33 @@ stat_t _goto_stored_position(const float stored_position[],     // always in mm
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);           // Must run in absolute distance mode
 
     bool flags2[] = INIT_AXES_TRUE;
-    stat_t status = cm_straight_traverse(target, flags2, PROFILE_NORMAL);   // Go to stored position
+    stat_t status = cm_straight_traverse_global(target, flags2, PROFILE_NORMAL);   // Go to stored position
+    cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_OFF);
+    cm_set_distance_mode(saved_distance_mode);              // Restore distance mode
+    return (status);
+}
+
+stat_t _goto_stored_position_mm(const float stored_position[],     // always in mm
+                                const float intermediate_target[], // always in mm
+                                const bool flags[])                // all false if no intermediate move
+{
+    // Go through intermediate point if one is provided
+    while (mp_planner_is_full(mp));                             // Make sure you have available buffers
+    ritorno(cm_straight_traverse_mm(intermediate_target, flags, PROFILE_NORMAL));  // w/no action if no axis flags
+
+    // If G20 adjust stored position (always in mm) to inches so traverse will be correct
+    float target[AXES]; // make a local stored position as it may be modified
+    copy_vector(target, stored_position);
+
+    // Run the stored position move
+    while (mp_planner_is_full(mp));                         // Make sure you have available buffers
+
+    uint8_t saved_distance_mode = cm_get_distance_mode(MODEL);
+    cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);  // Position stored in abs coords
+    cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);           // Must run in absolute distance mode
+
+    bool flags2[] = INIT_AXES_TRUE;
+    stat_t status = cm_straight_traverse_mm(target, flags2, PROFILE_NORMAL);   // Go to stored position
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_OFF);
     cm_set_distance_mode(saved_distance_mode);              // Restore distance mode
     return (status);
@@ -1302,7 +1348,7 @@ stat_t cm_set_g28_position(void)
 
 stat_t cm_goto_g28_position(const float target[], const bool flags[])
 {
-    return (_goto_stored_position(cm->gmx.g28_position, target, flags));
+    return (_goto_stored_position_global(cm->gmx.g28_position, target, flags));
 }
 
 stat_t cm_set_g30_position(void)
@@ -1311,21 +1357,32 @@ stat_t cm_set_g30_position(void)
     return (STAT_OK);
 }
 
-stat_t cm_goto_g30_position(const float target[], const bool flags[])
+stat_t cm_goto_g30_position_global(const float target[], const bool flags[])
 {
-    return (_goto_stored_position(cm->gmx.g30_position, target, flags));
+    return (_goto_stored_position_global(cm->gmx.g30_position, target, flags));
+}
+
+stat_t cm_goto_g30_position_mm(const float target[], const bool flags[])
+{
+    return (_goto_stored_position_mm(cm->gmx.g30_position, target, flags));
 }
 
 /****************************************************************************************
  **** Machining Attributes (4.3.5) ******************************************************
  ****************************************************************************************/
 /*
- * cm_set_feed_rate() - F parameter (affects MODEL only)
+ * cm_set_feed_rate_global() - F parameter (affects MODEL only), global (Gcode) units - for external use
+ * cm_set_feed_rate_mm()     - F parameter (affects MODEL only), mm units - for internal use
  *
  * Normalize feed rate to mm/min or to minutes if in inverse time mode
  */
 
-stat_t cm_set_feed_rate(const float feed_rate)
+stat_t cm_set_feed_rate_global(const float feed_rate)
+{
+    return (cm_set_feed_rate_mm(_to_millimeters(feed_rate)));
+}
+
+stat_t cm_set_feed_rate_mm(const float feed_rate)
 {
     if (cm->gm.feed_rate_mode == INVERSE_TIME_MODE) {
         if (fp_ZERO(feed_rate)) {
@@ -1333,7 +1390,7 @@ stat_t cm_set_feed_rate(const float feed_rate)
         }
         cm->gm.feed_rate = 1/feed_rate;    // normalize to minutes (NB: active for this gcode block only)
     } else {
-        cm->gm.feed_rate = _to_millimeters(feed_rate);
+        cm->gm.feed_rate = feed_rate;
     }
     return (STAT_OK);
 }
@@ -1380,10 +1437,20 @@ stat_t cm_dwell(const float seconds)
 }
 
 /****************************************************************************************
- * cm_straight_feed() - G1
+ * cm_straight_feed_global() - G1, global (Gcode) units - for external use
+ * cm_straight_feed_mm()     - G1, mm units - for internal use
  */
 
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionProfile motion_profile, const cmUnitsModeStatus mm_mode_status)
+stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+{
+    // Convert axes to mm if needed then call internal function
+    float target_mm[AXES];
+    _axes_to_mm(target, target_mm, flags);
+    stat_t status = cm_straight_feed_mm(target_mm, flags, motion_profile);
+    return (status);
+}
+
+stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile)
 {
     // trap zero feed rate condition
     if (fp_ZERO(cm->gm.feed_rate)) {
@@ -1400,7 +1467,7 @@ stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionPr
         return(STAT_OK);
     }
 
-    cm_set_model_target(target, flags, mm_mode_status);
+    cm_set_model_target(target, flags);
     ritorno(cm_test_soft_limits(cm->gm.target));  // test soft limits; exit if thrown
     cm_set_display_offsets(MODEL);                // capture the fully resolved offsets to the state
     cm_cycle_start();                             // required for homing & other cycles

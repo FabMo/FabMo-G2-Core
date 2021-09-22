@@ -419,9 +419,9 @@ static stat_t _homing_axis_move(int8_t axis, float target, float velocity) {
 
     vect[axis]  = target;
     flags[axis] = true;
-    cm_set_feed_rate(velocity);
+    cm_set_feed_rate_mm(velocity);
 
-    stat_t status = cm_straight_feed(vect, flags, PROFILE_FAST);
+    stat_t status = cm_straight_feed_mm(vect, flags, PROFILE_FAST);
     if (status != STAT_OK) {
         rpt_exception(status, "Homing move failed. Check min/max settings");
         return (_homing_error_exit(axis, STAT_HOMING_CYCLE_FAILED));
@@ -464,7 +464,7 @@ static stat_t _homing_error_exit(int8_t axis, stat_t status) {
 
 static stat_t _homing_finalize_exit(int8_t axis)  // third part of return to home
 {
-    cm_set_feed_rate(hm.saved_feed_rate);
+    cm_set_feed_rate_mm(hm.saved_feed_rate);
     cm_set_coord_system(hm.saved_coord_system);  // restore to work coordinate system
     cm_set_units_mode(hm.saved_units_mode);
     cm_set_distance_mode(hm.saved_distance_mode);
