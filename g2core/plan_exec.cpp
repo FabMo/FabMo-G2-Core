@@ -1066,8 +1066,8 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
         if (mr->section == SECTION_TAIL) {                  // if already in a tail don't decelerate. You already are
             if (mr->r->exit_velocity < EPSILON2) {          // allow near-zero velocities to be treated as zero
                 cm->hold_state = FEEDHOLD_DECEL_TO_ZERO;
+                return (STAT_EAGAIN);                       // exiting with EAGAIN will continue exec_aline() execution
             }
-            return (STAT_EAGAIN);                           // exiting with EAGAIN will continue exec_aline() execution
         }
 
         // Case (1b, 1c) - Block is in a body or about to start a new head. Turn it into a new tail.
