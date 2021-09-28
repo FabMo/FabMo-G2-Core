@@ -62,7 +62,6 @@ struct hmHomingSingleton {          // persistent homing runtime variables
     float setpoint;                 // ultimate setpoint, usually zero, but not always
 
     // state saved from gcode model
-    cmUnitsMode    saved_units_mode;      // G20,G21 global setting
     cmCoordSystem  saved_coord_system;    // G54 - G59 setting
     cmDistanceMode saved_distance_mode;   // G90, G91 global setting
     cmFeedRateMode saved_feed_rate_mode;  // G93, G94 global setting
@@ -175,7 +174,6 @@ gpioDigitalInputHandler _homing_handler {
 
 stat_t cm_homing_cycle_start(const float axes[], const bool flags[]) {
     // save relevant non-axis parameters from Gcode model
-    hm.saved_units_mode     = (cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL);
     hm.saved_coord_system   = (cmCoordSystem)cm_get_coord_system(ACTIVE_MODEL);
     hm.saved_distance_mode  = (cmDistanceMode)cm_get_distance_mode(ACTIVE_MODEL);
     hm.saved_feed_rate_mode = (cmFeedRateMode)cm_get_feed_rate_mode(ACTIVE_MODEL);
@@ -187,7 +185,6 @@ stat_t cm_homing_cycle_start(const float axes[], const bool flags[]) {
     spindle_stop();
 
     // set working values
-    cm_set_units_mode(MILLIMETERS);
     cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
     cm_set_coord_system(ABSOLUTE_COORDS);  // homing is done in machine coordinates
     cm_set_feed_rate_mode(UNITS_PER_MINUTE_MODE);
@@ -419,9 +416,9 @@ static stat_t _homing_axis_move(int8_t axis, float target, float velocity) {
 
     vect[axis]  = target;
     flags[axis] = true;
-    cm_set_feed_rate(velocity);
+    cm_set_feed_rate_mm(velocity);
 
-    stat_t status = cm_straight_feed(vect, flags, PROFILE_FAST);
+    stat_t status = cm_straight_feed_mm(vect, flags, PROFILE_FAST);
     if (status != STAT_OK) {
         rpt_exception(status, "Homing move failed. Check min/max settings");
         return (_homing_error_exit(axis, STAT_HOMING_CYCLE_FAILED));
@@ -464,9 +461,8 @@ static stat_t _homing_error_exit(int8_t axis, stat_t status) {
 
 static stat_t _homing_finalize_exit(int8_t axis)  // third part of return to home
 {
-    cm_set_feed_rate(hm.saved_feed_rate);
+    cm_set_feed_rate_mm(hm.saved_feed_rate);
     cm_set_coord_system(hm.saved_coord_system);  // restore to work coordinate system
-    cm_set_units_mode(hm.saved_units_mode);
     cm_set_distance_mode(hm.saved_distance_mode);
     cm_set_feed_rate_mode(hm.saved_feed_rate_mode);
     cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE);

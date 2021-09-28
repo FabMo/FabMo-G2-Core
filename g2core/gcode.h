@@ -97,11 +97,6 @@ typedef enum {                      // Motion profiles
 } cmMotionProfile;
 
 typedef enum {
-    UNIT_CONVERSION_COMPLETE,
-    UNIT_CONVERSION_REQUIRED,
-} cmUnitsModeStatus;
-
-typedef enum {
     ORIGIN_OFFSET_SET=0,    // G92 - set origin offsets
     ORIGIN_OFFSET_CANCEL,   // G92.1 - zero out origin offsets
     ORIGIN_OFFSET_SUSPEND,  // G92.2 - do not apply offsets, but preserve the values

@@ -59,7 +59,6 @@ struct pbProbingSingleton {             // persistent probing runtime variables
     stat_t (*func)();                   // binding for callback function state machine
 
     // saved gcode model state
-    cmUnitsMode saved_units_mode;       // G20,G21 setting
     cmDistanceMode saved_distance_mode; // G90,G91 global setting
     bool saved_soft_limits;             // turn off soft limits during probing
 };
@@ -197,7 +196,7 @@ gpioDigitalInputHandler _probing_handler {
  *  wait_for_motion_end callback is about.
  */
 
-uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool alarm_flag)
+uint8_t cm_straight_probe_global(float target[], bool flags[], bool trip_sense, bool alarm_flag)
 {
     if (cm->cycle_type == CYCLE_PROBE) {
         return(cm_alarm(STAT_PROBE_CYCLE_FAILED, "Already probing - cannot start another probe"));
@@ -219,12 +218,16 @@ uint8_t cm_straight_probe(float target[], bool flags[], bool trip_sense, bool al
         return(cm_alarm(STAT_NO_PROBE_INPUT_CONFIGURED, "Probe input not configured"));
     }
 
+    // Convert axes to mm if needed
+    float target_mm[AXES];
+    cm_axes_to_mm(target, target_mm, flags);
+
     // setup
     pb.alarm_flag = alarm_flag;             // set true to enable probe fail alarms (all exceptions alarm regardless)
     pb.trip_sense = trip_sense;             // set to sense of "tripped" contact
     pb.func = _probing_start;               // bind probing start function
 
-    cm_set_model_target(target, flags);     // convert target to canonical form taking all offsets into account
+    cm_set_model_target(target_mm, flags);     // convert target to canonical form taking all offsets into account
     copy_vector(pb.target, cm->gm.target);  // cm_set_model_target() sets target in gm, move it to pb
     copy_vector(pb.flags, flags);           // set axes involved in the move
 
@@ -312,7 +315,7 @@ static stat_t _probe_move(const float target[], const bool flags[])
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
     pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
-    cm_straight_feed(target, flags, PROFILE_FAST_STOP, UNIT_CONVERSION_COMPLETE); // NB: feed rate was set earlier, so it's OK
+    cm_straight_feed_mm(target, flags, PROFILE_FAST_STOP); // NB: feed rate was set earlier, so it's OK
     mp_queue_command(_motion_end_callback, nullptr, nullptr);  // the last two arguments are ignored anyway
     return (STAT_EAGAIN);
 }
@@ -335,13 +338,11 @@ static uint8_t _probing_start()
 
     // save relevant non-axis parameters from Gcode model
     pb.saved_distance_mode = (cmDistanceMode)cm_get_distance_mode(ACTIVE_MODEL);
-    pb.saved_units_mode = (cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL);
     pb.saved_soft_limits = cm_get_soft_limits();
     cm_set_soft_limits(false);
 
     // set working values
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
-    cm_set_units_mode((cmUnitsMode)cm_get_units_mode(ACTIVE_MODEL));
 
     // Error if the probe target is too close to the current position
     if (get_axis_vector_length(cm->gmx.position, pb.target) < MINIMUM_PROBE_TRAVEL) {
@@ -398,7 +399,6 @@ static void _probe_restore_settings()
 
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_OFF); // release abs override and restore work offsets
     cm_set_distance_mode(pb.saved_distance_mode);
-    cm_set_units_mode(pb.saved_units_mode);
     cm_set_soft_limits(pb.saved_soft_limits);
     cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE);// cancel feed modes used during probing
     cm_canned_cycle_end();
