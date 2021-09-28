@@ -416,19 +416,24 @@ stat_t cm_suspend_g92_offsets(void);                                        // G
 stat_t cm_resume_g92_offsets(void);                                         // G92.3
 
 // Free Space Motion (4.3.4)
-stat_t cm_straight_traverse(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G0
+void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags);
+stat_t cm_straight_traverse_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G0, global (Gcode) units - for external use
+stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G0, mm units - for internal use
 stat_t cm_set_g28_position(void);                                           // G28.1
 stat_t cm_goto_g28_position(const float target[], const bool flags[]);      // G28
 stat_t cm_set_g30_position(void);                                           // G30.1
-stat_t cm_goto_g30_position(const float target[], const bool flags[]);      // G30
+stat_t cm_goto_g30_position_global(const float target[], const bool flags[]); // G30, global (Gcode) units - for external use
+stat_t cm_goto_g30_position_mm(const float target[], const bool flags[]);     // G30, mm units - for internal use
 
 // Machining Attributes (4.3.5)
-stat_t cm_set_feed_rate(const float feed_rate);                             // F parameter
+stat_t cm_set_feed_rate_global(const float feed_rate);                      // F parameter, global (Gcode) units - for external use
+stat_t cm_set_feed_rate_mm(const float feed_rate);                          // F parameter, mm units - for internal use
 stat_t cm_set_feed_rate_mode(const uint8_t mode);                           // G93, G94, (G95 unimplemented)
 stat_t cm_set_path_control(GCodeState_t *gcode_state, const uint8_t mode);  // G61, G61.1, G64
 
 // Machining Functions (4.3.6)
-stat_t cm_straight_feed(const float *target, const bool *flags, const cmMotionProfile motion_profile); //G1
+stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G1, global (Gcode) units - for external use
+stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G1, mm units - for internal use
 stat_t cm_dwell(const float seconds);                                       // G4, P parameter
 
 stat_t cm_arc_feed(const float target[], const bool target_f[],             // G2/G3 - target endpoint
@@ -491,7 +496,7 @@ stat_t cm_homing_cycle_callback(void);                          // G28.2/.4 main
 void cm_abort_homing(cmMachine_t *_cm); // called from the queue flush sequence to clean up
 
 // Probe cycles
-stat_t cm_straight_probe(float target[], bool flags[],          // G38.x
+stat_t cm_straight_probe_global(float target[], bool flags[],   // G38.x, global (Gcode) units - for external use
                          bool trip_sense, bool alarm_flag);
 stat_t cm_probing_cycle_callback(void);                         // G38.x main loop callback
 void cm_abort_probing(cmMachine_t *_cm); // called from the queue flush sequence to clean up

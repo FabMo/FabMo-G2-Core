@@ -804,13 +804,13 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
         // execute feedhold actions
         if (fp_NOT_ZERO(cm->feedhold_z_lift)) {// optional Z lift
             bool flags[] = { 0,0,1,0,0,0 };
-            float target[] = { 0,0,0,0,0,0 };   // convert to inches if in inches mode
+            float target[] = { 0,0,0,0,0,0 };
             bool skip_move = false;
             if (cm->feedhold_z_lift < 0) {  // if the value is negative, we want to go to Z-max position with G53
                 if (cm->homed[AXIS_Z]) {    // ONLY IF HOMED
                     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);  // Position stored in abs coords
                     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);           // Must run in absolute distance mode
-                    target[AXIS_Z] = _to_inches(cm->a[AXIS_Z].travel_max);
+                    target[AXIS_Z] = cm->a[AXIS_Z].travel_max;
                 } else {
                     skip_move = true;
                 }
@@ -821,15 +821,14 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
                 ////##  and, BETTER pull to fixed location if not above
                 cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
                 if (cm->gmx.position[AXIS_Z] < cm->feedhold_z_lift) {
-                    target[AXIS_Z] = _to_inches(cm->feedhold_z_lift);
+                    target[AXIS_Z] = cm->feedhold_z_lift;
                 } else {
                     skip_move = true;
                 }
-                //target[AXIS_Z] = _to_inches(cm->feedhold_z_lift);
             }
 
             if (!skip_move) {
-                cm_straight_traverse(target, flags, PROFILE_NORMAL);
+                cm_straight_traverse_mm(target, flags, PROFILE_NORMAL);
                 cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting
             }
         }
@@ -894,7 +893,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
 
         // do return move though an intermediate point; queue a wait
         cm2.return_flags[AXIS_Z] = false;
-        cm_goto_g30_position(cm2.gmx.g30_position, cm2.return_flags);
+        cm_goto_g30_position_mm(cm2.gmx.g30_position, cm2.return_flags);
         mp_queue_command(_feedhold_restart_actions_done_callback, nullptr, nullptr);
         cm1.hold_state = FEEDHOLD_EXIT_ACTIONS_PENDING;
         return (STAT_EAGAIN);
