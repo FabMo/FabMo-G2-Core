@@ -951,7 +951,7 @@ stat_t _execute_gcode_block(char *active_comment)
     // }
 
     EXEC_FUNC(cm_set_feed_rate_mode, feed_rate_mode);       // G93, G94
-    EXEC_FUNC(cm_set_feed_rate, F_word);                    // F
+    EXEC_FUNC(cm_set_feed_rate_global, F_word);             // F
 
     ritorno(_execute_gcode_block_marlin());                 // execute Marlin commands if Marlin compatibility enabled
     if (gf.linenum && gf.checksum) {
@@ -1011,16 +1011,16 @@ stat_t _execute_gcode_block(char *active_comment)
         case NEXT_ACTION_SET_G28_POSITION:  { status = cm_set_g28_position(); break;}                               // G28.1
         case NEXT_ACTION_GOTO_G28_POSITION: { status = cm_goto_g28_position(gv.target, gf.target); break;}          // G28
         case NEXT_ACTION_SET_G30_POSITION:  { status = cm_set_g30_position(); break;}                               // G30.1
-        case NEXT_ACTION_GOTO_G30_POSITION: { status = cm_goto_g30_position(gv.target, gf.target); break;}          // G30
+        case NEXT_ACTION_GOTO_G30_POSITION: { status = cm_goto_g30_position_global(gv.target, gf.target); break;}   // G30
 
         case NEXT_ACTION_SEARCH_HOME:         { status = cm_homing_cycle_start(gv.target, gf.target); break;}       // G28.2
         case NEXT_ACTION_SET_ABSOLUTE_ORIGIN: { status = cm_set_absolute_origin(gv.target, gf.target); break;}      // G28.3
         case NEXT_ACTION_HOMING_NO_SET:       { status = cm_homing_cycle_start_no_set(gv.target, gf.target); break;}// G28.4
 
-        case NEXT_ACTION_STRAIGHT_PROBE_ERR:     { status = cm_straight_probe(gv.target, gf.target, true, true); break;}  // G38.2
-        case NEXT_ACTION_STRAIGHT_PROBE:         { status = cm_straight_probe(gv.target, gf.target, true, false); break;} // G38.3
-        case NEXT_ACTION_STRAIGHT_PROBE_AWAY_ERR:{ status = cm_straight_probe(gv.target, gf.target, false, true); break;} // G38.4
-        case NEXT_ACTION_STRAIGHT_PROBE_AWAY:    { status = cm_straight_probe(gv.target, gf.target, false, false); break;}// G38.5
+        case NEXT_ACTION_STRAIGHT_PROBE_ERR:     { status = cm_straight_probe_global(gv.target, gf.target, true, true); break;}  // G38.2
+        case NEXT_ACTION_STRAIGHT_PROBE:         { status = cm_straight_probe_global(gv.target, gf.target, true, false); break;} // G38.3
+        case NEXT_ACTION_STRAIGHT_PROBE_AWAY_ERR:{ status = cm_straight_probe_global(gv.target, gf.target, false, true); break;} // G38.4
+        case NEXT_ACTION_STRAIGHT_PROBE_AWAY:    { status = cm_straight_probe_global(gv.target, gf.target, false, false); break;}// G38.5
 
         case NEXT_ACTION_SET_G10_DATA:           { status = cm_set_g10_data(gv.P_word, gf.P_word,               // G10
                                                                             gv.L_word, gf.L_word,
@@ -1039,8 +1039,8 @@ stat_t _execute_gcode_block(char *active_comment)
             cm_set_absolute_override(MODEL, gv.absolute_override); // apply absolute override & display as absolute
             switch (gv.motion_mode) {
                 case MOTION_MODE_CANCEL_MOTION_MODE: { cm->gm.motion_mode = gv.motion_mode; break;}                 // G80
-                case MOTION_MODE_STRAIGHT_TRAVERSE:  { status = cm_straight_traverse(gv.target, gf.target, PROFILE_NORMAL); break;} // G0
-                case MOTION_MODE_STRAIGHT_FEED:      { status = cm_straight_feed(gv.target, gf.target, PROFILE_NORMAL); break;}     // G1
+                case MOTION_MODE_STRAIGHT_TRAVERSE:  { status = cm_straight_traverse_global(gv.target, gf.target, PROFILE_NORMAL); break;} // G0
+                case MOTION_MODE_STRAIGHT_FEED:      { status = cm_straight_feed_global(gv.target, gf.target, PROFILE_NORMAL); break;}     // G1
                 case MOTION_MODE_CW_ARC:                                                                            // G2
                 case MOTION_MODE_CCW_ARC: { status = cm_arc_feed(gv.target,     gf.target,                          // G3
                                                                  gv.arc_offset, gf.arc_offset,

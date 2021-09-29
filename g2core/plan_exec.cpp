@@ -1058,21 +1058,16 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
     if ((cm->hold_state == FEEDHOLD_SYNC) ||
         ((cm->hold_state == FEEDHOLD_DECEL_CONTINUE) && (mr->block_state == BLOCK_INITIAL_ACTION))) {
 
+        if (cm->hold_state == FEEDHOLD_SYNC) {    // Briefly changes the motion_profile and recalculates the jerk.
+            mp_recalculate_jerk_for_feedhold(bf); // This change won't persist, but will last the duration of the feedhold.
+        }
+
         // Case (1d) - Already decelerating (in a tail), continue the deceleration.
         if (mr->section == SECTION_TAIL) {                  // if already in a tail don't decelerate. You already are
             if (mr->r->exit_velocity < EPSILON2) {          // allow near-zero velocities to be treated as zero
                 cm->hold_state = FEEDHOLD_DECEL_TO_ZERO;
-            } else {
-                cm->hold_state = FEEDHOLD_DECEL_CONTINUE;
+                return (STAT_EAGAIN);                       // exiting with EAGAIN will continue exec_aline() execution
             }
-            return (STAT_EAGAIN);                           // exiting with EAGAIN will continue exec_aline() execution
-        }
-
-        // Case (1a) - Currently accelerating (in a head), skip and waited for body or tail
-        //             This is true because to do otherwise the jerk would not have returned to zero.
-        // Small exception, if we *just started* the head, then we're not actually accelerating yet.
-        if ((mr->section == SECTION_HEAD) && (mr->section_state != SECTION_NEW)) {
-            return (STAT_EAGAIN);
         }
 
         // Case (1b, 1c) - Block is in a body or about to start a new head. Turn it into a new tail.

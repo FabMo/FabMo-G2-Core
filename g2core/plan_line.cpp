@@ -491,6 +491,20 @@ static void _calculate_jerk(mpBuf_t* bf)
 }
 
 /****************************************************************************************
+ * mp_recalculate_jerk_for_feedhold() - Updates the motion_profile and jerk.
+ * 
+ * This changes the motion_profile and jerk speed so that a rapid deceleration can be used in a feedhold
+ * while retaining a slow ramp up speed at the start of movement. Designed for probing. 
+ */
+
+void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
+    if (PROFILE_FAST_STOP == bf->gm.motion_profile) {
+        bf->gm.motion_profile = PROFILE_FAST;
+        _calculate_jerk(bf);
+    }
+}
+
+/****************************************************************************************
  * _calculate_vmaxes() - compute cruise_vmax and absolute_vmax based on velocity constraints
  *
  *  The following feeds and times are compared and the longest (slowest velocity) is returned:
