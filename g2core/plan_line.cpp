@@ -495,19 +495,25 @@ static void _calculate_jerk(mpBuf_t* bf)
  * 
  * This changes the motion_profile and jerk speed so that a rapid deceleration can be used in a feedhold
  * while retaining a slow ramp up speed at the start of movement. Designed for probing. 
+ *
+ * mp_should_recalculate_jerk_for_feedhold() - Checks to see if jerk needs to be recalculated
+ *
+ * This function returns true if the motion_profile has been briefly set to PROFILE_FAST_STOP
+ * in bf->gm or false if it hasn't.
  */
-bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
-    if (PROFILE_FAST_STOP == bf->gm.motion_profile) {
-        return true;
-    }
-    return false;
-}
 
 void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
     if (PROFILE_FAST_STOP == bf->gm.motion_profile) {
         bf->gm.motion_profile = PROFILE_FAST;
         _calculate_jerk(bf);
     }
+}
+
+bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
+    if (PROFILE_FAST_STOP == bf->gm.motion_profile) {
+        return true;
+    }
+    return false;
 }
 
 /****************************************************************************************
