@@ -1213,13 +1213,13 @@ stat_t cm_resume_g92_offsets()
  **** Free Space Motion (4.3.4) *********************************************************
  ****************************************************************************************/
 /*
- * cm_axes_to_mm()               - helper to convert all axes to mm if needed      
+ * cm_axes_to_mm()               - helper to convert all axes to mm if needed
  * cm_straight_traverse_global() - G0 linear rapid, global (Gcode) units - for external use
  * cm_straight_traverse_mm()     - G0 linear rapid, mm units - for internal use
  */
 
 void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags) // Assumes both target arrays are the same size
-{   
+{
     for (uint8_t axis = AXIS_X; axis < AXIS_A; axis++) {                // Only convert linears (not rotaries)
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;                                                   // skip axis if not flagged for update or its disabled
@@ -1457,6 +1457,7 @@ stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotio
         return (STAT_FEEDRATE_NOT_SPECIFIED);
     }
     cm->gm.motion_mode = MOTION_MODE_STRAIGHT_FEED;
+    cm->gm.motion_profile = motion_profile;
 
     // it's legal for a G0 to have no axis words but we don't want to process it
     if (!(flags[AXIS_X] | flags[AXIS_Y] | flags[AXIS_Z] |

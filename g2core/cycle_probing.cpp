@@ -308,13 +308,14 @@ void cm_abort_probing(cmMachine_t *_cm) {
  *
  *  target[] must be provided in machine canonical coordinates (absolute, mm)
  *  cm_set_absolute_override() also zeros work offsets, which are restored on exit.
+ *  PROFILE_FAST_STOP makes a probe stop more immediate.
  */
 
 static stat_t _probe_move(const float target[], const bool flags[])
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
     pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
-    cm_straight_feed_mm(target, flags, PROFILE_FAST); // NB: feed rate was set earlier, so it's OK
+    cm_straight_feed_mm(target, flags, PROFILE_FAST_STOP); // NB: feed rate was set earlier, so it's OK
     mp_queue_command(_motion_end_callback, nullptr, nullptr);  // the last two arguments are ignored anyway
     return (STAT_EAGAIN);
 }
@@ -399,7 +400,6 @@ static void _probe_restore_settings()
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_OFF); // release abs override and restore work offsets
     cm_set_distance_mode(pb.saved_distance_mode);
     cm_set_soft_limits(pb.saved_soft_limits);
-
     cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE);// cancel feed modes used during probing
     cm_canned_cycle_end();
     sr_request_status_report(SR_REQUEST_IMMEDIATE);         // do this last
