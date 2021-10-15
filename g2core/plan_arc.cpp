@@ -34,10 +34,12 @@ static stat_t _test_arc_soft_limits(void);
 /*****************************************************************************
  * Canonical Machining arc functions (arc prep for planning and runtime)
  *
- * cm_arc_init()     - initialize arcs
- * cm_arc_feed()     - canonical machine entry point for arc
- * cm_arc_callback() - main-loop callback for arc generation
- * cm_abort_arc()    - stop an arc in process
+ * cm_arc_init()        - initialize arcs
+ * cm_ofs_to_mm()       - helper to convert all offsets to mm if needed
+ * cm_arc_feed_global() - canonical machine entry point for arc; global (Gcode) units - for external use
+ * cm_arc_feed_mm()     - internal entry point for arc; mm units - for internal use
+ * cm_arc_callback()    - main-loop callback for arc generation
+ * cm_abort_arc()       - stop an arc in process
  */
 
 /*
@@ -91,18 +93,64 @@ stat_t cm_arc_callback(cmMachine_t *_cm)
 }
 
 /*
- * cm_arc_feed() - canonical machine entry point for arcs
+ * cm_ofs_to_mm() - helper to convert all offsets to mm if needed
+ */
+void cm_ofs_to_mm(const float *offset_global, float *offset_mm, const bool *flags) // Assumes both offset arrays are the same size
+{
+    offset_mm[OFS_I] = _to_millimeters(offset_global[OFS_I]);
+    offset_mm[OFS_J] = _to_millimeters(offset_global[OFS_J]);
+    offset_mm[OFS_K] = _to_millimeters(offset_global[OFS_K]);
+}
+
+/*
+ * cm_arc_feed_global() - canonical machine entry point for arcs;
+ *                        global (Gcode) units - for external use
  *
  * Generates an arc by queuing line segments to the move buffer. The arc is
  * approximated by generating a large number of tiny, linear segments.
  */
 
-stat_t cm_arc_feed(const float target[], const bool target_f[],     // target endpoint
-                   const float offset[], const bool offset_f[],     // IJK offsets
-                   const float radius, const bool radius_f,         // radius if radius mode
-                   const float P_word, const bool P_word_f,         // parameter
-                   const bool modal_g1_f,                           // modal group flag for motion group
-                   const cmMotionMode motion_mode)                  // defined motion mode
+stat_t cm_arc_feed_global(const float target[], const bool target_f[],     // target endpoint
+                          const float offset[], const bool offset_f[],     // IJK offsets
+                          const float radius, const bool radius_f,         // radius if radius mode
+                          const float P_word, const bool P_word_f,         // parameter
+                          const bool modal_g1_f,                           // modal group flag for motion group
+                          const cmMotionMode motion_mode)                  // defined motion mode
+{
+    // Convert axes, offsets and radii to mm if needed then call internal function
+    float target_mm[AXES];
+    float offset_mm[3]; // IJK
+    float radius_mm = 0.0;
+
+    cm_axes_to_mm(target, target_mm, target_f);
+    cm_ofs_to_mm(offset, offset_mm, offset_f);
+    if (radius_f) {
+        radius_mm = _to_millimeters(radius);
+    }
+
+    stat_t status = cm_arc_feed_mm(target_mm, target_f,
+                                   offset_mm, offset_f,
+                                   radius_mm, radius_f,
+                                   P_word,    P_word_f,
+                                   modal_g1_f,
+                                   motion_mode);
+    return (status);
+}
+
+/*
+ * cm_arc_feed_mm() - canonical machine entry point for arcs;
+ *                    mm units - for internal use
+ *
+ * Generates an arc by queuing line segments to the move buffer. The arc is
+ * approximated by generating a large number of tiny, linear segments.
+ */
+
+stat_t cm_arc_feed_mm(const float target[], const bool target_f[],     // target endpoint
+                      const float offset[], const bool offset_f[],     // IJK offsets
+                      const float radius, const bool radius_f,         // radius if radius mode
+                      const float P_word, const bool P_word_f,         // parameter
+                      const bool modal_g1_f,                           // modal group flag for motion group
+                      const cmMotionMode motion_mode)                  // defined motion mode
 {
     // Start setting up the arc and trapping arc specification errors
 
@@ -172,7 +220,7 @@ stat_t cm_arc_feed(const float target[], const bool target_f[],     // target en
 
     // test radius arcs for radius tolerance
     if (radius_f) {
-        cm->arc.radius = _to_millimeters(radius);           // set radius to internal format (mm)
+        cm->arc.radius = radius;
         if (std::abs(cm->arc.radius) < MIN_ARC_RADIUS) {        // radius value must be > minimum radius
             return (STAT_ARC_RADIUS_OUT_OF_TOLERANCE);
         }
@@ -222,9 +270,9 @@ stat_t cm_arc_feed(const float target[], const bool target_f[],     // target en
 
     // setup offsets if in center format mode
     if (!radius_f) {
-        cm->arc.ijk_offset[OFS_I] = _to_millimeters(offset[OFS_I]); // copy offsets with conversion to canonical form (mm)
-        cm->arc.ijk_offset[OFS_J] = _to_millimeters(offset[OFS_J]);
-        cm->arc.ijk_offset[OFS_K] = _to_millimeters(offset[OFS_K]);
+        cm->arc.ijk_offset[OFS_I] = offset[OFS_I];
+        cm->arc.ijk_offset[OFS_J] = offset[OFS_J];
+        cm->arc.ijk_offset[OFS_K] = offset[OFS_K];
 
         if (cm->arc.gm.arc_distance_mode == ABSOLUTE_DISTANCE_MODE) {   // adjust offsets if in absolute mode
              cm->arc.ijk_offset[OFS_I] -= cm->arc.position[AXIS_X];

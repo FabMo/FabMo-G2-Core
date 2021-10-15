@@ -1042,12 +1042,12 @@ stat_t _execute_gcode_block(char *active_comment)
                 case MOTION_MODE_STRAIGHT_TRAVERSE:  { status = cm_straight_traverse_global(gv.target, gf.target, PROFILE_NORMAL); break;} // G0
                 case MOTION_MODE_STRAIGHT_FEED:      { status = cm_straight_feed_global(gv.target, gf.target, PROFILE_NORMAL); break;}     // G1
                 case MOTION_MODE_CW_ARC:                                                                            // G2
-                case MOTION_MODE_CCW_ARC: { status = cm_arc_feed(gv.target,     gf.target,                          // G3
-                                                                 gv.arc_offset, gf.arc_offset,
-                                                                 gv.arc_radius, gf.arc_radius,
-                                                                 gv.P_word,     gf.P_word,
-                                                                 gp.modals[MODAL_GROUP_G1],
-                                                                 gv.motion_mode);
+                case MOTION_MODE_CCW_ARC: { status = cm_arc_feed_global(gv.target,     gf.target,                   // G3
+                                                                        gv.arc_offset, gf.arc_offset,
+                                                                        gv.arc_radius, gf.arc_radius,
+                                                                        gv.P_word,     gf.P_word,
+                                                                        gp.modals[MODAL_GROUP_G1],
+                                                                        gv.motion_mode);
                                             break;
                                           }
                 default: break;

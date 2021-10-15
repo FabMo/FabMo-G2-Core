@@ -436,12 +436,19 @@ stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmM
 stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G1, mm units - for internal use
 stat_t cm_dwell(const float seconds);                                       // G4, P parameter
 
-stat_t cm_arc_feed(const float target[], const bool target_f[],             // G2/G3 - target endpoint
-                   const float offset[], const bool offset_f[],             // IJK offsets
-                   const float radius, const bool radius_f,                 // radius if radius mode
-                   const float P_word, const bool P_word_f,                 // parameter
-                   const bool modal_g1_f,                                   // modal group flag for motion group
-                   const cmMotionMode motion_mode);                         // defined motion mode
+void cm_ofs_to_mm(const float *offset_global, float *offset_mm, const bool *flags);
+stat_t cm_arc_feed_global(const float target[], const bool target_f[],             // G2/G3, global (Gcode) units - for external use; target endpoint
+                          const float offset[], const bool offset_f[],             // IJK offsets
+                          const float radius, const bool radius_f,                 // radius if radius mode
+                          const float P_word, const bool P_word_f,                 // parameter
+                          const bool modal_g1_f,                                   // modal group flag for motion group
+                          const cmMotionMode motion_mode);                         // defined motion mode
+stat_t cm_arc_feed_mm(const float target[], const bool target_f[],             // G2/G3, mm units - for internal use; target endpoint
+                      const float offset[], const bool offset_f[],             // IJK offsets
+                      const float radius, const bool radius_f,                 // radius if radius mode
+                      const float P_word, const bool P_word_f,                 // parameter
+                      const bool modal_g1_f,                                   // modal group flag for motion group
+                      const cmMotionMode motion_mode);                         // defined motion mode
 
 // Spindle Functions (4.3.7)
 // see spindle.h for spindle functions - which would go right here
