@@ -665,6 +665,15 @@ void _enter_p2()
     cm2.gm.feed_rate = 0;
     cm2.arc.run_state = BLOCK_INACTIVE;     // Stop a running p1 arc from continuing to execute in p2
 
+    // mp1_queue->bf->gm->spindle_speed
+    mpBuf_t *cat = mp1_queue;
+    while (cat->gm.spindle_speed != 0.0) {
+        cat = cat->nx;
+        if (cat->gm.spindle_direction != SPINDLE_OFF) {
+            cm2.gm.spindle_direction = cat->gm.spindle_direction;
+        }
+    }
+
     // Set mp planner to p2 and reset it
     cm2.mp = &mp2;
     planner_reset((mpPlanner_t *)cm2.mp);   // mp is a void pointer
