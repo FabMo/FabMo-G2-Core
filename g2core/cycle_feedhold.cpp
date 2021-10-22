@@ -659,12 +659,15 @@ void _enter_p2()
     // Set parameters in cm, gm and gmx so you can actually use it
     memcpy(&cm2, &cm1, sizeof(cmMachine_t));
     cm2.hold_state = FEEDHOLD_OFF;
+    mpBuf_t *bf = mp_get_run_buffer();      // Get the current valid run buffer
+    if (bf) { 
+        cm2.gm = bf->gm;                    // Set gm to a copy of the current run buffer's gm
+    }
     cm2.gm.motion_mode = MOTION_MODE_CANCEL_MOTION_MODE;
     cm2.gm.absolute_override = ABSOLUTE_OVERRIDE_OFF;
     cm2.queue_flush_state = QUEUE_FLUSH_OFF;
     cm2.gm.feed_rate = 0;
     cm2.arc.run_state = BLOCK_INACTIVE;     // Stop a running p1 arc from continuing to execute in p2
-    cm2.gm.spindle_direction = mp_get_r()->gm.spindle_direction; // Preserves spindle direction in short files or when near EOF
 
     // Set mp planner to p2 and reset it
     cm2.mp = &mp2;
