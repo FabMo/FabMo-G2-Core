@@ -470,7 +470,7 @@ stat_t cm_m48_enable(uint8_t enable);                           // M48, M49
 
 // Program Functions (4.3.10)
 void cm_cycle_start(void);                                      // (no Gcode)
-void cm_cycle_end(void);                                        // (no Gcode)
+void cm_cycle_end(bool from_command = false);                   // (no Gcode)
 void cm_canned_cycle_end(void);                                 // end of canned cycle
 void cm_program_stop(void);                                     // M0
 void cm_optional_program_stop(void);                            // M1

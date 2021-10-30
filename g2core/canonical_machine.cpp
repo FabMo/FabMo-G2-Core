@@ -1747,14 +1747,11 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
 
 static void _exec_program_finalize(float* value, bool* flag) {
     // perform the following resets if it's a program END
-    //if (cm->machine_state == MACHINE_PROGRAM_END) {
-    if (flag) {   
+    if (flag != nullptr) {
         spindle_stop();             // immediate M5
         coolant_control_immediate(COOLANT_OFF,COOLANT_BOTH);// immediate M9
         temperature_reset();                                // turn off all heaters and fans
         cm_reset_overrides();                               // enable G48, reset feed rate, traverse and spindle overrides
-        cm->machine_state = MACHINE_PROGRAM_END;
-        cm->cycle_type = CYCLE_NONE;
     }
 
     sr_request_status_report(SR_REQUEST_IMMEDIATE);         // request a final and full status report (not filtered)
@@ -1788,11 +1785,10 @@ static void _exec_program_stop_end(cmMachineState machine_state)
 
         // the rest will be queued and executed in _exec_program_finalize()
     }
-    bool x = true;
     cm_set_motion_state(MOTION_STOP);                       // also changes active model back to MODEL
 
-    //mp_queue_command(_exec_program_finalize, nullptr, nullptr);
-    mp_queue_command(_exec_program_finalize, nullptr, &x);
+    static bool flag; // gives us an address to point to
+    mp_queue_command(_exec_program_finalize, nullptr, (machine_state == MACHINE_PROGRAM_END) ? &flag : nullptr);
 }
 
 // Will start a cycle regardless of whether the planner has moves or not
@@ -1805,9 +1801,9 @@ void cm_cycle_start()
     }
 }
 
-void cm_cycle_end() {
+void cm_cycle_end(bool from_command/* = false*/) {
     if (cm->cycle_type == CYCLE_MACHINING) {
-        cm->machine_state = MACHINE_PROGRAM_STOP;
+        cm->machine_state = from_command ? MACHINE_PROGRAM_END : MACHINE_PROGRAM_STOP; // For M2/M30
         cm->cycle_type = CYCLE_NONE;
         cm_set_motion_state(MOTION_STOP);
 
