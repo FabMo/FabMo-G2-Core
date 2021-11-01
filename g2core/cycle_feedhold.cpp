@@ -659,6 +659,10 @@ void _enter_p2()
     // Set parameters in cm, gm and gmx so you can actually use it
     memcpy(&cm2, &cm1, sizeof(cmMachine_t));
     cm2.hold_state = FEEDHOLD_OFF;
+    mpBuf_t *bf = mp_get_run_buffer();      // Get the current valid run buffer
+    if (bf) { 
+        cm2.gm = bf->gm;                    // Set gm to a copy of the current run buffer's gm
+    }
     cm2.gm.motion_mode = MOTION_MODE_CANCEL_MOTION_MODE;
     cm2.gm.absolute_override = ABSOLUTE_OVERRIDE_OFF;
     cm2.queue_flush_state = QUEUE_FLUSH_OFF;
