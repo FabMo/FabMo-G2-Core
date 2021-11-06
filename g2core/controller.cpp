@@ -179,7 +179,6 @@ static void _controller_HSM()
 //----- planner hierarchy for gcode and cycles ---------------------------------------//
 
     DISPATCH(st_motor_power_callback());        // stepper motor power sequencing
-    DISPATCH(sr_status_report_callback());      // conditionally send status report
     DISPATCH(qr_queue_report_callback());       // conditionally send queue report
 
     // these 3 must be in this exact order:
@@ -196,6 +195,7 @@ static void _controller_HSM()
 #if MARLIN_COMPAT_ENABLED == true
     DISPATCH(marlin_callback());                // handle Marlin stuff - may return EAGAIN, must be after planner_callback!
 #endif
+    DISPATCH(sr_status_report_callback());      // conditionally send status report
     DISPATCH(write_persistent_values_callback());
 
 //----- command readers and parsers --------------------------------------------------//

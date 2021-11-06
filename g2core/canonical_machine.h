@@ -530,7 +530,6 @@ stat_t cm_alarm(const stat_t status, const char *msg);          // enter alarm s
 stat_t cm_shutdown(const stat_t status, const char *msg);       // enter shutdown state - dump all state
 stat_t cm_panic(const stat_t status, const char *msg);          // enter panic state - needs RESET
 void cm_request_job_kill(void);                                 // control-D handler
-cmJobKillState cm_get_job_kill(void);                           // kill state
 
 /**** cfgArray interface functions ****/
 
