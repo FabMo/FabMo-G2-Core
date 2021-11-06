@@ -344,6 +344,11 @@ stat_t sr_status_report_callback()         // called by controller dispatcher
         (cs.controller_state != CONTROLLER_READY) ) {
         return (STAT_NOOP);
     }
+    
+   // don't send an SR if preparing to kill job
+   if (cm_get_job_kill() == JOB_KILL_REQUESTED) {
+       return (STAT_NOOP);
+   }
 
    // don't send an SR if you the planner is experiencing a time constraint
    if (!mp_is_phat_city_time()) {

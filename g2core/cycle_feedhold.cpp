@@ -514,6 +514,12 @@ void cm_request_job_kill()
     cm1.job_kill_state = JOB_KILL_REQUESTED;
 }
 
+cmJobKillState cm_get_job_kill()
+{
+    return cm1.job_kill_state;
+}
+
+
 // _run_job_kill() should not be called until motion has stopped.
 // It is completely synchronous so it can be called directly;
 // it does not need to be part of an operation().
