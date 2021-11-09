@@ -394,7 +394,10 @@ static stat_t _exec_command(mpBuf_t *bf)
 stat_t mp_runtime_command(mpBuf_t *bf) {
     bf->cm_func(bf->unit, bf->axis_flags);          // 2 vectors used by callbacks
     if (mp_free_run_buffer()) {
-        cm_cycle_end(true);                         // free buffer & perform cycle_end if planner is empty
+        if (cm_is_in_program_end_state()) {
+            cm_cycle_end(true);
+        }
+        else { cm_cycle_end(); }
     }
     return (STAT_OK);
 }

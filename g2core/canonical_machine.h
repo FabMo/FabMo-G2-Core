@@ -475,6 +475,7 @@ void cm_canned_cycle_end(void);                                 // end of canned
 void cm_program_stop(void);                                     // M0
 void cm_optional_program_stop(void);                            // M1
 void cm_program_end(void);                                      // M2
+stat_t cm_is_in_program_end_state(void);
 
 stat_t cm_json_command(char *json_string);                      // M100
 stat_t cm_json_command_immediate(char *json_string);            // M100.1

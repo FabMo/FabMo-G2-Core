@@ -1832,6 +1832,25 @@ void cm_program_end()
     _exec_program_stop_end(MACHINE_PROGRAM_END);
 }
 
+stat_t cm_is_in_program_end_state() {
+    if (!(cm->gm.spindle_direction == SPINDLE_OFF && cm->gm.spindle_speed == 0)) {return 0; }
+    if (!(coolant.mist.state == COOLANT_OFF && coolant.flood.state == COOLANT_OFF)) { return 0; }
+    //temperature_reset();
+    //if (pid1._set_point == 0.0) { return 0; }
+    if (!(cm->gmx.m48_enable == true && cm->gmx.mfo_enable == true && cm->gmx.mfo_factor == 1.0 && cm->gmx.mto_enable == true && cm->gmx.mto_factor == 1.0)) { return 0; }
+    //
+    
+    //if (!(cm->gmx.g92_offset_enable == true)) { return 0; }
+    if (!(cm->gm.coord_system == cm->default_coord_system)) { return 0; }
+    if (!(cm->gm.select_plane == cm->default_select_plane)) { return 0; }
+    if (!(cm->gm.units_mode == cm->default_distance_mode)) { return 0; }
+    if (!(cm->gm.arc_distance_mode == INCREMENTAL_DISTANCE_MODE)) { return 0; }
+    if (!(cm->gm.feed_rate_mode == UNITS_PER_MINUTE_MODE)) { return 0; }
+    if (!(cm->gm.motion_mode == MOTION_MODE_CANCEL_MOTION_MODE)) { return 0; }
+    
+    return 1;
+}
+
 /****************************************************************************************
  **** Additional Functions **************************************************************
  ****************************************************************************************/
