@@ -1705,6 +1705,7 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
  * cm_program_stop()            - M0 - performs NIST STOP functions
  * cm_optional_program_stop()   - M1 - conditionally performs NIST STOP functions
  * cm_program_end()             - M2, M30 - performs NIST END functions (with some differences)
+ * cm_is_in_program_end_state() - Returns 0 if any of the conditions of an M2/M30 are not set and returns 1 if they ALL are
  */
 /*
  * Program and cycle state functions
@@ -1833,14 +1834,11 @@ void cm_program_end()
 }
 
 stat_t cm_is_in_program_end_state() {
-    if (!(cm->gm.spindle_direction == SPINDLE_OFF && cm->gm.spindle_speed == 0)) {return 0; }
+    // Checking for all the conditions that an M2/M30 sets
+    if (!(cm->gm.spindle_direction == SPINDLE_OFF && cm->gm.spindle_speed == 0)) { return 0; }
     if (!(coolant.mist.state == COOLANT_OFF && coolant.flood.state == COOLANT_OFF)) { return 0; }
-    //temperature_reset();
-    //if (pid1._set_point == 0.0) { return 0; }
     if (!(cm->gmx.m48_enable == true && cm->gmx.mfo_enable == true && cm->gmx.mfo_factor == 1.0 && cm->gmx.mto_enable == true && cm->gmx.mto_factor == 1.0)) { return 0; }
-    //
-    
-    //if (!(cm->gmx.g92_offset_enable == true)) { return 0; }
+    if (!(cm->gmx.g92_offset_enable == false)) { return 0; }
     if (!(cm->gm.coord_system == cm->default_coord_system)) { return 0; }
     if (!(cm->gm.select_plane == cm->default_select_plane)) { return 0; }
     if (!(cm->gm.units_mode == cm->default_distance_mode)) { return 0; }
@@ -1848,7 +1846,7 @@ stat_t cm_is_in_program_end_state() {
     if (!(cm->gm.feed_rate_mode == UNITS_PER_MINUTE_MODE)) { return 0; }
     if (!(cm->gm.motion_mode == MOTION_MODE_CANCEL_MOTION_MODE)) { return 0; }
     
-    return 1;
+    return 1; // All conditions met
 }
 
 /****************************************************************************************
