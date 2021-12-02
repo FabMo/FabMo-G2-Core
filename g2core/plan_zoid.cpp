@@ -142,10 +142,10 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
     // handle overrides
     bf->override_factor = 1.0;
     if (bf->gm.motion_mode == MOTION_MODE_STRAIGHT_TRAVERSE) {
-        bf->override_factor = cm->gmx.mto_enable ? cm->gmx.mto_factor : 1.0;
+        bf->override_factor = cm->gmx.mto_enable ? cm->gmx.mto_factor : BASE_STATE_MTO_FACTOR;
     }
     else if ((bf->gm.motion_mode == MOTION_MODE_STRAIGHT_FEED) || (bf->gm.motion_mode == MOTION_MODE_CW_ARC) || (bf->gm.motion_mode == MOTION_MODE_CCW_ARC)) {
-        bf->override_factor = cm->gmx.mfo_enable ? cm->gmx.mfo_factor : 1.0;
+        bf->override_factor = cm->gmx.mfo_enable ? cm->gmx.mfo_factor : BASE_STATE_MFO_FACTOR;
     }
 
     // bf->cruise_vmax adjusted by override cannot go above absolute vmax,

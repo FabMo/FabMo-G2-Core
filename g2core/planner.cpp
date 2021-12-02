@@ -184,7 +184,7 @@ void planner_init(mpPlanner_t *_mp, mpPlannerRuntime_t *_mr, mpBuf_t *queue, uin
     memset(_mp, 0, sizeof(mpPlanner_t));    // clear all values, pointers and status
     _mp->magic_start = MAGICNUM;            // set boundary condition assertions
     _mp->magic_end = MAGICNUM;
-    _mp->mfo_factor = 1.00;
+    _mp->mfo_factor = BASE_STATE_MFO_FACTOR;
 
     // init planner queues
     _mp->q.bf = queue;                      // assign puffer pool to queue manager structure
