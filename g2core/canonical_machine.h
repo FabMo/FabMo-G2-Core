@@ -55,9 +55,9 @@
 #define JERK_INPUT_MAX      (1000000)       // maximum allowable jerk setting in millions mm/min^3
 #define PROBES_STORED       3               // we store three probes for coordinate rotation computation
 #define MAX_LINENUM         2000000000      // set 2 billion as max line number
-#define BASE_STATE_SPINDLE_STOPPED 0
-#define BASE_STATE_MFO_FACTOR 1.0
-#define BASE_STATE_MTO_FACTOR 1.0
+#define BASE_STATE_SPINDLE_STOPPED 0.0f
+#define BASE_STATE_MFO_FACTOR 1.0f
+#define BASE_STATE_MTO_FACTOR 1.0f
 
 /*****************************************************************************
  * MACHINE STATE MODEL

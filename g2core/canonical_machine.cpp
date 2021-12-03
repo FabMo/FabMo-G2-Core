@@ -1835,21 +1835,18 @@ void cm_program_end()
 
 stat_t cm_is_in_program_end_state() {
     // Checking for all the conditions that an M2/M30 sets
-    if (!(cm->gm.spindle_direction == SPINDLE_OFF 
-       && (cm->gm.spindle_speed <= BASE_STATE_SPINDLE_STOPPED 
-       &&  cm->gm.spindle_speed >= BASE_STATE_SPINDLE_STOPPED)))                                       { return 0; }
-    if (!(coolant.mist.state == COOLANT_OFF && coolant.flood.state == COOLANT_OFF))                    { return 0; }
+    if (!(cm->gm.spindle_direction == SPINDLE_OFF && fp_EQ(cm->gm.spindle_speed, BASE_STATE_SPINDLE_STOPPED))) { return 0; }
+    if (!(coolant.mist.state == COOLANT_OFF && coolant.flood.state == COOLANT_OFF))                            { return 0; }
     if (!(cm->gmx.m48_enable == true && cm->gmx.mfo_enable == true 
-       && (cm->gmx.mfo_factor <= BASE_STATE_MFO_FACTOR && cm->gmx.mfo_factor >= BASE_STATE_MFO_FACTOR) 
-       && (cm->gmx.mto_factor <= BASE_STATE_MTO_FACTOR && cm->gmx.mto_factor >= BASE_STATE_MTO_FACTOR)
-       && cm->gmx.mto_enable == true ))                                                                { return 0; }
-    if (!(cm->gmx.g92_offset_enable == false))                                                         { return 0; }
-    if (!(cm->gm.coord_system == cm->default_coord_system))                                            { return 0; }
-    if (!(cm->gm.select_plane == cm->default_select_plane))                                            { return 0; }
-    if (!(cm->gm.distance_mode == cm->default_distance_mode))                                          { return 0; }
-    if (!(cm->gm.arc_distance_mode == INCREMENTAL_DISTANCE_MODE))                                      { return 0; }
-    if (!(cm->gm.feed_rate_mode == UNITS_PER_MINUTE_MODE))                                             { return 0; }
-    if (!(cm->gm.motion_mode == MOTION_MODE_CANCEL_MOTION_MODE))                                       { return 0; }
+       && fp_EQ(cm->gmx.mfo_factor, BASE_STATE_MFO_FACTOR) && fp_EQ(cm->gmx.mto_factor, BASE_STATE_MTO_FACTOR)
+       && cm->gmx.mto_enable == true ))                                                                        { return 0; }
+    if (!(cm->gmx.g92_offset_enable == false))                                                                 { return 0; }
+    if (!(cm->gm.coord_system == cm->default_coord_system))                                                    { return 0; }
+    if (!(cm->gm.select_plane == cm->default_select_plane))                                                    { return 0; }
+    if (!(cm->gm.distance_mode == cm->default_distance_mode))                                                  { return 0; }
+    if (!(cm->gm.arc_distance_mode == INCREMENTAL_DISTANCE_MODE))                                              { return 0; }
+    if (!(cm->gm.feed_rate_mode == UNITS_PER_MINUTE_MODE))                                                     { return 0; }
+    if (!(cm->gm.motion_mode == MOTION_MODE_CANCEL_MOTION_MODE))                                               { return 0; }
     
     return 1; // All conditions met
 }
