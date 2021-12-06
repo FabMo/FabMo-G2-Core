@@ -214,13 +214,15 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
 
         // MIXED_DECELERATION (2d) 2 segment BT deceleration move
         // Only possible if the entry has not changed since hinting.
-        else if (bf->hint == MIXED_DECELERATION) {
+        // PERFECT_DECELERATION (1d) single tail segment (deltaV == delta_vmax)
+        // Only possible if the entry has not changed since hinting.
+        else if (bf->hint == MIXED_DECELERATION || bf->hint == PERFECT_DECELERATION) {
             block->tail_length = mp_get_target_length(block->exit_velocity, block->cruise_velocity, bf);
             block->body_length = bf->length - block->tail_length;
             if (block->body_length < 0) {
-                debug_trap_if_true((block->body_length < 0), "invlaid negative body_length from MIXED_DECELERATION");
+                debug_trap_if_true((block->body_length < 0), "invalid negative body_length from MIXED_DECELERATION");
 
-                // something went wrong and we missed it, try for an asymetric bump
+                // something went wrong and we missed it, try for an asymmetric bump
                 bf->hint = ASYMMETRIC_BUMP;
             } else {
                 block->head_length = 0;
@@ -230,16 +232,6 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
                 bf->block_time   = block->body_time + block->tail_time;
                 return (_ramp_exit_logger(bf, "2d"));
             }
-        }
-
-        // PERFECT_DECELERATION (1d) single tail segment (deltaV == delta_vmax)
-        // Only possible if the entry has not changed since hinting.
-        else if (bf->hint == PERFECT_DECELERATION) {
-            block->tail_length     = bf->length;
-            block->cruise_velocity = entry_velocity;
-            block->tail_time       = block->tail_length * 2 / (block->exit_velocity + block->cruise_velocity);
-            bf->block_time         = block->tail_time;
-            return (_ramp_exit_logger(bf, "1d"));
         }
 
         // Reset entry_changed. We won't likely be changing the next block's entry velocity.
