@@ -1558,9 +1558,9 @@ void cm_reset_overrides()
 {
     cm->gmx.m48_enable = true;
     cm->gmx.mfo_enable = true;  // feed rate overrides
-    cm->gmx.mfo_factor = 1.0;
+    cm->gmx.mfo_factor = BASE_STATE_MFO_FACTOR;
     cm->gmx.mto_enable = true;  // traverse overrides
-    cm->gmx.mto_factor = 1.0;
+    cm->gmx.mto_factor = BASE_STATE_MTO_FACTOR;
 }
 
 /****************************************************************************************
@@ -1705,6 +1705,7 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
  * cm_program_stop()            - M0 - performs NIST STOP functions
  * cm_optional_program_stop()   - M1 - conditionally performs NIST STOP functions
  * cm_program_end()             - M2, M30 - performs NIST END functions (with some differences)
+ * cm_is_in_program_end_state() - Returns 0 if any of the conditions of an M2/M30 are not set and returns 1 if they ALL are
  */
 /*
  * Program and cycle state functions
@@ -1747,7 +1748,7 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
 
 static void _exec_program_finalize(float* value, bool* flag) {
     // perform the following resets if it's a program END
-    if (cm->machine_state == MACHINE_PROGRAM_END) {
+    if (flag != nullptr) {
         spindle_stop();             // immediate M5
         coolant_control_immediate(COOLANT_OFF,COOLANT_BOTH);// immediate M9
         temperature_reset();                                // turn off all heaters and fans
@@ -1785,10 +1786,10 @@ static void _exec_program_stop_end(cmMachineState machine_state)
 
         // the rest will be queued and executed in _exec_program_finalize()
     }
-
     cm_set_motion_state(MOTION_STOP);                       // also changes active model back to MODEL
 
-    mp_queue_command(_exec_program_finalize, nullptr, nullptr);
+    static bool flag; // gives us an address to point to
+    mp_queue_command(_exec_program_finalize, nullptr, (machine_state == MACHINE_PROGRAM_END) ? &flag : nullptr);
 }
 
 // Will start a cycle regardless of whether the planner has moves or not
@@ -1801,9 +1802,9 @@ void cm_cycle_start()
     }
 }
 
-void cm_cycle_end() {
+void cm_cycle_end(bool from_command/* = false*/) {
     if (cm->cycle_type == CYCLE_MACHINING) {
-        cm->machine_state = MACHINE_PROGRAM_STOP;
+        cm->machine_state = from_command ? MACHINE_PROGRAM_END : MACHINE_PROGRAM_STOP; // For M2/M30
         cm->cycle_type = CYCLE_NONE;
         cm_set_motion_state(MOTION_STOP);
 
@@ -1830,6 +1831,24 @@ void cm_optional_program_stop()
 void cm_program_end()
 {
     _exec_program_stop_end(MACHINE_PROGRAM_END);
+}
+
+stat_t cm_is_in_program_end_state() {
+    // Checking for all the conditions that an M2/M30 sets
+    if (!(cm->gm.spindle_direction == SPINDLE_OFF && fp_EQ(cm->gm.spindle_speed, BASE_STATE_SPINDLE_STOPPED))) { return 0; }
+    if (!(coolant.mist.state == COOLANT_OFF && coolant.flood.state == COOLANT_OFF))                            { return 0; }
+    if (!(cm->gmx.m48_enable == true && cm->gmx.mfo_enable == true 
+       && fp_EQ(cm->gmx.mfo_factor, BASE_STATE_MFO_FACTOR) && fp_EQ(cm->gmx.mto_factor, BASE_STATE_MTO_FACTOR)
+       && cm->gmx.mto_enable == true ))                                                                        { return 0; }
+    if (!(cm->gmx.g92_offset_enable == false))                                                                 { return 0; }
+    if (!(cm->gm.coord_system == cm->default_coord_system))                                                    { return 0; }
+    if (!(cm->gm.select_plane == cm->default_select_plane))                                                    { return 0; }
+    if (!(cm->gm.distance_mode == cm->default_distance_mode))                                                  { return 0; }
+    if (!(cm->gm.arc_distance_mode == INCREMENTAL_DISTANCE_MODE))                                              { return 0; }
+    if (!(cm->gm.feed_rate_mode == UNITS_PER_MINUTE_MODE))                                                     { return 0; }
+    if (!(cm->gm.motion_mode == MOTION_MODE_CANCEL_MOTION_MODE))                                               { return 0; }
+    
+    return 1; // All conditions met
 }
 
 /****************************************************************************************

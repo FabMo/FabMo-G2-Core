@@ -184,7 +184,7 @@ void planner_init(mpPlanner_t *_mp, mpPlannerRuntime_t *_mr, mpBuf_t *queue, uin
     memset(_mp, 0, sizeof(mpPlanner_t));    // clear all values, pointers and status
     _mp->magic_start = MAGICNUM;            // set boundary condition assertions
     _mp->magic_end = MAGICNUM;
-    _mp->mfo_factor = 1.00;
+    _mp->mfo_factor = BASE_STATE_MFO_FACTOR;
 
     // init planner queues
     _mp->q.bf = queue;                      // assign puffer pool to queue manager structure
@@ -391,11 +391,11 @@ static stat_t _exec_command(mpBuf_t *bf)
     return (STAT_OK);
 }
 
-stat_t mp_runtime_command(mpBuf_t *bf)
-{
+stat_t mp_runtime_command(mpBuf_t *bf) {
     bf->cm_func(bf->unit, bf->axis_flags);          // 2 vectors used by callbacks
     if (mp_free_run_buffer()) {
-        cm_cycle_end();                             // free buffer & perform cycle_end if planner is empty
+        if (cm_is_in_program_end_state()) { cm_cycle_end(true); } // Checking for an M2/M30 at EOF
+        else { cm_cycle_end(); }
     }
     return (STAT_OK);
 }

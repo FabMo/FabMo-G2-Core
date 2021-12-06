@@ -55,6 +55,9 @@
 #define JERK_INPUT_MAX      (1000000)       // maximum allowable jerk setting in millions mm/min^3
 #define PROBES_STORED       3               // we store three probes for coordinate rotation computation
 #define MAX_LINENUM         2000000000      // set 2 billion as max line number
+#define BASE_STATE_SPINDLE_STOPPED 0.0f
+#define BASE_STATE_MFO_FACTOR 1.0f
+#define BASE_STATE_MTO_FACTOR 1.0f
 
 /*****************************************************************************
  * MACHINE STATE MODEL
@@ -470,11 +473,12 @@ stat_t cm_m48_enable(uint8_t enable);                           // M48, M49
 
 // Program Functions (4.3.10)
 void cm_cycle_start(void);                                      // (no Gcode)
-void cm_cycle_end(void);                                        // (no Gcode)
+void cm_cycle_end(bool from_command = false);                   // (no Gcode)
 void cm_canned_cycle_end(void);                                 // end of canned cycle
 void cm_program_stop(void);                                     // M0
 void cm_optional_program_stop(void);                            // M1
 void cm_program_end(void);                                      // M2
+stat_t cm_is_in_program_end_state(void);                        // Checks end status
 
 stat_t cm_json_command(char *json_string);                      // M100
 stat_t cm_json_command_immediate(char *json_string);            // M100.1
