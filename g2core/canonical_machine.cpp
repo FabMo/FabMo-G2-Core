@@ -143,7 +143,7 @@ gpioDigitalInputHandler _hold_input_handler {
         //     cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
         // }
 
-        cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
+        cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_CYCLE);
 
         return false; // allow others to see this notice
     },
