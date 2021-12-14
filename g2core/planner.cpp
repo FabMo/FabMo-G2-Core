@@ -62,7 +62,6 @@
 #include "report.h"
 #include "util.h"
 #include "json_parser.h"
-#include "xio.h"    //+++++ DIAGNOSTIC - only needed if xio_writeline() direct prints are used
 
 // Allocate planner structures
 
@@ -77,6 +76,10 @@ mpPlannerRuntime_t mr2;                     // secondary planner runtime context
 mpBuf_t mp1_queue[PLANNER_QUEUE_SIZE];      // storage allocation for primary planner queue buffers
 mpBuf_t mp2_queue[SECONDARY_QUEUE_SIZE];    // storage allocation for secondary planner queue buffers
 
+json_commands_t *jc;                        // currently active JSON command buffer
+json_commands_t jc1;                        // primary JSON command buffer
+json_commands_t jc2;                        // secondary JSON command buffer
+
 // Execution routines (NB: These are called from the LO interrupt)
 static stat_t _exec_dwell(mpBuf_t *bf);
 static stat_t _exec_command(mpBuf_t *bf);
@@ -84,63 +87,6 @@ static stat_t _exec_command(mpBuf_t *bf);
 // DIAGNOSTICS
 //static void _planner_time_accounting();
 static void _audit_buffers();
-
-/****************************************************************************************
- * JSON planner objects
- */
-
-#define JSON_COMMAND_BUFFER_SIZE 3
-
-struct json_command_buffer_t {
-    char buf[RX_BUFFER_SIZE];
-    json_command_buffer_t *pv;
-    json_command_buffer_t *nx;
-};
-
-struct _json_commands_t {
-    json_command_buffer_t _json_bf[JSON_COMMAND_BUFFER_SIZE]; // storage of all buffers
-    json_command_buffer_t *_json_r;   // pointer to the next "run" buffer
-    json_command_buffer_t *_json_w;   // pointer tot he next "write" buffer
-
-    int8_t available;
-
-    // Constructor (initializer)
-    _json_commands_t() {
-        json_command_buffer_t *js_pv = &_json_bf[JSON_COMMAND_BUFFER_SIZE - 1];
-        for (uint8_t i=0; i < JSON_COMMAND_BUFFER_SIZE; i++) {
-            _json_bf[i].nx = &_json_bf[((i+1 == JSON_COMMAND_BUFFER_SIZE) ? 0 : i+1)];
-            _json_bf[i].pv = js_pv;
-            js_pv = &_json_bf[i];
-        }
-        reset();
-    };
-
-    // Write a json command to the buffer, using up one slot
-    void write_buffer(char * new_json) {
-        strcpy(_json_w->buf, new_json);
-        available--;
-        _json_w = _json_w->nx;
-    };
-
-    // Read a buffer out, but do NOT free it (so it can be used directly)
-    char *read_buffer() {
-        return _json_r->buf;
-    };
-
-    // Free the last read buffer.
-    void free_buffer() {
-        _json_r = _json_r->nx;
-        available++;
-    }
-
-    // Reset the JSON command queue
-    void reset() {
-        _json_r = &_json_bf[0];
-        _json_w = _json_r;
-        available = JSON_COMMAND_BUFFER_SIZE;
-    }
-};
-_json_commands_t jc;
 
 /****************************************************************************************
  * planner_init() - initialize MP, MR and planner queue buffers
@@ -207,7 +153,7 @@ void planner_reset(mpPlanner_t *_mp)        // reset planner queue, cease MR act
     // selectively reset mpPlanner and mpPlannerRuntime w/o actually wiping them
     _mp->reset();
     _mp->mr->reset();
-    jc.reset();
+    jc->reset();
     _init_planner_queue(_mp, _mp->q.bf, _mp->q.queue_size); // reset planner buffers
 }
 
@@ -408,15 +354,15 @@ stat_t mp_runtime_command(mpBuf_t *bf) {
 
 static void _exec_json_command(float *value, bool *flag)
 {
-    char *json_string = jc.read_buffer();
+    char *json_string = jc->read_buffer();
     json_parse_for_exec(json_string, true);         // process it
-    jc.free_buffer();
+    jc->free_buffer();
 }
 
 stat_t mp_json_command(char *json_string)
 {
     // Never supposed to fail, since we stopped parsing when we were full
-    jc.write_buffer(json_string);
+    jc->write_buffer(json_string);
     mp_queue_command(_exec_json_command, nullptr, nullptr);
     return (STAT_OK);
 }
@@ -433,7 +379,7 @@ stat_t mp_json_command_immediate(char *json_string)
 
 static stat_t _exec_json_wait(mpBuf_t *bf)
 {
-    char *json_string = jc.read_buffer();
+    char *json_string = jc->read_buffer();
 
     // process it
     json_parse_for_exec(json_string, false); // do NOT execute
@@ -453,7 +399,7 @@ static stat_t _exec_json_wait(mpBuf_t *bf)
         }
         nv = nv->nx;
     }
-    jc.free_buffer();
+    jc->free_buffer();
 
     if (mp_free_run_buffer()) {
         cm_cycle_end();                                    // free buffer & perform cycle_end if planner is empty
@@ -464,7 +410,7 @@ static stat_t _exec_json_wait(mpBuf_t *bf)
 stat_t mp_json_wait(char *json_string)
 {
     // Never supposed to fail, since we stopped parsing when we were full
-    jc.write_buffer(json_string);
+    jc->write_buffer(json_string);
 
     mpBuf_t *bf;
 
@@ -547,7 +493,7 @@ uint8_t mp_get_planner_buffers(const mpPlanner_t *_mp)  // which planner are you
 bool mp_planner_is_full(const mpPlanner_t *_mp)         // which planner are you interested in?
 {
     // We also need to ensure we have room for another JSON command
-    return ((_mp->q.buffers_available < PLANNER_BUFFER_HEADROOM) || (jc.available == 0));
+    return ((_mp->q.buffers_available < PLANNER_BUFFER_HEADROOM) || (jc->available == 0));
 }
 
 bool mp_has_runnable_buffer(const mpPlanner_t *_mp)     // which planner are you interested in?)

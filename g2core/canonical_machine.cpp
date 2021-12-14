@@ -243,6 +243,7 @@ void canonical_machine_inits()
     cm = &cm1;                          // set global canonical machine pointer to primary machine
     mp = &mp1;                          // set global pointer to the primary planner
     mr = &mr1;                          // and primary runtime
+    jc = &jc1;                          // and primary JSON command queue
 
     din_handlers[INPUT_ACTION_STOP].registerHandler(&_hold_input_handler);
     din_handlers[INPUT_ACTION_FAST_STOP].registerHandler(&_hold_input_handler);

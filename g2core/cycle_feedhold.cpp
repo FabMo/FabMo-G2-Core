@@ -525,6 +525,7 @@ stat_t _run_job_kill()
         cm = &cm1;                                      // return to primary planner (p1)
         mp = (mpPlanner_t *)cm->mp;                     // cm->mp is a void pointer
         mr = mp->mr;
+        jc = &jc1;
 
         copy_vector(cm1.gmx.position, mr2.position);    // transfer actual position back to p1
         copy_vector(cm1.gm.target, mr2.position);
@@ -671,6 +672,7 @@ void _enter_p2()
 
     // Set mp planner to p2 and reset it
     cm2.mp = &mp2;
+    jc = &jc2;
     planner_reset((mpPlanner_t *)cm2.mp);   // mp is a void pointer
 
     // Clear the target and set the positions to the current hold position
@@ -699,6 +701,7 @@ void _exit_p2()
     cm = &cm1;                          // return to primary planner (p1)
     mp = (mpPlanner_t *)cm1.mp;         // cm->mp is a void pointer
     mr = mp1.mr;
+    jc = &jc1;
 }
 
 void _check_motion_stopped()
@@ -876,6 +879,7 @@ stat_t _feedhold_restart_no_actions()
     cm = &cm1;                                  // return to primary planner (p1)
     mp = (mpPlanner_t *)cm->mp;                 // cm->mp is a void pointer
     mr = mp->mr;
+    jc = &jc1;
     return (STAT_OK);
 }
 

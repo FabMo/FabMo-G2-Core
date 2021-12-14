@@ -151,6 +151,7 @@
 
 #include "canonical_machine.h"    // used for GCodeState_t
 #include "hardware.h"             // for MIN_SEGMENT_MS
+#include "xio.h"                  //+++++ DIAGNOSTIC - only needed if xio_writeline() direct prints are used
 
 using Motate::Timeout;
 
@@ -563,6 +564,62 @@ typedef struct mpPlanner {              // common variables for a planner contex
     }
 } mpPlanner_t;
 
+/****************************************************************************************
+ * JSON planner objects
+ */
+
+#define JSON_COMMAND_BUFFER_SIZE 3
+
+struct json_command_buffer_t {
+    char buf[RX_BUFFER_SIZE];
+    json_command_buffer_t *pv;
+    json_command_buffer_t *nx;
+};
+
+struct json_commands_t {
+    json_command_buffer_t _json_bf[JSON_COMMAND_BUFFER_SIZE]; // storage of all buffers
+    json_command_buffer_t *_json_r;   // pointer to the next "run" buffer
+    json_command_buffer_t *_json_w;   // pointer tot he next "write" buffer
+
+    int8_t available;
+
+    // Constructor (initializer)
+    json_commands_t() {
+        json_command_buffer_t *js_pv = &_json_bf[JSON_COMMAND_BUFFER_SIZE - 1];
+        for (uint8_t i=0; i < JSON_COMMAND_BUFFER_SIZE; i++) {
+            _json_bf[i].nx = &_json_bf[((i+1 == JSON_COMMAND_BUFFER_SIZE) ? 0 : i+1)];
+            _json_bf[i].pv = js_pv;
+            js_pv = &_json_bf[i];
+        }
+        reset();
+    };
+
+    // Write a json command to the buffer, using up one slot
+    void write_buffer(char * new_json) {
+        strcpy(_json_w->buf, new_json);
+        available--;
+        _json_w = _json_w->nx;
+    };
+
+    // Read a buffer out, but do NOT free it (so it can be used directly)
+    char *read_buffer() {
+        return _json_r->buf;
+    };
+
+    // Free the last read buffer.
+    void free_buffer() {
+        _json_r = _json_r->nx;
+        available++;
+    }
+
+    // Reset the JSON command queue
+    void reset() {
+        _json_r = &_json_bf[0];
+        _json_w = _json_r;
+        available = JSON_COMMAND_BUFFER_SIZE;
+    }
+};
+
 // Reference global scope structures
 
 extern mpPlanner_t *mp HOT_DATA;                 // currently active planner (global variable)
@@ -575,6 +632,10 @@ extern mpPlannerRuntime_t mr2 HOT_DATA;          // secondary planner runtime co
 
 extern mpBuf_t mp1_queue[PLANNER_QUEUE_SIZE] HOT_DATA;   // storage allocation for primary planner queue buffers
 extern mpBuf_t mp2_queue[SECONDARY_QUEUE_SIZE]; // storage allocation for secondary planner queue buffers
+
+extern json_commands_t *jc HOT_DATA;             // currently active JSON command buffer
+extern json_commands_t jc1 HOT_DATA;             // primary JSON command buffer
+extern json_commands_t jc2 HOT_DATA;             // secondary JSON command buffer
 
 /*
  * Global Scope Functions
