@@ -82,7 +82,7 @@
 #define QUEUE_REPORT_VERBOSITY      QR_OFF              // one of: QR_OFF, QR_SINGLE, QR_TRIPLE  ////##-to off
 
 #define STATUS_REPORT_VERBOSITY     SR_FILTERED         // one of: SR_OFF, SR_FILTERED, SR_VERBOSE
-#define STATUS_REPORT_MIN_MS        100                 // milliseconds - enforces a viable minimum
+#define STATUS_REPORT_MIN_MS        1                 // milliseconds - enforces a viable minimum
 #define STATUS_REPORT_INTERVAL_MS   250                 // milliseconds - set $SV=0 to disable
 
 ////##added c, spc, inputs, and outputs

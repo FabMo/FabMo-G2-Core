@@ -30,7 +30,7 @@
 #define ARC_RADIUS_ERROR_MIN ((float)0.005)     // min mm where 1% rule applies
 #define ARC_RADIUS_TOLERANCE ((float)0.001)     // 0.1% radius variance test
 
-#define CHORDAL_TOLERANCE_MIN (0.001)           // values below this are not accepted
+#define CHORDAL_TOLERANCE_MIN (0.000001)           // values below this are not accepted
 
 /* arc function prototypes */
 

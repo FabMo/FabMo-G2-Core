@@ -394,6 +394,7 @@ static stat_t _compute_arc(const bool radius_f)
     float segments_for_minimum_time = _estimate_arc_time(arc_time) * (MICROSECONDS_PER_MINUTE / MIN_ARC_SEGMENT_USEC);
     float segments_for_chordal_accuracy = cm->arc.length / sqrt(4*cm->chordal_tolerance * (2 * cm->arc.radius - cm->chordal_tolerance));
     cm->arc.segments = std::floor(std::min(segments_for_chordal_accuracy, segments_for_minimum_time));
+    //cm->arc.segments = std::floor(segments_for_chordal_accuracy);
     cm->arc.segments = std::max(cm->arc.segments, (float)1.0);        //...but is at least 1 segment
 
     if (cm->arc.gm.feed_rate_mode == INVERSE_TIME_MODE) {
@@ -537,6 +538,12 @@ static void _compute_arc_offsets_from_radius()
  */
 static float _estimate_arc_time (float arc_time)
 {
+    float cat = 0;
+    
+    if (arc_time + cm->gm.feed_rate) {
+        cat = cat + 1.0;
+    }
+    
     // Determine move time at requested feed rate
     if (cm->arc.gm.feed_rate_mode == INVERSE_TIME_MODE) {
         arc_time = cm->arc.gm.feed_rate;    // inverse feed rate has been normalized to minutes
