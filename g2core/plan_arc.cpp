@@ -28,7 +28,6 @@
 
 static stat_t _compute_arc(const bool radius_f);
 static void _compute_arc_offsets_from_radius(void);
-static float _estimate_arc_time (float arc_time);
 static stat_t _test_arc_soft_limits(void);
 
 /*****************************************************************************
@@ -390,10 +389,8 @@ static stat_t _compute_arc(const bool radius_f)
 
     // Find the minimum number of segments that meet accuracy and time constraints...
     // Note: removed segment_length test as segment_time accounts for this (build 083.37)
-    float arc_time = 0;
-    float segments_for_minimum_time = _estimate_arc_time(arc_time) * (MICROSECONDS_PER_MINUTE / MIN_ARC_SEGMENT_USEC);
     float segments_for_chordal_accuracy = cm->arc.length / sqrt(4*cm->chordal_tolerance * (2 * cm->arc.radius - cm->chordal_tolerance));
-    cm->arc.segments = std::floor(std::min(segments_for_chordal_accuracy, segments_for_minimum_time));
+    cm->arc.segments = std::floor(segments_for_chordal_accuracy);
     cm->arc.segments = std::max(cm->arc.segments, (float)1.0);        //...but is at least 1 segment
 
     if (cm->arc.gm.feed_rate_mode == INVERSE_TIME_MODE) {
@@ -523,34 +520,6 @@ static void _compute_arc_offsets_from_radius()
     cm->arc.ijk_offset[cm->arc.plane_axis_0] = (x-(y*h_x2_div_d))/2;
     cm->arc.ijk_offset[cm->arc.plane_axis_1] = (y+(x*h_x2_div_d))/2;
     cm->arc.ijk_offset[cm->arc.linear_axis] = 0;
-}
-
-/*
- * _estimate_arc_time ()
- *
- *  Returns a naiive estimate of arc execution time to inform segment calculation.
- *  The arc time is computed not to exceed the time taken in the slowest dimension
- *  in the arc plane or in linear travel. Maximum feed rates are compared in each
- *  dimension, but the comparison assumes that the arc will have at least one segment
- *  where the unit vector is 1 in that dimension. This is not true for any arbitrary arc,
- *  with the result that the time returned may be less than optimal.
- */
-static float _estimate_arc_time (float arc_time)
-{
-    // Determine move time at requested feed rate
-    if (cm->arc.gm.feed_rate_mode == INVERSE_TIME_MODE) {
-        arc_time = cm->arc.gm.feed_rate;    // inverse feed rate has been normalized to minutes
-    } else {
-        arc_time = cm->arc.length / cm->gm.feed_rate;
-    }
-
-    // Downgrade the time if there is a rate-limiting axis
-    arc_time = std::max(arc_time, (float)std::abs(cm->arc.planar_travel/cm->a[cm->arc.plane_axis_0].feedrate_max));
-    arc_time = std::max(arc_time, (float)std::abs(cm->arc.planar_travel/cm->a[cm->arc.plane_axis_1].feedrate_max));
-    if (std::abs(cm->arc.linear_travel) > 0) {
-        arc_time = std::max(arc_time, (float)std::abs(cm->arc.linear_travel/cm->a[cm->arc.linear_axis].feedrate_max));
-    }
-    return (arc_time);
 }
 
 /*
