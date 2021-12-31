@@ -89,6 +89,7 @@ void spindle_resume() {
 // A command for placing in the queue, which forces a PTS (plan-to-stop) as well as calls active_toolhead->engage()
 static void _exec_spindle_control(float *, bool *) {
     // not really anything to do here - engage() should have just been called
+    mp_request_out_of_band_dwell(3);
 }
 
 stat_t spindle_set_speed(float speed) {
