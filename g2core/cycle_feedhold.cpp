@@ -836,8 +836,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
                 cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting
             }
         }
-        spindle_pause();                                        // optional spindle pause
-        coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);      // optional coolant pause
+        coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);  // optional coolant pause
         mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
         return (STAT_EAGAIN);
     }
@@ -850,6 +849,8 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
     // finalize feedhold entry after callback OR skipping actions (this is needed so we can return STAT_OK)
     if ((cm1.hold_state == FEEDHOLD_HOLD_ACTIONS_COMPLETE) || (cm1.hold_state == FEEDHOLD_HOLD)) {
         cm1.hold_state = FEEDHOLD_HOLD;
+        spindle_pause();                    // optional spindle pause
+        
         return (STAT_OK);
     }
     return (STAT_EAGAIN);                   // keep the compiler happy. Never executed.
