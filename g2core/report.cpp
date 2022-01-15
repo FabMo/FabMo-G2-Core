@@ -177,6 +177,21 @@ uint8_t _is_stat(nvObj_t *nv)
     return (false);
 }
 
+uint8_t _pos_token_to_axis(nvObj_t *nv)
+{
+    char token[TOKEN_LEN+1];
+
+    GET_TOKEN_STRING(nv->index, token);   // pass in index, get back token
+    if (strcmp(token, "x") == 0) { return (AXIS_X);}
+    if (strcmp(token, "y") == 0) { return (AXIS_Y);}
+    if (strcmp(token, "z") == 0) { return (AXIS_Z);}
+    if (strcmp(token, "a") == 0) { return (AXIS_A);}
+    if (strcmp(token, "b") == 0) { return (AXIS_B);}
+    if (strcmp(token, "c") == 0) { return (AXIS_C);}
+        
+    return 99;  // should never get here
+}
+
 /*
  * sr_init_status_report()
  *
@@ -457,21 +472,32 @@ static uint8_t _populate_filtered_status_report()
 
         bool changed = false;
 
-        // extract the value and cast into a float, regardless of value type
+ 
         if (nv->valuetype == TYPE_FLOAT) {
-            current_value = nv->value_flt;
+            current_value = nv->value_flt;                       
+      
             if ((fabs(current_value - sr.status_report_list[i].value) > precision[cfgArray[nv->index].precision])) {
                 changed = true;
             }
         } else {
             auto current_value_int = nv->value_int;
             if (((nv->index == sr.stat_index) &&
-                 ((current_value_int == COMBINED_PROGRAM_STOP) || (current_value_int == COMBINED_PROGRAM_END))) ||
+                    ((current_value_int == COMBINED_PROGRAM_STOP) || (current_value_int == COMBINED_PROGRAM_END))) ||
                 (current_value_int != (decltype(current_value_int))sr.status_report_list[i].value)) {
                 changed = true;
                 current_value = current_value_int;
             }
-        }
+        }   
+        
+        // TODO: cleanup / move this
+        // ignore position (pos) when start point = end point and we're in cycle
+        // since cm_update_model_position can cause false position SRs
+        if ((strcmp(sr.status_report_list[i].group, "pos") == 0) && 
+            (fp_EQ(cm->gmx.position[_pos_token_to_axis(nv)], cm->gm.target[_pos_token_to_axis(nv)])) &&
+            (cm->machine_state == MACHINE_CYCLE)) {
+                        
+            changed = false;
+        }            
 
         // report values that have changed by more than the indicated precision, but always stops and ends
         if (changed) {
@@ -481,7 +507,7 @@ static uint8_t _populate_filtered_status_report()
             sr.status_report_list[i].value = current_value;
 
             if ((nv = nv->nx) == NULL) {        // should never be NULL unless SR length exceeds available buffer array
-                return (false);
+            return (false);
             }
             has_data = true;
         } else {
