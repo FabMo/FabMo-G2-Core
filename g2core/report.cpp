@@ -487,9 +487,12 @@ static uint8_t _populate_filtered_status_report()
         // TODO: cleanup / move this
         // ignore position (pos) when start point = end point and we're in cycle
         // since cm_update_model_position can cause false position SRs
-        if ((strcmp(sr.status_report_list[i].group, "pos") == 0) && (mp == &mp2) && 
-            (_position_equals_target(sr.status_report_list[i].token)) &&
-            (cm->machine_state == MACHINE_CYCLE)) {
+        if (changed &&                                                      // SR flagged for update
+            (strcmp(sr.status_report_list[i].group, "pos") == 0) &&         // position (pos) report
+            (_position_equals_target(sr.status_report_list[i].token)) &&    // target = position 
+            (mp == &mp2) &&                                                 // using secondary planner (feedhold)
+            (cm_get_machine_state() == MACHINE_CYCLE) &&                    // in a cycle
+            (cm_get_motion_state() == MOTION_STOP)) {                       // currently stopped (in MODEL runtime)
             
             changed = false;
         }
