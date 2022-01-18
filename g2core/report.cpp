@@ -167,30 +167,24 @@ void rpt_print_system_ready_message(void)
  */
 static stat_t _populate_unfiltered_status_report(void);
 static uint8_t _populate_filtered_status_report(void);
+static bool _position_equals_target(char*);
 
-uint8_t _is_stat(nvObj_t *nv)
-{
+bool _position_equals_target(char *sr_token) {
+
     char token[TOKEN_LEN+1];
 
-    GET_TOKEN_STRING(nv->value_int, token);   // pass in index, get back token
-    if (strcmp(token, "stat") == 0) { return (true);}
-    return (false);
-}
+    // Check for a valid position axis, then compare position and target at specified axis
+    strcpy(token, sr_token);
 
-uint8_t _pos_token_to_axis(nvObj_t *nv)
-{
-    char token[TOKEN_LEN+1];
-    strcpy(token, nv->token);
+    if (strcmp(token, "x") == 0) { return (fp_EQ(cm->gmx.position[AXIS_X], cm->gm.target[AXIS_X]));}
+    if (strcmp(token, "y") == 0) { return (fp_EQ(cm->gmx.position[AXIS_Y], cm->gm.target[AXIS_Y]));}
+    if (strcmp(token, "z") == 0) { return (fp_EQ(cm->gmx.position[AXIS_Z], cm->gm.target[AXIS_Z]));}
+    if (strcmp(token, "a") == 0) { return (fp_EQ(cm->gmx.position[AXIS_A], cm->gm.target[AXIS_A]));}
+    if (strcmp(token, "b") == 0) { return (fp_EQ(cm->gmx.position[AXIS_B], cm->gm.target[AXIS_B]));}
+    if (strcmp(token, "c") == 0) { return (fp_EQ(cm->gmx.position[AXIS_C], cm->gm.target[AXIS_C]));}
 
-    //GET_TOKEN_STRING(nv->index, token);   // pass in index, get back token
-    if (strcmp(token, "x") == 0) { return (AXIS_X);}
-    if (strcmp(token, "y") == 0) { return (AXIS_Y);}
-    if (strcmp(token, "z") == 0) { return (AXIS_Z);}
-    if (strcmp(token, "a") == 0) { return (AXIS_A);}
-    if (strcmp(token, "b") == 0) { return (AXIS_B);}
-    if (strcmp(token, "c") == 0) { return (AXIS_C);}
-    
-    return 99;  // should never get here
+    // Invalid axis, return
+    return false;
 }
 
 /*
@@ -494,7 +488,7 @@ static uint8_t _populate_filtered_status_report()
         // ignore position (pos) when start point = end point and we're in cycle
         // since cm_update_model_position can cause false position SRs
         if ((strcmp(sr.status_report_list[i].group, "pos") == 0) && (mp == &mp2) && 
-            (fp_EQ(cm->gmx.position[_pos_token_to_axis(nv)], cm->gm.target[_pos_token_to_axis(nv)])) &&
+            (_position_equals_target(sr.status_report_list[i].token)) &&
             (cm->machine_state == MACHINE_CYCLE)) {
             
             changed = false;
