@@ -180,15 +180,16 @@ uint8_t _is_stat(nvObj_t *nv)
 uint8_t _pos_token_to_axis(nvObj_t *nv)
 {
     char token[TOKEN_LEN+1];
+    strcpy(token, nv->token);
 
-    GET_TOKEN_STRING(nv->index, token);   // pass in index, get back token
+    //GET_TOKEN_STRING(nv->index, token);   // pass in index, get back token
     if (strcmp(token, "x") == 0) { return (AXIS_X);}
     if (strcmp(token, "y") == 0) { return (AXIS_Y);}
     if (strcmp(token, "z") == 0) { return (AXIS_Z);}
     if (strcmp(token, "a") == 0) { return (AXIS_A);}
     if (strcmp(token, "b") == 0) { return (AXIS_B);}
     if (strcmp(token, "c") == 0) { return (AXIS_C);}
-        
+    
     return 99;  // should never get here
 }
 
@@ -492,12 +493,12 @@ static uint8_t _populate_filtered_status_report()
         // TODO: cleanup / move this
         // ignore position (pos) when start point = end point and we're in cycle
         // since cm_update_model_position can cause false position SRs
-        if ((strcmp(sr.status_report_list[i].group, "pos") == 0) && 
+        if ((strcmp(sr.status_report_list[i].group, "pos") == 0) && (mp == &mp2) && 
             (fp_EQ(cm->gmx.position[_pos_token_to_axis(nv)], cm->gm.target[_pos_token_to_axis(nv)])) &&
             (cm->machine_state == MACHINE_CYCLE)) {
-                        
+            
             changed = false;
-        }            
+        }
 
         // report values that have changed by more than the indicated precision, but always stops and ends
         if (changed) {
