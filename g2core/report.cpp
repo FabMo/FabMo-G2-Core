@@ -170,21 +170,10 @@ static uint8_t _populate_filtered_status_report(void);
 static bool _position_equals_target(char*);
 
 bool _position_equals_target(char *sr_token) {
-
-    char token[TOKEN_LEN+1];
-
     // Check for a valid position axis, then compare position and target at specified axis
-    strcpy(token, sr_token);
-
-    if (strcmp(token, "x") == 0) { return (fp_EQ(cm->gmx.position[AXIS_X], cm->gm.target[AXIS_X]));}
-    if (strcmp(token, "y") == 0) { return (fp_EQ(cm->gmx.position[AXIS_Y], cm->gm.target[AXIS_Y]));}
-    if (strcmp(token, "z") == 0) { return (fp_EQ(cm->gmx.position[AXIS_Z], cm->gm.target[AXIS_Z]));}
-    if (strcmp(token, "a") == 0) { return (fp_EQ(cm->gmx.position[AXIS_A], cm->gm.target[AXIS_A]));}
-    if (strcmp(token, "b") == 0) { return (fp_EQ(cm->gmx.position[AXIS_B], cm->gm.target[AXIS_B]));}
-    if (strcmp(token, "c") == 0) { return (fp_EQ(cm->gmx.position[AXIS_C], cm->gm.target[AXIS_C]));}
-
-    // Invalid axis, return
-    return false;
+    if (strcmp(sr_token, "z") == 0) { return (fp_EQ(cm->gmx.position[AXIS_Z], cm->gm.target[AXIS_Z])); } 
+        
+    return false; // Invalid axis, return
 }
 
 /*
@@ -476,23 +465,22 @@ static uint8_t _populate_filtered_status_report()
             }
         } else {
             auto current_value_int = nv->value_int;
-            if (((nv->index == sr.stat_index) &&
-                    ((current_value_int == COMBINED_PROGRAM_STOP) || (current_value_int == COMBINED_PROGRAM_END))) ||
-                (current_value_int != (decltype(current_value_int))sr.status_report_list[i].value)) {
+            if (((nv->index == sr.stat_index) && ((current_value_int == COMBINED_PROGRAM_STOP) || (current_value_int == COMBINED_PROGRAM_END))) || 
+               (current_value_int != (decltype(current_value_int))sr.status_report_list[i].value)) {
+                
                 changed = true;
                 current_value = current_value_int;
             }
-        }   
+        }
         
-        // TODO: cleanup / move this
-        // ignore position (pos) when start point = end point and we're in cycle
+        // Ignore position (pos) when the start point = end point and we're in a cycle
         // since cm_update_model_position can cause false position SRs
-        if (changed &&                                                      // SR flagged for update
-            (strcmp(sr.status_report_list[i].group, "pos") == 0) &&         // position (pos) report
-            (_position_equals_target(sr.status_report_list[i].token)) &&    // target = position 
-            (mp == &mp2) &&                                                 // using secondary planner (feedhold)
-            (cm_get_machine_state() == MACHINE_CYCLE) &&                    // in a cycle
-            (cm_get_motion_state() == MOTION_STOP)) {                       // currently stopped (in MODEL runtime)
+        if (changed                                                         // SR flagged for update
+            && (mp == &mp2)                                                 // using secondary planner (feedhold)
+            && (strcmp(sr.status_report_list[i].group, "pos") == 0)         // position (pos) report
+            && (_position_equals_target(sr.status_report_list[i].token))    // target = position 
+            && (cm_get_machine_state() == MACHINE_CYCLE)                    // in a cycle
+            && (cm_get_motion_state() == MOTION_STOP)) {                    // currently stopped (in MODEL runtime)
             
             changed = false;
         }
@@ -505,7 +493,7 @@ static uint8_t _populate_filtered_status_report()
             sr.status_report_list[i].value = current_value;
 
             if ((nv = nv->nx) == NULL) {        // should never be NULL unless SR length exceeds available buffer array
-            return (false);
+                return (false);
             }
             has_data = true;
         } else {
