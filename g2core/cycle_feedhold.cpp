@@ -590,43 +590,43 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 	if ((cm1.machine_state != MACHINE_CYCLE) || (cm1.motion_state == MOTION_STOP)) {
 		cm->hold_state = FEEDHOLD_OFF;          // cannot honor the feedhold request. reset it
 	}
-	
-    // Can only initiate a feedhold if not already in a feedhold
-    if ((cm1.hold_state == FEEDHOLD_OFF)) {
-        cm1.hold_type = type;
-        cm1.hold_exit = exit;
+	else{
+		// Can only initiate a feedhold if not already in a feedhold
+		if ((cm1.hold_state == FEEDHOLD_OFF)) {
+			cm1.hold_type = type;
+			cm1.hold_exit = exit;
 
-        switch (cm1.hold_type) {
-            case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions); break; }
-            case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions); break; }
-            case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip); break; }
-            default: {}
-        }
-        switch (cm1.hold_exit) {
-            case FEEDHOLD_EXIT_STOP:      { op.add_action(_run_program_stop); break; }
-            case FEEDHOLD_EXIT_END:       { op.add_action(_run_program_end); break; }
-            case FEEDHOLD_EXIT_ALARM:     { op.add_action(_run_alarm); break; }
-            case FEEDHOLD_EXIT_SHUTDOWN:  { op.add_action(_run_shutdown); break; }
-            case FEEDHOLD_EXIT_INTERLOCK: { op.add_action(_run_interlock_started); break; }
-            case FEEDHOLD_EXIT_RESET_POSITION: { op.add_action(_run_reset_position); break; }
-            default: {}
-        }
-        return;
-    }
+			switch (cm1.hold_type) {
+				case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions); break; }
+				case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions); break; }
+				case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip); break; }
+				default: {}
+			}
+			switch (cm1.hold_exit) {
+				case FEEDHOLD_EXIT_STOP:      { op.add_action(_run_program_stop); break; }
+				case FEEDHOLD_EXIT_END:       { op.add_action(_run_program_end); break; }
+				case FEEDHOLD_EXIT_ALARM:     { op.add_action(_run_alarm); break; }
+				case FEEDHOLD_EXIT_SHUTDOWN:  { op.add_action(_run_shutdown); break; }
+				case FEEDHOLD_EXIT_INTERLOCK: { op.add_action(_run_interlock_started); break; }
+				case FEEDHOLD_EXIT_RESET_POSITION: { op.add_action(_run_reset_position); break; }
+				default: {}
+			}
+			return;
+		}
 
-    // Look for feedhols while exiting feedhold
+		// Look for feedhols while exiting feedhold
 
-    if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
-        // re-load a hold
-        cm1.hold_type = type;
-        switch (cm1.hold_type) {
-            case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions, true); break; }
-            case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions, true); break; }
-            case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip, true); break; }
-            default: {}
-        }
-    }
-
+		if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
+			// re-load a hold
+			cm1.hold_type = type;
+			switch (cm1.hold_type) {
+				case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions, true); break; }
+				case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions, true); break; }
+				case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip, true); break; }
+				default: {}
+			}
+		}
+	}
     // Look for p2 feedhold (feedhold in a feedhold)
     if ((cm1.hold_state >= FEEDHOLD_HOLD) &&
         (cm2.hold_state == FEEDHOLD_OFF) && (cm2.machine_state == MACHINE_CYCLE)) {
