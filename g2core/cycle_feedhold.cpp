@@ -586,6 +586,11 @@ void _start_job_kill()
 
 void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 {
+	// Reset the request if it's invalid
+	if ((cm1.machine_state != MACHINE_CYCLE) || (cm1.motion_state == MOTION_STOP)) {
+		cm->hold_state = FEEDHOLD_OFF;          // cannot honor the feedhold request. reset it
+	}
+	
     // Can only initiate a feedhold if not already in a feedhold
     if ((cm1.hold_state == FEEDHOLD_OFF)) {
         cm1.hold_type = type;
@@ -610,11 +615,6 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
     }
 
     // Look for feedhols while exiting feedhold
-
-    // Reset the request if it's invalid
-    if ((cm1.machine_state != MACHINE_CYCLE) || (cm1.motion_state == MOTION_STOP)) {
-        cm->hold_state = FEEDHOLD_OFF;          // cannot honor the feedhold request. reset it
-    }
 
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
         // re-load a hold
