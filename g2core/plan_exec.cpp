@@ -1041,7 +1041,7 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
             mr->reset();                                    // reset MR for next use and for forward planning
             cm_set_motion_state(MOTION_STOP);
             cm->hold_state = FEEDHOLD_MOTION_STOPPED;
-            //sr_request_status_report(SR_REQUEST_IMMEDIATE); // Causes faulty SR's for issue #11 when feedholding or killing
+            sr_request_status_report(SR_REQUEST_IMMEDIATE); // Causes faulty SR's for issue #11 when feedholding or killing
         }
         return (STAT_NOOP);                                 // hold here. leave with a NOOP so it does not attempt another load and exec.
     }
