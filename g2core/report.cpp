@@ -167,14 +167,6 @@ void rpt_print_system_ready_message(void)
  */
 static stat_t _populate_unfiltered_status_report(void);
 static uint8_t _populate_filtered_status_report(void);
-static bool _position_equals_target(char*);
-
-bool _position_equals_target(char *sr_token) {
-    // Check for a valid position axis, then compare position and target at specified axis
-    if (strcmp(sr_token, "z") == 0) { return (fp_EQ(cm->gmx.position[AXIS_Z], cm->gm.target[AXIS_Z])); } 
-        
-    return false; // Invalid axis, return
-}
 
 /*
  * sr_init_status_report()
@@ -456,33 +448,20 @@ static uint8_t _populate_filtered_status_report()
 
         bool changed = false;
 
- 
+        // extract the value and cast into a float, regardless of value type
         if (nv->valuetype == TYPE_FLOAT) {
-            current_value = nv->value_flt;                       
-      
+            current_value = nv->value_flt;
             if ((fabs(current_value - sr.status_report_list[i].value) > precision[cfgArray[nv->index].precision])) {
                 changed = true;
             }
         } else {
             auto current_value_int = nv->value_int;
-            if (((nv->index == sr.stat_index) && ((current_value_int == COMBINED_PROGRAM_STOP) || (current_value_int == COMBINED_PROGRAM_END))) || 
-               (current_value_int != (decltype(current_value_int))sr.status_report_list[i].value)) {
-                
+            if (((nv->index == sr.stat_index) &&
+                 ((current_value_int == COMBINED_PROGRAM_STOP) || (current_value_int == COMBINED_PROGRAM_END))) ||
+                (current_value_int != (decltype(current_value_int))sr.status_report_list[i].value)) {
                 changed = true;
                 current_value = current_value_int;
             }
-        }
-        
-        // Ignore position (pos) when the start point = end point and we're in a cycle
-        // since cm_update_model_position can cause false position SRs
-        if (changed                                                         // SR flagged for update
-            && (mp == &mp2)                                                 // using secondary planner (feedhold)
-            && (strcmp(sr.status_report_list[i].group, "pos") == 0)         // position (pos) report
-            && (_position_equals_target(sr.status_report_list[i].token))    // target = position 
-            && (cm_get_machine_state() == MACHINE_CYCLE)                    // in a cycle
-            && (cm_get_motion_state() == MOTION_STOP)) {                    // currently stopped (in MODEL runtime)
-            
-            changed = false;
         }
 
         // report values that have changed by more than the indicated precision, but always stops and ends
