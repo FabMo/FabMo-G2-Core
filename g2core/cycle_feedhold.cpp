@@ -901,6 +901,8 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         cm_goto_g30_position_mm(cm2.gmx.g30_position, cm2.return_flags);
         mp_queue_command(_feedhold_restart_actions_done_callback, nullptr, nullptr);
         cm1.hold_state = FEEDHOLD_EXIT_ACTIONS_PENDING;
+        sr_request_status_report(SR_REQUEST_IMMEDIATE);
+        
         return (STAT_EAGAIN);
     }
 

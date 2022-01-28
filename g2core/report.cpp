@@ -168,15 +168,6 @@ void rpt_print_system_ready_message(void)
 static stat_t _populate_unfiltered_status_report(void);
 static uint8_t _populate_filtered_status_report(void);
 
-uint8_t _is_stat(nvObj_t *nv)
-{
-    char token[TOKEN_LEN+1];
-
-    GET_TOKEN_STRING(nv->value_int, token);   // pass in index, get back token
-    if (strcmp(token, "stat") == 0) { return (true);}
-    return (false);
-}
-
 /*
  * sr_init_status_report()
  *
