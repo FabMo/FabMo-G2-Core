@@ -1747,17 +1747,15 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
  */
 
 static void _exec_program_finalize(float* value, bool* flag) {
-    // perform the following resets if it's a program END
-    if (flag[0]) {
-    //if (flag != nullptr) {
-        //if (fp_EQ(*value, 1)) { spindle_stop(); }           // Turn spindle off only if M2/M30
-        if (flag[1]) { spindle_stop(); }           // Turn spindle off only if M2/M30
-        coolant_control_immediate(COOLANT_OFF,COOLANT_BOTH);// immediate M9
-        temperature_reset();                                // turn off all heaters and fans
-        cm_reset_overrides();                               // enable G48, reset feed rate, traverse and spindle overrides
+    // Perform the following resets if it's a program END
+    if (*flag) {
+        spindle_stop();                                      // Immediate M5
+        coolant_control_immediate(COOLANT_OFF,COOLANT_BOTH); // Immediate M9
+        temperature_reset();                                 // Turn off all heaters and fans
+        cm_reset_overrides();                                // Enable G48, reset feed rate, traverse and spindle overrides
     }
 
-    sr_request_status_report(SR_REQUEST_IMMEDIATE);         // request a final and full status report (not filtered)
+    sr_request_status_report(SR_REQUEST_IMMEDIATE);          // Request a final and full status report (not filtered)
 }
 
 static void _exec_program_stop_end(cmMachineState machine_state)
@@ -1772,32 +1770,27 @@ static void _exec_program_stop_end(cmMachineState machine_state)
         cm->machine_state = machine_state;                  // don't update macs/cycs if we're in the middle of a canned cycle,
     }
 
-    //static bool flag; // gives us an address to point to
-    static bool flag[2];
-    //float value = 0;
     // reset the rest of the states
     cm->hold_state = FEEDHOLD_OFF;
-    // mp_zero_segment_velocity();                             // for reporting purposes
+    // mp_zero_segment_velocity();                              //  for reporting purposes
 
+    static bool flag = false;                                //  M0/M2/M30 flag
     // perform the following resets if it's a program END
     if (machine_state == MACHINE_PROGRAM_END) {
-        flag[0] = true, flag[1] = true;
-        //value = 1;
-        cm_suspend_g92_offsets();                           //  G92.2 - as per NIST
-        cm_set_coord_system(cm->default_coord_system);      //  reset to default coordinate system
-        cm_select_plane(cm->default_select_plane);          //  reset to default arc plane
-        cm_set_distance_mode(cm->default_distance_mode);    //  reset to default distance mode
-        cm_set_arc_distance_mode(INCREMENTAL_DISTANCE_MODE);//  always the default
-        cm_set_feed_rate_mode(UNITS_PER_MINUTE_MODE);       //  G94
+        flag = true;                                         //  M2/M30
+        cm_suspend_g92_offsets();                            //  G92.2 - as per NIST
+        cm_set_coord_system(cm->default_coord_system);       //  reset to default coordinate system
+        cm_select_plane(cm->default_select_plane);           //  reset to default arc plane
+        cm_set_distance_mode(cm->default_distance_mode);     //  reset to default distance mode
+        cm_set_arc_distance_mode(INCREMENTAL_DISTANCE_MODE); //  always the default
+        cm_set_feed_rate_mode(UNITS_PER_MINUTE_MODE);        //  G94
         cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE); // NIST specifies G1 (MOTION_MODE_STRAIGHT_FEED), but we cancel motion mode. Safer.
 
         // the rest will be queued and executed in _exec_program_finalize()
     }
     cm_set_motion_state(MOTION_STOP);                       // also changes active model back to MODEL
 
-    //mp_queue_command(_exec_program_finalize, nullptr, (machine_state == MACHINE_PROGRAM_END) ? &flag : nullptr);
-    //mp_queue_command(_exec_program_finalize, (machine_state == MACHINE_PROGRAM_END) ? &(value = 1): nullptr, (machine_state == MACHINE_PROGRAM_END) ? &flag : nullptr);
-    mp_queue_command(_exec_program_finalize, nullptr, flag);
+    mp_queue_command(_exec_program_finalize, nullptr, &flag);
 }
 
 // Will start a cycle regardless of whether the planner has moves or not
