@@ -1774,7 +1774,7 @@ static void _exec_program_stop_end(cmMachineState machine_state)
     cm->hold_state = FEEDHOLD_OFF;
     // mp_zero_segment_velocity();                              //  for reporting purposes
 
-    static bool flag = false;                                //  M0/M2/M30 flag
+    bool flag = false;                                       //  M0/M2/M30 flag
     // perform the following resets if it's a program END
     if (machine_state == MACHINE_PROGRAM_END) {
         flag = true;                                         //  M2/M30
