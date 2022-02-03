@@ -1220,7 +1220,7 @@ stat_t cm_resume_g92_offsets()
 
 void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags) // Assumes both target arrays are the same size
 {
-    for (uint8_t axis = AXIS_X; axis < AXIS_A; axis++) {                // Only convert linears (not rotaries)
+    for (uint8_t axis = AXIS_X; axis <= AXIS_C; axis++) {               // Only convert linears (not rotaries)
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;                                                   // skip axis if not flagged for update or its disabled
         } else {
