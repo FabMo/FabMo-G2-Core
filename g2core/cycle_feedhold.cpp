@@ -806,14 +806,14 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
         }
 
         // execute feedhold actions
-        if (fp_NOT_ZERO(cm->feedhold_z_lift)) {// optional Z lift
+        if (fp_NOT_ZERO(cm->feedhold_z_lift)) { // Optional Z lift
             bool flags[] = { 0,0,1,0,0,0 };
             float target[] = { 0,0,0,0,0,0 };
             bool skip_move = false;
-            if (cm->feedhold_z_lift < 0) {  // if the value is negative, we want to go to Z-max position with G53
+            if (cm->feedhold_z_lift < 0) {      // If the value is negative, we want to go to Z-max position with G53
                 if (cmHomingState::HOMING_HOMED == cm->homed[AXIS_Z]) {    // ONLY IF HOMED
                     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);  // Position stored in abs coords
-                    cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);           // Must run in absolute distance mode
+                    cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);          // Must run in absolute distance mode
                     target[AXIS_Z] = cm->a[AXIS_Z].travel_max;
                 } else {
                     skip_move = true;
@@ -824,7 +824,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
                 ////## Need Z to pull to fixed location; 
                 ////##  and, BETTER pull to fixed location if not above
                 cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
-                if (cm->gmx.position[AXIS_Z] - cm_get_combined_offset(AXIS_Z) < cm->feedhold_z_lift) {
+                if (cm->gmx.position[AXIS_Z] - cm_get_combined_offset(AXIS_Z) < cm->feedhold_z_lift && is_spindle_on_or_paused()) {
                     target[AXIS_Z] = cm->feedhold_z_lift;
                 } else {
                     skip_move = true;
