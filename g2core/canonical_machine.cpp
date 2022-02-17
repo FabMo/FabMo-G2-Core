@@ -1213,18 +1213,20 @@ stat_t cm_resume_g92_offsets()
  **** Free Space Motion (4.3.4) *********************************************************
  ****************************************************************************************/
 /*
- * cm_axes_to_mm()               - helper to convert all axes to mm if needed
+ * cm_axes_to_mm()               - helper to convert all linear axes to mm if needed
  * cm_straight_traverse_global() - G0 linear rapid, global (Gcode) units - for external use
  * cm_straight_traverse_mm()     - G0 linear rapid, mm units - for internal use
  */
 
 void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags) // Assumes both target arrays are the same size
 {
-    for (uint8_t axis = AXIS_X; axis < AXIS_A; axis++) {                // Only convert linears (not rotaries)
+    for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;                                                   // skip axis if not flagged for update or its disabled
+        } else if (axis > LAST_LINEAR_AXIS) {
+            target_mm[axis] = target_global[axis];                      // pass through rotary axes (no unit conversion required)
         } else {
-            target_mm[axis] = _to_millimeters(target_global[axis]);
+            target_mm[axis] = _to_millimeters(target_global[axis]);     // convert linear axes
         }
     }
 }
