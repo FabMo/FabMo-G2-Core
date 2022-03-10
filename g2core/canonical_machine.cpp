@@ -577,7 +577,9 @@ float cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axi
         position = mp_get_runtime_display_position(axis);
     }
     if (axis <= LAST_LINEAR_AXIS) {   // linears
-        position = _to_inches(position);
+        if (gcode_state->units_mode == INCHES) {
+            position /= MM_PER_INCH;
+        }
     }
     return (position);
 }
