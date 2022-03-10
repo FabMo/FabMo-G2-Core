@@ -587,7 +587,7 @@ void _start_job_kill()
 void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 {
 	// Reset the request if it's invalid
-	if ((cm1.machine_state != MACHINE_CYCLE) || (cm1.motion_state == MOTION_STOP)) {
+	if ((cm1.machine_state != MACHINE_CYCLE) && (cm1.motion_state == MOTION_STOP)) {
 		cm->hold_state = FEEDHOLD_OFF;          // cannot honor the feedhold request. reset it
 	}
 	else{
@@ -628,11 +628,11 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 		}
 	}
     // Look for p2 feedhold (feedhold in a feedhold)
-    if ((cm1.hold_state >= FEEDHOLD_HOLD) &&
-        (cm2.hold_state == FEEDHOLD_OFF) && (cm2.machine_state == MACHINE_CYCLE)) {
-        cm2.hold_state = FEEDHOLD_SYNC;
-        return;
-    }
+    //if ((cm1.hold_state >= FEEDHOLD_HOLD) &&
+    //    (cm2.hold_state == FEEDHOLD_OFF) && (cm2.machine_state == MACHINE_CYCLE)) {
+    //    cm2.hold_state = FEEDHOLD_SYNC;
+    //    return;
+    //}
 
 }
 /*
