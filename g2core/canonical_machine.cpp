@@ -1332,6 +1332,7 @@ stat_t _goto_stored_position_mm(const float stored_position[],     // always in 
     while (mp_planner_is_full(mp));                         // Make sure you have available buffers
 
     uint8_t saved_distance_mode = cm_get_distance_mode(MODEL);
+    cm->machine_state = MACHINE_CYCLE;                      // Preventing offset from prematurely updating
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);  // Position stored in abs coords
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);           // Must run in absolute distance mode
 

@@ -681,6 +681,7 @@ void _enter_p2()
     copy_vector(cm2.gmx.position, mr1.position);
     copy_vector(mp2.position, mr1.position);
     copy_vector(mr2.position, mr1.position);
+    copy_vector(mr2.gm.display_offset, mr1.gm.display_offset);    // Preserving the offset through a feedhold
     mr2.gm.units_mode = mr1.gm.units_mode;                        // Preserving the units through a feedhold
 
     // Copy MR position and encoder terms - needed for following error correction state
