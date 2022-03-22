@@ -1332,7 +1332,7 @@ stat_t _goto_stored_position_mm(const float stored_position[],     // always in 
     while (mp_planner_is_full(mp));                         // Make sure you have available buffers
 
     uint8_t saved_distance_mode = cm_get_distance_mode(MODEL);
-    cm->machine_state = MACHINE_CYCLE;                      // Preventing offset from prematurely updating
+    //cm->machine_state = MACHINE_CYCLE;                      // Preventing offset from prematurely updating
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);  // Position stored in abs coords
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);           // Must run in absolute distance mode
 
@@ -2250,8 +2250,8 @@ stat_t cm_get_vel(nvObj_t *nv)
 
 stat_t cm_get_feed(nvObj_t *nv) { return (get_float(nv, cm_get_feed_rate(ACTIVE_MODEL))); }
 stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
-stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
-stat_t cm_get_ofs(nvObj_t *nv)  { return (get_float(nv, cm_get_display_offset(ACTIVE_MODEL, _axis(nv)))); }
+stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(RUNTIME, _axis(nv)))); }
+stat_t cm_get_ofs(nvObj_t *nv)  { return (get_float(nv, cm_get_display_offset(RUNTIME, _axis(nv)))); }
 
 stat_t cm_get_home(nvObj_t *nv) { return(_get_msg_helper(nv, msg_home, cm_get_homing_state())); }
 stat_t cm_set_home(nvObj_t *nv) { return (set_integer(nv, ((uint8_t &)(cm->homing_state)), false, true)); }
