@@ -455,7 +455,7 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
     bool setPolarity(const ioPolarity new_polarity) override
     {
         polarity = new_polarity;
-        pin.setOptions((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kDebounce);
+        pin.setOptions((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kPullUp|kDebounce);
         return true;
     };
 
