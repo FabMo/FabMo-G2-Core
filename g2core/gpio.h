@@ -403,7 +403,7 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
         polarity{_polarity},
         ext_pin_number{ _ext_pin_number },
         proxy_pin_number{ 0 },
-        pin{((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kDebounce), [&]{this->pin_changed();}, std::forward<T>(V)...}
+        pin{((polarity == IO_ACTIVE_LOW) ? kDebounce : kDebounce), [&]{this->pin_changed();}, std::forward<T>(V)...}
     {
         if (pin.isNull()) {
             enabled = IO_UNAVAILABLE;
