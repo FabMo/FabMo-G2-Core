@@ -152,6 +152,14 @@ ifeq ("$(CONFIG)","sbv300")
     SETTINGS_FILE="settings_shopbot_sbv300.h"
 endif
 
+ifeq ("$(CONFIG)","sbv700")
+    ifeq ("$(BOARD)","NONE")
+        BOARD=sbv700-g
+    endif
+    SETTINGS_FILE="settings_shopbot_sbv700.h"
+endif
+
+
 # ifeq ("$(CONFIG)","ShopbotTestV9")
 #     ifeq ("$(BOARD)","NONE")
 #         BOARD=g2v9k
