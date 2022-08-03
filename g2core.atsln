@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E66E83B9-2572-4076-B26E-6BE79FF3018A}") = "g2core", "g2core\g2core.cppproj", "{44EA8FEC-55D7-4149-8A78-A574FC26BF51}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0} = {D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}
+	EndProjectSection
 EndProject
 Project("{E66E83B9-2572-4076-B26E-6BE79FF3018A}") = "Motate", "Motate\Motate.cppproj", "{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}"
 EndProject
@@ -19,6 +22,7 @@ Global
 		ProbotixV90|ARM = ProbotixV90|ARM
 		Quintic-Ender|ARM = Quintic-Ender|ARM
 		sbv300|ARM = sbv300|ARM
+		sbv700|ARM = sbv700|ARM
 		Shapeoko2|ARM = Shapeoko2|ARM
 		shopbotShield|ARM = shopbotShield|ARM
 		ShopbotTestV9|ARM = ShopbotTestV9|ARM
@@ -54,6 +58,8 @@ Global
 		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.Quintic-Ender|ARM.Build.0 = qQuintic on AxiDraw v3|ARM
 		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.sbv300|ARM.ActiveCfg = sbv300|ARM
 		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.sbv300|ARM.Build.0 = sbv300|ARM
+		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.sbv700|ARM.ActiveCfg = sbv700|ARM
+		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.sbv700|ARM.Build.0 = sbv700|ARM
 		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.Shapeoko2|ARM.ActiveCfg = Shapeoko2|ARM
 		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.Shapeoko2|ARM.Build.0 = Shapeoko2|ARM
 		{44EA8FEC-55D7-4149-8A78-A574FC26BF51}.shopbotShield|ARM.ActiveCfg = shopbotShield|ARM
@@ -85,6 +91,7 @@ Global
 		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.Quintic-Ender|ARM.ActiveCfg = Stub|ARM
 		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.Quintic-Ender|ARM.Build.0 = Stub|ARM
 		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.sbv300|ARM.ActiveCfg = Stub|ARM
+		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.sbv700|ARM.ActiveCfg = Stub|ARM
 		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.Shapeoko2|ARM.ActiveCfg = Stub|ARM
 		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.shopbotShield|ARM.ActiveCfg = Stub|ARM
 		{D7779B24-5CD6-4A1B-893C-2CAE8CF7A3A0}.ShopbotTestV9|ARM.ActiveCfg = Stub|ARM
