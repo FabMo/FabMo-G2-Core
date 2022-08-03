@@ -2432,6 +2432,12 @@
     <None Include="board\sbv300.mk">
       <SubType>compile</SubType>
     </None>
+    <None Include="board\sbv700.gdb">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="board\sbv700.mk">
+      <SubType>compile</SubType>
+    </None>
     <None Include="LICENSE-gpl-2.0.txt">
       <SubType>compile</SubType>
     </None>
