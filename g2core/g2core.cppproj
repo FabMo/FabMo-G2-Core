@@ -54,15 +54,15 @@
     </com_atmel_avrdbg_tool_samice>
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.44.1" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.44.1" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
@@ -108,15 +108,17 @@
     <avrdeviceexpectedsignature>0xA1220E00</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <custom>
-      <ToolOptions xmlns="">
+      <ToolOptions>
         <InterfaceProperties>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
-        <InterfaceName>SWD</InterfaceName>
+        <InterfaceName>
+        </InterfaceName>
       </ToolOptions>
-      <ToolType xmlns="">custom</ToolType>
-      <ToolNumber xmlns="">
+      <ToolType>custom</ToolType>
+      <ToolNumber>
       </ToolNumber>
-      <ToolName xmlns="">Custom Programming Tool</ToolName>
+      <ToolName>Custom Programming Tool</ToolName>
     </custom>
     <UseGdbCustomPath>False</UseGdbCustomPath>
     <GdbCustomPath>

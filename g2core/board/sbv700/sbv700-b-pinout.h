@@ -84,7 +84,7 @@
 #define INPUT12_AVAILABLE 1
 #define INPUT13_AVAILABLE 0
 
-#define XIO_HAS_USB 1
+#define XIO_HAS_USB 0
 #define XIO_HAS_UART 1
 #define XIO_HAS_SPI 0
 #define XIO_HAS_I2C 0
@@ -204,7 +204,7 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kUnassigned8,                     'D', 29); // NO PHYSICAL PIN
     _MAKE_MOTATE_PIN(kUnassigned9,                     'D', 30); // INTERRUPT_OUT
     _MAKE_MOTATE_PIN(kUnassigned10,                    'D', 31); //
-    
+
 }  // namespace Motate
 
 // We then allow each chip-type to have it's own function definitions
