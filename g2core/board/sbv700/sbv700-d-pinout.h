@@ -131,8 +131,8 @@ _MAKE_MOTATE_PIN(kOutput11_PinNumber,              'A',  5); // PWM 1,3
 _MAKE_MOTATE_PIN(kExternalClock1_PinNumber,        'A',  6); // CPU_CLK
 _MAKE_MOTATE_PIN(kOutput7_PinNumber,               'A',  7); // PWM 0,3
 _MAKE_MOTATE_PIN(kSerial_RTSPinNumber,             'A',  8); //
-_MAKE_MOTATE_PIN(kSerial_RXPinNumber,              'A',  9); //
-_MAKE_MOTATE_PIN(kSerial_TXPinNumber,              'A', 10); //
+_MAKE_MOTATE_PIN(kSerial_RXPinNumber,              'A',  9); // Good According to page 76 https://ww1.microchip.com/downloads/aemDocuments/documents/MCU32/ProductDocuments/DataSheets/SAM-E70-S70-V70-V71-Family-Data-Sheet-DS60001527.pdf
+_MAKE_MOTATE_PIN(kSerial_TXPinNumber,              'A', 10); // Good According to page 76 https://ww1.microchip.com/downloads/aemDocuments/documents/MCU32/ProductDocuments/DataSheets/SAM-E70-S70-V70-V71-Family-Data-Sheet-DS60001527.pdf
 _MAKE_MOTATE_PIN(kSocket2_EnablePinNumber,         'A', 11); //
 _MAKE_MOTATE_PIN(kOutput6_PinNumber,               'A', 12); // PWM 1,0
 _MAKE_MOTATE_PIN(kOutput8_PinNumber,               'A', 13); // PWM 0,2
