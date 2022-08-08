@@ -126,7 +126,7 @@ _MAKE_MOTATE_PIN(kLED_RGBWPixelPinNumber,          'A',  0); //
 _MAKE_MOTATE_PIN(kOutput1_PinNumber,               'A',  1); // TC  0,1
 _MAKE_MOTATE_PIN(kOutput2_PinNumber,               'A',  2); // PWM 0,1
 _MAKE_MOTATE_PIN(kI2C1_SDAPinNumber,               'A',  3); //
-_MAKE_MOTATE_PIN(kI2C1_SCLPinNumber,               'A',  4); //
+_MAKE_MOTATE_PIN(kI2C1_SCLPinNumber,               'A',  4); //Good according to page 25 https://www.mouser.com/datasheet/2/268/Atmel-42408-SAMV71-Xplained-Ultra_User-Guide-1368535.pdf
 _MAKE_MOTATE_PIN(kOutput11_PinNumber,              'A',  5); // PWM 1,3
 _MAKE_MOTATE_PIN(kExternalClock1_PinNumber,        'A',  6); // CPU_CLK
 _MAKE_MOTATE_PIN(kOutput7_PinNumber,               'A',  7); // PWM 0,3
@@ -143,9 +143,10 @@ _MAKE_MOTATE_PIN(kADC4_PinNumber,                  'A', 17); // AFEC0,6
 _MAKE_MOTATE_PIN(kADC3_PinNumber,                  'A', 18); // AFEC0,7
 _MAKE_MOTATE_PIN(kADC2_PinNumber,                  'A', 19); // AFEC0,8
 _MAKE_MOTATE_PIN(kADC1_PinNumber,                  'A', 20); // AFEC0,9
-_MAKE_MOTATE_PIN(kUnassigned1,                     'A', 21); // AFEC0,1
+//_MAKE_MOTATE_PIN(kLED_USBRXPinNumber,              'A', 21);
+//_MAKE_MOTATE_PIN(kUnassigned1,                     'A', 21); // AFEC0,1
 _MAKE_MOTATE_PIN(kSocket1_EnablePinNumber,         'A', 22); //
-_MAKE_MOTATE_PIN(kLED_USBRXPinNumber,            'A', 23); // PWM 1,2
+_MAKE_MOTATE_PIN(kLED_USBRXPinNumber,              'A', 23); // PWM 1,2 This is so that LED0 is heartbeat
 // _MAKE_MOTATE_PIN(kServo1_PinNumber,                'A', 23); //
 _MAKE_MOTATE_PIN(kSocket3_EnablePinNumber,         'A', 24); //
 _MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'A', 25); //
@@ -160,6 +161,7 @@ _MAKE_MOTATE_PIN(kSerial_CTSPinNumber,             'B',  0); //
 _MAKE_MOTATE_PIN(kUnassigned4,                     'B',  1); // AFEC1,0
 _MAKE_MOTATE_PIN(kSocket1_SPISlaveSelectPinNumber, 'B',  2); //
 _MAKE_MOTATE_PIN(kOutputSAFE_PinNumber,            'B',  3); //
+_MAKE_MOTATE_PIN(kLED_USBTXPinNumber,              'B',  4);
 //_MAKE_MOTATE_PIN(                              , 'B',  4); // TDI
 //_MAKE_MOTATE_PIN(                              , 'B',  5); // TRACESDO
 //_MAKE_MOTATE_PIN(                              , 'B',  6); // SWDIO
