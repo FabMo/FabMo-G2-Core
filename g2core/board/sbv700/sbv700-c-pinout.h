@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef sbv700_a_pinout_h
-#define sbv700_a_pinout_h
+#ifndef sbv700_c_pinout_h
+#define sbv700_c_pinout_h
 
 /*
  * USAGE NOTES
