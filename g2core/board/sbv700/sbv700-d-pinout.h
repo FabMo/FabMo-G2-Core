@@ -107,7 +107,6 @@
 #define OUTPUT9_PWM 0   // PWM 0,2
 #define OUTPUT10_PWM 0  // PWM 1,2
 #define OUTPUT11_PWM 0  // Used by Heatbed
-//#define OUTPUT11_PWM 1  // PWM 1,3 - Fet 3
 #define OUTPUT12_PWM 0  // Unused
 #define OUTPUT13_PWM 0  // Unused
 
@@ -126,13 +125,13 @@ _MAKE_MOTATE_PIN(kLED_RGBWPixelPinNumber,          'A',  0); //
 _MAKE_MOTATE_PIN(kOutput1_PinNumber,               'A',  1); // TC  0,1
 _MAKE_MOTATE_PIN(kOutput2_PinNumber,               'A',  2); // PWM 0,1
 _MAKE_MOTATE_PIN(kI2C1_SDAPinNumber,               'A',  3); //
-_MAKE_MOTATE_PIN(kI2C1_SCLPinNumber,               'A',  4); //Good according to page 25 https://www.mouser.com/datasheet/2/268/Atmel-42408-SAMV71-Xplained-Ultra_User-Guide-1368535.pdf
+_MAKE_MOTATE_PIN(kI2C1_SCLPinNumber,               'A',  4); //
 _MAKE_MOTATE_PIN(kOutput11_PinNumber,              'A',  5); // PWM 1,3
 _MAKE_MOTATE_PIN(kExternalClock1_PinNumber,        'A',  6); // CPU_CLK
 _MAKE_MOTATE_PIN(kOutput7_PinNumber,               'A',  7); // PWM 0,3
 _MAKE_MOTATE_PIN(kSerial_RTSPinNumber,             'A',  8); //
-_MAKE_MOTATE_PIN(kSerial_RXPinNumber,              'A',  9); // Good According to page 76 https://ww1.microchip.com/downloads/aemDocuments/documents/MCU32/ProductDocuments/DataSheets/SAM-E70-S70-V70-V71-Family-Data-Sheet-DS60001527.pdf
-_MAKE_MOTATE_PIN(kSerial_TXPinNumber,              'A', 10); // Good According to page 76 https://ww1.microchip.com/downloads/aemDocuments/documents/MCU32/ProductDocuments/DataSheets/SAM-E70-S70-V70-V71-Family-Data-Sheet-DS60001527.pdf
+_MAKE_MOTATE_PIN(kSerial_RXPinNumber,              'A',  9); //
+_MAKE_MOTATE_PIN(kSerial_TXPinNumber,              'A', 10); //
 _MAKE_MOTATE_PIN(kSocket2_EnablePinNumber,         'A', 11); //
 _MAKE_MOTATE_PIN(kOutput6_PinNumber,               'A', 12); // PWM 1,0
 _MAKE_MOTATE_PIN(kOutput8_PinNumber,               'A', 13); // PWM 0,2
@@ -144,10 +143,8 @@ _MAKE_MOTATE_PIN(kADC3_PinNumber,                  'A', 18); // AFEC0,7
 _MAKE_MOTATE_PIN(kADC2_PinNumber,                  'A', 19); // AFEC0,8
 _MAKE_MOTATE_PIN(kADC1_PinNumber,                  'A', 20); // AFEC0,9
 _MAKE_MOTATE_PIN(kUnassigned38,                    'A', 21);
-//_MAKE_MOTATE_PIN(kUnassigned1,                     'A', 21); // AFEC0,1
 _MAKE_MOTATE_PIN(kSocket1_EnablePinNumber,         'A', 22); //
 _MAKE_MOTATE_PIN(kLED_USBRXPinNumber,              'A', 23); // PWM 1,2 This is so that LED0 is heartbeat
-// _MAKE_MOTATE_PIN(kServo1_PinNumber,                'A', 23); //
 _MAKE_MOTATE_PIN(kSocket3_EnablePinNumber,         'A', 24); //
 _MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'A', 25); //
 _MAKE_MOTATE_PIN(kOutput5_PinNumber,               'A', 26); // TC 2,0
@@ -162,15 +159,6 @@ _MAKE_MOTATE_PIN(kUnassigned4,                     'B',  1); // AFEC1,0
 _MAKE_MOTATE_PIN(kSocket1_SPISlaveSelectPinNumber, 'B',  2); //
 _MAKE_MOTATE_PIN(kOutputSAFE_PinNumber,            'B',  3); //
 _MAKE_MOTATE_PIN(kLED_USBTXPinNumber,              'B',  4);
-//_MAKE_MOTATE_PIN(                              , 'B',  4); // TDI
-//_MAKE_MOTATE_PIN(                              , 'B',  5); // TRACESDO
-//_MAKE_MOTATE_PIN(                              , 'B',  6); // SWDIO
-//_MAKE_MOTATE_PIN(                              , 'B',  7); // SWDCLK
-//_MAKE_MOTATE_PIN(                              , 'B',  8); // XOUT
-//_MAKE_MOTATE_PIN(                              , 'B',  9); // XIN
-//_MAKE_MOTATE_PIN(                              , 'B', 10); // USB_D-
-//_MAKE_MOTATE_PIN(                              , 'B', 11); // USB_D+
-//_MAKE_MOTATE_PIN(                              , 'B', 12); // ERASE
 _MAKE_MOTATE_PIN(kUnassigned12,                    'B', 13); // LED_1 (Heartbeat) - PWM2
 _MAKE_MOTATE_PIN(kUnassigned5,                     'B', 14); // NOT CONNECTED
 
@@ -202,12 +190,12 @@ _MAKE_MOTATE_PIN(kUnassigned31,                    'C', 25); //
 _MAKE_MOTATE_PIN(kUnassigned32,                    'C', 26); //
 _MAKE_MOTATE_PIN(kUnassigned33,                    'C', 27); //
 _MAKE_MOTATE_PIN(kUnassigned34,                    'C', 28); //
-_MAKE_MOTATE_PIN(kInput10_PinNumber,                    'C', 29); //
+_MAKE_MOTATE_PIN(kInput10_PinNumber,               'C', 29); //
 _MAKE_MOTATE_PIN(kInput9_PinNumber,                'C', 30); //
 _MAKE_MOTATE_PIN(kInput8_PinNumber,                'C', 31); //
 
 _MAKE_MOTATE_PIN(kUnassigned36,                    'D',  1); // Switched with Input9
-_MAKE_MOTATE_PIN(kUnassigned35,               'D',  2); //
+_MAKE_MOTATE_PIN(kUnassigned35,                    'D',  2); // Switched with Input10
 _MAKE_MOTATE_PIN(kUnassigned37,                    'D',  3); // Switched with Input8
 _MAKE_MOTATE_PIN(kInput7_PinNumber,                'D',  4); //
 _MAKE_MOTATE_PIN(kInput6_PinNumber,                'D',  5); //
@@ -244,7 +232,7 @@ _MAKE_MOTATE_PIN(kUnassigned41,                    'E',  4); //
 _MAKE_MOTATE_PIN(kUnassigned42,                    'E',  5); //
 }  // namespace Motate
 
-// We then allow each chip-type to have it's onw function definitions
+// We then allow each chip-type to have it's own function definitions
 // that will refer to these pin assignments.
 #include "motate_chip_pin_functions.h"
 
