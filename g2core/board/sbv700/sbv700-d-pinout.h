@@ -224,7 +224,7 @@ _MAKE_MOTATE_PIN(kSocket4_SPISlaveSelectPinNumber, 'D', 27); //
 _MAKE_MOTATE_PIN(kSocket4_EnablePinNumber,         'D', 28); //
 _MAKE_MOTATE_PIN(kUnassigned9,                     'D', 29); // NO PHYSICAL PIN
 _MAKE_MOTATE_PIN(kUnassigned10,                    'D', 30); // AFEC0,0 - was INTERRUPT_OUT
-_MAKE_MOTATE_PIN(kUnassigned11,                    'D', 31); // Tried input8 here
+_MAKE_MOTATE_PIN(kUnassigned11,                    'D', 31); //
 
 _MAKE_MOTATE_PIN(kUnassigned39,                    'E',  0); //
 _MAKE_MOTATE_PIN(kUnassigned40,                    'E',  3); //
