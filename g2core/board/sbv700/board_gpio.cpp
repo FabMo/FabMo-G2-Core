@@ -66,10 +66,10 @@ gpioDigitalInputPin<IRQPin<Motate::kInput7_PinNumber>>  din7  {DI7_ENABLED,  DI7
 gpioDigitalInputPin<IRQPin<Motate::kInput8_PinNumber>>  din8  {DI8_ENABLED,  DI8_POLARITY,  8, DI8_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 gpioDigitalInputPin<IRQPin<Motate::kInput9_PinNumber>>  din9  {DI9_ENABLED,  DI9_POLARITY,  9, DI9_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10 {DI10_ENABLED, DI10_POLARITY, 10, DI10_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
-// gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11 {DI11_ENABLED, DI11_POLARITY, 11, DI11_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
-// gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12 {DI12_ENABLED, DI12_POLARITY, 12, DI12_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
+gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11 {DI11_ENABLED, DI11_POLARITY, 11, DI11_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
+gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12 {DI12_ENABLED, DI12_POLARITY, 12, DI12_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 
-gpioDigitalInput*  const d_in[] = {&din1, &din2, &din3, &din4, &din5, &din6, &din7, &din8, &din9};
+gpioDigitalInput*  const d_in[] = {&din1, &din2, &din3, &din4, &din5, &din6, &din7, &din8, &din9, &din10};
 
 
 gpioDigitalOutputPin<OutputType<OUTPUT1_PWM,  Motate::kOutput1_PinNumber>>  dout1  { DO1_ENABLED,  DO1_POLARITY,  DO1_EXTERNAL_NUMBER,  (uint32_t)200000 };
@@ -88,109 +88,11 @@ gpioDigitalOutputPin<OutputType<OUTPUT13_PWM, Motate::kOutput13_PinNumber>> dout
 
 gpioDigitalOutput* const d_out[] = {&dout1, &dout2, &dout3, &dout4, &dout5, &dout6, &dout7, &dout8, &dout9, &dout10, &dout11, &dout12, &dout13};
 
-
-#if QUINTIC_REVISION == 'C'
-
-gpioAnalogInputPin<MAX31865<SPIBus_used_t::SPIBusDevice>> ai1 {AI1_ENABLED, gpioAnalogInput::AIN_TYPE_EXTERNAL, 1, AI1_EXTERNAL_NUMBER, spiBus, spiCSPinMux.getCS(5)};
-gpioAnalogInputPin<MAX31865<SPIBus_used_t::SPIBusDevice>> ai2 {AI2_ENABLED, gpioAnalogInput::AIN_TYPE_EXTERNAL, 2, AI2_EXTERNAL_NUMBER, spiBus, spiCSPinMux.getCS(6)};
-gpioAnalogInputPin<ADCDifferentialPair<Motate::kADC1_Neg_PinNumber, Motate::kADC1_Pos_PinNumber>> ai3 {AI3_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 3, AI3_EXTERNAL_NUMBER};
-gpioAnalogInputPin<ADCDifferentialPair<Motate::kADC2_Neg_PinNumber, Motate::kADC2_Pos_PinNumber>> ai4 {AI4_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 4, AI4_EXTERNAL_NUMBER};
-
-gpioAnalogInput*    const a_in[] = {&ain1, &ain2, &ain3, &ain4};
-
-#endif // 'C'
-
-#if QUINTIC_REVISION == 'D'
-
-gpioAnalogInputPin<ADCPin<Motate::kADC1_PinNumber>> ai1 {AI1_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 1, AI1_EXTERNAL_NUMBER};
-gpioAnalogInputPin<ADCPin<Motate::kADC2_PinNumber>> ai2 {AI2_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 2, AI2_EXTERNAL_NUMBER};
-gpioAnalogInputPin<ADCPin<Motate::kADC3_PinNumber>> ai3 {AI3_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 3, AI3_EXTERNAL_NUMBER};
-gpioAnalogInputPin<ADCPin<Motate::kADC4_PinNumber>> ai4 {AI4_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 4, AI4_EXTERNAL_NUMBER};
-
-gpioAnalogInput*    const a_in[] = {&ai1, &ai2, &ai3, &ai4};
-
-#endif // 'D'
-
-// About chip selects: 0-4 are motors, 5-8 are skipped
-// 8 is "CS1" on the board silk
-// 9 is "CS2" on the board silk
-// 12 is "CS3" on the board silk
-
-#if HAS_PRESSURE
-// BME280<SPIBus_used_t::SPIBusDevice> pressure_sensor{spiBus, spiCSPinMux.getCS(8)};
-// HoneywellTruStability<SPIBus_used_t::SPIBusDevice> pressure_sensor1{spiBus,
-//                                                              spiCSPinMux.getCS(8),
-//                                                              /*min_output:*/  1638, // 10% of 2^14
-//                                                              /*max_output:*/ 14745, // 90% of 2^14
-//                                                              /*min_value:*/ 0.0,    // 0psi
-//                                                              /*max_value:*/ 15.0,   // 15psi
-//                                                              PressureUnits::PSI};
-
-// ABPDANT030PG0D3
-// Last 8 translation:
-// Source: https://sensing.honeywell.com/honeywell-sensing-basic-board-mount-pressure-abp-series-datasheet-32305128.pdf
-//   030PG -> 0-30 PSI Gauge
-//   0 -> I2C, Address 0x08
-//   D -> 10% to 90% of 2^14 counts (digital only) temperature output enabled, sleep mode enabled
-//   3 -> 3.3V version
-HoneywellTruStability<TWIBus_used_t::TWIBusDevice> pressure_sensor1{twiBus,
-                                                             0x08,
-                                                             /*min_output:*/  1638, // 10% of 2^14
-                                                             /*max_output:*/ 14745, // 90% of 2^14
-                                                             /*min_value:*/ 0.0,    // 0psi
-                                                             /*max_value:*/ 30.0,   // 15psi
-                                                             PressureUnits::PSI};
-
-// HSCMRRV001PD2A3
-// Last 8 translation:
-// Source: https://sensing.honeywell.com/honeywell-sensing-trustability-hsc-series-high-accuracy-board-mount-pressure-sensors-50099148-a-en.pdf
-//   001PD -> ±1 PSI Differential
-//   2 -> I2C, Address 0x28
-//   A -> 10% to 90% of 2^14 counts (digital)
-//   3 -> 3.3V version
-HoneywellTruStability<TWIBus_used_t::TWIBusDevice> flow_pressure_sensor1{twiBus,
-                                                             0x28,
-                                                             /*min_output:*/  1638, // 10% of 2^14
-                                                             /*max_output:*/ 14745, // 90% of 2^14
-                                                             /*min_value:*/ -1.0,    // 0psi
-                                                             /*max_value:*/ 1.0,   // 15psi
-                                                             PressureUnits::PSI};
-
-//    upstream_diameter_mm = 20,
-//    throat_diameter_mm = 7.25,
-//    air_density = 1.2431,
-//    discharge_coeffiecient = 0.7337153909
-
-VenturiFlowSensor flow_sensor1{
-    &flow_pressure_sensor1,
-    /* K= */ 0.03875590222
-};
-#endif // HAS_PRESSURE
+gpioAnalogInput*    const a_in[] = {};
 
 /************************************************************************************
  **** CODE **************************************************************************
  ************************************************************************************/
-
-
-// Register a SysTick event to call start_sampling every temperature_sample_freq ms
-const int16_t ain_sample_freq = 2;
-int16_t ain_sample_counter = ain_sample_freq;
-Motate::SysTickEvent ain_tick_event{
-    [] {
-        if (!--ain_sample_counter) {
-            ai1.startSampling();
-            ai2.startSampling();
-            ai3.startSampling();
-            ai4.startSampling();
-
-            #if HAS_PRESSURE
-            pressure_sensor1.startSampling([](bool) { flow_pressure_sensor1.startSampling([](bool) { ; }); });
-            #endif
-            ain_sample_counter = ain_sample_freq;
-        }
-    },
-    nullptr
-};
 
 /*
  * gpio_reset() - reset inputs and outputs (no initialization)
@@ -201,5 +103,4 @@ void outputs_reset(void) {
 }
 
 void inputs_reset(void) {
-    SysTickTimer.registerEvent(&ain_tick_event);
 }

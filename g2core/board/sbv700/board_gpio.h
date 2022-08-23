@@ -52,7 +52,7 @@ using Motate::ADCDifferentialPair;
 template<bool can_pwm, Motate::pin_number... V>
 using OutputType = typename std::conditional<can_pwm, PWMOutputPin<V...>, PWMLikeOutputPin<V...>>::type;
 
-#define D_IN_CHANNELS       10          // number of digital inputs supported
+#define D_IN_CHANNELS       12          // number of digital inputs supported
 
 extern gpioDigitalInputPin<IRQPin<Motate::kInput1_PinNumber>>  din1;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput2_PinNumber>>  din2;
@@ -64,8 +64,8 @@ extern gpioDigitalInputPin<IRQPin<Motate::kInput7_PinNumber>>  din7;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput8_PinNumber>>  din8;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput9_PinNumber>>  din9;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10;
-// extern gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11;
-// extern gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12;
 
 extern gpioDigitalInput*   const d_in[D_IN_CHANNELS];
 
@@ -88,121 +88,8 @@ extern gpioDigitalOutputPin<OutputType<OUTPUT13_PWM, Motate::kOutput13_PinNumber
 
 extern gpioDigitalOutput*  const d_out[D_OUT_CHANNELS];
 
-
-#if QUINTIC_REVISION == 'C'
-
-#define A_IN_CHANNELS	 4           // number of analog inputs supported
-
-#include "device/max31865/max31865.h"
-#define USING_A_MAX31865 1
-
-#ifndef AI1_ENABLED
-#define AI1_ENABLED IO_ENABLED
-#endif
-#ifndef AI1_TYPE
-#define AI1_TYPE gpioAnalogInput::AIN_TYPE_EXTERNAL
-#endif
-#ifndef AI1_CIRCUIT
-#define AI1_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_EXTERNAL
-#endif
-extern gpioAnalogInputPin<MAX31865<SPIBus_used_t::SPIBusDevice>> ain1;
-
-#ifndef AI2_ENABLED
-#define AI2_ENABLED IO_ENABLED
-#endif
-#ifndef AI2_TYPE
-#define AI2_TYPE gpioAnalogInput::AIN_TYPE_EXTERNAL
-#endif
-#ifndef AI2_CIRCUIT
-#define AI2_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_EXTERNAL
-#endif
-extern gpioAnalogInputPin<MAX31865<SPIBus_used_t::SPIBusDevice>> ain2;
-
-#ifndef AI3_ENABLED
-#define AI3_ENABLED IO_ENABLED
-#endif
-#ifndef AI3_TYPE
-#define AI3_TYPE gpioAnalogInput::AIN_TYPE_INTERNAL
-#endif
-#ifndef AI3_CIRCUIT
-#define AI3_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_PULLUP
-#endif
-extern gpioAnalogInputPin<ADCDifferentialPair<Motate::kADC1_Neg_PinNumber, Motate::kADC1_Pos_PinNumber>> ain3;
-
-#ifndef AI4_ENABLED
-#define AI4_ENABLED IO_ENABLED
-#endif
-#ifndef AI4_TYPE
-#define AI4_TYPE gpioAnalogInput::AIN_TYPE_INTERNAL
-#endif
-#ifndef AI4_CIRCUIT
-#define AI4_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_PULLUP
-#endif
-extern gpioAnalogInputPin<ADCDifferentialPair<Motate::kADC2_Neg_PinNumber, Motate::kADC2_Pos_PinNumber>> ain4;
-
-#endif // 'C'
-
-#if QUINTIC_REVISION == 'D'
-
-#define A_IN_CHANNELS	 4           // number of analog inputs supported
-
-#ifndef AI1_ENABLED
-#define AI1_ENABLED IO_ENABLED
-#endif
-#ifndef AI1_TYPE
-#define AI1_TYPE gpioAnalogInput::AIN_TYPE_INTERNAL
-#endif
-#ifndef AI1_CIRCUIT
-#define AI1_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_CC_INV_OPAMP
-#endif
-extern gpioAnalogInputPin<ADCPin<Motate::kADC1_PinNumber>> ai1;
-
-#ifndef AI2_ENABLED
-#define AI2_ENABLED IO_ENABLED
-#endif
-#ifndef AI2_TYPE
-#define AI2_TYPE gpioAnalogInput::AIN_TYPE_INTERNAL
-#endif
-#ifndef AI2_CIRCUIT
-#define AI2_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_CC_INV_OPAMP
-#endif
-extern gpioAnalogInputPin<ADCPin<Motate::kADC2_PinNumber>> ai2;
-
-#ifndef AI3_ENABLED
-#define AI3_ENABLED IO_ENABLED
-#endif
-#ifndef AI3_TYPE
-#define AI3_TYPE gpioAnalogInput::AIN_TYPE_INTERNAL
-#endif
-#ifndef AI3_CIRCUIT
-#define AI3_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_INV_OPAMP
-#endif
-extern gpioAnalogInputPin<ADCPin<Motate::kADC3_PinNumber>> ai3;
-
-#ifndef AI4_ENABLED
-#define AI4_ENABLED IO_ENABLED
-#endif
-#ifndef AI4_TYPE
-#define AI4_TYPE gpioAnalogInput::AIN_TYPE_INTERNAL
-#endif
-#ifndef AI4_CIRCUIT
-#define AI4_CIRCUIT gpioAnalogInput::AIN_CIRCUIT_INV_OPAMP
-#endif
-extern gpioAnalogInputPin<ADCPin<Motate::kADC4_PinNumber>> ai4;
-
-#endif // 'D'
+#define A_IN_CHANNELS	 0           // number of analog inputs supported
 
 extern gpioAnalogInput*    const a_in[A_IN_CHANNELS];
 
-#if HAS_PRESSURE
-// #include "bme280.h"
-// extern BME280<SPIBus_used_t::SPIBusDevice> pressure_sensor1;
-
-#include "honeywell-trustability-ssc.h"
-// extern HoneywellTruStability<SPIBus_used_t::SPIBusDevice> pressure_sensor1;
-extern HoneywellTruStability<TWIBus_used_t::TWIBusDevice> pressure_sensor1;
-extern HoneywellTruStability<TWIBus_used_t::TWIBusDevice> flow_pressure_sensor1; // pressure sensor, used for flow measurement
-
-extern VenturiFlowSensor flow_sensor1;
-#endif // HAS_PRESSURE
 #endif // End of include guard: BOARD_GPIO_H_ONCE

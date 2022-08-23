@@ -33,8 +33,8 @@ ifeq ("$(BASE_BOARD)","sbv700")
     CHIP_LOWERCASE = samv71q21
 
     BOARD_PATH = ./board/sbv700
-    SOURCE_DIRS += ${BOARD_PATH} device/trinamic device/step_dir_hobbyservo device/max31865 device/i2c_eeprom device/i2c_multiplexer device/i2c_as5601 device/esc_spindle device/laser_toolhead device/bme280 device/honeywell-trustability-ssc
-
+    SOURCE_DIRS += ${BOARD_PATH} device/esc_spindle device/laser_toolhead device/step_dir_driver
+    
     PLATFORM_BASE = ${MOTATE_PATH}/platform/atmel_sam
     include $(PLATFORM_BASE).mk
 endif

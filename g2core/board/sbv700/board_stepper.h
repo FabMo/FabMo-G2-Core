@@ -30,94 +30,65 @@
 #define BOARD_STEPPER_H_ONCE
 
 #include "hardware.h"  // for MOTORS
-#include "tmc2130.h"
-#include "step_dir_hobbyservo.h"
+#include "step_dir_driver.h"
 
-// These are identical to board_stepper.h, except for the word "extern" and the initialization
-#if QUINTIC_REVISION == 'C'
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket2_StepPinNumber,
-                    Motate::kSocket2_DirPinNumber,
-                    Motate::kSocket2_EnablePinNumber>
-    motor_1;
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket3_StepPinNumber,
-                    Motate::kSocket3_DirPinNumber,
-                    Motate::kSocket3_EnablePinNumber>
-    motor_2;
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket4_StepPinNumber,
-                    Motate::kSocket4_DirPinNumber,
-                    Motate::kSocket4_EnablePinNumber>
-    motor_3;
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket5_StepPinNumber,
-                    Motate::kSocket5_DirPinNumber,
-                    Motate::kSocket5_EnablePinNumber>
-    motor_4;
-#if HAS_HOBBY_SERVO_MOTOR
-extern StepDirHobbyServo<Motate::kOutput10_PinNumber> motor_5;
-#endif
-#endif // 'C'
-
-#if QUINTIC_REVISION == 'D'
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket1_StepPinNumber,
-                    Motate::kSocket1_DirPinNumber,
-                    Motate::kSocket1_EnablePinNumber>
+extern StepDirStepper<Motate::kSocket1_StepPinNumber,
+                      Motate::kSocket1_DirPinNumber,
+                      Motate::kSocket1_EnablePinNumber,
+                      Motate::kSocket1_Microstep_0PinNumber,
+                      Motate::kSocket1_Microstep_1PinNumber,
+                      Motate::kSocket1_Microstep_2PinNumber,
+                      Motate::kSocket1_VrefPinNumber>
     motor_1;
 
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket2_StepPinNumber,
-                    Motate::kSocket2_DirPinNumber,
-                    Motate::kSocket2_EnablePinNumber>
+extern StepDirStepper<Motate::kSocket2_StepPinNumber,
+                      Motate::kSocket2_DirPinNumber,
+                      Motate::kSocket2_EnablePinNumber,
+                      Motate::kSocket2_Microstep_0PinNumber,
+                      Motate::kSocket2_Microstep_1PinNumber,
+                      Motate::kSocket2_Microstep_2PinNumber,
+                      Motate::kSocket2_VrefPinNumber>
     motor_2;
 
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket3_StepPinNumber,
-                    Motate::kSocket3_DirPinNumber,
-                    Motate::kSocket3_EnablePinNumber>
+extern StepDirStepper<Motate::kSocket3_StepPinNumber,
+                      Motate::kSocket3_DirPinNumber,
+                      Motate::kSocket3_EnablePinNumber,
+                      Motate::kSocket3_Microstep_0PinNumber,
+                      Motate::kSocket3_Microstep_1PinNumber,
+                      Motate::kSocket3_Microstep_2PinNumber,
+                      Motate::kSocket3_VrefPinNumber>
     motor_3;
 
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket4_StepPinNumber,
-                    Motate::kSocket4_DirPinNumber,
-                    Motate::kSocket4_EnablePinNumber>
+extern StepDirStepper<Motate::kSocket4_StepPinNumber,
+                      Motate::kSocket4_DirPinNumber,
+                      Motate::kSocket4_EnablePinNumber,
+                      Motate::kSocket4_Microstep_0PinNumber,
+                      Motate::kSocket4_Microstep_1PinNumber,
+                      Motate::kSocket4_Microstep_2PinNumber,
+                      Motate::kSocket4_VrefPinNumber>
     motor_4;
 
-extern Trinamic2130<SPIBus_used_t::SPIBusDevice,
-                    Motate::kSocket5_StepPinNumber,
-                    Motate::kSocket5_DirPinNumber,
-                    Motate::kSocket5_EnablePinNumber>
+extern StepDirStepper<Motate::kSocket5_StepPinNumber,
+                      Motate::kSocket5_DirPinNumber,
+                      Motate::kSocket5_EnablePinNumber,
+                      Motate::kSocket5_Microstep_0PinNumber,
+                      Motate::kSocket5_Microstep_1PinNumber,
+                      Motate::kSocket5_Microstep_2PinNumber,
+                      Motate::kSocket5_VrefPinNumber>
     motor_5;
-#if HAS_HOBBY_SERVO_MOTOR
-extern StepDirHobbyServo<Motate::kOutput10_PinNumber> motor_6;
-#elif HAS_LASER
 
-#include "laser_toolhead.h"
-#include "kinematics_cartesian.h"
-typedef LaserTool<BASE_KINEMATICS, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
-extern LaserTool_used_t &motor_6;
-
-#endif
-#endif // 'D'
+extern StepDirStepper<Motate::kSocket6_StepPinNumber,
+                      Motate::kSocket6_DirPinNumber,
+                      Motate::kSocket6_EnablePinNumber,
+                      Motate::kSocket6_Microstep_0PinNumber,
+                      Motate::kSocket6_Microstep_1PinNumber,
+                      Motate::kSocket6_Microstep_2PinNumber,
+                      Motate::kSocket6_VrefPinNumber>
+    motor_6;
 
 extern Stepper* const Motors[MOTORS];
 
-#if (KINEMATICS == KINE_FOUR_CABLE)
-using encoder_0_t = decltype(I2C_AS5601{plex0, M1_ENCODER_INPUT_A, M1_ENCODER_INPUT_B, 1 << 0});
-extern HOT_DATA encoder_0_t encoder_0;
-using encoder_1_t = decltype(I2C_AS5601{plex0, M2_ENCODER_INPUT_A, M2_ENCODER_INPUT_B, 1 << 1});
-extern HOT_DATA encoder_1_t encoder_1;
-using encoder_2_t = decltype(I2C_AS5601{plex0, M3_ENCODER_INPUT_A, M3_ENCODER_INPUT_B, 1 << 2});
-extern HOT_DATA encoder_2_t encoder_2;
-using encoder_3_t = decltype(I2C_AS5601{plex0, M4_ENCODER_INPUT_A, M4_ENCODER_INPUT_B, 1 << 3});
-extern HOT_DATA encoder_3_t encoder_3;
-
-extern ExternalEncoder* const ExternalEncoders[4];
-#else
 extern ExternalEncoder* const ExternalEncoders[0];
-#endif
 
 void board_stepper_init();
 

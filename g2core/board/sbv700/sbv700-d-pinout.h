@@ -84,7 +84,7 @@
 #define INPUT13_AVAILABLE 0
 
 #define XIO_HAS_USB 1
-#define XIO_HAS_UART 1
+#define XIO_HAS_UART 0
 #define XIO_HAS_SPI 0
 #define XIO_HAS_I2C 0
 
@@ -110,7 +110,7 @@
 #define OUTPUT12_PWM 0  // Unused
 #define OUTPUT13_PWM 0  // Unused
 
-#define QUINTIC_REVISION 'D'
+#define QUINTIC_REVISION 'D'    // TODO: remove
 
 namespace Motate {
 
@@ -124,112 +124,112 @@ namespace Motate {
 _MAKE_MOTATE_PIN(kLED_RGBWPixelPinNumber,          'A',  0); //
 _MAKE_MOTATE_PIN(kOutput1_PinNumber,               'A',  1); // TC  0,1
 _MAKE_MOTATE_PIN(kOutput2_PinNumber,               'A',  2); // PWM 0,1
-_MAKE_MOTATE_PIN(kI2C1_SDAPinNumber,               'A',  3); //
-_MAKE_MOTATE_PIN(kI2C1_SCLPinNumber,               'A',  4); //
+_MAKE_MOTATE_PIN(kUnassigned1,                     'A',  3); //
+_MAKE_MOTATE_PIN(kUnassigned2,                     'A',  4); //
 _MAKE_MOTATE_PIN(kOutput11_PinNumber,              'A',  5); // PWM 1,3
-_MAKE_MOTATE_PIN(kExternalClock1_PinNumber,        'A',  6); // CPU_CLK
+_MAKE_MOTATE_PIN(kUnassigned3,                     'A',  6); // CPU_CLK
 _MAKE_MOTATE_PIN(kOutput7_PinNumber,               'A',  7); // PWM 0,3
-_MAKE_MOTATE_PIN(kSerial_RTSPinNumber,             'A',  8); //
-_MAKE_MOTATE_PIN(kSerial_RXPinNumber,              'A',  9); //
-_MAKE_MOTATE_PIN(kSerial_TXPinNumber,              'A', 10); //
-_MAKE_MOTATE_PIN(kSocket2_EnablePinNumber,         'A', 11); //
+_MAKE_MOTATE_PIN(kUnassigned4,                     'A',  8); //
+_MAKE_MOTATE_PIN(kUnassigned5,                     'A',  9); //
+_MAKE_MOTATE_PIN(kUnassigned6,                     'A', 10); //
+_MAKE_MOTATE_PIN(kUnassigned7,                     'A', 11); //
 _MAKE_MOTATE_PIN(kOutput6_PinNumber,               'A', 12); // PWM 1,0
 _MAKE_MOTATE_PIN(kOutput8_PinNumber,               'A', 13); // PWM 0,2
 _MAKE_MOTATE_PIN(kSocket1_StepPinNumber,           'A', 14); //
 _MAKE_MOTATE_PIN(kOutput3_PinNumber,               'A', 15); // TC 1,0
 _MAKE_MOTATE_PIN(kOutput4_PinNumber,               'A', 16); // TC 1,1
-_MAKE_MOTATE_PIN(kADC4_PinNumber,                  'A', 17); // AFEC0,6
-_MAKE_MOTATE_PIN(kADC3_PinNumber,                  'A', 18); // AFEC0,7
-_MAKE_MOTATE_PIN(kADC2_PinNumber,                  'A', 19); // AFEC0,8
-_MAKE_MOTATE_PIN(kADC1_PinNumber,                  'A', 20); // AFEC0,9
-_MAKE_MOTATE_PIN(kUnassigned38,                    'A', 21);
-_MAKE_MOTATE_PIN(kSocket1_EnablePinNumber,         'A', 22); //
+_MAKE_MOTATE_PIN(kUnassigned8,                     'A', 17); // AFEC0,6
+_MAKE_MOTATE_PIN(kUnassigned9,                     'A', 18); // AFEC0,7
+_MAKE_MOTATE_PIN(kUnassigned10,                    'A', 19); // AFEC0,8
+_MAKE_MOTATE_PIN(kUnassigned11,                    'A', 20); // AFEC0,9
+_MAKE_MOTATE_PIN(kUnassigned12,                    'A', 21);
+_MAKE_MOTATE_PIN(kUnassigned13,                    'A', 22); //
 _MAKE_MOTATE_PIN(kLED_USBRXPinNumber,              'A', 23); // PWM 1,2 This is so that LED0 is heartbeat
-_MAKE_MOTATE_PIN(kSocket3_EnablePinNumber,         'A', 24); //
+_MAKE_MOTATE_PIN(kUnassigned14,                    'A', 24); //
 _MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'A', 25); //
 _MAKE_MOTATE_PIN(kOutput5_PinNumber,               'A', 26); // TC 2,0
 _MAKE_MOTATE_PIN(kSocket3_DirPinNumber,            'A', 27); // On Timer 2!
-_MAKE_MOTATE_PIN(kUnassigned2,                     'A', 28); // DIAG1
-_MAKE_MOTATE_PIN(kUnassigned3,                     'A', 29); // NO PHYSICAL PIN
+_MAKE_MOTATE_PIN(kUnassigned15,                    'A', 28); // DIAG1
+_MAKE_MOTATE_PIN(kUnassigned16,                    'A', 29); // NO PHYSICAL PIN
 _MAKE_MOTATE_PIN(kInput1_PinNumber,                'A', 30); //
 _MAKE_MOTATE_PIN(kInput4_PinNumber,                'A', 31); //
 
-_MAKE_MOTATE_PIN(kSerial_CTSPinNumber,             'B',  0); //
-_MAKE_MOTATE_PIN(kUnassigned4,                     'B',  1); // AFEC1,0
-_MAKE_MOTATE_PIN(kSocket1_SPISlaveSelectPinNumber, 'B',  2); //
+_MAKE_MOTATE_PIN(kUnassigned17,                    'B',  0); //
+_MAKE_MOTATE_PIN(kUnassigned18,                    'B',  1); // AFEC1,0
+_MAKE_MOTATE_PIN(kUnassigned19,                    'B',  2); //
 _MAKE_MOTATE_PIN(kOutputSAFE_PinNumber,            'B',  3); //
 _MAKE_MOTATE_PIN(kLED_USBTXPinNumber,              'B',  4);
-_MAKE_MOTATE_PIN(kUnassigned12,                    'B', 13); // LED_1 (Heartbeat) - PWM2
-_MAKE_MOTATE_PIN(kUnassigned5,                     'B', 14); // NOT CONNECTED
+_MAKE_MOTATE_PIN(kUnassigned20,                    'B', 13); // LED_1 (Heartbeat) - PWM2
+_MAKE_MOTATE_PIN(kUnassigned21,                    'B', 14); // NOT CONNECTED
 
-_MAKE_MOTATE_PIN(kUnassigned13,                    'C',  0); //
-_MAKE_MOTATE_PIN(kUnassigned14,                    'C',  1); //
-_MAKE_MOTATE_PIN(kUnassigned15,                    'C',  2); //
-_MAKE_MOTATE_PIN(kUnassigned16,                    'C',  3); //
+_MAKE_MOTATE_PIN(kUnassigned22,                    'C',  0); //
+_MAKE_MOTATE_PIN(kUnassigned23,                    'C',  1); //
+_MAKE_MOTATE_PIN(kUnassigned24,                    'C',  2); //
+_MAKE_MOTATE_PIN(kUnassigned25,                    'C',  3); //
 
-_MAKE_MOTATE_PIN(kUnassigned17,                    'C',  5); //
-_MAKE_MOTATE_PIN(kUnassigned18,                    'C',  6); //
+_MAKE_MOTATE_PIN(kUnassigned26,                    'C',  5); //
+_MAKE_MOTATE_PIN(kUnassigned27,                    'C',  6); //
 
-_MAKE_MOTATE_PIN(kUnassigned19,                    'C',  8); //
+_MAKE_MOTATE_PIN(kUnassigned28,                    'C',  8); //
 _MAKE_MOTATE_PIN(kUSBVBUS_PinNumber,               'C',  9); // USB_VBUS
 
-_MAKE_MOTATE_PIN(kUnassigned20,                    'C', 11); //
-_MAKE_MOTATE_PIN(kUnassigned21,                    'C', 12); //
-_MAKE_MOTATE_PIN(kUnassigned22,                    'C', 13); //
+_MAKE_MOTATE_PIN(kUnassigned29,                    'C', 11); //
+_MAKE_MOTATE_PIN(kUnassigned30,                    'C', 12); //
+_MAKE_MOTATE_PIN(kUnassigned31,                    'C', 13); //
 
-_MAKE_MOTATE_PIN(kUnassigned23,                    'C', 15); //
+_MAKE_MOTATE_PIN(kUnassigned32,                    'C', 15); //
 
-_MAKE_MOTATE_PIN(kUnassigned24,                    'C', 18); //
-_MAKE_MOTATE_PIN(kUnassigned25,                    'C', 19); //
-_MAKE_MOTATE_PIN(kUnassigned26,                    'C', 20); //
-_MAKE_MOTATE_PIN(kUnassigned27,                    'C', 21); //
-_MAKE_MOTATE_PIN(kUnassigned28,                    'C', 22); //
-_MAKE_MOTATE_PIN(kUnassigned29,                    'C', 23); //
-_MAKE_MOTATE_PIN(kUnassigned30,                    'C', 24); //
-_MAKE_MOTATE_PIN(kUnassigned31,                    'C', 25); //
-_MAKE_MOTATE_PIN(kUnassigned32,                    'C', 26); //
-_MAKE_MOTATE_PIN(kUnassigned33,                    'C', 27); //
-_MAKE_MOTATE_PIN(kUnassigned34,                    'C', 28); //
+_MAKE_MOTATE_PIN(kUnassigned33,                    'C', 18); //
+_MAKE_MOTATE_PIN(kUnassigned34,                    'C', 19); //
+_MAKE_MOTATE_PIN(kUnassigned35,                    'C', 20); //
+_MAKE_MOTATE_PIN(kUnassigned36,                    'C', 21); //
+_MAKE_MOTATE_PIN(kUnassigned37,                    'C', 22); //
+_MAKE_MOTATE_PIN(kUnassigned38,                    'C', 23); //
+_MAKE_MOTATE_PIN(kUnassigned39,                    'C', 24); //
+_MAKE_MOTATE_PIN(kUnassigned40,                    'C', 25); //
+_MAKE_MOTATE_PIN(kUnassigned41,                    'C', 26); //
+_MAKE_MOTATE_PIN(kUnassigned42,                    'C', 27); //
+_MAKE_MOTATE_PIN(kUnassigned43,                    'C', 28); //
 _MAKE_MOTATE_PIN(kInput10_PinNumber,               'C', 29); //
 _MAKE_MOTATE_PIN(kInput9_PinNumber,                'C', 30); //
 _MAKE_MOTATE_PIN(kInput8_PinNumber,                'C', 31); //
 
-_MAKE_MOTATE_PIN(kUnassigned36,                    'D',  1); // Switched with Input9
-_MAKE_MOTATE_PIN(kUnassigned35,                    'D',  2); // Switched with Input10
-_MAKE_MOTATE_PIN(kUnassigned37,                    'D',  3); // Switched with Input8
+_MAKE_MOTATE_PIN(kUnassigned44,                    'D',  1); // Switched with Input9
+_MAKE_MOTATE_PIN(kUnassigned45,                    'D',  2); // Switched with Input10
+_MAKE_MOTATE_PIN(kUnassigned46,                    'D',  3); // Switched with Input8
 _MAKE_MOTATE_PIN(kInput7_PinNumber,                'D',  4); //
 _MAKE_MOTATE_PIN(kInput6_PinNumber,                'D',  5); //
 _MAKE_MOTATE_PIN(kInput5_PinNumber,                'D',  6); //
 _MAKE_MOTATE_PIN(kInput3_PinNumber,                'D',  7); //
-_MAKE_MOTATE_PIN(kUnassigned6,                     'D',  8); // Switched with Input2
-_MAKE_MOTATE_PIN(kTMC2130_DIAG0_pinNumber,         'D',  9); // DIAG0
+_MAKE_MOTATE_PIN(kUnassigned47,                    'D',  8); // Switched with Input2
+_MAKE_MOTATE_PIN(kUnassigned48,                    'D',  9); // DIAG0
 _MAKE_MOTATE_PIN(kInput2_PinNumber,                'D', 10); //
 _MAKE_MOTATE_PIN(kSocket5_StepPinNumber,           'D', 11); //
-_MAKE_MOTATE_PIN(kSocket3_SPISlaveSelectPinNumber, 'D', 12); //
+_MAKE_MOTATE_PIN(kUnassigned49,                    'D', 12); //
 _MAKE_MOTATE_PIN(kSocket5_DirPinNumber,            'D', 13); //
-_MAKE_MOTATE_PIN(kSocket5_EnablePinNumber,         'D', 14); //
-_MAKE_MOTATE_PIN(kUnassigned7,                     'D', 15); //
+_MAKE_MOTATE_PIN(kUnassigned50,                    'D', 14); //
+_MAKE_MOTATE_PIN(kUnassigned51,                    'D', 15); //
 _MAKE_MOTATE_PIN(kSocket4_StepPinNumber,           'D', 16); //
 _MAKE_MOTATE_PIN(kSocket4_DirPinNumber,            'D', 17); //
 _MAKE_MOTATE_PIN(kSocket3_StepPinNumber,           'D', 18); //
 _MAKE_MOTATE_PIN(kSocket1_DirPinNumber,            'D', 19); //
-_MAKE_MOTATE_PIN(kSPI0_MISOPinNumber,              'D', 20); //
-_MAKE_MOTATE_PIN(kSPI0_MOSIPinNumber,              'D', 21); //
-_MAKE_MOTATE_PIN(kSPI0_SCKPinNumber,               'D', 22); //
-_MAKE_MOTATE_PIN(kUnassigned8,                     'D', 23); // NO PHYSICAL PIN
+_MAKE_MOTATE_PIN(kUnassigned52,                    'D', 20); //
+_MAKE_MOTATE_PIN(kUnassigned53,                    'D', 21); //
+_MAKE_MOTATE_PIN(kUnassigned54,                    'D', 22); //
+_MAKE_MOTATE_PIN(kUnassigned55,                    'D', 23); // NO PHYSICAL PIN
 _MAKE_MOTATE_PIN(kSocket2_StepPinNumber,           'D', 24); //
-_MAKE_MOTATE_PIN(kSocket2_SPISlaveSelectPinNumber, 'D', 25); //
+_MAKE_MOTATE_PIN(kUnassigned56,                    'D', 25); //
 _MAKE_MOTATE_PIN(kOutput9_PinNumber,               'D', 26); // PWM 2
-_MAKE_MOTATE_PIN(kSocket4_SPISlaveSelectPinNumber, 'D', 27); //
-_MAKE_MOTATE_PIN(kSocket4_EnablePinNumber,         'D', 28); //
-_MAKE_MOTATE_PIN(kUnassigned9,                     'D', 29); // NO PHYSICAL PIN
-_MAKE_MOTATE_PIN(kUnassigned10,                    'D', 30); // AFEC0,0 - was INTERRUPT_OUT
-_MAKE_MOTATE_PIN(kUnassigned11,                    'D', 31); //
+_MAKE_MOTATE_PIN(kUnassigned57,                    'D', 27); //
+_MAKE_MOTATE_PIN(kUnassigned58,                    'D', 28); //
+_MAKE_MOTATE_PIN(kUnassigned59,                    'D', 29); // NO PHYSICAL PIN
+_MAKE_MOTATE_PIN(kUnassigned60,                    'D', 30); // AFEC0,0 - was INTERRUPT_OUT
+_MAKE_MOTATE_PIN(kUnassigned61,                    'D', 31); //
 
-_MAKE_MOTATE_PIN(kUnassigned39,                    'E',  0); //
-_MAKE_MOTATE_PIN(kUnassigned40,                    'E',  3); //
-_MAKE_MOTATE_PIN(kUnassigned41,                    'E',  4); //
-_MAKE_MOTATE_PIN(kUnassigned42,                    'E',  5); //
+_MAKE_MOTATE_PIN(kUnassigned62,                    'E',  0); //
+_MAKE_MOTATE_PIN(kUnassigned63,                    'E',  3); //
+_MAKE_MOTATE_PIN(kUnassigned64,                    'E',  4); //
+_MAKE_MOTATE_PIN(kUnassigned65,                    'E',  5); //
 }  // namespace Motate
 
 // We then allow each chip-type to have it's own function definitions

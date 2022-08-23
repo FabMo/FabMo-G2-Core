@@ -41,94 +41,94 @@ namespace Motate {
 // Undefined pins will be equivalent to Motate::NullPin, and return 1 for Pin<>::isNull();
 
 
-pin_number kSerial_RXPinNumber  = 0;
-pin_number kSerial_TXPinNumber  = 1;
-pin_number kSerial_RTSPinNumber = 2;  // added later
-pin_number kSerial_CTSPinNumber = 3;  // added later
+pin_number kSerial_RXPinNumber  = -1;  // 0;
+pin_number kSerial_TXPinNumber  = -1;  // 1;
+pin_number kSerial_RTSPinNumber = -1;  // 2; added later
+pin_number kSerial_CTSPinNumber = -1;  // 3; added later
 
-pin_number kSerial0_RXPinNumber  = 0;
-pin_number kSerial0_TXPinNumber  = 1;
-pin_number kSerial0_RTSPinNumber = 2;  // added later
-pin_number kSerial0_CTSPinNumber = 3;  // added later
+pin_number kSerial0_RXPinNumber  = -1;  // 0;
+pin_number kSerial0_TXPinNumber  = -1;  // 1;
+pin_number kSerial0_RTSPinNumber = -1;  // 2; added later
+pin_number kSerial0_CTSPinNumber = -1;  // 3; added later
 
-pin_number kI2C_SDAPinNumber = 5;
-pin_number kI2C_SCLPinNumber = 6;
+pin_number kI2C_SDAPinNumber = -1;  // 5;
+pin_number kI2C_SCLPinNumber = -1;  // 6;
 
 pin_number kI2C0_SDAPinNumber = -1;  // not pinned out
 pin_number kI2C0_SCLPinNumber = -1;  // not pinned out
 
-pin_number kI2C1_SDAPinNumber = 5;
-pin_number kI2C1_SCLPinNumber = 6;
+pin_number kI2C1_SDAPinNumber = -1;  // 5;
+pin_number kI2C1_SCLPinNumber = -1;  // 6;
 
-pin_number kSPI_SCKPinNumber  = 7;
-pin_number kSPI_MISOPinNumber = 8;
-pin_number kSPI_MOSIPinNumber = 9;
+pin_number kSPI_SCKPinNumber  = -1;  // 7;
+pin_number kSPI_MISOPinNumber = -1;  // 8;
+pin_number kSPI_MOSIPinNumber = -1;  // 9;
 
-pin_number kSPI0_SCKPinNumber  = 7;
-pin_number kSPI0_MISOPinNumber = 8;
-pin_number kSPI0_MOSIPinNumber = 9;
+pin_number kSPI0_SCKPinNumber  = -1;  // 7;
+pin_number kSPI0_MISOPinNumber = -1;  // 8;
+pin_number kSPI0_MOSIPinNumber = -1;  // 9;
 
 pin_number kKinen_SyncPinNumber = -1;  // not pinned out
 
-pin_number kSocket1_SPISlaveSelectPinNumber = 10;
-pin_number kSocket1_InterruptPinNumber      = 11;  // 11;
+pin_number kSocket1_SPISlaveSelectPinNumber = -1;  // 10;
+pin_number kSocket1_InterruptPinNumber      = -1;  // 11;
 pin_number kSocket1_StepPinNumber           = 12;
 pin_number kSocket1_DirPinNumber            = 13;
-pin_number kSocket1_EnablePinNumber         = 14;
-pin_number kSocket1_Microstep_0PinNumber    = 15;  // 15;
-pin_number kSocket1_Microstep_1PinNumber    = 16;  // 16;
-pin_number kSocket1_Microstep_2PinNumber    = 17;  // 17;
-pin_number kSocket1_VrefPinNumber           = 18;
+pin_number kSocket1_EnablePinNumber         = -1;  // 14;
+pin_number kSocket1_Microstep_0PinNumber    = -1;  // 15;
+pin_number kSocket1_Microstep_1PinNumber    = -1;  // 16;
+pin_number kSocket1_Microstep_2PinNumber    = -1;  // 17;
+pin_number kSocket1_VrefPinNumber           = -1;  // 18;
 
-pin_number kSocket2_SPISlaveSelectPinNumber = 20;
-pin_number kSocket2_InterruptPinNumber      = -1;  // 21;
-pin_number kSocket2_StepPinNumber           = 22;
-pin_number kSocket2_DirPinNumber            = 23;
-pin_number kSocket2_EnablePinNumber         = 24;
-pin_number kSocket2_Microstep_0PinNumber    = 25;  // 25;
-pin_number kSocket2_Microstep_1PinNumber    = 26;  // 26;
-pin_number kSocket2_Microstep_2PinNumber    = 27;  // 27;
-pin_number kSocket2_VrefPinNumber           = 28;
+pin_number kSocket2_SPISlaveSelectPinNumber = -1;  // 19;
+pin_number kSocket2_InterruptPinNumber      = -1;  // 20;
+pin_number kSocket2_StepPinNumber           = 21;
+pin_number kSocket2_DirPinNumber            = 22;
+pin_number kSocket2_EnablePinNumber         = -1;  // 23;
+pin_number kSocket2_Microstep_0PinNumber    = -1;  // 24;
+pin_number kSocket2_Microstep_1PinNumber    = -1;  // 25;
+pin_number kSocket2_Microstep_2PinNumber    = -1;  // 26;
+pin_number kSocket2_VrefPinNumber           = -1;  // 27;
 
-pin_number kSocket3_SPISlaveSelectPinNumber = 30;
-pin_number kSocket3_InterruptPinNumber      = -1;  // 31;
-pin_number kSocket3_StepPinNumber           = 32;
-pin_number kSocket3_DirPinNumber            = 33;
-pin_number kSocket3_EnablePinNumber         = 34;
-pin_number kSocket3_Microstep_0PinNumber    = 35;  // 35;
-pin_number kSocket3_Microstep_1PinNumber    = 36;  // 36;
-pin_number kSocket3_Microstep_2PinNumber    = 37;  // 37;
-pin_number kSocket3_VrefPinNumber           = 38;
+pin_number kSocket3_SPISlaveSelectPinNumber = -1;  // 28;
+pin_number kSocket3_InterruptPinNumber      = -1;  // 29;
+pin_number kSocket3_StepPinNumber           = 30;
+pin_number kSocket3_DirPinNumber            = 31;
+pin_number kSocket3_EnablePinNumber         = -1;  // 32;
+pin_number kSocket3_Microstep_0PinNumber    = -1;  // 33;
+pin_number kSocket3_Microstep_1PinNumber    = -1;  // 34;
+pin_number kSocket3_Microstep_2PinNumber    = -1;  // 35;
+pin_number kSocket3_VrefPinNumber           = -1;  // 36;
 
-pin_number kSocket4_SPISlaveSelectPinNumber = 40;
-pin_number kSocket4_InterruptPinNumber      = -1;  // 41;
-pin_number kSocket4_StepPinNumber           = 42;
-pin_number kSocket4_DirPinNumber            = 43;
-pin_number kSocket4_EnablePinNumber         = 44;
-pin_number kSocket4_Microstep_0PinNumber    = 45;  // 45;
-pin_number kSocket4_Microstep_1PinNumber    = 46;  // 46;
-pin_number kSocket4_Microstep_2PinNumber    = 47;  // 47;
-pin_number kSocket4_VrefPinNumber           = 48;
+pin_number kSocket4_SPISlaveSelectPinNumber = -1;  // 37;
+pin_number kSocket4_InterruptPinNumber      = -1;  // 38;
+pin_number kSocket4_StepPinNumber           = 39;
+pin_number kSocket4_DirPinNumber            = 40;
+pin_number kSocket4_EnablePinNumber         = -1;  // 41;
+pin_number kSocket4_Microstep_0PinNumber    = -1;  // 42;
+pin_number kSocket4_Microstep_1PinNumber    = -1;  // 43;
+pin_number kSocket4_Microstep_2PinNumber    = -1;  // 44;
+pin_number kSocket4_VrefPinNumber           = -1;  // 45;
 
-pin_number kSocket5_SPISlaveSelectPinNumber = 50;
-pin_number kSocket5_InterruptPinNumber      = -1;  // 51;
-pin_number kSocket5_StepPinNumber           = 52;
-pin_number kSocket5_DirPinNumber            = 53;
-pin_number kSocket5_EnablePinNumber         = 54;
-pin_number kSocket5_Microstep_0PinNumber    = 55;  // 55;
-pin_number kSocket5_Microstep_1PinNumber    = 56;  // 56;
-pin_number kSocket5_Microstep_2PinNumber    = 57;  // 57;
-pin_number kSocket5_VrefPinNumber           = 58;
+pin_number kSocket5_SPISlaveSelectPinNumber = -1;  // 46;
+pin_number kSocket5_InterruptPinNumber      = -1;  // 47;
+pin_number kSocket5_StepPinNumber           = 48;
+pin_number kSocket5_DirPinNumber            = 49;
+pin_number kSocket5_EnablePinNumber         = -1;  // 50;
+pin_number kSocket5_Microstep_0PinNumber    = -1;  // 51;
+pin_number kSocket5_Microstep_1PinNumber    = -1;  // 52;
+pin_number kSocket5_Microstep_2PinNumber    = -1;  // 53;
+pin_number kSocket5_VrefPinNumber           = -1;  // 54;
 
-pin_number kSocket6_SPISlaveSelectPinNumber = -1;  // 60;
-pin_number kSocket6_InterruptPinNumber      = -1;  // 61;
-pin_number kSocket6_StepPinNumber           = -1;  // 62;
-pin_number kSocket6_DirPinNumber            = -1;  // 63;
-pin_number kSocket6_EnablePinNumber         = -1;  // 64;
-pin_number kSocket6_Microstep_0PinNumber    = -1;  // 65;
-pin_number kSocket6_Microstep_1PinNumber    = -1;  // 66;
-pin_number kSocket6_Microstep_2PinNumber    = -1;  // 67;
-pin_number kSocket6_VrefPinNumber           = -1;  // 68;
+pin_number kSocket6_SPISlaveSelectPinNumber = -1;  // 55;
+pin_number kSocket6_InterruptPinNumber      = -1;  // 56;
+pin_number kSocket6_StepPinNumber           = 57;
+pin_number kSocket6_DirPinNumber            = 58;
+pin_number kSocket6_EnablePinNumber         = -1;  // 59;
+pin_number kSocket6_Microstep_0PinNumber    = -1;  // 60;
+pin_number kSocket6_Microstep_1PinNumber    = -1;  // 61;
+pin_number kSocket6_Microstep_2PinNumber    = -1;  // 62;
+pin_number kSocket6_VrefPinNumber           = -1;  // 63;
 
 // We also have to define INPUTx_AVAILABLE so we know if we can make the interrupts
 pin_number kInput1_PinNumber = 100;
@@ -138,13 +138,14 @@ pin_number kInput4_PinNumber = 103;
 pin_number kInput5_PinNumber = 104;
 pin_number kInput6_PinNumber = 105;
 
-pin_number kInput7_PinNumber        = 106;
-pin_number kInput8_PinNumber        = 107;
-pin_number kInput9_PinNumber        = 108;
-pin_number kInput10_PinNumber       = 109;
-pin_number kInput11_PinNumber       = 110;
-pin_number kInput12_PinNumber       = -1;
-pin_number kTMC2130_DIAG0_pinNumber = 111;
+pin_number kInput7_PinNumber  = 106;
+pin_number kInput8_PinNumber  = 107;
+pin_number kInput9_PinNumber  = 108;
+pin_number kInput10_PinNumber = 109;
+pin_number kInput11_PinNumber = 110;
+pin_number kInput12_PinNumber = 111;
+pin_number kInput13_PinNumber = 112;
+pin_number kInput14_PinNumber = 113;
 
 // START DEBUG PINS - Convenient pins to hijack for hardware debugging
 // To reuse a pin for debug change the original pin number to -1
@@ -180,43 +181,64 @@ pin_number kGRBL_CycleStartPinNumber   = -1;
 pin_number kGRBL_CommonEnablePinNumber = -1;
 
 
-pin_number kOutput1_PinNumber = 130;  // DO_1: Extruder1_PWM
-pin_number kOutput2_PinNumber = 131;  // DO_2: Extruder2_PWM
-pin_number kOutput3_PinNumber = 132;  // DO_3: Fan1A_PWM
-pin_number kOutput4_PinNumber = 133;  // DO_4: Fan1B_PWM
-pin_number kOutput5_PinNumber = 134;  // DO_5: Fan2A_PWM
+pin_number kOutput1_PinNumber = 130;
+pin_number kOutput2_PinNumber = 131;
+pin_number kOutput3_PinNumber = 132;
+pin_number kOutput4_PinNumber = 133;
+pin_number kOutput5_PinNumber = 134;
 
-pin_number kOutput6_PinNumber  = 135;  // See Spindle Enable
-pin_number kOutput7_PinNumber  = 136;  // See Spindle Direction
-pin_number kOutput8_PinNumber  = 137;  // See Coolant Enable
-pin_number kOutput9_PinNumber  = 138;  // DO_09: May be resued for Servo1
-pin_number kOutput10_PinNumber = 139;  // DO_10: May be resued for Servo2
+pin_number kOutput6_PinNumber  = 135;
+pin_number kOutput7_PinNumber  = 136;
+pin_number kOutput8_PinNumber  = 137;
+pin_number kOutput9_PinNumber  = 138;
+pin_number kOutput10_PinNumber = 139;
 
-pin_number kOutput11_PinNumber = 140;  // DO_11: Heated Bed FET
-pin_number kOutput12_PinNumber = 141;  // DO_12: Indicator_LED
+pin_number kOutput11_PinNumber = 140;
+pin_number kOutput12_PinNumber = 141;
 pin_number kOutput13_PinNumber = -1;   // 142;
 pin_number kOutput14_PinNumber = -1;   // 143;
 pin_number kOutput15_PinNumber = -1;   // 144;
 pin_number kOutput16_PinNumber = -1;   // 145;
 
-// For rev-c where we use the differential
 
-// for rev-d where we don't
-pin_number kADC1_PinNumber  = 150;  // Extruder1_ADC
-pin_number kADC2_PinNumber  = 151;  // Extruder2_ADC
-pin_number kADC3_PinNumber  = 152;  // Heated bed thermistor ADC
-pin_number kADC4_PinNumber  = 153;  // unused ADC
+pin_number kADC1_PinNumber  = -1;  // 150;
+pin_number kADC2_PinNumber  = -1;  // 151;
+pin_number kADC3_PinNumber  = -1;  // 152;
+pin_number kADC4_PinNumber  = -1;  // 153;
 
-pin_number kExternalClock1_PinNumber = 170;  // External pins for exporting a clock signal (for Trinamics)
+pin_number kExternalClock1_PinNumber = -1;  // 170;  // External pins for exporting a clock signal (for Trinamics)
 
-pin_number kServo1_PinNumber = 171;  //
-pin_number kServo2_PinNumber = 172;  //
-pin_number kServo3_PinNumber = 173;  //
+pin_number kServo1_PinNumber = -1;  // 171;
+pin_number kServo2_PinNumber = -1;  // 172;
+pin_number kServo3_PinNumber = -1;  // 173;
 
 
 // start next sequence at 174
 
 // blank spots for unassigned pins - all unassigned pins need a unique number (do not re-use numbers)
+pin_number kUnassigned65 = 190;
+pin_number kUnassigned64 = 191;
+pin_number kUnassigned63 = 192;
+pin_number kUnassigned62 = 193;
+pin_number kUnassigned61 = 194;
+pin_number kUnassigned60 = 195;
+pin_number kUnassigned59 = 196;
+pin_number kUnassigned58 = 197;
+pin_number kUnassigned57 = 198;
+pin_number kUnassigned56 = 199;
+pin_number kUnassigned55 = 200;
+pin_number kUnassigned54 = 201;
+pin_number kUnassigned53 = 202;
+pin_number kUnassigned52 = 203;
+pin_number kUnassigned51 = 204;
+pin_number kUnassigned50 = 205;
+pin_number kUnassigned49 = 206;
+pin_number kUnassigned48 = 207;
+pin_number kUnassigned47 = 208;
+pin_number kUnassigned46 = 209;
+pin_number kUnassigned45 = 210;
+pin_number kUnassigned44 = 211;
+pin_number kUnassigned43 = 212;
 pin_number kUnassigned42 = 213;
 pin_number kUnassigned41 = 214;
 pin_number kUnassigned40 = 215;

@@ -43,24 +43,6 @@
 
 #include "settings.h"
 
-//Motate::ClockOutputPin<Motate::kExternalClock1_PinNumber> external_clk_pin {16000000}; // 16MHz optimally
-Motate::OutputPin<Motate::kExternalClock1_PinNumber> external_clk_pin {Motate::kStartLow};
-
-HOT_DATA SPI_CS_PinMux_used_t spiCSPinMux;
-HOT_DATA SPIBus_used_t spiBus;
-
-HOT_DATA TWIBus_used_t twiBus;
-
-// // Define Multiplexers
-// HOT_DATA plex0_t plex0{twiBus, 0x0070L};
-// HOT_DATA plex1_t plex1{twiBus, 0x0071L};
-
-// #include "i2c_eeprom.h"
-// HOT_DATA I2C_EEPROM eeprom{twiBus, 0b01010000};
-// alignas(4) uint8_t eeprom_buffer[128] HOT_DATA = "TestinglyABCDEFGHIJKLmnop";
-// alignas(4) uint8_t eeprom_in_buffer[128] HOT_DATA = "";
-
-
 SafetyManager sm{};
 SafetyManager *safety_manager = &sm;
 
@@ -126,12 +108,9 @@ ToolHead *toolhead_for_tool(uint8_t tool) {
 
 void hardware_init()
 {
-    spiBus.init();
-    twiBus.init();
     board_hardware_init();
-    external_clk_pin = 0; // Force external clock to 0 for now.
 
-    esc_spindle.init();
+//    esc_spindle.init();
 #if HAS_LASER
     laser_tool.init();
 #endif

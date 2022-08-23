@@ -41,9 +41,8 @@
 
 /*--- Hardware platform enumerations ---*/
 
-#define G2CORE_HARDWARE_PLATFORM    "gQuintic"
-#define G2CORE_HARDWARE_VERSION_from_QUINTIC_REVISION(x)  "" #x ""
-#define G2CORE_HARDWARE_VERSION G2CORE_HARDWARE_VERSION_from_QUINTIC_REVISION(QUINTIC_REVISION)
+#define G2CORE_HARDWARE_PLATFORM    "sbv700"
+#define G2CORE_HARDWARE_VERSION     "na"
 
 
 // Save some space ... we're tight
@@ -71,22 +70,14 @@
 #endif
 
 
-#if QUINTIC_REVISION == 'C' or (!HAS_HOBBY_SERVO_MOTOR && !HAS_LASER)
-#define MOTORS      5               // number of motors on the board - 5Trinamics OR 4 Trinamics + 1 servo
+#if HAS_LASER
+#define MOTORS 7                    // number of motors + one "laser" motor (used for pulsing the laser in sync)
 #else
-#define MOTORS      6               // number of motors on the board - 5 Trinamics + 1 servo or laser
+#define MOTORS 6                    // number of motors supported the hardware
 #endif
 
 #define PWMS 2                      // number of PWM channels supported the hardware
 #define AXES 6                      // axes to support -- must be 6 or 9
-
-#define MOTOR_1_IS_TRINAMIC
-#define MOTOR_2_IS_TRINAMIC
-#define MOTOR_3_IS_TRINAMIC
-#define MOTOR_4_IS_TRINAMIC
-#if QUINTIC_REVISION == 'D'
-#define MOTOR_5_IS_TRINAMIC
-#endif
 
 /*************************
  * Global System Defines *
@@ -101,13 +92,8 @@
  *************************/
 
 #include "MotatePins.h"
-#include "MotateSPI.h"
-#include "MotateTWI.h"
 #include "MotateTimers.h"           // for TimerChanel<> and related...
-
-// Temporarily disabled:
-// #include "i2c_multiplexer.h"
-// #include "i2c_as5601.h" // For AS5601
+#include "MotateUtilities.h" // for HOT_FUNC and HOT_DATA
 
 using Motate::TimerChannel;
 
@@ -162,24 +148,6 @@ using Motate::OutputPin;
 typedef TimerChannel<9, 0> dda_timer_type;    // stepper pulse generation in stepper.cpp
 typedef TimerChannel<10, 0> exec_timer_type;       // request exec timer in stepper.cpp
 typedef TimerChannel<11, 0> fwd_plan_timer_type;   // request forward planner in stepper.cpp
-
-/**** SPI Setup ****/
-typedef Motate::SPIBus<Motate::kSPI_MISOPinNumber, Motate::kSPI_MOSIPinNumber, Motate::kSPI_SCKPinNumber> SPIBus_used_t;
-extern SPIBus_used_t spiBus;
-
-typedef Motate::SPIChipSelectPinMux<Motate::kSocket1_SPISlaveSelectPinNumber, Motate::kSocket2_SPISlaveSelectPinNumber, Motate::kSocket3_SPISlaveSelectPinNumber, Motate::kSocket4_SPISlaveSelectPinNumber> SPI_CS_PinMux_used_t;
-extern SPI_CS_PinMux_used_t spiCSPinMux;
-
-/**** TWI Setup ****/
-typedef Motate::TWIBus<Motate::kI2C_SCLPinNumber, Motate::kI2C_SDAPinNumber> TWIBus_used_t;
-extern TWIBus_used_t twiBus;
-
-// using plex0_t = decltype(I2C_Multiplexer{twiBus, 0x0070L});
-// extern HOT_DATA plex0_t plex0;
-// using plex1_t = decltype(I2C_Multiplexer{twiBus, 0x0071L});
-// extern HOT_DATA plex1_t plex1;
-
-// extern HOT_DATA I2C_EEPROM eeprom;
 
 /**** Motate Global Pin Allocations ****/
 
