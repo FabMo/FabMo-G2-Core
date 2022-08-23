@@ -104,8 +104,8 @@
       <HWProgramCounterSampling>True</HWProgramCounterSampling>
     </PercepioTrace>
     <preserveEEPROM>true</preserveEEPROM>
-    <avrtoolserialnumber>ATML2407141800004931</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0xA1220E00</avrdeviceexpectedsignature>
+    <avrtoolserialnumber>ATML2407161800006080</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0xA1220E01</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <custom>
       <ToolOptions>
@@ -133,7 +133,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2407141800004931</ToolNumber>
+      <ToolNumber>ATML2407161800006080</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
   </PropertyGroup>

@@ -33,7 +33,7 @@
 #include "settings.h"
 #include "error.h"
 
-#include "MotatePins.h" // QUINTIC_REVISION comes from the pintout file
+#include "MotatePins.h"
 
 
 #ifndef HARDWARE_H_ONCE
@@ -93,7 +93,7 @@
 
 #include "MotatePins.h"
 #include "MotateTimers.h"           // for TimerChanel<> and related...
-#include "MotateUtilities.h" // for HOT_FUNC and HOT_DATA
+#include "MotateUtilities.h"        // for HOT_FUNC and HOT_DATA
 
 using Motate::TimerChannel;
 

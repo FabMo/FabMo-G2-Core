@@ -34,7 +34,7 @@
  */
 
 // ***> NOTE: The init message must be a single line with no CRs or LFs
-#define INIT_MESSAGE "Initializing configs to ShopBot sbv300 profile"
+#define INIT_MESSAGE "Initializing configs to ShopBot sbv700 profile"
 
 //**** GLOBAL / GENERAL SETTINGS ******************************************************
 

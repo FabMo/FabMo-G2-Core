@@ -195,7 +195,7 @@ pin_number kOutput10_PinNumber = 139;
 
 pin_number kOutput11_PinNumber = 140;
 pin_number kOutput12_PinNumber = 141;
-pin_number kOutput13_PinNumber = -1;   // 142;
+pin_number kOutput13_PinNumber = 142;
 pin_number kOutput14_PinNumber = -1;   // 143;
 pin_number kOutput15_PinNumber = -1;   // 144;
 pin_number kOutput16_PinNumber = -1;   // 145;
@@ -216,6 +216,7 @@ pin_number kServo3_PinNumber = -1;  // 173;
 // start next sequence at 174
 
 // blank spots for unassigned pins - all unassigned pins need a unique number (do not re-use numbers)
+pin_number kUnassigned66 = 189;
 pin_number kUnassigned65 = 190;
 pin_number kUnassigned64 = 191;
 pin_number kUnassigned63 = 192;

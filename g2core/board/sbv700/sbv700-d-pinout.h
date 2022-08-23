@@ -110,8 +110,6 @@
 #define OUTPUT12_PWM 0  // Unused
 #define OUTPUT13_PWM 0  // Unused
 
-#define QUINTIC_REVISION 'D'    // TODO: remove
-
 namespace Motate {
 
 // Unused:
@@ -188,48 +186,49 @@ _MAKE_MOTATE_PIN(kUnassigned38,                    'C', 23); //
 _MAKE_MOTATE_PIN(kUnassigned39,                    'C', 24); //
 _MAKE_MOTATE_PIN(kUnassigned40,                    'C', 25); //
 _MAKE_MOTATE_PIN(kUnassigned41,                    'C', 26); //
-_MAKE_MOTATE_PIN(kUnassigned42,                    'C', 27); //
-_MAKE_MOTATE_PIN(kUnassigned43,                    'C', 28); //
+_MAKE_MOTATE_PIN(kInput12_PinNumber,               'C', 27); //
+_MAKE_MOTATE_PIN(kInput11_PinNumber,               'C', 28); //
 _MAKE_MOTATE_PIN(kInput10_PinNumber,               'C', 29); //
 _MAKE_MOTATE_PIN(kInput9_PinNumber,                'C', 30); //
 _MAKE_MOTATE_PIN(kInput8_PinNumber,                'C', 31); //
 
-_MAKE_MOTATE_PIN(kUnassigned44,                    'D',  1); // Switched with Input9
-_MAKE_MOTATE_PIN(kUnassigned45,                    'D',  2); // Switched with Input10
-_MAKE_MOTATE_PIN(kUnassigned46,                    'D',  3); // Switched with Input8
+_MAKE_MOTATE_PIN(kUnassigned44,                    'D',  0);
+_MAKE_MOTATE_PIN(kSocket6_StepPinNumber,           'D',  1); // Switched with Input9
+_MAKE_MOTATE_PIN(kSocket6_DirPinNumber,            'D',  2); // Switched with Input10
+_MAKE_MOTATE_PIN(kUnassigned47,                    'D',  3); // Switched with Input8
 _MAKE_MOTATE_PIN(kInput7_PinNumber,                'D',  4); //
 _MAKE_MOTATE_PIN(kInput6_PinNumber,                'D',  5); //
 _MAKE_MOTATE_PIN(kInput5_PinNumber,                'D',  6); //
 _MAKE_MOTATE_PIN(kInput3_PinNumber,                'D',  7); //
-_MAKE_MOTATE_PIN(kUnassigned47,                    'D',  8); // Switched with Input2
-_MAKE_MOTATE_PIN(kUnassigned48,                    'D',  9); // DIAG0
+_MAKE_MOTATE_PIN(kUnassigned48,                    'D',  8); // Switched with Input2
+_MAKE_MOTATE_PIN(kUnassigned49,                    'D',  9); // DIAG0
 _MAKE_MOTATE_PIN(kInput2_PinNumber,                'D', 10); //
 _MAKE_MOTATE_PIN(kSocket5_StepPinNumber,           'D', 11); //
-_MAKE_MOTATE_PIN(kUnassigned49,                    'D', 12); //
+_MAKE_MOTATE_PIN(kUnassigned50,                    'D', 12); //
 _MAKE_MOTATE_PIN(kSocket5_DirPinNumber,            'D', 13); //
-_MAKE_MOTATE_PIN(kUnassigned50,                    'D', 14); //
-_MAKE_MOTATE_PIN(kUnassigned51,                    'D', 15); //
+_MAKE_MOTATE_PIN(kUnassigned51,                    'D', 14); //
+_MAKE_MOTATE_PIN(kUnassigned52,                    'D', 15); //
 _MAKE_MOTATE_PIN(kSocket4_StepPinNumber,           'D', 16); //
 _MAKE_MOTATE_PIN(kSocket4_DirPinNumber,            'D', 17); //
 _MAKE_MOTATE_PIN(kSocket3_StepPinNumber,           'D', 18); //
 _MAKE_MOTATE_PIN(kSocket1_DirPinNumber,            'D', 19); //
-_MAKE_MOTATE_PIN(kUnassigned52,                    'D', 20); //
-_MAKE_MOTATE_PIN(kUnassigned53,                    'D', 21); //
-_MAKE_MOTATE_PIN(kUnassigned54,                    'D', 22); //
-_MAKE_MOTATE_PIN(kUnassigned55,                    'D', 23); // NO PHYSICAL PIN
+_MAKE_MOTATE_PIN(kUnassigned53,                    'D', 20); //
+_MAKE_MOTATE_PIN(kUnassigned54,                    'D', 21); //
+_MAKE_MOTATE_PIN(kUnassigned55,                    'D', 22); //
+_MAKE_MOTATE_PIN(kUnassigned56,                    'D', 23); // NO PHYSICAL PIN
 _MAKE_MOTATE_PIN(kSocket2_StepPinNumber,           'D', 24); //
-_MAKE_MOTATE_PIN(kUnassigned56,                    'D', 25); //
+_MAKE_MOTATE_PIN(kUnassigned57,                    'D', 25); //
 _MAKE_MOTATE_PIN(kOutput9_PinNumber,               'D', 26); // PWM 2
-_MAKE_MOTATE_PIN(kUnassigned57,                    'D', 27); //
+_MAKE_MOTATE_PIN(kOutput10_PinNumber,              'D', 27); //
 _MAKE_MOTATE_PIN(kUnassigned58,                    'D', 28); //
-_MAKE_MOTATE_PIN(kUnassigned59,                    'D', 29); // NO PHYSICAL PIN
-_MAKE_MOTATE_PIN(kUnassigned60,                    'D', 30); // AFEC0,0 - was INTERRUPT_OUT
-_MAKE_MOTATE_PIN(kUnassigned61,                    'D', 31); //
+_MAKE_MOTATE_PIN(kOutput12_PinNumber,              'D', 29); // NO PHYSICAL PIN
+_MAKE_MOTATE_PIN(kOutput13_PinNumber,              'D', 30); // AFEC0,0 - was INTERRUPT_OUT
+_MAKE_MOTATE_PIN(kUnassigned62,                    'D', 31); //
 
-_MAKE_MOTATE_PIN(kUnassigned62,                    'E',  0); //
-_MAKE_MOTATE_PIN(kUnassigned63,                    'E',  3); //
-_MAKE_MOTATE_PIN(kUnassigned64,                    'E',  4); //
-_MAKE_MOTATE_PIN(kUnassigned65,                    'E',  5); //
+_MAKE_MOTATE_PIN(kUnassigned63,                    'E',  0); //
+_MAKE_MOTATE_PIN(kUnassigned64,                    'E',  3); //
+_MAKE_MOTATE_PIN(kUnassigned65,                    'E',  4); //
+_MAKE_MOTATE_PIN(kUnassigned66,                    'E',  5); //
 }  // namespace Motate
 
 // We then allow each chip-type to have it's own function definitions
