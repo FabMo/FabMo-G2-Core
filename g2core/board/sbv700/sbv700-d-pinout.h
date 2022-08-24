@@ -119,7 +119,7 @@ namespace Motate {
 //
 //
 
-_MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'A',  0); //
+_MAKE_MOTATE_PIN(kLEDPWM_PinNumber,                'A',  0); //
 _MAKE_MOTATE_PIN(kUnassigned1,                     'A',  1); //
 _MAKE_MOTATE_PIN(kUnassigned2,                     'A',  2); //
 _MAKE_MOTATE_PIN(kUnassigned3,                     'A',  3); //
@@ -211,7 +211,7 @@ _MAKE_MOTATE_PIN(kUnassigned68,                    'D', 15); //
 _MAKE_MOTATE_PIN(kUnassigned69,                    'D', 16); //
 _MAKE_MOTATE_PIN(kUnassigned70,                    'D', 17); //
 _MAKE_MOTATE_PIN(kOutputInterrupt_PinNumber,       'D', 18); //
-_MAKE_MOTATE_PIN(kLEDPWM_PinNumber,                'D', 19); // TODO: Check if this pin has PWM
+_MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'D', 19); //
 _MAKE_MOTATE_PIN(kUnassigned71,                    'D', 20); //
 _MAKE_MOTATE_PIN(kUnassigned72,                    'D', 21); //
 _MAKE_MOTATE_PIN(kUnassigned73,                    'D', 22); //
