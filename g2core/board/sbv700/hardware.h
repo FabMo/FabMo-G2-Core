@@ -134,13 +134,14 @@ using Motate::OutputPin;
 /**** Stepper DDA and dwell timer settings ****/
 
 // #define FREQUENCY_DDA    200000UL    // Hz step frequency. Interrupts actually fire at 2x (400 KHz)
-#define FREQUENCY_DDA  400000UL  // Hz step frequency. Interrupts actually fire at 2x (300 KHz)
+#define FREQUENCY_DDA  100000UL  // Hz step frequency. Interrupts actually fire at 2x (300 KHz)
 #define FREQUENCY_DWELL  1000UL
 
 // #define MIN_SEGMENT_MS ((float)0.125)       // S70 can handle much much smaller segements
 #define MIN_SEGMENT_MS ((float)0.5)       // S70 can handle much much smaller segements
 
-// #define PLANNER_QUEUE_SIZE (60)
+#define PLANNER_QUEUE_SIZE (48)
+#define SECONDARY_QUEUE_SIZE (10)
 
 /**** Motate Definitions ****/
 
