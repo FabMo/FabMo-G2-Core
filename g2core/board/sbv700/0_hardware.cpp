@@ -1,9 +1,10 @@
 /*
  * hardware.cpp - general hardware support functions
- * For: /board/gQuintic
+ * For: /board/ArduinoDue // and now sbv300
  * This file is part of the g2core project
  *
- * Copyright (c) 2010 - 2015 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2018 Alden S. Hart, Jr.
+ * Copyright (c) 2013 - 2018 Robert Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -32,20 +33,12 @@
 #include "controller.h"
 #include "text_parser.h"
 #include "board_xio.h"
-#include "board_gpio.h"
-#include "safety_manager.h"
-
-#include "kinematics.h" // for get_flow_volume
 
 #include "MotateUtilities.h"
 #include "MotateUniqueID.h"
 #include "MotatePower.h"
 
-#include "settings.h"
-
-SafetyManager sm{};
-SafetyManager *safety_manager = &sm;
-
+#include "board_gpio.h"
 
 #ifndef SPINDLE_ENABLE_OUTPUT_NUMBER
 #warning SPINDLE_ENABLE_OUTPUT_NUMBER is defaulted to 4!
@@ -66,10 +59,20 @@ SafetyManager *safety_manager = &sm;
 #endif
 
 #ifndef SPINDLE_SPEED_CHANGE_PER_MS
-#warning SPINDLE_SPEED_CHANGE_PER_MS is defaulted to 5!
+#warning SPINDLE_SPEED_CHANGE_PER_MS is defaulted to 7!
 #warning SPINDLE_SPEED_CHANGE_PER_MS should be defined in settings or a board file!
-#define SPINDLE_SPEED_CHANGE_PER_MS 5
+#define SPINDLE_SPEED_CHANGE_PER_MS 7
 #endif
+
+
+#include "safety_manager.h"
+
+SafetyManager sm{};
+SafetyManager *safety_manager = &sm;
+
+//this here?
+constexpr cfgSubtableFromStaticArray sys_config_3{};
+const configSubtable * const getSysConfig_3() { return &sys_config_3; }
 
 #include "esc_spindle.h"
 ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDLE_DIRECTION_OUTPUT_NUMBER, SPINDLE_SPEED_CHANGE_PER_MS, SPINDLE_SPINUP_DELAY};
@@ -84,7 +87,7 @@ ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDL
 #endif
 
 #include "laser_toolhead.h"
-HOT_DATA LaserTool_used_t laser_tool {LASER_ENABLE_OUTPUT_NUMBER, MOTOR_6};
+LaserTool_used_t laser_tool {LASER_ENABLE_OUTPUT_NUMBER, MOTOR_5};
 
 // CartesianKinematics<AXES, MOTORS> cartesian_kinematics;
 KinematicsBase<AXES, MOTORS> *kn = &laser_tool;
@@ -102,6 +105,7 @@ ToolHead *toolhead_for_tool(uint8_t tool) {
 #endif
 }
 
+
 /*
  * hardware_init() - lowest level hardware init
  */
@@ -114,115 +118,19 @@ void hardware_init()
 #if HAS_LASER
     laser_tool.init();
 #endif
-    spindle_set_toolhead(toolhead_for_tool(1));
+    toolhead_for_tool(0)->init();
+    spindle_set_toolhead(toolhead_for_tool(0));
+    return;
 }
 
 /*
  * hardware_periodic() - callback from the controller loop - TIME CRITICAL.
  */
 
-// previous values of analog voltages
-#if TEMPERATURE_OUTPUT_ON
-float ai_vv[A_IN_CHANNELS];
-const float analog_change_threshold = 0.01;
-#endif
-
-float angle_0 = 0.0;
-float angle_1 = 0.0;
-
-#if HAS_PRESSURE
-float pressure = 0;
-float pressure_threshold = 0.01;
-
-float flow = 0;
-float flow_threshold = 0.01;
-#endif
-
-// void read_encoder_0(bool worked /* = false*/, float angle /* = 0.0*/) {
-//     if (worked) {
-//         angle_0 = angle;
-//     }
-//     encoder_0.getAngleFraction();
-// }
-
-// void read_encoder_1(bool worked /* = false*/, float angle /* = 0.0*/) {
-//     if (worked) {
-//         angle_1 = angle;
-//     }
-//     encoder_1.getAngleFraction();
-// }
-
-// Following is for testing internally
-// void first_part(bool worked = false);
-// void second_part(bool worked = false);
-// void third_part(bool worked = false);
-
-// void first_part (bool worked /* = false*/ ) {
-//     if (!worked) {
-//         eeprom.store(0, eeprom_buffer, 4, first_part);
-//     } else {
-//         second_part();
-//     }
-// }
-
-// void second_part (bool worked /* = false*/ ) {
-//     if (!worked) {
-//         eeprom.store(4, eeprom_buffer + 4, 5, second_part);
-//     } else {
-//         third_part();
-//     }
-// }
-
-// void third_part(bool worked /* = false*/ ) {
-//     if (!worked) {
-//         eeprom.load(0, eeprom_in_buffer, 9, third_part);
-//     } else {
-//         // read_encoder_0();
-//     }
-// }
-
-
 stat_t hardware_periodic()
 {
-    // for all of the analog inputs that are enabled, request status reports
-    // when they change beyond the threshold
-    #if TEMPERATURE_OUTPUT_ON
-    for (uint8_t a = 0; a < A_IN_CHANNELS; a++) {
-        if (a_in[a]->getEnabled() == IO_ENABLED) {
-            float new_vv = a_in[a]->getValue();
-            if (std::abs(ai_vv[a] - new_vv) >= analog_change_threshold) {
-                ai_vv[a] = new_vv; // only record if goes past threshold!
-                sr_request_status_report(SR_REQUEST_TIMED);
-            }
-        }
-    }
-    #endif
-
-    #if HAS_PRESSURE
-    float new_pressure = pressure_sensor1.getPressure(PressureUnits::cmH2O);
-    if (std::abs(pressure - new_pressure) >= pressure_threshold) {
-        pressure = new_pressure;  // only record if goes past threshold!
-        sr_request_status_report(SR_REQUEST_TIMED);
-    }
-
-    float new_flow = flow_sensor1.getFlow(FlowUnits::SLM);
-    if (std::abs(flow - new_flow) >= flow_threshold) {
-        flow = new_flow;  // only record if goes past threshold!
-        sr_request_status_report(SR_REQUEST_TIMED);
-    }
-    #endif
-
-
-    // static uint8_t sent = 0;
-    // if (!sent) {
-    //     first_part(false);
-    //     sent = 2;
-    // }
-
     return STAT_OK;
 }
-
-
 
 /*
  * hw_hard_reset() - reset system now
@@ -231,12 +139,12 @@ stat_t hardware_periodic()
 
 void hw_hard_reset(void)
 {
-    Motate::System::reset(/*boootloader: */ false); // arg=0 resets the system
+    Motate::System::reset(/*bootloader: */ false);  // arg=0 resets the system
 }
 
 void hw_flash_loader(void)
 {
-    Motate::System::reset(/*boootloader: */ true);  // arg=1 erases FLASH and enters FLASH loader
+    Motate::System::reset(/*bootloader: */ true);   // arg=1 erases FLASH and enters FLASH loader
 }
 
 /*
@@ -251,7 +159,7 @@ void _get_id(char *id)
     char *p = id;
     const char *uuid = Motate::UUID;
 
-    Motate::strncpy(p, uuid, strlen(uuid));
+    Motate::strncpy(p, uuid, Motate::strlen(uuid)+1);
 }
 
 /***** END OF SYSTEM FUNCTIONS *****/
@@ -301,125 +209,95 @@ stat_t hw_get_fbc(nvObj_t *nv)
 
 stat_t hw_get_id(nvObj_t *nv)
 {
-    char tmp[SYS_ID_LEN];
-    _get_id(tmp);
-    nv->valuetype = TYPE_STRING;
-    ritorno(nv_copy_string(nv, tmp));
-    return (STAT_OK);
+	char tmp[SYS_ID_LEN];
+	_get_id(tmp);
+	nv->valuetype = TYPE_STRING;
+	ritorno(nv_copy_string(nv, tmp));
+	return (STAT_OK);
 }
 
 /*
  * hw_flash() - invoke FLASH loader from command input
  */
+
 stat_t hw_flash(nvObj_t *nv)
 {
     hw_flash_loader();
-    return(STAT_OK);
+	return(STAT_OK);
 }
 
-#if HAS_PRESSURE
-
-stat_t get_pressure(nvObj_t *nv)
-{
-    nv->value_flt = pressure_sensor1.getPressure(PressureUnits::cmH2O);
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-
-stat_t get_flow(nvObj_t *nv)
-{
-    nv->value_flt = flow_sensor1.getFlow(FlowUnits::SLM);
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-
-stat_t get_flow_pressure(nvObj_t *nv)
-{
-    nv->value_flt = flow_sensor1.getPressure(PressureUnits::cmH2O);
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-
-
-constexpr cfgItem_t sys_config_items_3[] = {
-    { "prs","prs1", _f0,  5, tx_print_nul, get_pressure, set_nul, nullptr, 0 },
-    { "flow1","flow1prs", _f0,  5, tx_print_nul, get_flow_pressure, set_nul, nullptr, 0 },
-    { "flow1","flow1slm", _f0,  5, tx_print_nul, get_flow, set_nul, nullptr, 0 },
-    { "flow1","flow1vol", _f0,  5, tx_print_nul, get_flow_volume, set_nul, nullptr, 0 },
-};
-constexpr cfgSubtableFromStaticArray sys_config_3{sys_config_items_3};
-
-#elif HAS_LASER
-
-stat_t set_pulse_duration(nvObj_t *nv)
-{
-    laser_tool.set_pulse_duration_us(nv->valuetype == TYPE_FLOAT ? nv->value_flt : nv->value_int);
-    return (STAT_OK);
-}
-stat_t get_pulse_duration(nvObj_t *nv)
-{
-    nv->value_int = laser_tool.get_pulse_duration_us();
-    nv->valuetype = TYPE_INTEGER;
-    return (STAT_OK);
-}
-
-stat_t get_min_s(nvObj_t *nv) {
-    nv->value_flt = laser_tool.get_min_s();
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-stat_t set_min_s(nvObj_t *nv) {
-    laser_tool.set_min_s(nv->value_flt);
-    return (STAT_OK);
-}
-
-stat_t get_max_s(nvObj_t *nv) {
-    nv->value_flt = laser_tool.get_max_s();
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-stat_t set_max_s(nvObj_t *nv) {
-    laser_tool.set_max_s(nv->value_flt);
-    return (STAT_OK);
-}
-
-stat_t get_min_ppm(nvObj_t *nv) {
-    nv->value_flt = laser_tool.get_min_ppm();
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-stat_t set_min_ppm(nvObj_t *nv) {
-    laser_tool.set_min_ppm(nv->value_flt);
-    return (STAT_OK);
-}
-
-stat_t get_max_ppm(nvObj_t *nv) {
-    nv->value_flt = laser_tool.get_max_ppm();
-    nv->valuetype = TYPE_FLOAT;
-    return (STAT_OK);
-}
-stat_t set_max_ppm(nvObj_t *nv) {
-    laser_tool.set_max_ppm(nv->value_flt);
-    return (STAT_OK);
-}
-
-constexpr cfgItem_t sys_config_items_3[] = {
-    { "th2","th2pd", _iip,  0, tx_print_nul, get_pulse_duration, set_pulse_duration, nullptr, LASER_PULSE_DURATION },
-    { "th2","th2mns", _fip,  0, tx_print_nul, get_min_s, set_min_s, nullptr, LASER_MIN_S },
-    { "th2","th2mxs", _fip,  0, tx_print_nul, get_max_s, set_max_s, nullptr, LASER_MAX_S },
-    { "th2","th2mnp", _fip,  0, tx_print_nul, get_min_ppm, set_min_ppm, nullptr, LASER_MIN_PPM },
-    { "th2","th2mxp", _fip,  0, tx_print_nul, get_max_ppm, set_max_ppm, nullptr, LASER_MAX_PPM },
-};
-
-constexpr cfgSubtableFromStaticArray sys_config_3{sys_config_items_3};
-
-#else // !HAS_LASER && !HAS_PRESSURE
-
-// Stub in getSysConfig_3
-constexpr cfgSubtableFromStaticArray sys_config_3{};
-#endif
-
-const configSubtable * const getSysConfig_3() { return &sys_config_3; }
+//#if !HAS_LASER
+//// Stub in getSysConfig_3
+//// constexpr cfgItem_t sys_config_items_3[] = {};
+//constexpr cfgSubtableFromStaticArray sys_config_3{};
+//const configSubtable * const getSysConfig_3() { return &sys_config_3; }
+//
+//#else
+//
+//stat_t set_pulse_duration(nvObj_t *nv)
+//{
+    //laser_tool.set_pulse_duration_us(nv->valuetype == TYPE_FLOAT ? nv->value_flt : nv->value_int);
+    //return (STAT_OK);
+//}
+//stat_t get_pulse_duration(nvObj_t *nv)
+//{
+    //nv->value_int = laser_tool.get_pulse_duration_us();
+    //nv->valuetype = TYPE_INTEGER;
+    //return (STAT_OK);
+//}
+//
+//stat_t get_min_s(nvObj_t *nv) {
+    //nv->value_flt = laser_tool.get_min_s();
+    //nv->valuetype = TYPE_FLOAT;
+    //return (STAT_OK);
+//}
+//stat_t set_min_s(nvObj_t *nv) {
+    //laser_tool.set_min_s(nv->value_flt);
+    //return (STAT_OK);
+//}
+//
+//stat_t get_max_s(nvObj_t *nv) {
+    //nv->value_flt = laser_tool.get_max_s();
+    //nv->valuetype = TYPE_FLOAT;
+    //return (STAT_OK);
+//}
+//stat_t set_max_s(nvObj_t *nv) {
+    //laser_tool.set_max_s(nv->value_flt);
+    //return (STAT_OK);
+//}
+//
+//stat_t get_min_ppm(nvObj_t *nv) {
+    //nv->value_flt = laser_tool.get_min_ppm();
+    //nv->valuetype = TYPE_FLOAT;
+    //return (STAT_OK);
+//}
+//stat_t set_min_ppm(nvObj_t *nv) {
+    //laser_tool.set_min_ppm(nv->value_flt);
+    //return (STAT_OK);
+//}
+//
+//stat_t get_max_ppm(nvObj_t *nv) {
+    //nv->value_flt = laser_tool.get_max_ppm();
+    //nv->valuetype = TYPE_FLOAT;
+    //return (STAT_OK);
+//}
+//stat_t set_max_ppm(nvObj_t *nv) {
+    //laser_tool.set_max_ppm(nv->value_flt);
+    //return (STAT_OK);
+//}
+//
+//constexpr cfgItem_t sys_config_items_3[] = {
+    //{ "th2","th2pd", _iip,  0, tx_print_nul, get_pulse_duration, set_pulse_duration, nullptr, LASER_PULSE_DURATION },
+    //{ "th2","th2mns", _fip,  0, tx_print_nul, get_min_s, set_min_s, nullptr, LASER_MIN_S },
+    //{ "th2","th2mxs", _fip,  0, tx_print_nul, get_max_s, set_max_s, nullptr, LASER_MAX_S },
+    //{ "th2","th2mnp", _fip,  0, tx_print_nul, get_min_ppm, set_min_ppm, nullptr, LASER_MIN_PPM },
+    //{ "th2","th2mxp", _fip,  0, tx_print_nul, get_max_ppm, set_max_ppm, nullptr, LASER_MAX_PPM },
+//};
+//
+//constexpr cfgSubtableFromStaticArray sys_config_3{sys_config_items_3};
+//const configSubtable * const getSysConfig_3() { return &sys_config_3; }
+//
+//#endif
 
 /***********************************************************************************
  * TEXT MODE SUPPORT

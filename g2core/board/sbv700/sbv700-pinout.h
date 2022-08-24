@@ -156,7 +156,7 @@ _MAKE_MOTATE_PIN(kUnassigned28,                    'B',  0); //
 _MAKE_MOTATE_PIN(kUnassigned29,                    'B',  1); //
 _MAKE_MOTATE_PIN(kSocket2_StepPinNumber,           'B',  2); //
 _MAKE_MOTATE_PIN(kSocket1_DirPinNumber,            'B',  3); //
-_MAKE_MOTATE_PIN(kUnassigned30,                    'B',  4); // 
+_MAKE_MOTATE_PIN(kUnassigned30,                    'B',  4); //
 _MAKE_MOTATE_PIN(kOutputSAFE_PinNumber,            'B', 13); //
 _MAKE_MOTATE_PIN(kUnassigned31,                    'B', 14); //
 
@@ -192,7 +192,7 @@ _MAKE_MOTATE_PIN(kUnassigned52,                    'C', 29); //
 _MAKE_MOTATE_PIN(kSocket3_StepPinNumber,           'C', 30); //
 _MAKE_MOTATE_PIN(kSocket1_StepPinNumber,           'C', 31); //
 
-_MAKE_MOTATE_PIN(kUnassigned53,                    'D',  0); // 
+_MAKE_MOTATE_PIN(kUnassigned53,                    'D',  0); //
 _MAKE_MOTATE_PIN(kUnassigned54,                    'D',  1); //
 _MAKE_MOTATE_PIN(kUnassigned55,                    'D',  2); //
 _MAKE_MOTATE_PIN(kUnassigned56,                    'D',  3); //
