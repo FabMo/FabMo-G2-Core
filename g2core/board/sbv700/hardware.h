@@ -70,11 +70,7 @@
 #endif
 
 
-#if HAS_LASER
-#define MOTORS 7                    // number of motors + one "laser" motor (used for pulsing the laser in sync)
-#else
-#define MOTORS 6                    // number of motors supported the hardware
-#endif
+#define MOTORS 4                    // number of motors supported the hardware
 
 #define PWMS 2                      // number of PWM channels supported the hardware
 #define AXES 6                      // axes to support -- must be 6 or 9

@@ -112,8 +112,8 @@ pin_number kSocket4_VrefPinNumber           = -1;  // 45;
 
 pin_number kSocket5_SPISlaveSelectPinNumber = -1;  // 46;
 pin_number kSocket5_InterruptPinNumber      = -1;  // 47;
-pin_number kSocket5_StepPinNumber           = 48;
-pin_number kSocket5_DirPinNumber            = 49;
+pin_number kSocket5_StepPinNumber           = -1;  // 48;
+pin_number kSocket5_DirPinNumber            = -1;  // 49;
 pin_number kSocket5_EnablePinNumber         = -1;  // 50;
 pin_number kSocket5_Microstep_0PinNumber    = -1;  // 51;
 pin_number kSocket5_Microstep_1PinNumber    = -1;  // 52;
@@ -122,8 +122,8 @@ pin_number kSocket5_VrefPinNumber           = -1;  // 54;
 
 pin_number kSocket6_SPISlaveSelectPinNumber = -1;  // 55;
 pin_number kSocket6_InterruptPinNumber      = -1;  // 56;
-pin_number kSocket6_StepPinNumber           = 57;
-pin_number kSocket6_DirPinNumber            = 58;
+pin_number kSocket6_StepPinNumber           = -1;  // 57;
+pin_number kSocket6_DirPinNumber            = -1;  // 58;
 pin_number kSocket6_EnablePinNumber         = -1;  // 59;
 pin_number kSocket6_Microstep_0PinNumber    = -1;  // 60;
 pin_number kSocket6_Microstep_1PinNumber    = -1;  // 61;
@@ -131,21 +131,21 @@ pin_number kSocket6_Microstep_2PinNumber    = -1;  // 62;
 pin_number kSocket6_VrefPinNumber           = -1;  // 63;
 
 // We also have to define INPUTx_AVAILABLE so we know if we can make the interrupts
-pin_number kInput1_PinNumber = 100;
-pin_number kInput2_PinNumber = 101;
-pin_number kInput3_PinNumber = 102;
-pin_number kInput4_PinNumber = 103;
-pin_number kInput5_PinNumber = 104;
-pin_number kInput6_PinNumber = 105;
+pin_number kInput1_PinNumber  = 100;
+pin_number kInput2_PinNumber  = 101;
+pin_number kInput3_PinNumber  = -1;  // 102;
+pin_number kInput4_PinNumber  = -1;  // 103;
+pin_number kInput5_PinNumber  = -1;  // 104;
+pin_number kInput6_PinNumber  = -1;  // 105;
 
-pin_number kInput7_PinNumber  = 106;
-pin_number kInput8_PinNumber  = 107;
-pin_number kInput9_PinNumber  = 108;
-pin_number kInput10_PinNumber = 109;
-pin_number kInput11_PinNumber = 110;
-pin_number kInput12_PinNumber = 111;
-pin_number kInput13_PinNumber = 112;
-pin_number kInput14_PinNumber = 113;
+pin_number kInput7_PinNumber  = -1;  // 106;
+pin_number kInput8_PinNumber  = -1;  // 107;
+pin_number kInput9_PinNumber  = -1;  // 108;
+pin_number kInput10_PinNumber = -1;  // 109;
+pin_number kInput11_PinNumber = -1;  // 110;
+pin_number kInput12_PinNumber = -1;  // 111;
+pin_number kInput13_PinNumber = -1;  // 112;
+pin_number kInput14_PinNumber = -1;  // 113;
 
 // START DEBUG PINS - Convenient pins to hijack for hardware debugging
 // To reuse a pin for debug change the original pin number to -1
@@ -163,7 +163,7 @@ pin_number kDebug4_PinNumber = -1;  // 114;
 // END DEBUG PINS
 
 pin_number kLED_USBRXPinNumber     = 117; //
-pin_number kLED_USBTXPinNumber     = 118; //
+pin_number kLED_USBTXPinNumber     = -1;  // 118;
 pin_number kSD_CardDetectPinNumber = -1;
 pin_number kSD_ChipSelectPinNumber = -1;
 pin_number kUSBVBUS_PinNumber      = 119; //
@@ -171,7 +171,7 @@ pin_number kInterlock_InPinNumber  = 121;
 pin_number kOutputSAFE_PinNumber   = 122;  // SAFE signal
 pin_number kLEDPWM_PinNumber       = 123;
 pin_number kOutputInterrupt_PinNumber = 124;  // to-host interrupt signal
-pin_number kLED_RGBWPixelPinNumber    = 125;  // 117;
+pin_number kLED_RGBWPixelPinNumber    = -1;  // 125;
 
 // GRBL / gShield compatibility pins -- Due board ONLY
 
@@ -181,24 +181,24 @@ pin_number kGRBL_CycleStartPinNumber   = -1;
 pin_number kGRBL_CommonEnablePinNumber = -1;
 
 
-pin_number kOutput1_PinNumber = 130;
-pin_number kOutput2_PinNumber = 131;
-pin_number kOutput3_PinNumber = 132;
-pin_number kOutput4_PinNumber = 133;
-pin_number kOutput5_PinNumber = 134;
+pin_number kOutput1_PinNumber  = 130;
+pin_number kOutput2_PinNumber  = -1;  // 131;
+pin_number kOutput3_PinNumber  = -1;  // 132;
+pin_number kOutput4_PinNumber  = 133;
+pin_number kOutput5_PinNumber  = -1;  // 134;
 
-pin_number kOutput6_PinNumber  = 135;
-pin_number kOutput7_PinNumber  = 136;
-pin_number kOutput8_PinNumber  = 137;
-pin_number kOutput9_PinNumber  = 138;
-pin_number kOutput10_PinNumber = 139;
+pin_number kOutput6_PinNumber  = -1;  // 135;
+pin_number kOutput7_PinNumber  = -1;  // 136;
+pin_number kOutput8_PinNumber  = -1;  // 137;
+pin_number kOutput9_PinNumber  = -1;  // 138;
+pin_number kOutput10_PinNumber = -1;  // 139;
 
-pin_number kOutput11_PinNumber = 140;
-pin_number kOutput12_PinNumber = 141;
-pin_number kOutput13_PinNumber = 142;
-pin_number kOutput14_PinNumber = -1;   // 143;
-pin_number kOutput15_PinNumber = -1;   // 144;
-pin_number kOutput16_PinNumber = -1;   // 145;
+pin_number kOutput11_PinNumber = -1;  // 140;
+pin_number kOutput12_PinNumber = -1;  // 141;
+pin_number kOutput13_PinNumber = -1;  // 142;
+pin_number kOutput14_PinNumber = -1;  // 143;
+pin_number kOutput15_PinNumber = -1;  // 144;
+pin_number kOutput16_PinNumber = -1;  // 145;
 
 
 pin_number kADC1_PinNumber  = -1;  // 150;
@@ -206,16 +206,33 @@ pin_number kADC2_PinNumber  = -1;  // 151;
 pin_number kADC3_PinNumber  = -1;  // 152;
 pin_number kADC4_PinNumber  = -1;  // 153;
 
-pin_number kExternalClock1_PinNumber = -1;  // 170;  // External pins for exporting a clock signal (for Trinamics)
+pin_number kExternalClock1_PinNumber = -1;  // 160;  // External pins for exporting a clock signal (for Trinamics)
 
-pin_number kServo1_PinNumber = -1;  // 171;
-pin_number kServo2_PinNumber = -1;  // 172;
-pin_number kServo3_PinNumber = -1;  // 173;
+pin_number kServo1_PinNumber = -1;  // 161;
+pin_number kServo2_PinNumber = -1;  // 162;
+pin_number kServo3_PinNumber = -1;  // 163;
 
 
-// start next sequence at 174
+// start next sequence at 164
 
 // blank spots for unassigned pins - all unassigned pins need a unique number (do not re-use numbers)
+pin_number kUnassigned83 = 172;
+pin_number kUnassigned82 = 173;
+pin_number kUnassigned81 = 174;
+pin_number kUnassigned80 = 175;
+pin_number kUnassigned79 = 176;
+pin_number kUnassigned78 = 177;
+pin_number kUnassigned77 = 178;
+pin_number kUnassigned76 = 179;
+pin_number kUnassigned75 = 180;
+pin_number kUnassigned74 = 181;
+pin_number kUnassigned73 = 182;
+pin_number kUnassigned72 = 183;
+pin_number kUnassigned71 = 184;
+pin_number kUnassigned70 = 185;
+pin_number kUnassigned69 = 186;
+pin_number kUnassigned68 = 187;
+pin_number kUnassigned67 = 188;
 pin_number kUnassigned66 = 189;
 pin_number kUnassigned65 = 190;
 pin_number kUnassigned64 = 191;
