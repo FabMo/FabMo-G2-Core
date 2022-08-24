@@ -1993,7 +1993,7 @@
     <Compile Include="board\sbv700\motate_pin_assignments.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="board\sbv700\sbv700-d-pinout.h">
+    <Compile Include="board\sbv700\sbv700-pinout.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="cycle_feedhold.cpp">

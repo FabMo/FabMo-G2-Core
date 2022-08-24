@@ -12,9 +12,9 @@
 ##########
 # BOARDs for use directly from the make command line (with default settings) or by CONFIGs.
 
-ifeq ("$(BOARD)","sbv700-d")
+ifeq ("$(BOARD)","sbv700")
 BASE_BOARD=sbv700
-DEVICE_DEFINES += MOTATE_BOARD="sbv700-d"
+DEVICE_DEFINES += MOTATE_BOARD="sbv700"
 DEVICE_DEFINES += SETTINGS_FILE=${SETTINGS_FILE}
 endif
 

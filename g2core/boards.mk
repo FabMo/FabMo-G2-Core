@@ -154,7 +154,7 @@ endif
 
 ifeq ("$(CONFIG)","sbv700")
     ifeq ("$(BOARD)","NONE")
-        BOARD=sbv700-d
+        BOARD=sbv700
     endif
     SETTINGS_FILE="settings_shopbot_sbv700.h"
 endif

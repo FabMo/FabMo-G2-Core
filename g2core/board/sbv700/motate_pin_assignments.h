@@ -307,7 +307,7 @@ pin_number kUnassigned1  = 254;  // 254 is the max.. Do not exceed this number
 #else
 #error Unknown board layout $(MOTATE_BOARD)
 // This next include is for IDEs only
-#include <sbv700-d-pinout.h>
+#include <sbv700-pinout.h>
 #endif
 
 #endif
