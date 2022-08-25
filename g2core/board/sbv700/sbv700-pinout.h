@@ -211,8 +211,8 @@ _MAKE_MOTATE_PIN(kUnassigned68,                    'D', 15); //
 _MAKE_MOTATE_PIN(kUnassigned69,                    'D', 16); //
 _MAKE_MOTATE_PIN(kUnassigned70,                    'D', 17); //
 _MAKE_MOTATE_PIN(kOutputInterrupt_PinNumber,       'D', 18); //
-_MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'D', 19); //
-_MAKE_MOTATE_PIN(kUnassigned71,                    'D', 20); //
+_MAKE_MOTATE_PIN(kUnassigned71,                    'D', 19); //
+_MAKE_MOTATE_PIN(kSocket2_DirPinNumber,            'D', 20); //
 _MAKE_MOTATE_PIN(kUnassigned72,                    'D', 21); //
 _MAKE_MOTATE_PIN(kUnassigned73,                    'D', 22); //
 _MAKE_MOTATE_PIN(kUnassigned74,                    'D', 23); //
