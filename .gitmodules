@@ -1,4 +1,4 @@
 [submodule "Motate"]
 	path = Motate
-	url = https://github.com/synthetos/Motate.git
+	url = https://github.com/FabMo/Motate.git
 	fetchRecurseSubmodules = yes
