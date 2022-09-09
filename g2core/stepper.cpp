@@ -693,7 +693,8 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         float steps = travel_steps[motor];
 
         // Skip this motor if there are no new steps. Leave all other values intact.
-        if (fp_ZERO(steps)) {
+          //if (fp_ZERO(steps)) {
+        if (steps < EPSILON2) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
             continue;
         }
@@ -808,7 +809,8 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
         double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
 
         // Skip this motor if there are no new steps. Leave all other values intact.
-        if (fp_ZERO(steps)) {
+        //if (fp_ZERO(steps)) {
+        if (steps < EPSILON2) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
             continue;
         }
