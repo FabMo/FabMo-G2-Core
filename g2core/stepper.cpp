@@ -185,6 +185,12 @@ void stepper_reset()
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
         st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
+////## testing better zeroing        
+        // st_run.mot[motor].substep_increment = 0;
+        // st_pre.mot[motor].substep_increment = 0;
+        // st_run.mot[motor].substep_increment_increment = 0;
+        // st_pre.mot[motor].substep_increment_increment = 0;
+        
     }
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
 }
@@ -695,6 +701,8 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
+// suggested by RobG, no effect noticed
+            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
             continue;
         }
 

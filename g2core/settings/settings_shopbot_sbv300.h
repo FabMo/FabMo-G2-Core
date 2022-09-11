@@ -163,7 +163,7 @@
 
 #define M1_MOTOR_MAP                AXIS_X_EXTERNAL     // 1ma
 #define M1_STEP_ANGLE               1.8                 // 1sa
-#define M1_TRAVEL_PER_REV           20
+#define M1_TRAVEL_PER_REV           12.7
 #define M1_MICROSTEPS               10                  // 1mi        1,2,4,8
 #define M1_POLARITY                 0                   // 1po        0=normal, 1=reversed
 #define M1_POWER_MODE               MOTOR_POWER_MODE    // 1pm        TRUE=low power idle enabled
@@ -171,7 +171,7 @@
 
 #define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
-#define M2_TRAVEL_PER_REV           20
+#define M2_TRAVEL_PER_REV           12.7
 #define M2_MICROSTEPS               10
 #define M2_POLARITY                 0
 #define M2_POWER_MODE               MOTOR_POWER_MODE
@@ -179,7 +179,7 @@
 
 #define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
-#define M3_TRAVEL_PER_REV           20
+#define M3_TRAVEL_PER_REV           12.7
 #define M3_MICROSTEPS               10
 #define M3_POLARITY                 0
 #define M3_POWER_MODE               MOTOR_POWER_MODE
@@ -303,7 +303,7 @@
 // *** axis settings  SIMPLIFIED METRIC (su=100) *********************************************************************************
 
 #define X_AXIS_MODE                 AXIS_STANDARD   // xam  see canonical_machine.h cmAxisMode for valid values
-#define X_VELOCITY_MAX              10000           // xvm  G0 max velocity in mm/min
+#define X_VELOCITY_MAX              9000           // xvm  G0 max velocity in mm/min
 #define X_FEEDRATE_MAX              X_VELOCITY_MAX  // xfr  G1 max feed rate in mm/min
 #define X_TRAVEL_MIN                0               // xtn  minimum travel for soft limits
 #define X_TRAVEL_MAX                635             // xtm  travel between switches or crashes
@@ -317,7 +317,7 @@
 #define X_ZERO_BACKOFF              5               // xzb  mm
 
 #define Y_AXIS_MODE                 AXIS_STANDARD
-#define Y_VELOCITY_MAX              10000
+#define Y_VELOCITY_MAX              9000
 #define Y_FEEDRATE_MAX              Y_VELOCITY_MAX
 #define Y_TRAVEL_MIN                0
 #define Y_TRAVEL_MAX                460
@@ -331,7 +331,7 @@
 #define Y_ZERO_BACKOFF              5
 
 #define Z_AXIS_MODE                 AXIS_STANDARD
-#define Z_VELOCITY_MAX              1000
+#define Z_VELOCITY_MAX              9000
 #define Z_FEEDRATE_MAX              Z_VELOCITY_MAX
 #define Z_TRAVEL_MIN                -25
 #define Z_TRAVEL_MAX                150
