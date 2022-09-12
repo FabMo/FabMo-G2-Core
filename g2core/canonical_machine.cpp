@@ -302,13 +302,13 @@ void canonical_machine_reset(cmMachine_t *_cm)
 
     canonical_machine_reset_rotation(_cm);
     memset(&_cm->probe_state, 0, sizeof(cmProbeState)*PROBES_STORED);
-    memset(&_cm->probe_results, 0, sizeof(float)*PROBES_STORED*AXES);
+    memset(&_cm->probe_results, 0, sizeof(double)*PROBES_STORED*AXES);
 }
 
 void canonical_machine_reset_rotation(cmMachine_t *_cm) {
 
     // Make it an identity matrix for no rotation
-    memset(&_cm->rotation_matrix, 0, sizeof(float)*3*3);
+    memset(&_cm->rotation_matrix, 0, sizeof(double)*3*3);
     _cm->rotation_matrix[0][0] = 1.0;
     _cm->rotation_matrix[1][1] = 1.0;
     _cm->rotation_matrix[2][2] = 1.0;
@@ -419,7 +419,7 @@ uint8_t cm_get_feed_rate_mode(const GCodeState_t *gcode_state) { return gcode_st
 uint8_t cm_get_tool(const GCodeState_t *gcode_state) { return gcode_state->tool;}
 uint8_t cm_get_block_delete_switch() { return cm->gmx.block_delete_switch;}
 uint8_t cm_get_runtime_busy() { return (mp_get_runtime_busy());}
-float cm_get_feed_rate(const GCodeState_t *gcode_state) { return gcode_state->feed_rate;}
+double cm_get_feed_rate(const GCodeState_t *gcode_state) { return gcode_state->feed_rate;}
 
 void cm_set_motion_mode(GCodeState_t *gcode_state, const uint8_t motion_mode)
 {
@@ -518,19 +518,19 @@ stat_t cm_check_linenum() {
  *      move will run in absolute coordinates and POS will display using no offsets.
  */
 
-float cm_get_combined_offset(const uint8_t axis)
+double cm_get_combined_offset(const uint8_t axis)
 {
     if (cm->gm.absolute_override >= ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS) {
         return (0);
     }
-    float offset = cm->coord_offset[cm->gm.coord_system][axis] + cm->tool_offset[axis];
+    double offset = cm->coord_offset[cm->gm.coord_system][axis] + cm->tool_offset[axis];
     if (cm->gmx.g92_offset_enable == true) {
         offset += cm->gmx.g92_offset[axis];
     }
     return (offset);
 }
 
-float cm_get_display_offset(const GCodeState_t *gcode_state, const uint8_t axis)
+double cm_get_display_offset(const GCodeState_t *gcode_state, const uint8_t axis)
 {
     return (gcode_state->display_offset[axis]);
 }
@@ -567,9 +567,9 @@ void cm_set_display_offsets(GCodeState_t *gcode_state)
  *    ... that means in prevailing units (mm/inch) and with all offsets applied
  */
 
-float cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axis)
+double cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axis)
 {
-    float position;
+    double position;
 
     if (gcode_state == MODEL) {
         position = cm->gmx.position[axis] - cm_get_display_offset(MODEL, axis);
@@ -590,7 +590,7 @@ float cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axi
  *      ... machine position is always returned in mm mode. No units conversion is performed
  */
 
-float cm_get_absolute_position(const GCodeState_t *gcode_state, const uint8_t axis)
+double cm_get_absolute_position(const GCodeState_t *gcode_state, const uint8_t axis)
 {
     if (gcode_state == MODEL) {
         return (cm->gmx.position[axis]);
@@ -696,22 +696,22 @@ stat_t cm_set_tram(nvObj_t *nv)
     //    n_{xyz} is the unit normal
 
     // Step 1a: get the deltas
-    float d0_x = cm->probe_results[0][0] - cm->probe_results[1][0];
-    float d0_y = cm->probe_results[0][1] - cm->probe_results[1][1];
-    float d0_z = cm->probe_results[0][2] - cm->probe_results[1][2];
-    float d2_x = cm->probe_results[2][0] - cm->probe_results[1][0];
-    float d2_y = cm->probe_results[2][1] - cm->probe_results[1][1];
-    float d2_z = cm->probe_results[2][2] - cm->probe_results[1][2];
+    double d0_x = cm->probe_results[0][0] - cm->probe_results[1][0];
+    double d0_y = cm->probe_results[0][1] - cm->probe_results[1][1];
+    double d0_z = cm->probe_results[0][2] - cm->probe_results[1][2];
+    double d2_x = cm->probe_results[2][0] - cm->probe_results[1][0];
+    double d2_y = cm->probe_results[2][1] - cm->probe_results[1][1];
+    double d2_z = cm->probe_results[2][2] - cm->probe_results[1][2];
 
     // Step 1b: compute the combined magnitude
     // since sqrt(a)*sqrt(b) = sqrt(a*b), we can save a sqrt in making the unit normal
-    float combined_magnitude_inv = 1.0/sqrt((d0_x*d0_x + d0_y*d0_y + d0_z*d0_z) *
+    double combined_magnitude_inv = 1.0/sqrt((d0_x*d0_x + d0_y*d0_y + d0_z*d0_z) *
                                             (d2_x*d2_x + d2_y*d2_y + d2_z*d2_z));
 
     // Step 1c: compute the cross product and normalize
-    float n_x = (d0_z*d2_y - d0_y*d2_z) * combined_magnitude_inv;
-    float n_y = (d0_x*d2_z - d0_z*d2_x) * combined_magnitude_inv;
-    float n_z = (d0_y*d2_x - d0_x*d2_y) * combined_magnitude_inv;
+    double n_x = (d0_z*d2_y - d0_y*d2_z) * combined_magnitude_inv;
+    double n_y = (d0_x*d2_z - d0_z*d2_x) * combined_magnitude_inv;
+    double n_z = (d0_y*d2_x - d0_x*d2_y) * combined_magnitude_inv;
 
     // Step 1d: flip the normal if it's negative
     if (n_z < 0.0) {
@@ -721,19 +721,19 @@ stat_t cm_set_tram(nvObj_t *nv)
     }
 
     // Step 2: make the quaternion for the rotation to {0,0,1}
-    float p = sqrt(n_x*n_x + n_y*n_y + n_z*n_z);
-    float m = sqrt(2.0)*sqrt(p*(p+n_z));
-    float q_w = (n_z + p) / m;
-    float q_x = -n_y / m;
-    float q_y = n_x / m;
-    //float q_z = 0; // already optimized out
+    double p = sqrt(n_x*n_x + n_y*n_y + n_z*n_z);
+    double m = sqrt(2.0)*sqrt(p*(p+n_z));
+    double q_w = (n_z + p) / m;
+    double q_x = -n_y / m;
+    double q_y = n_x / m;
+    //double q_z = 0; // already optimized out
 
     // Step 3: compute the rotation matrix
-    float q_wx_2 = q_w * q_x * 2.0;
-    float q_wy_2 = q_w * q_y * 2.0;
-    float q_xx_2 = q_x * q_x * 2.0;
-    float q_xy_2 = q_x * q_y * 2.0;
-    float q_yy_2 = q_y * q_y * 2.0;
+    double q_wx_2 = q_w * q_x * 2.0;
+    double q_wy_2 = q_w * q_y * 2.0;
+    double q_xx_2 = q_x * q_x * 2.0;
+    double q_xy_2 = q_x * q_y * 2.0;
+    double q_yy_2 = q_y * q_y * 2.0;
 
     /*
         matrix = {
@@ -808,7 +808,7 @@ stat_t cm_get_nxln(nvObj_t *nv)
 //        registers we moved this block into its own function so that we get a fresh stack push
 // ALDEN: This shows up in avr-gcc 4.7.0 and avr-libc 1.8.0
 
-static float _calc_ABC(const uint8_t axis, const float target[])
+static double _calc_ABC(const uint8_t axis, const double target[])
 {
     if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
         return(target[axis]);    // no mm conversion - it's in degrees
@@ -817,10 +817,10 @@ static float _calc_ABC(const uint8_t axis, const float target[])
     return ((target[axis]) * 360.0 / (2 * M_PI * cm->a[axis].radius));
 }
 
-void cm_set_model_target(const float target[], const bool flags[])
+void cm_set_model_target(const double target[], const bool flags[])
 {
     uint8_t axis;
-    float tmp = 0;
+    double tmp = 0;
 
     // copy position to target so it always starts correctly
     copy_vector(cm->gm.target, cm->gmx.position);
@@ -897,7 +897,7 @@ static stat_t _finalize_soft_limits(const stat_t status)
     return (cm_alarm(status, "soft_limits"));               // throw an alarm
 }
 
-stat_t cm_test_soft_limits(const float target[])
+stat_t cm_test_soft_limits(const double target[])
 {
     if (cm->soft_limit_enable == true) {
         for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
@@ -975,7 +975,7 @@ stat_t cm_set_arc_distance_mode(const uint8_t mode)
 
 stat_t cm_set_g10_data(const uint8_t P_word, const bool P_flag,
                        const uint8_t L_word, const bool L_flag,
-                       const float offset[], const bool flag[])
+                       const double offset[], const bool flag[])
 {
     if (!L_flag) {
         return (STAT_L_WORD_IS_MISSING);
@@ -1099,7 +1099,7 @@ stat_t cm_set_coord_system(const uint8_t coord_system)  // set coordinate system
  *  TODO: Turn this into a queued command so it executes from the planner
  */
 
-void cm_set_position_by_axis(const uint8_t axis, const float position)
+void cm_set_position_by_axis(const uint8_t axis, const double position)
 {
     cm->gmx.position[axis] = position;
     cm->gm.target[axis] = position;
@@ -1129,7 +1129,7 @@ void cm_reset_position_to_absolute_position(cmMachine_t *_cm)
  *  as homed.
  */
 
-static void _exec_absolute_origin(float *value, bool *flag)
+static void _exec_absolute_origin(double *value, bool *flag)
 {
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (flag[axis]) {
@@ -1140,9 +1140,9 @@ static void _exec_absolute_origin(float *value, bool *flag)
     mp_set_steps_to_runtime_position();
 }
 
-stat_t cm_set_absolute_origin(const float origin[], bool flag[])
+stat_t cm_set_absolute_origin(const double origin[], bool flag[])
 {
-    float value[AXES];
+    double value[AXES];
 
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (flag[axis]) {
@@ -1167,7 +1167,7 @@ stat_t cm_set_absolute_origin(const float origin[], bool flag[])
  * http://linuxcnc.org/docs/html/gcode/gcode.html#sec:G92-G92.1-G92.2-G92.3
  */
 
-stat_t cm_set_g92_offsets(const float offset[], const bool flag[])
+stat_t cm_set_g92_offsets(const double offset[], const bool flag[])
 {
     // set offsets in the Gcode model extended context
     cm->gmx.g92_offset_enable = true;
@@ -1218,7 +1218,7 @@ stat_t cm_resume_g92_offsets()
  * cm_straight_traverse_mm()     - G0 linear rapid, mm units - for internal use
  */
 
-void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags) // Assumes both target arrays are the same size
+void cm_axes_to_mm(const double *target_global, double *target_mm, const bool *flags) // Assumes both target arrays are the same size
 {
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
@@ -1231,16 +1231,16 @@ void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *fla
     }
 }
 
-stat_t cm_straight_traverse_global(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+stat_t cm_straight_traverse_global(const double *target, const bool *flags, const cmMotionProfile motion_profile)
 {
     // Convert axes to mm if needed then call internal function
-    float target_mm[AXES];
+    double target_mm[AXES];
     cm_axes_to_mm(target, target_mm, flags);
     stat_t status = cm_straight_traverse_mm(target_mm, flags, motion_profile);
     return (status);
 }
 
-stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+stat_t cm_straight_traverse_mm(const double *target, const bool *flags, const cmMotionProfile motion_profile)
 {
     cm->gm.motion_mode = MOTION_MODE_STRAIGHT_TRAVERSE;
 #ifdef TRAVERSE_AT_HIGH_JERK
@@ -1284,8 +1284,8 @@ stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmM
  * _goto_stored_position_mm()     - helper, mm units - for internal use
  */
 
-stat_t _goto_stored_position_global(const float stored_position[],     // always in mm
-                                    const float intermediate_target[], // in current units (G20/G21)
+stat_t _goto_stored_position_global(const double stored_position[],     // always in mm
+                                    const double intermediate_target[], // in current units (G20/G21)
                                     const bool flags[])                // all false if no intermediate move
 {
     // Go through intermediate point if one is provided
@@ -1293,7 +1293,7 @@ stat_t _goto_stored_position_global(const float stored_position[],     // always
     ritorno(cm_straight_traverse_global(intermediate_target, flags, PROFILE_NORMAL));  // w/no action if no axis flags
 
     // If G20 adjust stored position (always in mm) to inches so traverse will be correct
-    float target[AXES]; // make a local stored position as it may be modified
+    double target[AXES]; // make a local stored position as it may be modified
     copy_vector(target, stored_position);
 
     if (cm->gm.units_mode == INCHES) {
@@ -1316,8 +1316,8 @@ stat_t _goto_stored_position_global(const float stored_position[],     // always
     return (status);
 }
 
-stat_t _goto_stored_position_mm(const float stored_position[],     // always in mm
-                                const float intermediate_target[], // always in mm
+stat_t _goto_stored_position_mm(const double stored_position[],     // always in mm
+                                const double intermediate_target[], // always in mm
                                 const bool flags[])                // all false if no intermediate move
 {
     // Go through intermediate point if one is provided
@@ -1325,7 +1325,7 @@ stat_t _goto_stored_position_mm(const float stored_position[],     // always in 
     ritorno(cm_straight_traverse_mm(intermediate_target, flags, PROFILE_NORMAL));  // w/no action if no axis flags
 
     // If G20 adjust stored position (always in mm) to inches so traverse will be correct
-    float target[AXES]; // make a local stored position as it may be modified
+    double target[AXES]; // make a local stored position as it may be modified
     copy_vector(target, stored_position);
 
     // Run the stored position move
@@ -1348,7 +1348,7 @@ stat_t cm_set_g28_position(void)
     return (STAT_OK);
 }
 
-stat_t cm_goto_g28_position(const float target[], const bool flags[])
+stat_t cm_goto_g28_position(const double target[], const bool flags[])
 {
     return (_goto_stored_position_global(cm->gmx.g28_position, target, flags));
 }
@@ -1359,12 +1359,12 @@ stat_t cm_set_g30_position(void)
     return (STAT_OK);
 }
 
-stat_t cm_goto_g30_position_global(const float target[], const bool flags[])
+stat_t cm_goto_g30_position_global(const double target[], const bool flags[])
 {
     return (_goto_stored_position_global(cm->gmx.g30_position, target, flags));
 }
 
-stat_t cm_goto_g30_position_mm(const float target[], const bool flags[])
+stat_t cm_goto_g30_position_mm(const double target[], const bool flags[])
 {
     return (_goto_stored_position_mm(cm->gmx.g30_position, target, flags));
 }
@@ -1379,12 +1379,12 @@ stat_t cm_goto_g30_position_mm(const float target[], const bool flags[])
  * Normalize feed rate to mm/min or to minutes if in inverse time mode
  */
 
-stat_t cm_set_feed_rate_global(const float feed_rate)
+stat_t cm_set_feed_rate_global(const double feed_rate)
 {
     return (cm_set_feed_rate_mm(_to_millimeters(feed_rate)));
 }
 
-stat_t cm_set_feed_rate_mm(const float feed_rate)
+stat_t cm_set_feed_rate_mm(const double feed_rate)
 {
     if (cm->gm.feed_rate_mode == INVERSE_TIME_MODE) {
         if (fp_ZERO(feed_rate)) {
@@ -1431,7 +1431,7 @@ stat_t cm_set_path_control(GCodeState_t *gcode_state, const uint8_t mode)
 /****************************************************************************************
  * cm_dwell() - G4, P parameter (seconds)
  */
-stat_t cm_dwell(const float seconds)
+stat_t cm_dwell(const double seconds)
 {
     cm->gm.P_word = seconds;
     mp_dwell(seconds);
@@ -1443,16 +1443,16 @@ stat_t cm_dwell(const float seconds)
  * cm_straight_feed_mm()     - G1, mm units - for internal use
  */
 
-stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+stat_t cm_straight_feed_global(const double *target, const bool *flags, const cmMotionProfile motion_profile)
 {
     // Convert axes to mm if needed then call internal function
-    float target_mm[AXES];
+    double target_mm[AXES];
     cm_axes_to_mm(target, target_mm, flags);
     stat_t status = cm_straight_feed_mm(target_mm, flags, motion_profile);
     return (status);
 }
 
-stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile)
+stat_t cm_straight_feed_mm(const double *target, const bool *flags, const cmMotionProfile motion_profile)
 {
     // trap zero feed rate condition
     if (fp_ZERO(cm->gm.feed_rate)) {
@@ -1505,7 +1505,7 @@ stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotio
  * Note: These functions don't actually do anything for now, and there's a bug
  *       where T and M in different blocks don't work correctly
  */
-static void _exec_select_tool(float *value, bool *flag)
+static void _exec_select_tool(double *value, bool *flag)
 {
     cm->gm.tool_select = (uint8_t)value[0];
 }
@@ -1515,12 +1515,12 @@ stat_t cm_select_tool(const uint8_t tool_select)
     if (tool_select > TOOLS) {
         return (STAT_T_WORD_IS_INVALID);
     }
-    float value[] = { (float)tool_select };
+    double value[] = { (double)tool_select };
     mp_queue_command(_exec_select_tool, value, nullptr);
     return (STAT_OK);
 }
 
-static void _exec_change_tool(float *value, bool *flag)
+static void _exec_change_tool(double *value, bool *flag)
 {
     cm->gm.tool = cm->gm.tool_select;
 
@@ -1637,7 +1637,7 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
  *                                                  (Note: new ramp will supercede any existing ramp)
  */
 
-// stat_t cm_fro_control(const float P_word, const bool P_flag) // M50
+// stat_t cm_fro_control(const double P_word, const bool P_flag) // M50
 // {
 //     bool new_enable = true;
 //     bool new_override = false;
@@ -1666,7 +1666,7 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
 //     return (STAT_OK);
 // }
 
-// stat_t cm_tro_control(const float P_word, const bool P_flag) // M50.1
+// stat_t cm_tro_control(const double P_word, const bool P_flag) // M50.1
 // {
 //     bool new_enable = true;
 //     bool new_override = false;
@@ -1748,7 +1748,7 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
  *   10.  Turn off all heaters and fans
  */
 
-static void _exec_program_finalize(float* value, bool* flag) {
+static void _exec_program_finalize(double* value, bool* flag) {
     // Perform the following resets if it's a program END
     if (*flag) {
         spindle_stop();                                      // Immediate M5
@@ -1889,7 +1889,7 @@ stat_t cm_json_wait(char *json_string)
 stat_t cm_run_home(nvObj_t *nv)
 {
     if (nv->value_int) {    // if true
-        float axes[] = INIT_AXES_ONES;
+        double axes[] = INIT_AXES_ONES;
         bool flags[] = INIT_AXES_TRUE;
         cm_homing_cycle_start(axes, flags);
     }
@@ -1903,14 +1903,14 @@ stat_t cm_run_home(nvObj_t *nv)
  * cm_run_jog()
  */
 
-float cm_get_jogging_dest(void)
+double cm_get_jogging_dest(void)
 {
     return cm->jogging_dest;
 }
 
 stat_t cm_run_jog(nvObj_t *nv)
 {
-    set_float(nv, cm->jogging_dest);
+    set_double(nv, cm->jogging_dest);
     cm_jogging_cycle_start(_axis(nv));
     return (STAT_OK);
 }
@@ -2247,27 +2247,27 @@ stat_t cm_get_vel(nvObj_t *nv)
     return (STAT_OK);
 }
 
-stat_t cm_get_feed(nvObj_t *nv) { return (get_float(nv, cm_get_feed_rate(ACTIVE_MODEL))); }
-stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
-stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
-stat_t cm_get_ofs(nvObj_t *nv)  { return (get_float(nv, cm_get_display_offset(ACTIVE_MODEL, _axis(nv)))); }
+stat_t cm_get_feed(nvObj_t *nv) { return (get_double(nv, cm_get_feed_rate(ACTIVE_MODEL))); }
+stat_t cm_get_pos(nvObj_t *nv)  { return (get_double(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
+stat_t cm_get_mpo(nvObj_t *nv)  { return (get_double(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
+stat_t cm_get_ofs(nvObj_t *nv)  { return (get_double(nv, cm_get_display_offset(ACTIVE_MODEL, _axis(nv)))); }
 
 stat_t cm_get_home(nvObj_t *nv) { return(_get_msg_helper(nv, msg_home, cm_get_homing_state())); }
 stat_t cm_set_home(nvObj_t *nv) { return (set_integer(nv, ((uint8_t &)(cm->homing_state)), false, true)); }
 stat_t cm_get_hom(nvObj_t *nv)  { return (get_integer(nv, cm->homed[_axis(nv)])); }
 
 stat_t cm_get_prob(nvObj_t *nv) { return(_get_msg_helper(nv, msg_probe, cm_get_probe_state())); }
-stat_t cm_get_prb(nvObj_t *nv)  { return (get_float(nv, cm->probe_results[0][_axis(nv)])); }
+stat_t cm_get_prb(nvObj_t *nv)  { return (get_double(nv, cm->probe_results[0][_axis(nv)])); }
 stat_t cm_get_probe_input(nvObj_t *nv) { return (get_integer(nv, cm->probe_input)); }
 stat_t cm_set_probe_input(nvObj_t *nv) { return (set_integer(nv, cm->probe_input, 0, D_IN_CHANNELS)); }
 
-stat_t cm_get_coord(nvObj_t *nv) { return (get_float(nv, cm->coord_offset[_coord(nv)][_axis(nv)])); }
-stat_t cm_set_coord(nvObj_t *nv) { return (set_float(nv, cm->coord_offset[_coord(nv)][_axis(nv)])); }
+stat_t cm_get_coord(nvObj_t *nv) { return (get_double(nv, cm->coord_offset[_coord(nv)][_axis(nv)])); }
+stat_t cm_set_coord(nvObj_t *nv) { return (set_double(nv, cm->coord_offset[_coord(nv)][_axis(nv)])); }
 
 stat_t cm_get_g92e(nvObj_t *nv)  { return (get_integer(nv, cm->gmx.g92_offset_enable)); }
-stat_t cm_get_g92(nvObj_t *nv)   { return (get_float(nv, cm->gmx.g92_offset[_axis(nv)])); }
-stat_t cm_get_g28(nvObj_t *nv)   { return (get_float(nv, cm->gmx.g28_position[_axis(nv)])); }
-stat_t cm_get_g30(nvObj_t *nv)   { return (get_float(nv, cm->gmx.g30_position[_axis(nv)])); }
+stat_t cm_get_g92(nvObj_t *nv)   { return (get_double(nv, cm->gmx.g92_offset[_axis(nv)])); }
+stat_t cm_get_g28(nvObj_t *nv)   { return (get_double(nv, cm->gmx.g28_position[_axis(nv)])); }
+stat_t cm_get_g30(nvObj_t *nv)   { return (get_double(nv, cm->gmx.g30_position[_axis(nv)])); }
 
 /*****************************************************
  **** TOOL TABLE AND OFFSET GET AND SET FUNCTIONS ****
@@ -2281,8 +2281,8 @@ static uint8_t _tool(nvObj_t *nv)
     return (atoi(&nv->token[2]));       // ttNNx is all in the token
 }
 
-stat_t cm_get_tof(nvObj_t *nv) { return (get_float(nv, cm->tool_offset[_axis(nv)])); }
-stat_t cm_set_tof(nvObj_t *nv) { return (set_float(nv, cm->tool_offset[_axis(nv)])); }
+stat_t cm_get_tof(nvObj_t *nv) { return (get_double(nv, cm->tool_offset[_axis(nv)])); }
+stat_t cm_set_tof(nvObj_t *nv) { return (set_double(nv, cm->tool_offset[_axis(nv)])); }
 
 stat_t cm_get_tt(nvObj_t *nv)
 {
@@ -2290,7 +2290,7 @@ stat_t cm_get_tt(nvObj_t *nv)
     if (toolnum > TOOLS) {
         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
     }
-    return (get_float(nv, tt.tt_offset[toolnum][_axis(nv)]));
+    return (get_double(nv, tt.tt_offset[toolnum][_axis(nv)]));
 }
 
 stat_t cm_set_tt(nvObj_t *nv)
@@ -2299,7 +2299,7 @@ stat_t cm_set_tt(nvObj_t *nv)
     if (toolnum > TOOLS) {
         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
     }
-    return(set_float(nv, tt.tt_offset[toolnum][_axis(nv)]));
+    return(set_double(nv, tt.tt_offset[toolnum][_axis(nv)]));
 }
 
 /************************************
@@ -2339,39 +2339,39 @@ stat_t cm_set_am(nvObj_t *nv)        // axis mode
     return(STAT_OK);
 }
 
-stat_t cm_get_tn(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].travel_min)); }
-stat_t cm_set_tn(nvObj_t *nv) { return (set_float(nv, cm->a[_axis(nv)].travel_min)); }
-stat_t cm_get_tm(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].travel_max)); }
-stat_t cm_set_tm(nvObj_t *nv) { return (set_float(nv, cm->a[_axis(nv)].travel_max)); }
-stat_t cm_get_ra(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].radius)); }
-stat_t cm_set_ra(nvObj_t *nv) { return (set_float_range(nv, cm->a[_axis(nv)].radius, RADIUS_MIN, 1000000)); }
+stat_t cm_get_tn(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].travel_min)); }
+stat_t cm_set_tn(nvObj_t *nv) { return (set_double(nv, cm->a[_axis(nv)].travel_min)); }
+stat_t cm_get_tm(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].travel_max)); }
+stat_t cm_set_tm(nvObj_t *nv) { return (set_double(nv, cm->a[_axis(nv)].travel_max)); }
+stat_t cm_get_ra(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].radius)); }
+stat_t cm_set_ra(nvObj_t *nv) { return (set_double_range(nv, cm->a[_axis(nv)].radius, RADIUS_MIN, 1000000)); }
 
 /**** Axis Jerk Primitives
  * cm_get_axis_jerk() - returns max jerk for an axis
  * cm_set_axis_jerk() - sets the jerk for an axis, including reciprocal and cached values
  */
-float cm_get_axis_jerk(const uint8_t axis) { return (cm->a[axis].jerk_max); }
+double cm_get_axis_jerk(const uint8_t axis) { return (cm->a[axis].jerk_max); }
 
 // Precompute sqrt(3)/10 for the max_junction_accel.
 // See plan_line.cpp -> _calculate_junction_vmax() notes for details.
-static const float _junction_accel_multiplier = sqrt(3.0)/10.0;
+static const double _junction_accel_multiplier = sqrt(3.0)/10.0;
 
 // Important note: Actual jerk is stored jerk * JERK_MULTIPLIER, and
 // Time Quanta is junction_integration_time / 1000.
 void _cm_recalc_junction_accel(const uint8_t axis) {
-    float T = cm->junction_integration_time / 1000.0;
-    float T2 = T*T;
+    double T = cm->junction_integration_time / 1000.0;
+    double T2 = T*T;
     cm->a[axis].max_junction_accel = _junction_accel_multiplier * T2 * (cm->a[axis].jerk_max * JERK_MULTIPLIER);
     cm->a[axis].high_junction_accel = _junction_accel_multiplier * T2 * (cm->a[axis].jerk_high * JERK_MULTIPLIER);
 }
 
-void cm_set_axis_max_jerk(const uint8_t axis, const float jerk)
+void cm_set_axis_max_jerk(const uint8_t axis, const double jerk)
 {
     cm->a[axis].jerk_max = jerk;
     _cm_recalc_junction_accel(axis);    // Must recalculate the max_junction_accel now that the jerk has changed.
 }
 
-void cm_set_axis_high_jerk(const uint8_t axis, const float jerk)
+void cm_set_axis_high_jerk(const uint8_t axis, const double jerk)
 {
     cm->a[axis].jerk_high = jerk;
     _cm_recalc_junction_accel(axis);    // Must recalculate the max_junction_accel now that the jerk has changed.
@@ -2397,38 +2397,38 @@ void cm_set_axis_high_jerk(const uint8_t axis, const float jerk)
  *  This is corrected to mm/min^3 by the internals of the code.
  */
 
-stat_t cm_get_vm(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].velocity_max)); }
+stat_t cm_get_vm(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].velocity_max)); }
 stat_t cm_set_vm(nvObj_t *nv)
 {
     uint8_t axis = _axis(nv);
-    ritorno(set_float_range(nv, cm->a[axis].velocity_max, 0, MAX_LONG));
+    ritorno(set_double_range(nv, cm->a[axis].velocity_max, 0, MAX_LONG));
     cm->a[axis].recip_velocity_max = 1/nv->value_flt;
     return(STAT_OK);
 }
 
-stat_t cm_get_fr(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].feedrate_max)); }
+stat_t cm_get_fr(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].feedrate_max)); }
 stat_t cm_set_fr(nvObj_t *nv)
 {
     uint8_t axis = _axis(nv);
-    ritorno(set_float_range(nv, cm->a[axis].feedrate_max, 0, MAX_LONG));
+    ritorno(set_double_range(nv, cm->a[axis].feedrate_max, 0, MAX_LONG));
     cm->a[axis].recip_feedrate_max = 1/nv->value_flt;
     return(STAT_OK);
 }
 
-stat_t cm_get_jm(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].jerk_max)); }
+stat_t cm_get_jm(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].jerk_max)); }
 stat_t cm_set_jm(nvObj_t *nv)
 {
     uint8_t axis = _axis(nv);
-    ritorno(set_float_range(nv, cm->a[axis].jerk_max, JERK_INPUT_MIN, JERK_INPUT_MAX));
+    ritorno(set_double_range(nv, cm->a[axis].jerk_max, JERK_INPUT_MIN, JERK_INPUT_MAX));
     cm_set_axis_max_jerk(axis, nv->value_flt);
     return(STAT_OK);
 }
 
-stat_t cm_get_jh(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].jerk_high)); }
+stat_t cm_get_jh(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].jerk_high)); }
 stat_t cm_set_jh(nvObj_t *nv)
 {
     uint8_t axis = _axis(nv);
-    ritorno(set_float_range(nv, cm->a[axis].jerk_high, JERK_INPUT_MIN, JERK_INPUT_MAX));
+    ritorno(set_double_range(nv, cm->a[axis].jerk_high, JERK_INPUT_MIN, JERK_INPUT_MAX));
     cm_set_axis_high_jerk(axis, nv->value_flt);
     return(STAT_OK);
 }
@@ -2452,14 +2452,14 @@ stat_t cm_get_hi(nvObj_t *nv) { return (get_integer(nv, cm->a[_axis(nv)].homing_
 stat_t cm_set_hi(nvObj_t *nv) { return (set_integer(nv, cm->a[_axis(nv)].homing_input, 0, D_IN_CHANNELS)); }
 stat_t cm_get_hd(nvObj_t *nv) { return (get_integer(nv, cm->a[_axis(nv)].homing_dir)); }
 stat_t cm_set_hd(nvObj_t *nv) { return (set_integer(nv, cm->a[_axis(nv)].homing_dir, 0, 1)); }
-stat_t cm_get_sv(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].search_velocity)); }
-stat_t cm_set_sv(nvObj_t *nv) { return (set_float_range(nv, cm->a[_axis(nv)].search_velocity, 0, MAX_LONG)); }
-stat_t cm_get_lv(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].latch_velocity)); }
-stat_t cm_set_lv(nvObj_t *nv) { return (set_float_range(nv, cm->a[_axis(nv)].latch_velocity, 0, MAX_LONG)); }
-stat_t cm_get_lb(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].latch_backoff)); }
-stat_t cm_set_lb(nvObj_t *nv) { return (set_float(nv, cm->a[_axis(nv)].latch_backoff)); }
-stat_t cm_get_zb(nvObj_t *nv) { return (get_float(nv, cm->a[_axis(nv)].zero_backoff)); }
-stat_t cm_set_zb(nvObj_t *nv) { return (set_float(nv, cm->a[_axis(nv)].zero_backoff)); }
+stat_t cm_get_sv(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].search_velocity)); }
+stat_t cm_set_sv(nvObj_t *nv) { return (set_double_range(nv, cm->a[_axis(nv)].search_velocity, 0, MAX_LONG)); }
+stat_t cm_get_lv(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].latch_velocity)); }
+stat_t cm_set_lv(nvObj_t *nv) { return (set_double_range(nv, cm->a[_axis(nv)].latch_velocity, 0, MAX_LONG)); }
+stat_t cm_get_lb(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].latch_backoff)); }
+stat_t cm_set_lb(nvObj_t *nv) { return (set_double(nv, cm->a[_axis(nv)].latch_backoff)); }
+stat_t cm_get_zb(nvObj_t *nv) { return (get_double(nv, cm->a[_axis(nv)].zero_backoff)); }
+stat_t cm_set_zb(nvObj_t *nv) { return (set_double(nv, cm->a[_axis(nv)].zero_backoff)); }
 
 /*** Canonical Machine Global Settings ***/
 /*
@@ -2477,21 +2477,21 @@ stat_t cm_set_zb(nvObj_t *nv) { return (set_float(nv, cm->a[_axis(nv)].zero_back
  * cm_set_mto() - set manual traverse override factor
  */
 
-stat_t cm_get_jt(nvObj_t *nv) { return(get_float(nv, cm->junction_integration_time)); }
+stat_t cm_get_jt(nvObj_t *nv) { return(get_double(nv, cm->junction_integration_time)); }
 stat_t cm_set_jt(nvObj_t *nv)
 {
-    ritorno(set_float_range(nv, cm->junction_integration_time, JUNCTION_INTEGRATION_MIN, JUNCTION_INTEGRATION_MAX));
+    ritorno(set_double_range(nv, cm->junction_integration_time, JUNCTION_INTEGRATION_MIN, JUNCTION_INTEGRATION_MAX));
     for (uint8_t axis=0; axis<AXES; axis++) { // recalculate max_junction_accel now that time quanta has changed.
         _cm_recalc_junction_accel(axis);
     }
     return(STAT_OK);
 }
 
-stat_t cm_get_ct(nvObj_t *nv) { return(get_float(nv, cm->chordal_tolerance)); }
-stat_t cm_set_ct(nvObj_t *nv) { return(set_float_range(nv, cm->chordal_tolerance, CHORDAL_TOLERANCE_MIN, 10000000)); }
+stat_t cm_get_ct(nvObj_t *nv) { return(get_double(nv, cm->chordal_tolerance)); }
+stat_t cm_set_ct(nvObj_t *nv) { return(set_double_range(nv, cm->chordal_tolerance, CHORDAL_TOLERANCE_MIN, 10000000)); }
 
-stat_t cm_get_zl(nvObj_t *nv) { return(get_float(nv, cm->feedhold_z_lift)); }
-stat_t cm_set_zl(nvObj_t *nv) { return(set_float(nv, cm->feedhold_z_lift)); }
+stat_t cm_get_zl(nvObj_t *nv) { return(get_double(nv, cm->feedhold_z_lift)); }
+stat_t cm_set_zl(nvObj_t *nv) { return(set_double(nv, cm->feedhold_z_lift)); }
 
 stat_t cm_get_sl(nvObj_t *nv) { return(get_integer(nv, cm->soft_limit_enable)); }
 stat_t cm_set_sl(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->soft_limit_enable, 0, 1)); }
@@ -2504,13 +2504,13 @@ stat_t cm_set_m48(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.m48_e
 
 stat_t cm_get_froe(nvObj_t *nv) { return(get_integer(nv, cm->gmx.mfo_enable)); }
 stat_t cm_set_froe(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.mfo_enable, 0, 1)); }
-stat_t cm_get_fro(nvObj_t *nv)  { return(get_float(nv, cm->gmx.mfo_factor)); }
-stat_t cm_set_fro(nvObj_t *nv)  { return(set_float_range(nv, cm->gmx.mfo_factor, FEED_OVERRIDE_MIN, FEED_OVERRIDE_MAX)); }
+stat_t cm_get_fro(nvObj_t *nv)  { return(get_double(nv, cm->gmx.mfo_factor)); }
+stat_t cm_set_fro(nvObj_t *nv)  { return(set_double_range(nv, cm->gmx.mfo_factor, FEED_OVERRIDE_MIN, FEED_OVERRIDE_MAX)); }
 
 stat_t cm_get_troe(nvObj_t *nv) { return(get_integer(nv, cm->gmx.mto_enable)); }
 stat_t cm_set_troe(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.mto_enable, 0, 1)); }
-stat_t cm_get_tro(nvObj_t *nv)  { return(get_float(nv, cm->gmx.mto_factor)); }
-stat_t cm_set_tro(nvObj_t *nv)  { return(set_float_range(nv, cm->gmx.mto_factor, TRAVERSE_OVERRIDE_MIN, TRAVERSE_OVERRIDE_MAX)); }
+stat_t cm_get_tro(nvObj_t *nv)  { return(get_double(nv, cm->gmx.mto_factor)); }
+stat_t cm_set_tro(nvObj_t *nv)  { return(set_double_range(nv, cm->gmx.mto_factor, TRAVERSE_OVERRIDE_MIN, TRAVERSE_OVERRIDE_MAX)); }
 
 stat_t cm_get_gpl(nvObj_t *nv) { return(get_integer(nv, cm->default_select_plane)); }
 stat_t cm_set_gpl(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_select_plane, CANON_PLANE_XY, CANON_PLANE_YZ)); }
@@ -3047,7 +3047,7 @@ void cm_print_nxln(nvObj_t *nv) { text_print(nv, fmt_nxln);};   // TYPE INT
  * axis print functions
  *
  *    _print_axis_ui8() - helper to print an integer value with no units
- *    _print_axis_flt() - helper to print a floating point linear value in prevailing units
+ *    _print_axis_flt() - helper to print a doubleing point linear value in prevailing units
  *    _print_pos_helper()
  *
  *    cm_print_am()

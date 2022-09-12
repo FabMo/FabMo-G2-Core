@@ -76,7 +76,7 @@ stat_t cm_ack_estop(nvObj_t *nv)
         return (STAT_OK);
     }
     bsm->ack_estop();
-    nv->value_flt = (float)bsm->get_estop_state();
+    nv->value_flt = (double)bsm->get_estop_state();
     nv->valuetype = TYPE_FLOAT;
     return (STAT_OK);
 }

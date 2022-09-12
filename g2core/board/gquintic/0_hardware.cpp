@@ -144,29 +144,29 @@ void hardware_init()
 
 // previous values of analog voltages
 #if TEMPERATURE_OUTPUT_ON
-float ai_vv[A_IN_CHANNELS];
-const float analog_change_threshold = 0.01;
+double ai_vv[A_IN_CHANNELS];
+const double analog_change_threshold = 0.01;
 #endif
 
-float angle_0 = 0.0;
-float angle_1 = 0.0;
+double angle_0 = 0.0;
+double angle_1 = 0.0;
 
 #if HAS_PRESSURE
-float pressure = 0;
-float pressure_threshold = 0.01;
+double pressure = 0;
+double pressure_threshold = 0.01;
 
-float flow = 0;
-float flow_threshold = 0.01;
+double flow = 0;
+double flow_threshold = 0.01;
 #endif
 
-// void read_encoder_0(bool worked /* = false*/, float angle /* = 0.0*/) {
+// void read_encoder_0(bool worked /* = false*/, double angle /* = 0.0*/) {
 //     if (worked) {
 //         angle_0 = angle;
 //     }
 //     encoder_0.getAngleFraction();
 // }
 
-// void read_encoder_1(bool worked /* = false*/, float angle /* = 0.0*/) {
+// void read_encoder_1(bool worked /* = false*/, double angle /* = 0.0*/) {
 //     if (worked) {
 //         angle_1 = angle;
 //     }
@@ -210,7 +210,7 @@ stat_t hardware_periodic()
     #if TEMPERATURE_OUTPUT_ON
     for (uint8_t a = 0; a < A_IN_CHANNELS; a++) {
         if (a_in[a]->getEnabled() == IO_ENABLED) {
-            float new_vv = a_in[a]->getValue();
+            double new_vv = a_in[a]->getValue();
             if (std::abs(ai_vv[a] - new_vv) >= analog_change_threshold) {
                 ai_vv[a] = new_vv; // only record if goes past threshold!
                 sr_request_status_report(SR_REQUEST_TIMED);
@@ -220,13 +220,13 @@ stat_t hardware_periodic()
     #endif
 
     #if HAS_PRESSURE
-    float new_pressure = pressure_sensor1.getPressure(PressureUnits::cmH2O);
+    double new_pressure = pressure_sensor1.getPressure(PressureUnits::cmH2O);
     if (std::abs(pressure - new_pressure) >= pressure_threshold) {
         pressure = new_pressure;  // only record if goes past threshold!
         sr_request_status_report(SR_REQUEST_TIMED);
     }
 
-    float new_flow = flow_sensor1.getFlow(FlowUnits::SLM);
+    double new_flow = flow_sensor1.getFlow(FlowUnits::SLM);
     if (std::abs(flow - new_flow) >= flow_threshold) {
         flow = new_flow;  // only record if goes past threshold!
         sr_request_status_report(SR_REQUEST_TIMED);
@@ -290,8 +290,8 @@ void _get_id(char *id)
  * hw_get_fbs() - get firmware build string
  */
 
-stat_t hw_get_fb(nvObj_t *nv) { return (get_float(nv, cs.fw_build)); }
-stat_t hw_get_fv(nvObj_t *nv) { return (get_float(nv, cs.fw_version)); }
+stat_t hw_get_fb(nvObj_t *nv) { return (get_double(nv, cs.fw_build)); }
+stat_t hw_get_fv(nvObj_t *nv) { return (get_double(nv, cs.fw_version)); }
 stat_t hw_get_hp(nvObj_t *nv) { return (get_string(nv, G2CORE_HARDWARE_PLATFORM)); }
 stat_t hw_get_hv(nvObj_t *nv) { return (get_string(nv, G2CORE_HARDWARE_VERSION)); }
 stat_t hw_get_fbs(nvObj_t *nv) { return (get_string(nv, G2CORE_FIRMWARE_BUILD_STRING)); }

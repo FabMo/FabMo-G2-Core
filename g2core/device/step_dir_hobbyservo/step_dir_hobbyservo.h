@@ -50,9 +50,9 @@ struct StepDirHobbyServo final : Stepper {
     bool                   _step_is_forward = false;
     int32_t                _position = 0;          // in steps from 0 - 6400 for a full "rotation"
     int32_t                _position_computed = 0; // in steps from 0 - 6400 for a full "rotation"
-    float                  _min_value;
-    float                  _max_value;
-    float                  _value_range;
+    double                  _min_value;
+    double                  _max_value;
+    double                  _value_range;
     bool                   _enabled = false;
     PWMOutputPin<pwm_pin_num> _pwm_pin;
     Motate::Timeout check_timer;
@@ -61,9 +61,9 @@ struct StepDirHobbyServo final : Stepper {
     StepDirHobbyServo(const uint32_t frequency = 50) : Stepper{}, _pwm_pin{kNormal, frequency} {
         _pwm_pin.setFrequency(frequency); // redundant due to a bug
         uint16_t _top_value = _pwm_pin.getTopValue();
-        float frequency_inv = 1.0/(float)frequency;
-        _min_value = (float)floor(_top_value / ((frequency_inv)/(750.0/1000000.0)));
-        _max_value = (float)ceil(_top_value / ((frequency_inv)/(2000.0/1000000.0)));
+        double frequency_inv = 1.0/(double)frequency;
+        _min_value = (double)floor(_top_value / ((frequency_inv)/(750.0/1000000.0)));
+        _max_value = (double)ceil(_top_value / ((frequency_inv)/(2000.0/1000000.0)));
         _value_range = _max_value - _min_value;
         _position_computed = _min_value;
         check_timer.set(1);
@@ -126,7 +126,7 @@ struct StepDirHobbyServo final : Stepper {
         if (!check_timer.isPast()) { return; }
         check_timer.set(10);
 
-        float used_position = _position;
+        double used_position = _position;
         if (used_position > 6400.0) {
             used_position = 6400.0;
         }
@@ -145,7 +145,7 @@ struct StepDirHobbyServo final : Stepper {
         _step_is_forward = new_direction;
     };
 
-    void setPowerLevels(float active_pl, float idle_pl) override {
+    void setPowerLevels(double active_pl, double idle_pl) override {
         ; // ignore this
     };
 };

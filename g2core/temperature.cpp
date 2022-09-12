@@ -74,7 +74,7 @@
 // If the temperature stays at set_point +- TEMP_SETPOINT_HYSTERESIS for more
 // than TEMP_SETPOINT_HOLD_TIME ms, it's "at temp".
 #ifndef TEMP_SETPOINT_HYSTERESIS
-#define TEMP_SETPOINT_HYSTERESIS (float)1.0 // +- 1 degrees C
+#define TEMP_SETPOINT_HYSTERESIS (double)1.0 // +- 1 degrees C
 #endif
 #ifndef TEMP_SETPOINT_HOLD_TIME
 #define TEMP_SETPOINT_HOLD_TIME 1000 // a full second
@@ -84,41 +84,41 @@
 // With a set temp of < TEMP_OFF_BELOW, and a measured temp of < TEMP_OFF_BELOW,
 // we are "at temp".
 #ifndef TEMP_OFF_BELOW
-#define TEMP_OFF_BELOW (float)45.0 // "safe to touch and hold for metal" with 5º margin
+#define TEMP_OFF_BELOW (double)45.0 // "safe to touch and hold for metal" with 5º margin
 #endif
 
 // If the read temp is more than TEMP_FULL_ON_DIFFERENCE less than set temp,
 // just turn the heater full-on.
 #ifndef TEMP_FULL_ON_DIFFERENCE
-#define TEMP_FULL_ON_DIFFERENCE (float)50.0
+#define TEMP_FULL_ON_DIFFERENCE (double)50.0
 #endif
 
 // If the temp is more than TEMP_MAX_SETPOINT, just turn the heater off,
 // regardless of set temp.
 #ifndef TEMP_MAX_SETPOINT
-#define TEMP_MAX_SETPOINT (float)300.0
+#define TEMP_MAX_SETPOINT (double)300.0
 #endif
 
 // If the resistance reads higher than TEMP_MIN_DISCONNECTED_RESISTANCE, the
 // thermistor is considered disconnected.
 #ifndef TEMP_MIN_DISCONNECTED_RESISTANCE
-#define TEMP_MIN_DISCONNECTED_RESISTANCE (float)1000000.0
+#define TEMP_MIN_DISCONNECTED_RESISTANCE (double)1000000.0
 #endif
 
 // If the temperature doesn't rise more than TEMP_MIN_RISE_DEGREES_OVER_TIME in
 // TEMP_MIN_RISE_TIME milliseconds, then it's a failure (the sensor is likely
 // physically dislocated.)
 #ifndef TEMP_MIN_RISE_DEGREES_OVER_TIME
-#define TEMP_MIN_RISE_DEGREES_OVER_TIME (float)10.0
+#define TEMP_MIN_RISE_DEGREES_OVER_TIME (double)10.0
 #endif
 #ifndef TEMP_MIN_BED_RISE_DEGREES_OVER_TIME
-#define TEMP_MIN_BED_RISE_DEGREES_OVER_TIME (float)3.0
+#define TEMP_MIN_BED_RISE_DEGREES_OVER_TIME (double)3.0
 #endif
 #ifndef TEMP_MIN_RISE_TIME
-#define TEMP_MIN_RISE_TIME (float)(60.0 * 1000.0) // one minute
+#define TEMP_MIN_RISE_TIME (double)(60.0 * 1000.0) // one minute
 #endif
 #ifndef TEMP_MIN_RISE_DEGREES_FROM_TARGET
-#define TEMP_MIN_RISE_DEGREES_FROM_TARGET (float)10.0
+#define TEMP_MIN_RISE_DEGREES_FROM_TARGET (double)10.0
 #endif
 
 
@@ -129,17 +129,17 @@
 
 // The should be set in hardware.h for each board.
 // Luckily, we only use boards that are 3.3V logic at the moment.
-const float kSystemVoltage = 3.3;
+const double kSystemVoltage = 3.3;
 
 // This may be used as a base class in the future, but for now it's just a dummy sensor
 struct TemperatureSensor {
     TemperatureSensor() {}
 
-    float temperature_exact() {
+    double temperature_exact() {
         return -1; // invalid temperature
     };
 
-    float get_resistance() {
+    double get_resistance() {
         return -1; // invalid temperature from a thermistor
     };
 
@@ -147,7 +147,7 @@ struct TemperatureSensor {
         return 0;
     };
 
-    float get_voltage() {
+    double get_voltage() {
         return -1;
     };
 
@@ -158,14 +158,14 @@ struct TemperatureSensor {
 // template<uint16_t sample_count>
 // struct ValueHistory {
 
-//     float variance_max = 2.0;
+//     double variance_max = 2.0;
 //     ValueHistory() {};
-//     ValueHistory(float v_max) : variance_max{v_max} {};
+//     ValueHistory(double v_max) : variance_max{v_max} {};
 
 //     struct sample_t {
-//         float value;
-//         float value_sq;
-//         void set(float v) { value = v; value_sq = v*v; }
+//         double value;
+//         double value_sq;
+//         void set(double v) { value = v; value_sq = v*v; }
 //     };
 //     sample_t samples[sample_count];
 //     uint16_t next_sample = 0;
@@ -177,10 +177,10 @@ struct TemperatureSensor {
 //     };
 //     uint16_t sampled = 0;
 
-//     float rolling_sum = 0;
-//     float rolling_sum_sq = 0;
-//     float rolling_mean = 0;
-//     void add_sample(float t) {
+//     double rolling_sum = 0;
+//     double rolling_sum_sq = 0;
+//     double rolling_mean = 0;
+//     void add_sample(double t) {
 //         rolling_sum -= samples[next_sample].value;
 //         rolling_sum_sq -= samples[next_sample].value_sq;
 
@@ -192,20 +192,20 @@ struct TemperatureSensor {
 //         _bump_index(next_sample);
 //         if (sampled < sample_count) { ++sampled; }
 
-//         rolling_mean = rolling_sum/(float)sampled;
+//         rolling_mean = rolling_sum/(double)sampled;
 //     };
 
-//     float get_std_dev() {
+//     double get_std_dev() {
 //         // Important note: this is a POPULATION standard deviation, not a population standard deviation
-//         float variance = (rolling_sum_sq/(float)sampled) - (rolling_mean*rolling_mean);
+//         double variance = (rolling_sum_sq/(double)sampled) - (rolling_mean*rolling_mean);
 //         return sqrt(std::abs(variance));
 //     };
 
-//     float value() {
+//     double value() {
 //         // we'll shoot through the samples and ignore the outliers
 //         uint16_t samples_kept = 0;
-//         float temp = 0;
-//         float std_dev = get_std_dev();
+//         double temp = 0;
+//         double std_dev = get_std_dev();
 
 //         for (uint16_t i=0; i<sampled; i++) {
 //             if (std::abs(samples[i].value - rolling_mean) < (variance_max * std_dev)) {
@@ -219,28 +219,28 @@ struct TemperatureSensor {
 //             return rolling_mean;
 //         }
 
-//         return (temp / (float)samples_kept);
+//         return (temp / (double)samples_kept);
 //     };
 // };
 
 
 struct ADCCircuit
 {
-    virtual float get_resistance(const float voltage) const;
-    virtual float get_voltage(const float resistance) const;
+    virtual double get_resistance(const double voltage) const;
+    virtual double get_voltage(const double resistance) const;
 };
 
 struct ADCCircuitSimplePullup : ADCCircuit
 {
-    const float _pullup_resistance;
-    ADCCircuitSimplePullup(const float pullup_resistance) : _pullup_resistance{pullup_resistance} {};
+    const double _pullup_resistance;
+    ADCCircuitSimplePullup(const double pullup_resistance) : _pullup_resistance{pullup_resistance} {};
 
-    float get_resistance(const float v) const override
+    double get_resistance(const double v) const override
     {
         return ((_pullup_resistance * v) / (kSystemVoltage - v));
     };
 
-    float get_voltage(const float r) const override
+    double get_voltage(const double r) const override
     {
         return r/(r+_pullup_resistance)*kSystemVoltage;
     };
@@ -248,16 +248,16 @@ struct ADCCircuitSimplePullup : ADCCircuit
 
 struct ADCCircuitDifferentialPullup : ADCCircuit
 {
-    const float _pullup_resistance;
-    ADCCircuitDifferentialPullup(const float pullup_resistance) : _pullup_resistance{pullup_resistance} {};
+    const double _pullup_resistance;
+    ADCCircuitDifferentialPullup(const double pullup_resistance) : _pullup_resistance{pullup_resistance} {};
 
-    float get_resistance(float v) const override
+    double get_resistance(double v) const override
     {
-        float v2 = v / kSystemVoltage;
+        double v2 = v / kSystemVoltage;
         return (v2 * 2.0 * _pullup_resistance)/(1.0 - v2);
     };
 
-    float get_voltage(const float r) const override
+    double get_voltage(const double r) const override
     {
         return (kSystemVoltage * r)/(2.0 * _pullup_resistance + r);
     };
@@ -267,12 +267,12 @@ struct ADCCircuitRawResistance : ADCCircuit
 {
     ADCCircuitRawResistance() {};
 
-    float get_resistance(float v) const override
+    double get_resistance(double v) const override
     {
         return v;
     };
 
-    float get_voltage(const float r) const override
+    double get_voltage(const double r) const override
     {
         return r;
     };
@@ -281,14 +281,14 @@ struct ADCCircuitRawResistance : ADCCircuit
 
 template<typename ADC_t, uint16_t min_temp = 0, uint16_t max_temp = 300>
 struct Thermistor {
-    float c1, c2, c3;
+    double c1, c2, c3;
     const ADCCircuit *circuit;
 
     ADC_t adc_pin;
     uint16_t raw_adc_value = 0;
-    float raw_adc_voltage = 0.0;
+    double raw_adc_voltage = 0.0;
 
-    const float variance_max = 1.1;
+    const double variance_max = 1.1;
     ValueHistory<20> history {variance_max};
 
     typedef Thermistor<ADC_t, min_temp, max_temp> type;
@@ -297,7 +297,7 @@ struct Thermistor {
     //  http://assets.newport.com/webDocuments-EN/images/AN04_Thermistor_Calibration_IX.PDF
     //  http://hydraraptor.blogspot.com/2012/11/more-accurate-thermistor-tables.html
 
-//    Thermistor(const float temp_low, const float temp_med, const float temp_high, const float res_low, const float res_med, const float res_high, const ADCCircuit *_circuit)
+//    Thermistor(const double temp_low, const double temp_med, const double temp_high, const double res_low, const double res_med, const double res_high, const ADCCircuit *_circuit)
 //    : circuit{_circuit}
 //      adc_pin {kNormal, [&]{this->adc_has_new_value();} }
 //    {
@@ -310,7 +310,7 @@ struct Thermistor {
 //    };
 
     template <typename... Ts>
-    Thermistor(const float temp_low, const float temp_med, const float temp_high, const float res_low, const float res_med, const float res_high, const ADCCircuit *_circuit, Ts&&... additional_values)
+    Thermistor(const double temp_low, const double temp_med, const double temp_high, const double res_low, const double res_med, const double res_high, const ADCCircuit *_circuit, Ts&&... additional_values)
     : circuit{_circuit},
       adc_pin{Motate::kNormal, [&]{this->adc_has_new_value();}, std::forward<Ts>(additional_values)...}
     {
@@ -322,48 +322,48 @@ struct Thermistor {
                                 1000000.0);
     };
 
-    void setup(const float temp_low, const float temp_med, const float temp_high, const float res_low, const float res_med, const float res_high) {
-        float temp_low_fixed = temp_low + 273.15;
-        float temp_med_fixed = temp_med + 273.15;
-        float temp_high_fixed = temp_high + 273.15;
+    void setup(const double temp_low, const double temp_med, const double temp_high, const double res_low, const double res_med, const double res_high) {
+        double temp_low_fixed = temp_low + 273.15;
+        double temp_med_fixed = temp_med + 273.15;
+        double temp_high_fixed = temp_high + 273.15;
 
         // Intermediates - using cryptic names from the calibration paper for consistency.
 
-        float a1 = log(res_low);
-        float a2 = log(res_med);
-        float a3 = log(res_high);
+        double a1 = log(res_low);
+        double a2 = log(res_med);
+        double a3 = log(res_high);
 
-        float z = a1 - a2;
-        float y = a1 - a3;
-        float x = 1/temp_low_fixed - 1/temp_med_fixed;
-        float w = 1/temp_low_fixed - 1/temp_high_fixed;
+        double z = a1 - a2;
+        double y = a1 - a3;
+        double x = 1/temp_low_fixed - 1/temp_med_fixed;
+        double w = 1/temp_low_fixed - 1/temp_high_fixed;
 
-        float v = pow(a1,3) - pow(a2,3);
-        float u = pow(a1,3) - pow(a3,3);
+        double v = pow(a1,3) - pow(a2,3);
+        double u = pow(a1,3) - pow(a3,3);
 
         c3 = (x-z*w/y)/(v-z*u/y);
         c2 = (x-c3*v)/z;
         c1 = 1/temp_low_fixed-c3*pow(a1,3)-c2*a1;
     };
 
-    float temperature_exact() {
+    double temperature_exact() {
         // Sanity check:
         if (raw_adc_value < 1) {
             return -1; // invalid temperature from a thermistor
         }
 
-        float r = get_resistance(); // resistance of thermistor
+        double r = get_resistance(); // resistance of thermistor
 
         if ((r < 0) || (r > TEMP_MIN_DISCONNECTED_RESISTANCE)) {
             return -1;
         }
 
-        float lnr = log(r);
-        float Tinv = c1 + (c2*lnr) + (c3*pow(lnr,3));
+        double lnr = log(r);
+        double Tinv = c1 + (c2*lnr) + (c3*pow(lnr,3));
         return (1/Tinv) - 273.15; // final temperature
     };
 
-    float get_resistance() {
+    double get_resistance() {
         raw_adc_voltage = history.value();
 
         if (isnan(raw_adc_voltage)) {
@@ -373,12 +373,12 @@ struct Thermistor {
         return circuit->get_resistance(raw_adc_voltage);
     };
 
-//    float get_resistance() {
+//    double get_resistance() {
 //        if (raw_adc_value < 1) {
 //            return -1; // invalid temperature from a thermistor
 //        }
 //
-//        float v = raw_adc_voltage; // convert the ADC value to a voltage
+//        double v = raw_adc_voltage; // convert the ADC value to a voltage
 //        return ((pullup_resistance * v) / (kSystemVoltage - v));   // resistance of thermistor
 //    };
 
@@ -386,7 +386,7 @@ struct Thermistor {
         return raw_adc_value;
     };
 
-    float get_voltage() {
+    double get_voltage() {
         return raw_adc_voltage;
     };
 
@@ -397,7 +397,7 @@ struct Thermistor {
     // Call back function from the ADC to tell it that the ADC has a new sample...
     void adc_has_new_value() {
         raw_adc_value = adc_pin.getRaw();
-        float v = std::abs(adc_pin.getVoltage());
+        double v = std::abs(adc_pin.getVoltage());
         history.add_sample(v);
     };
 };
@@ -408,13 +408,13 @@ struct PT100 {
     const ADCCircuit *circuit;
 
     ADC_t adc_pin;
-    float raw_adc_voltage = 0.0;
+    double raw_adc_voltage = 0.0;
     int32_t raw_adc_value = 0;
 
     bool new_sample_since_read = false;
     uint8_t reads_without_sample = 0;
 
-    const float variance_max = 1.1;
+    const double variance_max = 1.1;
     ValueHistory<20> history {variance_max};
 
     typedef PT100<ADC_t, min_temp, max_temp> type;
@@ -442,18 +442,18 @@ struct PT100 {
                                 1);    // ignored
     };
 
-    constexpr float get_resistance_of_temp(float t) {
+    constexpr double get_resistance_of_temp(double t) {
         // R = 100(1 + A*T + B*T^2); A = 3.9083*10^-3; B = -5.775*10^-7
         return 100 * (1 + 0.0039083*t + -0.0000005775*t*t);
     };
 
-    constexpr float get_voltage_of_temp(float t) {
-        float r = get_resistance_of_temp(t);
+    constexpr double get_voltage_of_temp(double t) {
+        double r = get_resistance_of_temp(t);
 
         return circuit->get_voltage(r);
     };
 
-    float temperature_exact() {
+    double temperature_exact() {
         if (!new_sample_since_read) {
             reads_without_sample++;
             if (reads_without_sample > 10) {
@@ -464,13 +464,13 @@ struct PT100 {
         }
         new_sample_since_read = false;
 
-        float r = get_resistance();
+        double r = get_resistance();
         if (r < 0.0) { return -1; }
 
         // from https://www.maximintegrated.com/en/app-notes/index.mvp/id/3450
         // run through wolfram as:
         // solve R = 100(1 + A*T + B*T^2); A = 3.9083*10^-3; B = -5.775*10^-7 for T
-        float t = 3383.81 - (0.287154*sqrt(159861899.0 - 210000.0*r));
+        double t = 3383.81 - (0.287154*sqrt(159861899.0 - 210000.0*r));
 
         if (t > max_temp) {
             return -1;
@@ -479,7 +479,7 @@ struct PT100 {
         return t;
     };
 
-    float get_resistance() {
+    double get_resistance() {
         raw_adc_voltage = history.value();
 
         if (isnan(raw_adc_voltage)) {
@@ -489,8 +489,8 @@ struct PT100 {
         return circuit->get_resistance(raw_adc_voltage);
     };
 
-//    float get_resistance() {
-//        float r;
+//    double get_resistance() {
+//        double r;
 //        raw_adc_voltage = history.value();
 //
 //        if (isnan(raw_adc_voltage)) {
@@ -501,11 +501,11 @@ struct PT100 {
 //            r = raw_adc_voltage;
 //        }
 //        else if (differential) {
-//            float v = raw_adc_voltage / kSystemVoltage;
+//            double v = raw_adc_voltage / kSystemVoltage;
 //            r = (v * 2.0 * pullup_resistance)/(1.0 - v) - inline_resistance;
 //        }
 //        else {
-//            float v = raw_adc_voltage;
+//            double v = raw_adc_voltage;
 //            r = ((pullup_resistance * v) / (kSystemVoltage - v)) - inline_resistance;
 //        }
 //        return r;
@@ -515,7 +515,7 @@ struct PT100 {
         return raw_adc_value;
     };
 
-    float get_voltage() {
+    double get_voltage() {
 //        return history.value();
         return raw_adc_voltage;
     };
@@ -527,7 +527,7 @@ struct PT100 {
     // Call back function from the ADC to tell it that the ADC has a new sample...
     void adc_has_new_value(bool error = false) {
         raw_adc_value = adc_pin.getRaw();
-        float v = std::abs(adc_pin.getVoltage());
+        double v = std::abs(adc_pin.getVoltage());
 //        if (v < 0) {
 //            char buffer[128];
 //            char *str = buffer;
@@ -568,9 +568,9 @@ TEMPERATURE_SENSOR_3_TYPE temperature_sensor_3 TEMPERATURE_SENSOR_3_INIT;
 TemperatureSensor temperature_sensor_3;
 #endif
 
-float last_reported_temp1 = 0; // keep track of what we've reported for SR generation
-float last_reported_temp2 = 0;
-float last_reported_temp3 = 0;
+double last_reported_temp1 = 0; // keep track of what we've reported for SR generation
+double last_reported_temp2 = 0;
+double last_reported_temp3 = 0;
 
 
 // Output 1 FET info
@@ -641,36 +641,36 @@ Motate::SysTickEvent adc_tick_event {[&] {
 
 
 struct PID {
-    static constexpr float output_max = 1.0;
-    static constexpr float derivative_contribution = 1.0/10.0;
+    static constexpr double output_max = 1.0;
+    static constexpr double derivative_contribution = 1.0/10.0;
 
-    float _p_factor;                // the scale for P values
-    float _i_factor;                // the scale for I values
-    float _d_factor;                // the scale for D values
-    float _f_factor;                // the scale for O values
+    double _p_factor;                // the scale for P values
+    double _i_factor;                // the scale for I values
+    double _d_factor;                // the scale for D values
+    double _f_factor;                // the scale for O values
 
-    float _proportional = 0.0;      // _proportional storage
-    float _integral = 0.0;          // _integral storage
-    float _derivative = 0.0;        // _derivative storage
-    float _feed_forward = 0.0;            // _feed_forward storage
-    float _previous_input = 0.0;    // _derivative storage
+    double _proportional = 0.0;      // _proportional storage
+    double _integral = 0.0;          // _integral storage
+    double _derivative = 0.0;        // _derivative storage
+    double _feed_forward = 0.0;            // _feed_forward storage
+    double _previous_input = 0.0;    // _derivative storage
 
-    float _set_point;
+    double _set_point;
 
     Timeout _set_point_timeout;     // used to keep track of if we are at set temp and stay there
     bool _at_set_point;
 
     Timeout _rise_time_timeout;     // used to keep track of if we are increasing temperature fast enough
-    float _min_rise_over_time;      // the amount of degrees that it must rise in the given time
-    float _rise_time_checkpoint;    // when we start the timer, we set _rise_time_checkpoint to the minimum goal
+    double _min_rise_over_time;      // the amount of degrees that it must rise in the given time
+    double _rise_time_checkpoint;    // when we start the timer, we set _rise_time_checkpoint to the minimum goal
 
-    float _average_output = 0;
+    double _average_output = 0;
 
     bool _enable;                   // set true to enable this heater
 
-    PID(float P, float I, float D, float F, float min_rise_over_time, float startSetPoint = 0.0) : _p_factor{P/100.0f}, _i_factor{I/100.0f}, _d_factor{D/100.0f}, _f_factor{F/100.0f}, _set_point{startSetPoint}, _at_set_point{false}, _min_rise_over_time(min_rise_over_time) {};
+    PID(double P, double I, double D, double F, double min_rise_over_time, double startSetPoint = 0.0) : _p_factor{P/100.0f}, _i_factor{I/100.0f}, _d_factor{D/100.0f}, _f_factor{F/100.0f}, _set_point{startSetPoint}, _at_set_point{false}, _min_rise_over_time(min_rise_over_time) {};
 
-    float getNewOutput(float input) {
+    double getNewOutput(double input) {
         // If the input is < 0, the sensor failed
         if (input < 0) {
             if (_set_point > TEMP_OFF_BELOW) {
@@ -681,7 +681,7 @@ struct PID {
         }
 
         // Calculate the e (error)
-        float e = _set_point - input;
+        double e = _set_point - input;
 
         if (std::abs(e) < TEMP_SETPOINT_HYSTERESIS) {
             if (!_set_point_timeout.isSet()) {
@@ -719,7 +719,7 @@ struct PID {
 
         // P = Proportional
 
-        float p = _p_factor * e;
+        double p = _p_factor * e;
         // For output's sake, we'll store this, otherwise we don't need it:
         _proportional = p;
 
@@ -731,7 +731,7 @@ struct PID {
         // 2) Limit the _integral maximum value
         // 3) Reset _integral to e if output has to be clamped (after output is computed)
         _integral += e;
-        float i = _integral * _i_factor;
+        double i = _integral * _i_factor;
 
         if (i > 0.75) {
             i = 0.75;
@@ -748,19 +748,19 @@ struct PID {
 
 
         _derivative = (input - _previous_input)*(derivative_contribution) + (_derivative * (1.0-derivative_contribution));
-        float d = _derivative * _d_factor;
+        double d = _derivative * _d_factor;
 
         // F = feed-forward
 
         _feed_forward = (_set_point-21); // 21 is for a roughly ideal room temperature
 
-        float f = _f_factor * _feed_forward;
+        double f = _f_factor * _feed_forward;
 
         _previous_input = input;
 
         // Now that we've computed all that, we'll decide when to ignore it
 
-        float output = p + i + f - d;
+        double output = p + i + f - d;
         if (output < 0.0f) {
             output = 0;
 
@@ -810,10 +810,10 @@ struct HeaterFan {
 #if TEMPERATURE_OUTPUT_ON == 1
     PWMOutputPin<heater_fan_pinnum> heater_fan_pin;
 #endif
-    float min_value = MIN_FAN_VALUE;
-    float max_value = MAX_FAN_VALUE;
-    float low_temp = MIN_FAN_TEMP;
-    float high_temp = MIN_FAN_TEMP;
+    double min_value = MIN_FAN_VALUE;
+    double max_value = MAX_FAN_VALUE;
+    double low_temp = MIN_FAN_TEMP;
+    double high_temp = MIN_FAN_TEMP;
 
     HeaterFan() {
 #if TEMPERATURE_OUTPUT_ON == 1
@@ -822,7 +822,7 @@ struct HeaterFan {
 #endif
     }
 
-    void newTemp(float temp) {
+    void newTemp(double temp) {
 #if TEMPERATURE_OUTPUT_ON == 1
         if ((temp > low_temp) && (temp < high_temp)) {
             heater_fan_pin = max_value * (((temp - low_temp)/(high_temp - low_temp))*(1.0 - min_value) + min_value);
@@ -881,7 +881,7 @@ void temperature_reset()
 }
 
 // Minimum difference in temp before it'll trigger an SR
-const float kTempDiffSRTrigger = 0.25;
+const double kTempDiffSRTrigger = 0.25;
 
 stat_t temperature_callback()
 {
@@ -902,13 +902,13 @@ stat_t temperature_callback()
     if (pid_timeout.isPast()) {
         pid_timeout.set(100);
 
-        float temp = 0.0;
-        float fan_temp = 0.0;
+        double temp = 0.0;
+        double fan_temp = 0.0;
         bool sr_requested = false;
 
         if (pid1._enable) {
             temp = temperature_sensor_1.temperature_exact();
-            float out1_value = pid1.getNewOutput(temp);
+            double out1_value = pid1.getNewOutput(temp);
             fet_pin1.write(out1_value);
 
             if (std::abs(temp - last_reported_temp1) > kTempDiffSRTrigger) {
@@ -920,7 +920,7 @@ stat_t temperature_callback()
 
         if (pid2._enable) {
             temp = temperature_sensor_2.temperature_exact();
-            float out2_value = pid2.getNewOutput(temp);
+            double out2_value = pid2.getNewOutput(temp);
             fet_pin2.write(out2_value);
 
             if (std::abs(temp - last_reported_temp2) > kTempDiffSRTrigger) {
@@ -934,7 +934,7 @@ stat_t temperature_callback()
 
         if (pid3._enable) {
             temp = temperature_sensor_3.temperature_exact();
-            float out3_value = pid3.getNewOutput(temp);
+            double out3_value = pid3.getNewOutput(temp);
             fet_pin3.write(out3_value);
 
             if (std::abs(temp - last_reported_temp3) > kTempDiffSRTrigger) {
@@ -1123,7 +1123,7 @@ stat_t cm_set_heater_f(nvObj_t *nv)
  * There are both the file-to-file use version, and the NV-pair form (which uses the other).
  */
 
-float cm_get_set_temperature(const uint8_t heater)
+double cm_get_set_temperature(const uint8_t heater)
 {
     switch(heater) {
         case 1: { return pid1._set_point; break; }
@@ -1142,7 +1142,7 @@ stat_t cm_get_set_temperature(nvObj_t *nv)
     return (STAT_OK);
 }
 
-void cm_set_set_temperature(const uint8_t heater, const float value)
+void cm_set_set_temperature(const uint8_t heater, const double value)
 {
     switch(heater) {
         case 1: { pid1._set_point = std::min(TEMP_MAX_SETPOINT, value); break; }
@@ -1164,10 +1164,10 @@ stat_t cm_set_set_temperature(nvObj_t *nv)
  * cm_set_fan_power() - set the set high-value setting of the heater fan
  */
 
-float cm_get_fan_power(const uint8_t heater)
+double cm_get_fan_power(const uint8_t heater)
 {
     switch(heater) {
-        case 1: { return std::min(1.0f, heater_fan1.max_value); }
+        case 1: { return std::min(1.0, heater_fan1.max_value); }
 //      case 2: { return min(1.0f, heater_fan2.max_value); }
 //      case 3: { return min(1.0f, heater_fan3.max_value); }
         default: { break; }
@@ -1183,10 +1183,10 @@ stat_t cm_get_fan_power(nvObj_t *nv)
     return (STAT_OK);
 }
 
-void cm_set_fan_power(const uint8_t heater, const float value)
+void cm_set_fan_power(const uint8_t heater, const double value)
 {
     switch(heater) {
-        case 1: { heater_fan1.max_value = std::max(0.0f, value); break; }
+        case 1: { heater_fan1.max_value = std::max(0.0, value); break; }
 //      case 2: { heater_fan2.max_value = max(0.0, value); break; }
 //      case 3: { heater_fan3.max_value = max(0.0, value); break; }
         default: { break; }
@@ -1313,12 +1313,12 @@ stat_t cm_get_at_temperature(nvObj_t *nv)
  * cm_get_heater_output() - get the output value (PWM duty cycle) of the PID
  */
 
-float cm_get_heater_output(const uint8_t heater)
+double cm_get_heater_output(const uint8_t heater)
 {
     switch(heater) {
-        case 1: { return (float)fet_pin1; }
-        case 2: { return (float)fet_pin2; }
-        case 3: { return (float)fet_pin3; }
+        case 1: { return (double)fet_pin1; }
+        case 2: { return (double)fet_pin2; }
+        case 3: { return (double)fet_pin3; }
         default: { break; }
     }
     return 0.0;
@@ -1339,9 +1339,9 @@ stat_t cm_get_heater_output(nvObj_t *nv)
 stat_t cm_get_heater_adc(nvObj_t *nv)
 {
     switch(_get_heater_number(nv)) {
-        case '1': { nv->value_flt = (float)temperature_sensor_1.get_raw_value(); break; }
-        case '2': { nv->value_flt = (float)temperature_sensor_2.get_raw_value(); break; }
-        case '3': { nv->value_flt = (float)temperature_sensor_3.get_raw_value(); break; }
+        case '1': { nv->value_flt = (double)temperature_sensor_1.get_raw_value(); break; }
+        case '2': { nv->value_flt = (double)temperature_sensor_2.get_raw_value(); break; }
+        case '3': { nv->value_flt = (double)temperature_sensor_3.get_raw_value(); break; }
 
         default: { nv->value_flt = 0.0; break; }
     }
@@ -1353,7 +1353,7 @@ stat_t cm_get_heater_adc(nvObj_t *nv)
 /****************************************************************************************
  * cm_get_temperature() - get the current temperature
  */
- float cm_get_temperature(const uint8_t heater)
+ double cm_get_temperature(const uint8_t heater)
  {
      switch(heater) {
          case 1: { return (last_reported_temp1 = temperature_sensor_1.temperature_exact()); }

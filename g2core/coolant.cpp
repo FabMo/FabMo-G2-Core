@@ -57,7 +57,7 @@ coCoolant_t coolant;
 
 /**** Static functions ****/
 
-static void _exec_coolant_control(float* value, bool* flag);
+static void _exec_coolant_control(double* value, bool* flag);
 
 /****************************************************************************************
  * coolant_init()
@@ -92,7 +92,7 @@ void coolant_reset() {
 
 stat_t coolant_control_immediate(coControl control, coSelect select)
 {
-    float value[] = { (float)control };
+    double value[] = { (double)control };
     bool flags[] = { (select & COOLANT_MIST), (select & COOLANT_FLOOD) };
     _exec_coolant_control(value, flags);
     return(STAT_OK);
@@ -107,7 +107,7 @@ stat_t coolant_control_sync(coControl control, coSelect select)
     }
 
     // queue the coolant control
-    float value[] = { (float)control };
+    double value[] = { (double)control };
     bool flags[]  = { (select & COOLANT_MIST), (select & COOLANT_FLOOD) };
     mp_queue_command(_exec_coolant_control, value, flags);
     return(STAT_OK);
@@ -152,7 +152,7 @@ static void _exec_coolant_helper(coCoolantChannel_t &co, coControl control) {
     }
 }
 
-static void _exec_coolant_control(float* value, bool* flag) {
+static void _exec_coolant_control(double* value, bool* flag) {
 
     coControl control = (coControl)value[0];
     if (control > COOLANT_ACTION_MAX) {

@@ -170,12 +170,12 @@ struct GCodeState_t {             // Gcode model state - used by model, planning
     cmMotionMode motion_mode;           // Group1: G0, G1, G2, G3, G38.2, G80, G81, G82
                                         //         G83, G84, G85, G86, G87, G88, G89
 
-    float target[AXES];                 // XYZABC target where the move should go
-    float target_comp[AXES];            // summation compensation (Kahan) overflow value
-    float display_offset[AXES];         // work offsets from the machine coordinate system (for reporting only)
+    double target[AXES];                 // XYZABC target where the move should go
+    double target_comp[AXES];            // summation compensation (Kahan) overflow value
+    double display_offset[AXES];         // work offsets from the machine coordinate system (for reporting only)
 
-    float feed_rate;                    // F - normalized to millimeters/minute or in inverse time mode
-    float P_word;                       // P - parameter used for dwell time in seconds, G10 coord select...
+    double feed_rate;                    // F - normalized to millimeters/minute or in inverse time mode
+    double P_word;                       // P - parameter used for dwell time in seconds, G10 coord select...
 
     cmFeedRateMode feed_rate_mode;      // See cmFeedRateMode for settings
     cmCanonicalPlane select_plane;      // G17,G18,G19 - values to set plane to
@@ -189,7 +189,7 @@ struct GCodeState_t {             // Gcode model state - used by model, planning
     uint8_t tool;               // G    // M6 tool change - moves "tool_select" to "tool"
     uint8_t tool_select;        // G    // T value - T sets this value
 
-    float spindle_speed;                // S - spindle "speed" in arbitrary units, often RPM
+    double spindle_speed;                // S - spindle "speed" in arbitrary units, often RPM
     spDirection spindle_direction;      // M3/M4/M5 - spindle on CW, on CCW, off setting
 
     void reset() {
@@ -223,17 +223,17 @@ typedef struct GCodeStateExtended {     // Gcode dynamic state extensions - used
     uint16_t magic_start;               // magic number to test memory integrity
     int32_t last_line_number;           // used with line checksums
 
-    float position[AXES];               // XYZABC model position (Note: not used in gn or gf)
-    float g92_offset[AXES];             // XYZABC G92 offsets (aka origin offsets) (Note: not used in gn or gf)
-    float g28_position[AXES];           // XYZABC stored machine position for G28
-    float g30_position[AXES];           // XYZABC stored machine position for G30
-    float p1_position[AXES];            // XYZABC stored machine position for return to p1 planner
+    double position[AXES];               // XYZABC model position (Note: not used in gn or gf)
+    double g92_offset[AXES];             // XYZABC G92 offsets (aka origin offsets) (Note: not used in gn or gf)
+    double g28_position[AXES];           // XYZABC stored machine position for G28
+    double g30_position[AXES];           // XYZABC stored machine position for G30
+    double p1_position[AXES];            // XYZABC stored machine position for return to p1 planner
 
     bool m48_enable;                    // master feedrate / spindle speed override enable
     bool mfo_enable;                    // feedrate override enable
-    float mfo_factor;                   // 1.0000 x F feed rate. Go up or down from there
+    double mfo_factor;                   // 1.0000 x F feed rate. Go up or down from there
     bool mto_enable;                    // traverse override enable
-    float mto_factor;                   // valid from 0.05 to 1.00
+    double mto_factor;                   // valid from 0.05 to 1.00
 
     bool g92_offset_enable;             // G92 offsets enabled/disabled.  0=disabled, 1=enabled
     bool block_delete_switch;           // set true to enable block deletes (true is default)

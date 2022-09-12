@@ -84,7 +84,7 @@ struct Point3_ {
         );
     }
 };
-typedef Point3_<float> Point3F;
+typedef Point3_<double> Point3F;
 typedef Point3_<double> Point3D;
 
 // Support for 4-cable robot kinematics with independent Z-axis
@@ -95,7 +95,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     // We have the four cables for X and Y, then one joint per axis from there
     static const uint8_t joints = (axes-2)+4;
 
-    float steps_per_unit[motors];
+    double steps_per_unit[motors];
     int8_t joint_map[joints]; // for each joint, which motor or -1
 
     // points relative to the machine control point (center) to the body-side of the cable
@@ -111,9 +111,9 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     };
 
     // anchor points on the frame
-    // const float frame_width = 3019.42; // diagonally 4266mm or 4258
-    const float frame_width = 3011;  // diagonally 4266mm-8 or 4258
-    // const float frame_width = 3035.0;
+    // const double frame_width = 3019.42; // diagonally 4266mm or 4258
+    const double frame_width = 3011;  // diagonally 4266mm-8 or 4258
+    // const double frame_width = 3035.0;
     Point3F frame_points[4] = {
         {((frame_width) / 2.0), -((frame_width) / 2.0), 0.0},   // A (closest to D)
         {((frame_width) / 2.0), ((frame_width) / 2.0), 0.0},    // B (closest to C)
@@ -122,7 +122,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     };
 
     // cable zero offset - the additional length of the cable past the anchor point (switch hit)
-    float cable_zero_offsets[4] = {
+    double cable_zero_offsets[4] = {
         0.0, // A
         0.0, // B
         0.0, // C
@@ -130,7 +130,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     };
 
     // cable spring factor - how much the cable pulls the sled under pressure
-    // float cable_spring_factor[4] = {
+    // double cable_spring_factor[4] = {
     //     1.9-0.5, // A
     //     3.8-0.5, // B
     //     4.5-0.5, // C
@@ -154,10 +154,10 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     bool encoder_needs_read[4];               // as it says - used to know when to request another sensor read
     bool encoder_synced[4];  // used to know when the encoer offset is valid (false means no, and they need synced)
 
-    // float sensor_zero_value[4] = {2.5, 2.5, 2.5, 2.5};
-    float sensor_zero_value[4] = {1.45, 1.00, 0.61, 0.97};
-    float sensor_value[4];     // stored from last time they were read
-    float raw_sensor_value[4];     // stored from last time they were read
+    // double sensor_zero_value[4] = {2.5, 2.5, 2.5, 2.5};
+    double sensor_zero_value[4] = {1.45, 1.00, 0.61, 0.97};
+    double sensor_value[4];     // stored from last time they were read
+    double raw_sensor_value[4];     // stored from last time they were read
 
     #if (KINEMATICS != KINE_FOUR_CABLE)
         // define a few things to shut the compiler up - kinda hacky until a more modular system is developed
@@ -168,30 +168,30 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         #define ANCHOR_D_INPUT 0
     #endif
 
-    float const external_encoder_mm_per_rev[4] = {EXTERNAL_ENCODER_MM_PER_REV, -EXTERNAL_ENCODER_MM_PER_REV,
+    double const external_encoder_mm_per_rev[4] = {EXTERNAL_ENCODER_MM_PER_REV, -EXTERNAL_ENCODER_MM_PER_REV,
                                                   EXTERNAL_ENCODER_MM_PER_REV, -EXTERNAL_ENCODER_MM_PER_REV};
 
     // amount the cable rises (or lowers, if negative) per rotation of the motor
-    float z_off = 3.17/324.1730919421;
-    float z_off_sq = z_off*z_off;
+    double z_off = 3.17/324.1730919421;
+    double z_off_sq = z_off*z_off;
 
-    const float sensor_to_pounds[4] = {0.0371, 0.0371, 0.0371, 0.0371};
-    float sensor_zero_target = 3.0;
-    // const float sensor_max = 9.0;
-    const float sensor_variance = 6.0;
+    const double sensor_to_pounds[4] = {0.0371, 0.0371, 0.0371, 0.0371};
+    double sensor_zero_target = 3.0;
+    // const double sensor_max = 9.0;
+    const double sensor_variance = 6.0;
 
-    const float sensor_skip_detection_jump = 10;
+    const double sensor_skip_detection_jump = 10;
 
-    // float sensor_variance = 0.6f; // +-0.6
-    // float sensor_zero_target = 0.1f;
+    // double sensor_variance = 0.6f; // +-0.6
+    // double sensor_zero_target = 0.1f;
 
-    // float friction_loss_parked       = 25.0;   // percentage of loss due to friction per segment, parked
-    // float friction_midpoint_parked   = 1000.0; // velocity (mm/min) at the midpoint for friction per segment, parked
-    float friction_loss_parked = 15.0;        // percentage of loss due to friction per segment, parked
-    float friction_midpoint_parked   = 100.0; // velocity (mm/min) at the midpoint for friction per segment, parked
+    // double friction_loss_parked       = 25.0;   // percentage of loss due to friction per segment, parked
+    // double friction_midpoint_parked   = 1000.0; // velocity (mm/min) at the midpoint for friction per segment, parked
+    double friction_loss_parked = 15.0;        // percentage of loss due to friction per segment, parked
+    double friction_midpoint_parked   = 100.0; // velocity (mm/min) at the midpoint for friction per segment, parked
 
-    float friction_loss_unparked     = 15.0;   // percentage of loss due to friction per segment, NOT parked
-    float friction_midpoint_unparked = 15.0;   // velocity (mm/min) at the midpoint for friction per segment, NOT parked
+    double friction_loss_unparked     = 15.0;   // percentage of loss due to friction per segment, NOT parked
+    double friction_midpoint_unparked = 15.0;   // velocity (mm/min) at the midpoint for friction per segment, NOT parked
 
     bool is_anchored = false;
 
@@ -238,13 +238,13 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
 
     bool inited_ = false;
 
-    void sync_encoders(const float step_position[motors], const float position[axes]) override {
+    void sync_encoders(const double step_position[motors], const double position[axes]) override {
         for (uint8_t cable = 0; cable < 4; cable++) {
             encoder_synced[cable] = false; // need to re-sync encoders to the cable
         }
     }
 
-    void configure(const float new_steps_per_unit[motors], const int8_t motor_map[motors]) override
+    void configure(const double new_steps_per_unit[motors], const int8_t motor_map[motors]) override
     {
         for (uint8_t joint = 0; joint < joints; joint++) {
             joint_map[joint] = -1;
@@ -266,7 +266,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
             if (!inited_) {
                 // NOTE: This dictates that the encoders ALWAYS map to the first four joints, in order
                 auto encoder = ExternalEncoders[cable];
-                encoder->setCallback([joint = cable, this](bool worked, float new_partial_position) {
+                encoder->setCallback([joint = cable, this](bool worked, double new_partial_position) {
                     this->encoder_needs_read[joint] = true;
                     this->cable_external_encoder_reads[joint]++;
 
@@ -309,7 +309,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
 
         inited_ = true; // only allow init to happen once
     }
-    void compute_cable_position(const float target[axes])
+    void compute_cable_position(const double target[axes])
     {
         Point3F target_point = {target[0], target[1], 0};
 
@@ -323,7 +323,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         };
 
         // 1 determine the ideal cable length (b)
-        float b[4] = {
+        double b[4] = {
             body_points_adj[0].distance_to(frame_points[0]),
             body_points_adj[1].distance_to(frame_points[1]),
             body_points_adj[2].distance_to(frame_points[2]),
@@ -367,7 +367,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         }
     }
 
-    void cables_to_steps(float steps[motors]) {
+    void cables_to_steps(double steps[motors]) {
         // joint == motor in cartesian kinematics, but NOT in 4-cable
         // note that Z is the fifth axis (axis 4 if zero-based), not the third!
         for (uint8_t joint = 0; joint < joints; joint++) {
@@ -392,8 +392,8 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     double prev_cable_vel[4];
     double prev_cable_accel[4];
 
-    void inverse_kinematics(const GCodeState_t &gm, const float target[axes], const float position[axes], const float start_velocity,
-                            const float end_velocity, const float segment_time, float steps[motors]) override {
+    void inverse_kinematics(const GCodeState_t &gm, const double target[axes], const double position[axes], const double start_velocity,
+                            const double end_velocity, const double segment_time, double steps[motors]) override {
 
         // read_sensors() also calls compute_encoder_error() which adjusts cable_position() incorporating the error
         read_sensors();
@@ -456,7 +456,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
             // J = (A_1-A_0)/T
             cable_jerk[joint] = (cable_accel[joint]-prev_cable_accel[joint])/segment_time;
 
-            // float jmax = cm->a[AXIS_X].jerk_max * JERK_MULTIPLIER * 1.5; // 1.5 margin for cartesian plan to cable jerk
+            // double jmax = cm->a[AXIS_X].jerk_max * JERK_MULTIPLIER * 1.5; // 1.5 margin for cartesian plan to cable jerk
             bool jerk_or_velocity_adjusted = false;
             // if (cable_jerk[joint] > jmax) {
             //     cable_jerk[joint] = jmax;
@@ -470,7 +470,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
             // }
 
             if ((cable_vel[joint] > 10.0 && this->cable_encoder_error[joint] < -0.0) || std::abs(this->cable_encoder_error[joint]) > 2.0) {
-                // const float segment_time = MIN_SEGMENT_TIME; // time in MINUTES
+                // const double segment_time = MIN_SEGMENT_TIME; // time in MINUTES
                 cable_vel[joint] = cable_vel[joint]*0.9 + ((cable_position[joint] - prev_cable_position[joint])/segment_time)*0.1;
                 jerk_or_velocity_adjusted = true;
             }
@@ -513,7 +513,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         last_segment_was_idle = false;
     }
 
-    // void inverse_kinematics(const float target[axes], float steps[motors]) override
+    // void inverse_kinematics(const double target[axes], double steps[motors]) override
     // {
     //     compute_cable_position(target);
 
@@ -528,9 +528,9 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
     //     last_segment_was_idle = false;
     // }
 
-    float best_steps_per_unit[joints];
+    double best_steps_per_unit[joints];
 
-    void forward_kinematics(const float steps[motors], float position[axes]) override
+    void forward_kinematics(const double steps[motors], double position[axes]) override
     {
         // pass 1: convert steps to cable lengths - reset the cable_position and other_axes
 
@@ -550,7 +550,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
             // If this motor has a better (or the only) resolution, then we use this motor's value
             if (best_steps_per_unit[joint] < steps_per_unit[motor]) {
                 best_steps_per_unit[joint] = steps_per_unit[motor];
-                float position_temp        = steps[motor] / steps_per_unit[motor];
+                double position_temp        = steps[motor] / steps_per_unit[motor];
                 if (joint < 4) {
                     // computation for steps is:
                     //  steps[motor] = (cable_position[joint] + cable_stepper_offset[joint]) * steps_per_unit[motor];
@@ -571,19 +571,19 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         return get_position(position);
     }
 
-    void get_position(float position[axes]) override
+    void get_position(double position[axes]) override
     {
-        const float x_body_width = std::abs(body_points[3].x - body_points[0].x);
-        const float x_frame_width = std::abs(frame_points[3].x - frame_points[0].x);
-        const float w = x_frame_width - x_body_width;
+        const double x_body_width = std::abs(body_points[3].x - body_points[0].x);
+        const double x_frame_width = std::abs(frame_points[3].x - frame_points[0].x);
+        const double w = x_frame_width - x_body_width;
 
-        const float a = cable_position[0];// - cable_stepper_offset[0];
-        // const float b = cable_position[1] - cable_stepper_offset[1];
-        // const float c = cable_position[2] - cable_stepper_offset[2];
-        const float d = cable_position[3];//    -cable_stepper_offset[3];
+        const double a = cable_position[0];// - cable_stepper_offset[0];
+        // const double b = cable_position[1] - cable_stepper_offset[1];
+        // const double c = cable_position[2] - cable_stepper_offset[2];
+        const double d = cable_position[3];//    -cable_stepper_offset[3];
 
-        const float e = sqrt(std::abs((a - d - w) * (a + d - w) * (a - d + w) * (a + d + w))) / (2.0f*w);
-        const float g = sqrt(a*a - e*e);
+        const double e = sqrt(std::abs((a - d - w) * (a + d - w) * (a - d + w) * (a + d + w))) / (2.0f*w);
+        const double g = sqrt(a*a - e*e);
 
         // X
         position[0] = (g + frame_points[0].x) - body_points[0].x;
@@ -597,10 +597,10 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         }
     }
 
-    float start_velocities[motors];
-    float end_velocities[motors];
-    float target_accel[4] = {0.0, 0.0, 0.0, 0.0};
-    float sensor_diff[4] = {0.0, 0.0, 0.0, 0.0};
+    double start_velocities[motors];
+    double end_velocities[motors];
+    double target_accel[4] = {0.0, 0.0, 0.0, 0.0};
+    double sensor_diff[4] = {0.0, 0.0, 0.0, 0.0};
     bool last_switch_state[4];
 
     bool anchored() { return is_anchored; }
@@ -614,7 +614,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
 
         // TODO: NOT assume 0,0
 
-        float target[axes]; // will init to 0
+        double target[axes]; // will init to 0
         target[0] = 0.0;
         target[1] = 0.0;
         for (uint8_t axis = 2; axis < axes; axis++) {
@@ -664,7 +664,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
             raw_sensor_value[joint] = (sensor_inputs[joint]->getValue() - sensor_zero_value[joint]) / sensor_to_pounds[joint];
 
             // new_sensor_value at -1 is zero tension, 1 is max tension, and 0 is goldilocks
-            float new_sensor_value = (raw_sensor_value[joint] - sensor_zero_target) / sensor_variance;
+            double new_sensor_value = (raw_sensor_value[joint] - sensor_zero_target) / sensor_variance;
 
             // new_sensor_diff is literally the change of the sensor value since we last read it
             sensor_diff[joint]  = (new_sensor_value - sensor_value[joint]);
@@ -754,7 +754,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
 
                 // adjust cable_vel to match reality, mostly for idle_time, if it would slack the line
                 if ((cable_vel[joint] > 10.0 && new_error_offset < -0.0) || std::abs(new_error_offset) > 2.0) {
-                    const float segment_time = MIN_SEGMENT_TIME; // time in MINUTES
+                    const double segment_time = MIN_SEGMENT_TIME; // time in MINUTES
                     cable_vel[joint] = cable_vel[joint]*0.9 + ((cable_position[joint] - start_cable_position)/segment_time)*0.1;
                 }
 
@@ -801,7 +801,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         // if we are anchored, then set the zero-position offsets
         // the first segment that isn't anchored will use them
 
-        const float segment_time = MIN_SEGMENT_TIME; // time in MINUTES
+        const double segment_time = MIN_SEGMENT_TIME; // time in MINUTES
 
         for (uint8_t joint = 0; joint < 4; joint++) {
             // bool switch_state = anchor_inputs[joint]->getState();
@@ -830,7 +830,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
             //     cable_vel[joint] = 50.0; // it's already stopped, back it off some
             // }
 
-            float jmax = cm->a[AXIS_X].jerk_high * JERK_MULTIPLIER;
+            double jmax = cm->a[AXIS_X].jerk_high * JERK_MULTIPLIER;
             cable_jerk[joint] = sensor_diff[joint] * jmax;
             cable_accel[joint] = cable_accel[joint] + cable_jerk[joint]*segment_time;
 
@@ -859,7 +859,7 @@ struct FourCableKinematics : KinematicsBase<axes, motors> {
         } // for joint
 
         // convert them to steps
-        float target_steps[motors];
+        double target_steps[motors];
         cables_to_steps(target_steps);
 
         // tell the planner and runtime about them

@@ -46,7 +46,7 @@ static stat_t _exec_aline_segment(void);
 static void   _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b);
 static stat_t _exec_aline_feedhold(mpBuf_t *bf);
 
-static void _init_forward_diffs(float v_0, float v_1);
+static void _init_forward_diffs(double v_0, double v_1);
 
 /****************************************************************************************
  * mp_forward_plan() - plan commands and moves ahead of exec; call ramping for moves
@@ -168,7 +168,7 @@ static void _init_forward_diffs(float v_0, float v_1);
  * mr->p is only advanced in mp_exec_aline(), after mp->r = mr->p.
  * This code aligns the buffers and the blocks for exec_aline().
  */
-static stat_t _plan_aline(mpBuf_t *bf, float entry_velocity)
+static stat_t _plan_aline(mpBuf_t *bf, double entry_velocity)
 {
     mpBlockRuntimeBuf_t* block = mr->p;             // set a local planning block so pointer doesn't change on you
     mp_calculate_ramps(block, bf, entry_velocity);  // (which it will if you don't do this)
@@ -187,7 +187,7 @@ static stat_t _plan_aline(mpBuf_t *bf, float entry_velocity)
 stat_t mp_forward_plan()
 {
     mpBuf_t *bf = mp_get_run_buffer();
-    float entry_velocity;
+    double entry_velocity;
 
     // Case 0: Examine current running buffer for early exit conditions
     if (bf == NULL) {                               // case 0a: NULL means nothing is running - this is OK
@@ -676,44 +676,44 @@ stat_t mp_exec_aline(mpBuf_t *bf)
  */
 
 // Total time: 147us
-static void _init_forward_diffs(const float v_0, const float v_1)
+static void _init_forward_diffs(const double v_0, const double v_1)
 {
     // Times from *here*
 /* Full formulation:
-     const float fifth_T        = T * 0.2; //(1/5) T
-     const float two_fifths_T   = T * 0.4; //(2/5) T
-     const float twentienth_T_2 = T * T * 0.05; // (1/20) T^2
+     const double fifth_T        = T * 0.2; //(1/5) T
+     const double two_fifths_T   = T * 0.4; //(2/5) T
+     const double twentienth_T_2 = T * T * 0.05; // (1/20) T^2
 
-     const float P_0 = v_0;
-     const float P_1 = v_0 +      fifth_T*a_0;
-     const float P_2 = v_0 + two_fifths_T*a_0 + twentienth_T_2*j_0;
-     const float P_3 = v_1 - two_fifths_T*a_1 + twentienth_T_2*j_1;
-     const float P_4 = v_1 -      fifth_T*a_1;
-     const float P_5 = v_1;
+     const double P_0 = v_0;
+     const double P_1 = v_0 +      fifth_T*a_0;
+     const double P_2 = v_0 + two_fifths_T*a_0 + twentienth_T_2*j_0;
+     const double P_3 = v_1 - two_fifths_T*a_1 + twentienth_T_2*j_1;
+     const double P_4 = v_1 -      fifth_T*a_1;
+     const double P_5 = v_1;
 
-     const float A =  5*( P_1 - P_4 + 2*(P_3 - P_2) ) +   P_5 - P_0;
-     const float B =  5*( P_0 + P_4 - 4*(P_3 + P_1)   + 6*P_2 );
-     const float C = 10*( P_3 - P_0 + 3*(P_1 - P_2) );
-     const float D = 10*( P_0 + P_2 - 2*P_1 );
-     const float E =  5*( P_1 - P_0 );
-     //const float F = P_0;
+     const double A =  5*( P_1 - P_4 + 2*(P_3 - P_2) ) +   P_5 - P_0;
+     const double B =  5*( P_0 + P_4 - 4*(P_3 + P_1)   + 6*P_2 );
+     const double C = 10*( P_3 - P_0 + 3*(P_1 - P_2) );
+     const double D = 10*( P_0 + P_2 - 2*P_1 );
+     const double E =  5*( P_1 - P_0 );
+     //const double F = P_0;
 */
-    float A =  -6.0*v_0 +  6.0*v_1;
-    float B =  15.0*v_0 - 15.0*v_1;
-    float C = -10.0*v_0 + 10.0*v_1;
+    double A =  -6.0*v_0 +  6.0*v_1;
+    double B =  15.0*v_0 - 15.0*v_1;
+    double C = -10.0*v_0 + 10.0*v_1;
     // D = 0
     // E = 0
     // F = Vi
 
-    const float h   = 1/(mr->segments);
-    const float h_2 = h   * h;
-    const float h_3 = h_2 * h;
-    const float h_4 = h_3 * h;
-    const float h_5 = h_4 * h;
+    const double h   = 1/(mr->segments);
+    const double h_2 = h   * h;
+    const double h_3 = h_2 * h;
+    const double h_4 = h_3 * h;
+    const double h_5 = h_4 * h;
 
-    const float Ah_5 = A * h_5;
-    const float Bh_4 = B * h_4;
-    const float Ch_3 = C * h_3;
+    const double Ah_5 = A * h_5;
+    const double Bh_4 = B * h_4;
+    const double Ch_3 = C * h_3;
 
     /*
      *  F_5 =     A h^5 +    B h^4 +   C h^3 +   D h^2 + E h
@@ -796,7 +796,7 @@ static stat_t _exec_aline_body(mpBuf_t *bf)
             return(_exec_aline_tail(bf));                   // skip ahead to tail periods
         }
 
-        float body_time = mr->r->body_time;
+        double body_time = mr->r->body_time;
         mr->segments = ceil(uSec(body_time) / NOM_SEGMENT_USEC);
         mr->segment_time = body_time / mr->segments;
         mr->segment_velocity = mr->r->cruise_velocity;
@@ -884,8 +884,8 @@ static stat_t _exec_aline_tail(mpBuf_t *bf)
  *         -100        -90           -10        encoder is 10 steps behind commanded steps
  */
 
-float exec_target_steps[MOTORS];
-float exec_travel_steps[MOTORS];
+double exec_target_steps[MOTORS];
+double exec_travel_steps[MOTORS];
 
 static stat_t _exec_aline_segment()
 {
@@ -897,15 +897,15 @@ static stat_t _exec_aline_segment()
     if ((--mr->segment_count == 0) && (cm->hold_state == FEEDHOLD_OFF)) {
         copy_vector(mr->gm.target, mr->waypoint[mr->section]);
     } else {
-        float segment_length = (mr->segment_velocity+mr->target_velocity) * 0.5 * mr->segment_time;
+        double segment_length = (mr->segment_velocity+mr->target_velocity) * 0.5 * mr->segment_time;
         // See https://en.wikipedia.org/wiki/Kahan_summation_algorithm
         // for the summation compensation description
         for (uint8_t a=0; a<AXES; a++) {
             // The following is equivalent to:
             // mr->gm.target[a] = mr->position[a] + (mr->unit[a] * segment_length);
 
-            float to_add = (mr->unit[a] * segment_length) - mr->gm.target_comp[a];
-            float target = mr->position[a] + to_add;
+            double to_add = (mr->unit[a] * segment_length) - mr->gm.target_comp[a];
+            double target = mr->position[a] + to_add;
             mr->gm.target_comp[a] = (target - mr->position[a]) - to_add;
             mr->gm.target[a] = target;
         }
@@ -1096,9 +1096,9 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
 
         // The deceleration distance either fits in the available length or fits exactly or close
         // enough (to EPSILON2) (1e). Case 1e happens frequently when the tail in the move was
-        // already planned to zero. EPSILON2 deals with floating point rounding errors that can
+        // already planned to zero. EPSILON2 deals with doubleing point rounding errors that can
         // mis-classify this case. EPSILON2 is 0.0001, which is 0.1 microns in length.
-        float available_length = get_axis_vector_length(mr->target, mr->position);
+        double available_length = get_axis_vector_length(mr->target, mr->position);
 
         // Cases (1b1, 1c1) deceleration will fit in the block
         if ((available_length + EPSILON2 - mr->r->tail_length) > 0) {

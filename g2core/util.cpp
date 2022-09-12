@@ -49,16 +49,16 @@ bool FLAGS_ALL[AXES]  = { true, true, true, true, true, true };
  * set_vector_by_axis()     - load a single value into a zero vector
  */
 
-float vector[AXES];    // statically allocated global for vector utilities
+double vector[AXES];    // statically allocated global for vector utilities
 
 /*
-void copy_vector(float dst[], const float src[])
+void copy_vector(double dst[], const double src[])
 {
     memcpy(dst, src, sizeof(dst));
 }
 */
 
-uint8_t vector_equal(const float a[], const float b[])
+uint8_t vector_equal(const double a[], const double b[])
 {
     if ((fp_EQ(a[AXIS_X], b[AXIS_X])) &&
         (fp_EQ(a[AXIS_Y], b[AXIS_Y])) &&
@@ -71,7 +71,7 @@ uint8_t vector_equal(const float a[], const float b[])
     return (false);
 }
 
-float get_axis_vector_length(const float a[], const float b[])
+double get_axis_vector_length(const double a[], const double b[])
 {
     return (sqrt(square(a[AXIS_X] - b[AXIS_X]) +
                  square(a[AXIS_Y] - b[AXIS_Y]) +
@@ -81,7 +81,7 @@ float get_axis_vector_length(const float a[], const float b[])
                  square(a[AXIS_C] - b[AXIS_C])));
 }
 
-float *set_vector(float x, float y, float z, float a, float b, float c)
+double *set_vector(double x, double y, double z, double a, double b, double c)
 {
     vector[AXIS_X] = x;
     vector[AXIS_Y] = y;
@@ -92,7 +92,7 @@ float *set_vector(float x, float y, float z, float a, float b, float c)
     return (vector);
 }
 
-float *set_vector_by_axis(float value, uint8_t axis)
+double *set_vector_by_axis(double value, uint8_t axis)
 {
     clear_vector(vector);
     switch (axis) {
@@ -123,34 +123,34 @@ float *set_vector_by_axis(float value, uint8_t axis)
  *    #define max4(a,b,c,d) (max(max(a,b),max(c,d)))
  */
 
-float min3(float x1, float x2, float x3)
+double min3(double x1, double x2, double x3)
 {
-    float min = x1;
+    double min = x1;
     if (x2 < min) { min = x2;}
     if (x3 < min) { return (x3);}
     return (min);
 }
 
-float min4(float x1, float x2, float x3, float x4)
+double min4(double x1, double x2, double x3, double x4)
 {
-    float min = x1;
+    double min = x1;
     if (x2 < min) { min = x2;}
     if (x3 < min) { min = x3;}
     if (x4 < min) { return (x4);}
     return (min);
 }
 
-float max3(float x1, float x2, float x3)
+double max3(double x1, double x2, double x3)
 {
-    float max = x1;
+    double max = x1;
     if (x2 > max) { max = x2;}
     if (x3 > max) { return (x3);}
     return (max);
 }
 
-float max4(float x1, float x2, float x3, float x4)
+double max4(double x1, double x2, double x3, double x4)
 {
-    float max = x1;
+    double max = x1;
     if (x2 > max) { max = x2;}
     if (x3 > max) { max = x3;}
     if (x4 > max) { return (x4);}
@@ -322,11 +322,11 @@ uint32_t crc32(uint32_t crc, const void *buf, size_t size)
  ******************************************/
 
 /***********************************************************************************
- * floattoa() - integer to float
+ * doubletoa() - integer to double
  *
  *  Floattoa() is a slightly smarter, much faster version of snprintf()
  *  It suppresses trailing zeros and decimal points, 20.100 --> 20.1, 20.000 --> 20
- *  Like sprintf, floattoa returns length of string, less the terminating NUL character
+ *  Like sprintf, doubletoa returns length of string, less the terminating NUL character
  *
  *  !!! Precision cannot be greater than 10 !!!
  */
@@ -343,7 +343,7 @@ static const char _fp6[] = "%1.6f";
 static const char _fp7[] = "%1.7f";
 static const char *const _fmt_precision[] = { _fp0, _fp1, _fp2, _fp3, _fp4, _fp5, _fp6, _fp7 };
 
-char floattoa(char *str, float n, int precision, int maxlen /*= 16*/)
+char doubletoa(char *str, double n, int precision, int maxlen /*= 16*/)
 {
     // handle special cases
     if (isnan(n)) {
@@ -358,9 +358,9 @@ char floattoa(char *str, float n, int precision, int maxlen /*= 16*/)
 }
 #endif
 
-// *** floattoa() starts here ***
+// *** doubletoa() starts here ***
 
-constexpr float round_lookup_[] = {
+constexpr double round_lookup_[] = {
     0.5,          // precision 0
     0.05,         // precision 1
     0.005,        // precision 2
@@ -382,7 +382,7 @@ int c_strreverse(char * const t, const int count_, char hold = 0) {
     : count_;
 }
 
-char floattoa(char *str, float n, int precision, int maxlen /*= 16*/) // maxlen = 16
+char doubletoa(char *str, double n, int precision, int maxlen /*= 16*/) // maxlen = 16
 {
     // handle special cases
     if (isnan(n)) {
@@ -399,7 +399,7 @@ char floattoa(char *str, float n, int precision, int maxlen /*= 16*/) // maxlen 
 
     if (n < 0.0) {
         *b_++ = '-';
-        return floattoa(b_, -n, precision, maxlen-1) + 1;
+        return doubletoa(b_, -n, precision, maxlen-1) + 1;
     }
 
     n += round_lookup_[precision];
@@ -428,7 +428,7 @@ char floattoa(char *str, float n, int precision, int maxlen /*= 16*/) // maxlen 
     *b_++ = '.';
     length_ = int_length_+1;
 
-    float frac_part_ = n;
+    double frac_part_ = n;
     frac_part_ -= (int)frac_part_;
     while (precision-- > 0) {
         if (length_++ > maxlen) {

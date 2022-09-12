@@ -47,8 +47,8 @@
 #define RUNTIME (GCodeState_t *)&mr->gm     // absolute pointer from runtime mm struct
 #define ACTIVE_MODEL cm->am                 // active model pointer is maintained by cm_set_motion_state()
 
-#define _to_millimeters(a)  ((cm->gm.units_mode == INCHES) ? ((float)a * (float)MM_PER_INCH) : (float)a)
-#define _to_inches(a)       ((cm->gm.units_mode == INCHES) ? ((float)a * (float)(1/MM_PER_INCH)) : (float)a)
+#define _to_millimeters(a)  ((cm->gm.units_mode == INCHES) ? ((double)a * (double)MM_PER_INCH) : (double)a)
+#define _to_inches(a)       ((cm->gm.units_mode == INCHES) ? ((double)a * (double)(1/MM_PER_INCH)) : (double)a)
 
 #define DISABLE_SOFT_LIMIT  (999999)
 #define JERK_INPUT_MIN      (0.01)          // minimum allowable jerk setting in millions mm/min^3
@@ -193,55 +193,55 @@ typedef struct cmAxis {
 
     // axis settings
     cmAxisMode axis_mode;                   // see cmAxisMode above
-    float velocity_max;                     // max velocity in mm/min or deg/min
-    float feedrate_max;                     // max velocity in mm/min or deg/min
-    float jerk_max;                         // max jerk (Jm) in mm/min^3 divided by 1 million
-    float jerk_high;                        // high speed deceleration jerk (Jh) in mm/min^3 divided by 1 million
-    float travel_min;                       // min work envelope for soft limits
-    float travel_max;                       // max work envelope for soft limits
-    float radius;                           // radius in mm for rotary axis modes
+    double velocity_max;                     // max velocity in mm/min or deg/min
+    double feedrate_max;                     // max velocity in mm/min or deg/min
+    double jerk_max;                         // max jerk (Jm) in mm/min^3 divided by 1 million
+    double jerk_high;                        // high speed deceleration jerk (Jh) in mm/min^3 divided by 1 million
+    double travel_min;                       // min work envelope for soft limits
+    double travel_max;                       // max work envelope for soft limits
+    double radius;                           // radius in mm for rotary axis modes
 
     // internal derived variables - computed during data entry and cached for computational efficiency
-    float recip_velocity_max;
-    float recip_feedrate_max;
-    float max_junction_accel;
-    float high_junction_accel;
+    double recip_velocity_max;
+    double recip_feedrate_max;
+    double max_junction_accel;
+    double high_junction_accel;
 
     // homing settings
     uint8_t homing_input;                   // set 1-N for homing input. 0 will disable homing
     uint8_t homing_dir;                     // 0=search to negative, 1=search to positive
-    float search_velocity;                  // homing search velocity
-    float latch_velocity;                   // homing latch velocity
-    float latch_backoff;                    // backoff sufficient to clear a switch
-    float zero_backoff;                     // backoff from switches for machine zero
+    double search_velocity;                  // homing search velocity
+    double latch_velocity;                   // homing latch velocity
+    double latch_backoff;                    // backoff sufficient to clear a switch
+    double zero_backoff;                     // backoff from switches for machine zero
 } cfgAxis_t;
 
 typedef struct cmArc {                      // planner and runtime variables for arc generation
     magic_t magic_start;
     uint8_t run_state;                      // runtime state machine sequence
 
-    float position[AXES];                   // accumulating runtime position
-    float ijk_offset[3];                    // arc IJK offsets
+    double position[AXES];                   // accumulating runtime position
+    double ijk_offset[3];                    // arc IJK offsets
 
-    float length;                           // length of line or helix in mm
-    float radius;                           // Raw R value, or computed via offsets
-    float theta;                            // starting angle of arc
-    float angular_travel;                   // travel along the arc in radians
-    float planar_travel;                    // travel in arc plane in mm
-    float linear_travel;                    // travel along linear axis of arc in mm
+    double length;                           // length of line or helix in mm
+    double radius;                           // Raw R value, or computed via offsets
+    double theta;                            // starting angle of arc
+    double angular_travel;                   // travel along the arc in radians
+    double planar_travel;                    // travel in arc plane in mm
+    double linear_travel;                    // travel along linear axis of arc in mm
     bool  full_circle;                      // True if full circle arcs specified
-    float rotations;                        // number of full rotations to add (P value + sign)
+    double rotations;                        // number of full rotations to add (P value + sign)
 
     cmAxes plane_axis_0;                    // arc plane axis 0 - e.g. X for G17
     cmAxes plane_axis_1;                    // arc plane axis 1 - e.g. Y for G17
     cmAxes linear_axis;                     // linear axis (normal to plane)
 
-    float   segments;                       // number of segments in arc or blend
+    double   segments;                       // number of segments in arc or blend
     int32_t segment_count;                  // count of running segments
-    float   segment_theta;                  // angular motion per segment
-    float   segment_linear_travel;          // linear motion per segment
-    float   center_0;                       // center of circle at plane axis 0 (e.g. X for G17)
-    float   center_1;                       // center of circle at plane axis 1 (e.g. Y for G17)
+    double   segment_theta;                  // angular motion per segment
+    double   segment_linear_travel;          // linear motion per segment
+    double   center_0;                       // center of circle at plane axis 0 (e.g. X for G17)
+    double   center_1;                       // center of circle at plane axis 1 (e.g. Y for G17)
 
     GCodeState_t gm;                        // Gcode state struct is passed for each arc segment.
     magic_t magic_end;
@@ -253,15 +253,15 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     /**** Config variables (PUBLIC) ****/
 
     // System group settings
-    float junction_integration_time;        // how aggressively will the machine corner? 1.6 or so is about the upper limit
-    float chordal_tolerance;                // arc chordal accuracy setting in mm
-    float feedhold_z_lift;                  // mm to move Z axis on feedhold, or 0 to disable
+    double junction_integration_time;        // how aggressively will the machine corner? 1.6 or so is about the upper limit
+    double chordal_tolerance;                // arc chordal accuracy setting in mm
+    double feedhold_z_lift;                  // mm to move Z axis on feedhold, or 0 to disable
     bool soft_limit_enable;                 // true to enable soft limit testing on Gcode inputs
     bool limit_enable;                      // true to enable limit switches (disabled is same as override)
 
     // Coordinate systems and offsets
-    float coord_offset[COORDS+1][AXES];     // persistent coordinate offsets: absolute (G53) + G54,G55,G56,G57,G58,G59
-    float tool_offset[AXES];                // current tool offset
+    double coord_offset[COORDS+1][AXES];     // persistent coordinate offsets: absolute (G53) + G54,G55,G56,G57,G58,G59
+    double tool_offset[AXES];                // current tool offset
 
     // Axis settings
     cfgAxis_t a[AXES];
@@ -301,12 +301,12 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     bool probe_report_enable;                 // 0=disabled, 1=enabled
     cmProbeState probe_state[PROBES_STORED];  // probing state machine (simple)
     uint8_t probe_input;                      // probing digital input
-    float probe_results[PROBES_STORED][AXES]; // probing results
+    double probe_results[PROBES_STORED][AXES]; // probing results
 
-    float rotation_matrix[3][3];            // three-by-three rotation matrix. We ignore UVW and ABC axes
-    float rotation_z_offset;                // separately handle a z-offset to maintain consistent distance to bed
+    double rotation_matrix[3][3];            // three-by-three rotation matrix. We ignore UVW and ABC axes
+    double rotation_z_offset;                // separately handle a z-offset to maintain consistent distance to bed
 
-    float jogging_dest;                     // jogging destination as a relative move from current position
+    double jogging_dest;                     // jogging destination as a relative move from current position
 
   /**** Model state structures ****/
     void *mp;                               // linked mpPlanner_t - use a void pointer to avoid circular header files
@@ -320,7 +320,7 @@ typedef struct cmMachine {                  // struct to manage canonical machin
 } cmMachine_t;
 
 typedef struct cmToolTable {                // struct to keep a global tool table
-    float tt_offset[TOOLS+1][AXES];         // persistent tool table offsets
+    double tt_offset[TOOLS+1][AXES];         // persistent tool table offsets
 } cmToolTable_t;
 
 /**** Externs - See canonical_machine.cpp for allocation ****/
@@ -361,7 +361,7 @@ uint8_t cm_get_feed_rate_mode(const GCodeState_t *gcode_state);
 uint8_t cm_get_tool(const GCodeState_t *gcode_state);
 uint8_t  cm_get_block_delete_switch(void);
 uint8_t cm_get_runtime_busy(void);
-float cm_get_feed_rate(const GCodeState_t *gcode_state);
+double cm_get_feed_rate(const GCodeState_t *gcode_state);
 
 void cm_set_motion_mode(GCodeState_t *gcode_state, const uint8_t motion_mode);
 void cm_set_tool_number(GCodeState_t *gcode_state, const uint8_t tool);
@@ -370,20 +370,20 @@ void cm_set_model_linenum(int32_t linenum);
 stat_t cm_check_linenum();
 
 // Coordinate systems and offsets
-float cm_get_combined_offset(const uint8_t axis);
-float cm_get_display_offset(const GCodeState_t *gcode_state, const uint8_t axis);
+double cm_get_combined_offset(const uint8_t axis);
+double cm_get_display_offset(const GCodeState_t *gcode_state, const uint8_t axis);
 void cm_set_display_offsets(GCodeState_t *gcode_state);
-float cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axis);
-float cm_get_absolute_position(const GCodeState_t *gcode_state, const uint8_t axis);
+double cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axis);
+double cm_get_absolute_position(const GCodeState_t *gcode_state, const uint8_t axis);
 
 // Critical helpers
 void cm_update_model_position(void);
 stat_t cm_deferred_write_callback(void);
-void cm_set_model_target(const float target[], const bool flag[]);
+void cm_set_model_target(const double target[], const bool flag[]);
 bool cm_get_soft_limits(void);
 void cm_set_soft_limits(bool enable);
 
-stat_t cm_test_soft_limits(const float target[]);
+stat_t cm_test_soft_limits(const double target[]);
 
 /*--- Canonical machining functions (loosely) defined by NIST [organized by NIST Gcode doc] ---*/
 
@@ -405,51 +405,51 @@ stat_t cm_set_tl_offset(const uint8_t H_word, const bool H_flag,            // G
 stat_t cm_cancel_tl_offset(void);                                           // G49
 stat_t cm_set_g10_data(const uint8_t P_word, const bool P_flag,             // G10
                        const uint8_t L_word, const bool L_flag,
-                       const float offset[], const bool flag[]);
+                       const double offset[], const bool flag[]);
 
-void cm_set_position_by_axis(const uint8_t axis, const float position);     // set position to abs pos - single axis
+void cm_set_position_by_axis(const uint8_t axis, const double position);     // set position to abs pos - single axis
 void cm_reset_position_to_absolute_position(cmMachine_t *_cm);              // set position to abs pos - all axes
-stat_t cm_set_absolute_origin(const float origin[], bool flag[]);           // G28.3
-void cm_set_axis_origin(uint8_t axis, const float position);                // G28.3 planner callback
+stat_t cm_set_absolute_origin(const double origin[], bool flag[]);           // G28.3
+void cm_set_axis_origin(uint8_t axis, const double position);                // G28.3 planner callback
 
 stat_t cm_set_coord_system(const uint8_t coord_system);                     // G54 - G59
-stat_t cm_set_g92_offsets(const float offset[], const bool flag[]);         // G92
+stat_t cm_set_g92_offsets(const double offset[], const bool flag[]);         // G92
 stat_t cm_reset_g92_offsets(void);                                          // G92.1
 stat_t cm_suspend_g92_offsets(void);                                        // G92.2
 stat_t cm_resume_g92_offsets(void);                                         // G92.3
 
 // Free Space Motion (4.3.4)
-void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *flags);
-stat_t cm_straight_traverse_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G0, global (Gcode) units - for external use
-stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G0, mm units - for internal use
+void cm_axes_to_mm(const double *target_global, double *target_mm, const bool *flags);
+stat_t cm_straight_traverse_global(const double *target, const bool *flags, const cmMotionProfile motion_profile); // G0, global (Gcode) units - for external use
+stat_t cm_straight_traverse_mm(const double *target, const bool *flags, const cmMotionProfile motion_profile);     // G0, mm units - for internal use
 stat_t cm_set_g28_position(void);                                           // G28.1
-stat_t cm_goto_g28_position(const float target[], const bool flags[]);      // G28
+stat_t cm_goto_g28_position(const double target[], const bool flags[]);      // G28
 stat_t cm_set_g30_position(void);                                           // G30.1
-stat_t cm_goto_g30_position_global(const float target[], const bool flags[]); // G30, global (Gcode) units - for external use
-stat_t cm_goto_g30_position_mm(const float target[], const bool flags[]);     // G30, mm units - for internal use
+stat_t cm_goto_g30_position_global(const double target[], const bool flags[]); // G30, global (Gcode) units - for external use
+stat_t cm_goto_g30_position_mm(const double target[], const bool flags[]);     // G30, mm units - for internal use
 
 // Machining Attributes (4.3.5)
-stat_t cm_set_feed_rate_global(const float feed_rate);                      // F parameter, global (Gcode) units - for external use
-stat_t cm_set_feed_rate_mm(const float feed_rate);                          // F parameter, mm units - for internal use
+stat_t cm_set_feed_rate_global(const double feed_rate);                      // F parameter, global (Gcode) units - for external use
+stat_t cm_set_feed_rate_mm(const double feed_rate);                          // F parameter, mm units - for internal use
 stat_t cm_set_feed_rate_mode(const uint8_t mode);                           // G93, G94, (G95 unimplemented)
 stat_t cm_set_path_control(GCodeState_t *gcode_state, const uint8_t mode);  // G61, G61.1, G64
 
 // Machining Functions (4.3.6)
-stat_t cm_straight_feed_global(const float *target, const bool *flags, const cmMotionProfile motion_profile); // G1, global (Gcode) units - for external use
-stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotionProfile motion_profile);     // G1, mm units - for internal use
-stat_t cm_dwell(const float seconds);                                       // G4, P parameter
+stat_t cm_straight_feed_global(const double *target, const bool *flags, const cmMotionProfile motion_profile); // G1, global (Gcode) units - for external use
+stat_t cm_straight_feed_mm(const double *target, const bool *flags, const cmMotionProfile motion_profile);     // G1, mm units - for internal use
+stat_t cm_dwell(const double seconds);                                       // G4, P parameter
 
-void cm_ofs_to_mm(const float *offset_global, float *offset_mm, const bool *flags);
-stat_t cm_arc_feed_global(const float target[], const bool target_f[],             // G2/G3, global (Gcode) units - for external use; target endpoint
-                          const float offset[], const bool offset_f[],             // IJK offsets
-                          const float radius, const bool radius_f,                 // radius if radius mode
-                          const float P_word, const bool P_word_f,                 // parameter
+void cm_ofs_to_mm(const double *offset_global, double *offset_mm, const bool *flags);
+stat_t cm_arc_feed_global(const double target[], const bool target_f[],             // G2/G3, global (Gcode) units - for external use; target endpoint
+                          const double offset[], const bool offset_f[],             // IJK offsets
+                          const double radius, const bool radius_f,                 // radius if radius mode
+                          const double P_word, const bool P_word_f,                 // parameter
                           const bool modal_g1_f,                                   // modal group flag for motion group
                           const cmMotionMode motion_mode);                         // defined motion mode
-stat_t cm_arc_feed_mm(const float target[], const bool target_f[],             // G2/G3, mm units - for internal use; target endpoint
-                      const float offset[], const bool offset_f[],             // IJK offsets
-                      const float radius, const bool radius_f,                 // radius if radius mode
-                      const float P_word, const bool P_word_f,                 // parameter
+stat_t cm_arc_feed_mm(const double target[], const bool target_f[],             // G2/G3, mm units - for internal use; target endpoint
+                      const double offset[], const bool offset_f[],             // IJK offsets
+                      const double radius, const bool radius_f,                 // radius if radius mode
+                      const double P_word, const bool P_word_f,                 // parameter
                       const bool modal_g1_f,                                   // modal group flag for motion group
                       const cmMotionMode motion_mode);                         // defined motion mode
 
@@ -467,8 +467,8 @@ void cm_message(const char *message);                           // msg to consol
 
 void cm_reset_overrides(void);
 stat_t cm_m48_enable(uint8_t enable);                           // M48, M49
-// stat_t cm_fro_control(const float P_word, const bool P_flag);   // M50
-// stat_t cm_tro_control(const float P_word, const bool P_flag);   // M50.1
+// stat_t cm_fro_control(const double P_word, const bool P_flag);   // M50
+// stat_t cm_tro_control(const double P_word, const bool P_flag);   // M50.1
 // See spindle.cpp for cm_spo_control()                         // M51
 
 // Program Functions (4.3.10)
@@ -501,13 +501,13 @@ stat_t cm_feedhold_command_blocker(void);
 bool cm_has_hold(void);                                         // has hold in primary planner
 
 // Homing cycles (cycle_homing.cpp)
-stat_t cm_homing_cycle_start(const float axes[], const bool flags[]);        // G28.2
-stat_t cm_homing_cycle_start_no_set(const float axes[], const bool flags[]); // G28.4
+stat_t cm_homing_cycle_start(const double axes[], const bool flags[]);        // G28.2
+stat_t cm_homing_cycle_start_no_set(const double axes[], const bool flags[]); // G28.4
 stat_t cm_homing_cycle_callback(void);                          // G28.2/.4 main loop callback
 void cm_abort_homing(cmMachine_t *_cm); // called from the queue flush sequence to clean up
 
 // Probe cycles
-stat_t cm_straight_probe_global(float target[], bool flags[],   // G38.x, global (Gcode) units - for external use
+stat_t cm_straight_probe_global(double target[], bool flags[],   // G38.x, global (Gcode) units - for external use
                          bool trip_sense, bool alarm_flag);
 stat_t cm_probing_cycle_callback(void);                         // G38.x main loop callback
 void cm_abort_probing(cmMachine_t *_cm); // called from the queue flush sequence to clean up
@@ -518,7 +518,7 @@ stat_t cm_set_prbr(nvObj_t *nv);
 // Jogging cycle (cycle_jogging.cpp)
 stat_t cm_jogging_cycle_callback(void);                         // jogging cycle main loop
 stat_t cm_jogging_cycle_start(uint8_t axis);                    // {"jogx":-100.3}
-float cm_get_jogging_dest(void);                                // get jogging destination
+double cm_get_jogging_dest(void);                                // get jogging destination
 
 // Alarm management (alarm.cpp)
 stat_t cm_alrm(nvObj_t *nv);                                    // trigger alarm from command input
@@ -610,9 +610,9 @@ stat_t cm_set_tt(nvObj_t *nv);          // set tool table value
 // stat_t cm_get_ra(nvObj_t *nv);          // get radius
 // stat_t cm_set_ra(nvObj_t *nv);          // set radius
 
-float cm_get_axis_jerk(const uint8_t axis);
-void cm_set_axis_max_jerk(const uint8_t axis, const float jerk);
-void cm_set_axis_high_jerk(const uint8_t axis, const float jerk);
+double cm_get_axis_jerk(const uint8_t axis);
+void cm_set_axis_max_jerk(const uint8_t axis, const double jerk);
+void cm_set_axis_high_jerk(const uint8_t axis, const double jerk);
 
 // stat_t cm_get_vm(nvObj_t *nv);          // get velocity max
 // stat_t cm_set_vm(nvObj_t *nv);          // set velocity max and reciprocal

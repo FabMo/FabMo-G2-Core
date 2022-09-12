@@ -51,34 +51,34 @@
 // note implementation is after
 class ESCSpindle : public ToolHead {
     spDirection direction;        // direction
-    float speed;                  // S in RPM
-    float speed_actual;           // actual speed (during speed ramping)
+    double speed;                  // S in RPM
+    double speed_actual;           // actual speed (during speed ramping)
 
-    float speed_override_factor = 1;
+    double speed_override_factor = 1;
     bool speed_override_enable = true;
 
     bool this_change_holds_motion = false;
 
-    float speed_min;              // minimum settable spindle speed
-    float speed_max;              // maximum settable spindle speed
+    double speed_min;              // minimum settable spindle speed
+    double speed_max;              // maximum settable spindle speed
 
     bool paused;                  // true if paused, false is not
 
-    float spinup_delay;           // optional delay on spindle start (set to 0 to disable)
-    float spinup_count_ms;        // spinup delay counter (during delay)
+    double spinup_delay;           // optional delay on spindle start (set to 0 to disable)
+    double spinup_count_ms;        // spinup delay counter (during delay)
 	
-    float speed_change_per_tick;  // speed ramping rate per tick (ms)
+    double speed_change_per_tick;  // speed ramping rate per tick (ms)
 
     struct speedToPhase {
-        float speed_lo;              // minimum spindle speed [0..N]
-        float speed_hi;              // maximum spindle speed
+        double speed_lo;              // minimum spindle speed [0..N]
+        double speed_hi;              // maximum spindle speed
 
-        float phase_lo;              // pwm phase at minimum spindle speed, clamped [0..1]
-        float phase_hi;              // pwm phase at maximum spindle speed, clamped [0..1]
+        double phase_lo;              // pwm phase at minimum spindle speed, clamped [0..1]
+        double phase_hi;              // pwm phase at maximum spindle speed, clamped [0..1]
 
         // convert a speed value in the range of (speed_lo .. speed_hi)
         // to a value in the range of (phase_lo .. phase_hi)
-        float speed_to_phase(float speed) {
+        double speed_to_phase(double speed) {
             speed = (std::max(speed_lo, std::min(speed_hi, speed)) - speed_lo) / (speed_hi - speed_lo);
             return (speed * (phase_hi - phase_lo)) + phase_lo;
         }
@@ -87,7 +87,7 @@ class ESCSpindle : public ToolHead {
     speedToPhase cw;                // clockwise speed and phase settings
     speedToPhase ccw;               // counter-clockwise speed and phase settings
 
-    float phase_off;                // pwm phase when spindle is disabled
+    double phase_off;                // pwm phase when spindle is disabled
 
     uint8_t pwm_output_num;
     gpioDigitalOutput *pwm_output = nullptr;
@@ -101,16 +101,16 @@ class ESCSpindle : public ToolHead {
     void set_pwm_value(); // using all of the settings, set the value fo the pwm pin
     void complete_change(); // after an engage or resume, handle the rest
 
-    float _get_target_speed() {
+    double _get_target_speed() {
         // compute overridden speed
-        float target_speed = speed * (speed_override_enable ? speed_override_factor : 1.0);
+        double target_speed = speed * (speed_override_enable ? speed_override_factor : 1.0);
         // stay within limits
         return std::min(speed_max, std::max(speed_min, target_speed));
     }
 
     void _handle_systick() {
         bool done = false;
-        float target_speed = _get_target_speed();
+        double target_speed = _get_target_speed();
 
         if (paused) {
             // paused may have changed since this handler was registered
@@ -154,7 +154,7 @@ class ESCSpindle : public ToolHead {
 
    public:
     // constructor - provide it with the default output pins - 0 means no pin
-    ESCSpindle(const uint8_t pwm_pin_number, const uint8_t enable_pin_number, const uint8_t direction_pin_number, const float change_per_tick, const float esc_spinup_delay);
+    ESCSpindle(const uint8_t pwm_pin_number, const uint8_t enable_pin_number, const uint8_t direction_pin_number, const double change_per_tick, const double esc_spinup_delay);
 
     // ToolHead overrides
     void init() override;
@@ -166,15 +166,15 @@ class ESCSpindle : public ToolHead {
 
     // the result of an S word
     // DON'T override set_speed - use engage instead
-    float get_speed() override;
+    double get_speed() override;
 
     // the result of an M3/M4/M5
     // DON'T override set_direction - use engage instead
     spDirection get_direction() override;
 
     // set the override value for spindle speed
-    bool set_override(float override) override;
-    float get_override() override;
+    bool set_override(double override) override;
+    double get_override() override;
 
     // enable or disable the override
     bool set_override_enable(bool override_enable) override;
@@ -202,46 +202,46 @@ class ESCSpindle : public ToolHead {
     bool set_direction_polarity(const ioPolarity new_polarity) override;
     ioPolarity get_direction_polarity() override;
 
-    void set_frequency(float new_frequency) override;
-    float get_frequency() override;
+    void set_frequency(double new_frequency) override;
+    double get_frequency() override;
 
     // trivial getters and setters - inlined
-    void set_speed_min(float new_speed_min) override { speed_min = new_speed_min; }
-    float get_speed_min() override { return speed_min; }
-    void set_speed_max(float new_speed_max) override { speed_max = new_speed_max; }
-    float get_speed_max() override { return speed_max; }
-    void set_speed_change_per_tick(float new_speed_change_per_tick) override { speed_change_per_tick = new_speed_change_per_tick; }
-    float get_speed_change_per_tick() override { return speed_change_per_tick; }
-    void set_spinup_delay(float new_spinup_delay) override { spinup_delay = new_spinup_delay; }
-    float get_spinup_delay() override { return spinup_delay; }
+    void set_speed_min(double new_speed_min) override { speed_min = new_speed_min; }
+    double get_speed_min() override { return speed_min; }
+    void set_speed_max(double new_speed_max) override { speed_max = new_speed_max; }
+    double get_speed_max() override { return speed_max; }
+    void set_speed_change_per_tick(double new_speed_change_per_tick) override { speed_change_per_tick = new_speed_change_per_tick; }
+    double get_speed_change_per_tick() override { return speed_change_per_tick; }
+    void set_spinup_delay(double new_spinup_delay) override { spinup_delay = new_spinup_delay; }
+    double get_spinup_delay() override { return spinup_delay; }
 
-    void set_cw_speed_lo(float new_speed_lo) override { cw.speed_lo = new_speed_lo; }
-    float get_cw_speed_lo() override { return cw.speed_lo; }
-    void set_cw_speed_hi(float new_speed_hi) override { cw.speed_hi = new_speed_hi; }
-    float get_cw_speed_hi() override { return cw.speed_hi; }
-    void set_cw_phase_lo(float new_phase_lo) override { cw.phase_lo = new_phase_lo; }
-    float get_cw_phase_lo() override { return cw.phase_lo; }
-    void set_cw_phase_hi(float new_phase_hi) override { cw.phase_hi = new_phase_hi; }
-    float get_cw_phase_hi() override { return cw.phase_hi; }
+    void set_cw_speed_lo(double new_speed_lo) override { cw.speed_lo = new_speed_lo; }
+    double get_cw_speed_lo() override { return cw.speed_lo; }
+    void set_cw_speed_hi(double new_speed_hi) override { cw.speed_hi = new_speed_hi; }
+    double get_cw_speed_hi() override { return cw.speed_hi; }
+    void set_cw_phase_lo(double new_phase_lo) override { cw.phase_lo = new_phase_lo; }
+    double get_cw_phase_lo() override { return cw.phase_lo; }
+    void set_cw_phase_hi(double new_phase_hi) override { cw.phase_hi = new_phase_hi; }
+    double get_cw_phase_hi() override { return cw.phase_hi; }
 
-    void set_ccw_speed_lo(float new_speed_lo) override { ccw.speed_lo = new_speed_lo; }
-    float get_ccw_speed_lo() override { return ccw.speed_lo; }
-    void set_ccw_speed_hi(float new_speed_hi) override { ccw.speed_hi = new_speed_hi; }
-    float get_ccw_speed_hi() override { return ccw.speed_hi; }
-    void set_ccw_phase_lo(float new_phase_lo) override { ccw.phase_lo = new_phase_lo; }
-    float get_ccw_phase_lo() override { return ccw.phase_lo; }
-    void set_ccw_phase_hi(float new_phase_hi) override { ccw.phase_hi = new_phase_hi; }
-    float get_ccw_phase_hi() override { return ccw.phase_hi; }
+    void set_ccw_speed_lo(double new_speed_lo) override { ccw.speed_lo = new_speed_lo; }
+    double get_ccw_speed_lo() override { return ccw.speed_lo; }
+    void set_ccw_speed_hi(double new_speed_hi) override { ccw.speed_hi = new_speed_hi; }
+    double get_ccw_speed_hi() override { return ccw.speed_hi; }
+    void set_ccw_phase_lo(double new_phase_lo) override { ccw.phase_lo = new_phase_lo; }
+    double get_ccw_phase_lo() override { return ccw.phase_lo; }
+    void set_ccw_phase_hi(double new_phase_hi) override { ccw.phase_hi = new_phase_hi; }
+    double get_ccw_phase_hi() override { return ccw.phase_hi; }
 
-    void set_phase_off(float new_phase_off) override { phase_off = new_phase_off; }
-    float get_phase_off() override { return phase_off; }
+    void set_phase_off(double new_phase_off) override { phase_off = new_phase_off; }
+    double get_phase_off() override { return phase_off; }
 };
 
 // method implementations follow
 
 ESCSpindle::ESCSpindle(const uint8_t pwm_pin_number, const uint8_t enable_pin_number,
-                       const uint8_t direction_pin_number, const float change_per_tick,
-                       const float esc_spinup_delay)
+                       const uint8_t direction_pin_number, const double change_per_tick,
+                       const double esc_spinup_delay)
     : spinup_delay{esc_spinup_delay},
 	    speed_change_per_tick{change_per_tick},
       pwm_output_num{pwm_pin_number},
@@ -292,16 +292,16 @@ bool ESCSpindle::busy() {
 }
 
 // DON'T override set_speed - use engage instead
-float ESCSpindle::get_speed() { return speed_actual; }
+double ESCSpindle::get_speed() { return speed_actual; }
 
 // set the override value for spindle speed
-bool ESCSpindle::set_override(float override) {
+bool ESCSpindle::set_override(double override) {
     speed_override_factor = override;
     // Leave this_change_holds_motion at true if it was set so and not yet cleared
     this->complete_change();
     return (true);
 }
-float ESCSpindle::get_override() { return speed_override_factor; }
+double ESCSpindle::get_override() { return speed_override_factor; }
 
 // enable or disable the override
 bool ESCSpindle::set_override_enable(bool override_enable) {
@@ -438,13 +438,13 @@ ioPolarity ESCSpindle::get_direction_polarity() {
     return IO_ACTIVE_HIGH;
 }
 
-void ESCSpindle::set_frequency(float new_frequency)
+void ESCSpindle::set_frequency(double new_frequency)
 {
     if (pwm_output) {
         pwm_output->setFrequency(new_frequency);
     }
 }
-float ESCSpindle::get_frequency()
+double ESCSpindle::get_frequency()
 {
     if (pwm_output) {
         return pwm_output->getFrequency();
@@ -458,7 +458,7 @@ void ESCSpindle::set_pwm_value() {
     if (pwm_output == nullptr) {
         return;
     }
-    float value = phase_off;
+    double value = phase_off;
     if (paused || fp_ZERO(speed)) {
         // nothing - leave it at phase_off
     } else if (direction == SPINDLE_CW) {

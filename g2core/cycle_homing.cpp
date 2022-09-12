@@ -52,20 +52,20 @@ struct hmHomingSingleton {          // persistent homing runtime variables
     bool axis_flags[AXES];          // local storage for axis flags
 
     // per-axis parameters
-    float direction;                // set to 1 for positive (max), -1 for negative (to min);
-    float search_travel;            // signed distance to travel in search
-    float search_velocity;          // search speed as positive number
-    float latch_backoff;            // max distance to back off switch during latch phase
-    float latch_velocity;           // latch speed as positive number
-    float zero_backoff;             // distance to back off switch before setting zero
-    float max_clear_backoff;        // maximum distance of switch clearing backoffs before erring out
-    float setpoint;                 // ultimate setpoint, usually zero, but not always
+    double direction;                // set to 1 for positive (max), -1 for negative (to min);
+    double search_travel;            // signed distance to travel in search
+    double search_velocity;          // search speed as positive number
+    double latch_backoff;            // max distance to back off switch during latch phase
+    double latch_velocity;           // latch speed as positive number
+    double zero_backoff;             // distance to back off switch before setting zero
+    double max_clear_backoff;        // maximum distance of switch clearing backoffs before erring out
+    double setpoint;                 // ultimate setpoint, usually zero, but not always
 
     // state saved from gcode model
     cmCoordSystem  saved_coord_system;    // G54 - G59 setting
     cmDistanceMode saved_distance_mode;   // G90, G91 global setting
     cmFeedRateMode saved_feed_rate_mode;  // G93, G94 global setting
-    float          saved_feed_rate;       // F setting
+    double          saved_feed_rate;       // F setting
 };
 static struct hmHomingSingleton hm;
 
@@ -79,11 +79,11 @@ static stat_t _homing_axis_clear(int8_t axis);
 static stat_t _homing_axis_latch(int8_t axis);
 static stat_t _homing_axis_setpoint_backoff(int8_t axis);
 static stat_t _homing_axis_set_position(int8_t axis);
-static stat_t _homing_axis_move(int8_t axis, float target, float velocity);
+static stat_t _homing_axis_move(int8_t axis, double target, double velocity);
 static stat_t _homing_error_exit(int8_t axis, stat_t status);
 static stat_t _homing_finalize_exit(int8_t axis);
 static int8_t _get_next_axis(int8_t axis);
-static void _homing_axis_move_callback(float* vect, bool* flag);
+static void _homing_axis_move_callback(double* vect, bool* flag);
 
 /**** HELPERS ***************************************************************************
  * _set_homing_func() - a convenience for setting the next dispatch vector and exiting
@@ -172,7 +172,7 @@ gpioDigitalInputHandler _homing_handler {
  *  to cm_get_runtime_busy() is about.
  */
 
-stat_t cm_homing_cycle_start(const float axes[], const bool flags[]) {
+stat_t cm_homing_cycle_start(const double axes[], const bool flags[]) {
     // save relevant non-axis parameters from Gcode model
     hm.saved_coord_system   = (cmCoordSystem)cm_get_coord_system(ACTIVE_MODEL);
     hm.saved_distance_mode  = (cmDistanceMode)cm_get_distance_mode(ACTIVE_MODEL);
@@ -202,7 +202,7 @@ stat_t cm_homing_cycle_start(const float axes[], const bool flags[]) {
     return (STAT_OK);
 }
 
-stat_t cm_homing_cycle_start_no_set(const float axes[], const bool flags[]) {
+stat_t cm_homing_cycle_start_no_set(const double axes[], const bool flags[]) {
     cm_homing_cycle_start(axes, flags);
     hm.set_coordinates = false; // set flag to not update position variables at the end of the cycle
     return (STAT_OK);
@@ -283,7 +283,7 @@ static stat_t _homing_axis_start(int8_t axis) {
     }
 
     // Calculate and test travel distance
-    float travel_distance;
+    double travel_distance;
     if ((fabs(cm->a[axis].travel_max - cm->a[axis].travel_min) < EPSILON) && (cm->a[axis].axis_mode == AXIS_RADIUS)) {
         // For cyclic rotary axes, we set the travel distance to one full rotation
         travel_distance = 360.0;
@@ -310,17 +310,17 @@ static stat_t _homing_axis_start(int8_t axis) {
     if (homing_to_max) {
         hm.search_travel = travel_distance;                     // search travels in positive direction
         hm.latch_backoff = std::abs(cm->a[axis].latch_backoff);     // latch travels in positive direction
-        hm.zero_backoff  = -std::max(0.0f, cm->a[axis].zero_backoff);// zero backoff is negative direction (or zero)
+        hm.zero_backoff  = -std::max(0.0, cm->a[axis].zero_backoff);// zero backoff is negative direction (or zero)
                                                                 // will set the maximum position
                                                                 //     (plus any negative backoff)
-        hm.setpoint = cm->a[axis].travel_max + (std::max(0.0f, -cm->a[axis].zero_backoff));
+        hm.setpoint = cm->a[axis].travel_max + (std::max(0.0, -cm->a[axis].zero_backoff));
     } else {
         hm.search_travel = -travel_distance;                    // search travels in negative direction
         hm.latch_backoff = -std::abs(cm->a[axis].latch_backoff);    // latch travels in negative direction
-        hm.zero_backoff  = std::max(0.0f, cm->a[axis].zero_backoff); // zero backoff is positive direction (or zero)
+        hm.zero_backoff  = std::max(0.0, cm->a[axis].zero_backoff); // zero backoff is positive direction (or zero)
                                                                 // will set the minimum position
                                                                 //     (minus any negative backoff)
-        hm.setpoint = cm->a[axis].travel_min + (std::max(0.0f, -cm->a[axis].zero_backoff));
+        hm.setpoint = cm->a[axis].travel_min + (std::max(0.0, -cm->a[axis].zero_backoff));
     }
 
     // if homing is disabled for the axis then skip to the next axis
@@ -395,7 +395,7 @@ static stat_t _homing_axis_set_position(int8_t axis)
         cm->homed[axis] = true;
 
     } else {  // handle G28.4 cycle - set position to the point of switch closure
-        float contact_position[AXES];
+        double contact_position[AXES];
         kn_forward_kinematics(en_get_encoder_snapshot_vector(), contact_position);
         _homing_axis_move(axis, contact_position[AXIS_Z], hm.search_velocity);
     }
@@ -408,8 +408,8 @@ static stat_t _homing_axis_set_position(int8_t axis)
  * _homing_axis_move()       - helper that actually executes the above moves
  */
 
-static stat_t _homing_axis_move(int8_t axis, float target, float velocity) {
-    float vect[]  = INIT_AXES_ZEROES;
+static stat_t _homing_axis_move(int8_t axis, double target, double velocity) {
+    double vect[]  = INIT_AXES_ZEROES;
     bool  flags[] = INIT_AXES_ZEROES;
 
     hm.waiting_for_motion_end = true;
@@ -430,7 +430,7 @@ static stat_t _homing_axis_move(int8_t axis, float target, float velocity) {
     return (STAT_EAGAIN);
 }
 
-static void _homing_axis_move_callback(float* vect, bool* flag) { hm.waiting_for_motion_end = false; }
+static void _homing_axis_move_callback(double* vect, bool* flag) { hm.waiting_for_motion_end = false; }
 
 
 /***********************************************************************************

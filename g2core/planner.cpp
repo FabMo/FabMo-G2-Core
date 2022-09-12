@@ -259,8 +259,8 @@ void mp_halt_runtime()
  *  and the real tool position is still close to the starting point.
  */
 
-void mp_set_planner_position(uint8_t axis, const float position) { mp->position[axis] = position; }
-void mp_set_runtime_position(uint8_t axis, const float position) { mr->position[axis] = position; }
+void mp_set_planner_position(uint8_t axis, const double position) { mp->position[axis] = position; }
+void mp_set_runtime_position(uint8_t axis, const double position) { mr->position[axis] = position; }
 
 void mp_set_steps_to_runtime_position()
 {
@@ -270,7 +270,7 @@ void mp_set_steps_to_runtime_position()
 #endif
         return;
     }
-    float step_position[MOTORS];
+    double step_position[MOTORS];
     // There use to be a call to kn_inverse_kinematics here, but we don't do that now, instead we call kn->sync_encoders()
     // after handling the steps, allowing the kinematics to intelligently handle the offset of step and position.
 
@@ -300,9 +300,9 @@ void mp_set_steps_to_runtime_position()
  */
 
 // global, for use locally in various functions
-float mp_travel_steps[MOTORS];
+double mp_travel_steps[MOTORS];
 
-stat_t mp_set_target_steps(const float target_steps[MOTORS])
+stat_t mp_set_target_steps(const double target_steps[MOTORS])
 {
     // Bucket-brigade the old target down the chain before getting the new target from kinematics
     //
@@ -321,7 +321,7 @@ stat_t mp_set_target_steps(const float target_steps[MOTORS])
     return st_prep_line(mr->segment_velocity, mr->target_velocity, mp_travel_steps, mr->following_error, mr->segment_time);
 }
 
-stat_t mp_set_target_steps(const float target_steps[MOTORS], const float start_velocities[MOTORS], const float end_velocities[MOTORS], const float segment_time)
+stat_t mp_set_target_steps(const double target_steps[MOTORS], const double start_velocities[MOTORS], const double end_velocities[MOTORS], const double segment_time)
 {
     mr->segment_time = segment_time;
 
@@ -364,7 +364,7 @@ stat_t mp_set_target_steps(const float target_steps[MOTORS], const float start_v
  *  and makes keeping the queue full much easier - therefore avoiding Q starvation
  */
 
-void mp_queue_command(cm_exec_t cm_exec, float *value, bool *flag)
+void mp_queue_command(cm_exec_t cm_exec, double *value, bool *flag)
 {
     mpBuf_t *bf;
 
@@ -406,7 +406,7 @@ stat_t mp_runtime_command(mpBuf_t *bf) {
  * mp_json_command_immediate() - execute a json command with response suppressed
  */
 
-static void _exec_json_command(float *value, bool *flag)
+static void _exec_json_command(double *value, bool *flag)
 {
     char *json_string = jc.read_buffer();
     json_parse_for_exec(json_string, true);         // process it
@@ -489,7 +489,7 @@ stat_t mp_json_wait(char *json_string)
  * timer than the stepper pulse timer.
  */
 
-stat_t mp_dwell(float seconds)
+stat_t mp_dwell(double seconds)
 {
     mpBuf_t *bf;
 
@@ -522,7 +522,7 @@ static stat_t _exec_dwell(mpBuf_t *bf)
  *  This is useful for queuing a dwell after a spindle change.
  */
 
-void mp_request_out_of_band_dwell(float seconds)
+void mp_request_out_of_band_dwell(double seconds)
 {
     if (fp_NOT_ZERO(seconds)) {
         mr->out_of_band_dwell_flag = true;
@@ -689,7 +689,7 @@ void mp_replan_queue(mpBuf_t *bf, bool back_too/*=false*/)
  *    - Otherwise look for the "break point" at 20 ms
  */
 
-// void mp_start_feed_override(const float ramp_time, const float override_factor)
+// void mp_start_feed_override(const double ramp_time, const double override_factor)
 // {
 //     cm->mfo_state = MFO_REQUESTED;
 
@@ -711,17 +711,17 @@ void mp_replan_queue(mpBuf_t *bf, bool back_too/*=false*/)
 //     }
 // }
 
-// void mp_end_feed_override(const float ramp_time)
+// void mp_end_feed_override(const double ramp_time)
 // {
 //     mp_start_feed_override (FEED_OVERRIDE_RAMP_TIME, 1.00);
 // }
 
-// void mp_start_traverse_override(const float ramp_time, const float override_factor)
+// void mp_start_traverse_override(const double ramp_time, const double override_factor)
 // {
 //     return;
 // }
 
-// void mp_end_traverse_override(const float ramp_time)
+// void mp_end_traverse_override(const double ramp_time)
 // {
 //     return;
 // }

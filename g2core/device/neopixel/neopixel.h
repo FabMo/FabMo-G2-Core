@@ -45,9 +45,9 @@ struct NeopixelColorTag {};
 // I.
 // Hue: Red = 0, Yellow = 60, Green = 120, Indigo = 180, Blue = 240, Magenta = 300
 struct HSI_Color_t : NeopixelColorTag {
-    float hue;
-    float saturation;
-    float intensity;
+    double hue;
+    double saturation;
+    double intensity;
 
     const uint32_t _update_timeout_ms;
 
@@ -55,21 +55,21 @@ struct HSI_Color_t : NeopixelColorTag {
 
     uint32_t _transition_steps_left = 0;
     // forward difference values
-    float _hue_fd_0, _hue_fd_1;
-    float _saturation_fd_0, _saturation_fd_1;
-    float _intensity_fd_0, _intensity_fd_1;
+    double _hue_fd_0, _hue_fd_1;
+    double _saturation_fd_0, _saturation_fd_1;
+    double _intensity_fd_0, _intensity_fd_1;
 
     HSI_Color_t(uint32_t _update_every_ms = 1) : _update_timeout_ms{_update_every_ms} { _update_timeout.set(0); };
 
-    HSI_Color_t(float _hue, float _saturation, float _intensity, uint32_t _update_every_ms = 1)
+    HSI_Color_t(double _hue, double _saturation, double _intensity, uint32_t _update_every_ms = 1)
         : hue{_hue}, saturation{_saturation}, intensity{_intensity}, _update_timeout_ms{_update_every_ms} {
         _update_timeout.set(0);
     };
 
-    void startTransition(uint32_t milliseconds, float to_hue, float to_saturation, float to_intensity) {
+    void startTransition(uint32_t milliseconds, double to_hue, double to_saturation, double to_intensity) {
         _transition_steps_left = 0.5 + (milliseconds / _update_timeout_ms);
-        float h                = 1.0 / _transition_steps_left;
-        float h_2              = h * h;
+        double h                = 1.0 / _transition_steps_left;
+        double h_2              = h * h;
 
         // to_hue needs to be the closest transition
         if (std::abs(hue - to_hue) > std::abs(hue - (360.0 + to_hue))) {
@@ -113,7 +113,7 @@ struct HSI_Color_t : NeopixelColorTag {
 
     // Inspired by http://blog.saikoled.com/post/43693602826/why-every-led-light-should-be-using-hsi
     void getRGB(uint8_t& r, uint8_t& g, uint8_t& b) {
-        float cos_h, cos_1047_h;
+        double cos_h, cos_1047_h;
 
         // check ranges
         while (hue > 360.0) { hue = hue - 360.0; }
@@ -131,9 +131,9 @@ struct HSI_Color_t : NeopixelColorTag {
             saturation = 0.0;
         }
 
-        float H = 3.14159 * hue / (float)180.0;  // Convert to radians.
-        float S = saturation;                    // clamp S and I to interval [0,1]
-        float I = intensity;
+        double H = 3.14159 * hue / (double)180.0;  // Convert to radians.
+        double S = saturation;                    // clamp S and I to interval [0,1]
+        double I = intensity;
 
         if (H < 2.09439) {
             cos_h      = cos(H);
@@ -160,7 +160,7 @@ struct HSI_Color_t : NeopixelColorTag {
 
     // Inspired by http://blog.saikoled.com/post/44677718712/how-to-convert-from-hsi-to-rgb-white
     void getRGBW(uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& w) {
-        float cos_h, cos_1047_h;
+        double cos_h, cos_1047_h;
 
         // check ranges
         while (hue > 360.0) { hue = hue - 360.0; }
@@ -178,9 +178,9 @@ struct HSI_Color_t : NeopixelColorTag {
             saturation = 0.0;
         }
 
-        float H = 3.14159 * hue / (float)180.0;  // Convert to radians.
-        float S = saturation;                    // clamp S and I to interval [0,1]
-        float I = intensity;
+        double H = 3.14159 * hue / (double)180.0;  // Convert to radians.
+        double S = saturation;                    // clamp S and I to interval [0,1]
+        double I = intensity;
 
         if (H < 2.09439) {
             cos_h      = cos(H);
@@ -211,9 +211,9 @@ struct HSI_Color_t : NeopixelColorTag {
 
 
 struct RGB_Color_t : NeopixelColorTag {
-    float red;
-    float green;
-    float blue;
+    double red;
+    double green;
+    double blue;
 
     enum ColorFilter {
         Set = 0,
@@ -228,18 +228,18 @@ struct RGB_Color_t : NeopixelColorTag {
     uint32_t _transition_steps_left = 0;
 
     // forward difference values
-    float _red_fd_0, _red_fd_1;
-    float _green_fd_0, _green_fd_1;
-    float _blue_fd_0, _blue_fd_1;
+    double _red_fd_0, _red_fd_1;
+    double _green_fd_0, _green_fd_1;
+    double _blue_fd_0, _blue_fd_1;
 
     RGB_Color_t(uint32_t _update_every_ms = 1) : _update_timeout_ms{_update_every_ms} { _update_timeout.set(0); };
 
-    RGB_Color_t(float _red, float _green, float _blue, uint32_t _update_every_ms = 1)
+    RGB_Color_t(double _red, double _green, double _blue, uint32_t _update_every_ms = 1)
         : red{_red}, green{_green}, blue{_blue}, _update_timeout_ms{_update_every_ms} {
         _update_timeout.set(0);
     };
 
-    void startTransition(uint32_t milliseconds, float to_red, float to_green, float to_blue, ColorFilter cf = Set) {
+    void startTransition(uint32_t milliseconds, double to_red, double to_green, double to_blue, ColorFilter cf = Set) {
         if (cf == Lighten) {
             to_red = std::max(to_red, red);
             to_green = std::max(to_green, green);
@@ -252,8 +252,8 @@ struct RGB_Color_t : NeopixelColorTag {
         }
 
         _transition_steps_left = 0.5 + (milliseconds / _update_timeout_ms);
-        float h                = 1.0 / _transition_steps_left;
-        float h_2              = h * h;
+        double h                = 1.0 / _transition_steps_left;
+        double h_2              = h * h;
 
         // to_hue needs to be the closest transition
 
@@ -307,7 +307,7 @@ struct RGB_Color_t : NeopixelColorTag {
 
     bool isTransitionDone() { return _transition_steps_left == 0; };
 
-    void getRGB(float& r, float& g, float& b) {
+    void getRGB(double& r, double& g, double& b) {
         r = red;
         g = green;
         b = blue;
@@ -320,7 +320,7 @@ struct RGB_Color_t : NeopixelColorTag {
     };
 
     void getRGBW(uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& w) {
-        float white = std::min(red, std::min(green, blue));
+        double white = std::min(red, std::min(green, blue));
 
         r = (red)*255;
         g = (green)*255;

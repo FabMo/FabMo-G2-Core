@@ -70,7 +70,7 @@ namespace LEDs {
     bool alarm_red = false; // if we are in alarm, the tells us if we're going to red (pulsing)
     bool shutdown_white = false; // if we are in shutdown, the tells us if we're going to red (pulsing)
     cmMachineState last_see_machine_state;
-    float old_x_pos = 0.0;
+    double old_x_pos = 0.0;
 }
 #endif // EXPERIMENTAL_NEOPIXEL_SUPPORT
 
@@ -107,14 +107,14 @@ void hardware_init()
 stat_t hardware_periodic()
 {
 #if EXPERIMENTAL_NEOPIXEL_SUPPORT == 1
-    float x_pos = cm_get_display_position(ACTIVE_MODEL, AXIS_X);
+    double x_pos = cm_get_display_position(ACTIVE_MODEL, AXIS_X);
     if (std::abs(LEDs::old_x_pos - x_pos) > 0.01) {
         LEDs::old_x_pos = x_pos;
 
-        float led_pos = x_pos * ((float)(LEDs::rgbw_leds.count-1) / 40);
+        double led_pos = x_pos * ((double)(LEDs::rgbw_leds.count-1) / 40);
 
         for (uint8_t pixel = 0; pixel < LEDs::rgbw_leds.count; pixel++) {
-            float value = std::abs(led_pos - (float)pixel);
+            double value = std::abs(led_pos - (double)pixel);
             if (value < 1.001) {
                 value = 1.0 - value;
                 if (LEDs::display_color[pixel].red < value) {
@@ -125,7 +125,7 @@ stat_t hardware_periodic()
             } else {
 //                LEDs::display_color[pixel].startTransition(500, 0, 0, 0);
             }
-//            LEDs::display_color[pixel].startTransition(100, std::max(0.0f, std::min(40.0f, (float)(x_pos/40.0) )), 0, 0);
+//            LEDs::display_color[pixel].startTransition(100, std::max(0.0f, std::min(40.0f, (double)(x_pos/40.0) )), 0, 0);
         }
     }
 
@@ -186,8 +186,8 @@ void _get_id(char *id)
  * hw_get_fbs() - get firmware build string
  */
 
-stat_t hw_get_fb(nvObj_t *nv) { return (get_float(nv, cs.fw_build)); }
-stat_t hw_get_fv(nvObj_t *nv) { return (get_float(nv, cs.fw_version)); }
+stat_t hw_get_fb(nvObj_t *nv) { return (get_double(nv, cs.fw_build)); }
+stat_t hw_get_fv(nvObj_t *nv) { return (get_double(nv, cs.fw_version)); }
 stat_t hw_get_hp(nvObj_t *nv) { return (get_string(nv, G2CORE_HARDWARE_PLATFORM)); }
 stat_t hw_get_hv(nvObj_t *nv) { return (get_string(nv, G2CORE_HARDWARE_VERSION)); }
 stat_t hw_get_fbs(nvObj_t *nv) { return (get_string(nv, G2CORE_FIRMWARE_BUILD_STRING)); }

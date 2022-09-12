@@ -330,7 +330,7 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
     // // numbers
     // } else if (isdigit(**pstr) || (**pstr == '-')) {    // value is a number
     //     nv->value_int = atol(*pstr);                    // get the number as an integer
-    //     nv->value_flt = strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
+    //     nv->value_flt = strtod(*pstr, &tmp);     // get the number as a double - tmp is the end pointer
 
     //     if ((tmp == *pstr) ||                           // if start pointer equals end the conversion failed
     //         (strchr(terminators, *tmp) == NULL)) {      // terminators are the only legal chars at the end of a number
@@ -348,9 +348,9 @@ static stat_t _get_nv_pair(nvObj_t *nv, char **pstr, int8_t *depth)
     // numbers
     } else if (isdigit(**pstr) || (**pstr == '-')) {    // value is a number
         nv->value_int = atol(*pstr);                    // get the number as an integer
-        ////** my earlier change?  nv->value_flt = (float)strtod(*pstr, &tmp);     // get the number as a float - tmp is the end pointer
+        ////** my earlier change?  nv->value_flt = (double)strtod(*pstr, &tmp);     // get the number as a double - tmp is the end pointer
         ////** comit conflict with latest edge-prev 9/17/20
-        nv->value_flt = strtod(*pstr, &tmp);            // get the number as a float - tmp is the end pointer
+        nv->value_flt = strtod(*pstr, &tmp);            // get the number as a double - tmp is the end pointer
 
         if ((tmp == *pstr) ||                           // if start pointer equals end the conversion failed
             (strchr(terminators, *tmp) == NULL)) {      // terminators are the only legal chars at the end of a number
@@ -481,8 +481,8 @@ uint16_t json_serialize(nvObj_t *nv, char *out_buf, uint16_t size)
 ////##                                        prev_depth++; // make sure empty objects are closed
                                         break;
                                     }
-                case (TYPE_FLOAT):  {   convert_outgoing_float(nv);
-                                        str += floattoa(str, nv->value_flt, nv->precision);
+                case (TYPE_FLOAT):  {   convert_outgoing_double(nv);
+                                        str += doubletoa(str, nv->value_flt, nv->precision);
                                         break;
                                     }
 //                case (TYPE_INT):    {   // str += inttoa(str, (int)nv->value); // doesn't handle negative numbers

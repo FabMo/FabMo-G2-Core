@@ -65,10 +65,10 @@ stat_t _ramp_exit_logger(mpBuf_t* bf, const char *msg)
 
 /* local functions */
 
-// static float _get_target_length_min(const float v_0, const float v_1, const mpBuf_t *bf, const float min);
-static float _get_meet_velocity(const float          v_0,
-                                const float          v_2,
-                                const float          L,
+// static double _get_target_length_min(const double v_0, const double v_1, const mpBuf_t *bf, const double min);
+static double _get_meet_velocity(const double          v_0,
+                                const double          v_2,
+                                const double          L,
                                 mpBuf_t*             bf,
                                 mpBlockRuntimeBuf_t* block) HOT_FUNC;
 
@@ -118,7 +118,7 @@ static float _get_meet_velocity(const float          v_0,
 // Hint will be one of these from back-planning: COMMAND_BLOCK, PERFECT_DECELERATION, PERFECT_CRUISE,
 // MIXED_DECELERATION, ASYMMETRIC_BUMP
 // We are incorporating both the forward planning and ramp-planning into one function, since we use the same data.
-stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float entry_velocity)
+stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const double entry_velocity)
 {
     // *** Skip non-move commands ***
     if (bf->block_type == BLOCK_TYPE_COMMAND) {
@@ -242,7 +242,7 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
         // Note that the hints from back-planning are ignored in this section, since back-planing can only
         // predict decelerations and cruises
 
-        float accel_velocity = mp_get_target_velocity(entry_velocity, bf->length, bf);
+        double accel_velocity = mp_get_target_velocity(entry_velocity, bf->length, bf);
 
         if (accel_velocity < block->exit_velocity) {  // still accelerating
 
@@ -368,11 +368,11 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
  */
 
 // Just calling this tl_constant. It's full name is:
-// static const float tl_constant = 1.201405707067378;      // sqrt(5)/( sqrt(2)pow(3,4) )
+// static const double tl_constant = 1.201405707067378;      // sqrt(5)/( sqrt(2)pow(3,4) )
 
-float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t* bf)
+double mp_get_target_length(const double v_0, const double v_1, const mpBuf_t* bf)
 {
-    const float q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
+    const double q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
     return q_recip_2_sqrt_j * sqrt(std::abs(v_1 - v_0)) * (v_1 + v_0);
 }
 
@@ -385,35 +385,35 @@ float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t* bf)
 
 // 14 *, 1 /, 1 sqrt, 1 cbrt
 // time: 68 us
-float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t* bf)
+double mp_get_target_velocity(const double v_0, const double L, const mpBuf_t* bf)
 {
     if (fp_ZERO(L)) {  // handle exception case
         return (0);
     }
 
-    const float j = bf->jerk;
+    const double j = bf->jerk;
 
-    const float a80 = 7.698003589195;       // 80 * a
-    const float a_2 = 0.00925925925926;     // a^2
+    const double a80 = 7.698003589195;       // 80 * a
+    const double a_2 = 0.00925925925926;     // a^2
 
-    const float v_0_2 = v_0 * v_0;          // v_0^2
-    const float v_0_3 = v_0_2 * v_0;        // v_0^3
+    const double v_0_2 = v_0 * v_0;          // v_0^2
+    const double v_0_3 = v_0_2 * v_0;        // v_0^3
 
-    const float L_2 = L * L;                // L^2
+    const double L_2 = L * L;                // L^2
 
-    const float b_part1 = 9 * j * L_2;      // 9 j L^2
-    const float b_part2 = a80 * v_0_3;      // 80 a v_0^3
+    const double b_part1 = 9 * j * L_2;      // 9 j L^2
+    const double b_part2 = a80 * v_0_3;      // 80 a v_0^3
 
     //              b^3 = a^2 (3 L sqrt(j (2 b_part2  +  b_part1))  +  b_part2  +  b_part1)
-    const float b_cubed = a_2 * (3 * L * sqrt(j * (2 * b_part2 + b_part1)) + b_part2 + b_part1);
-    const float b       = cbrtf(b_cubed);
+    const double b_cubed = a_2 * (3 * L * sqrt(j * (2 * b_part2 + b_part1)) + b_part2 + b_part1);
+    const double b       = cbrtf(b_cubed);
 
-    const float const1a = 0.8292422988276;    // 4 * 10^(1/3) * a
-    const float const2a = 4.823680612597;     // 1/(10^(1/3) * a)
-    const float const3  = 0.333333333333333;  // 1/3
+    const double const1a = 0.8292422988276;    // 4 * 10^(1/3) * a
+    const double const2a = 4.823680612597;     // 1/(10^(1/3) * a)
+    const double const3  = 0.333333333333333;  // 1/3
 
     //          v_1 =    1/3 ((const1a v_0^2)/b  +  b const2a  -  v_0)
-    const float v_1 = const3 * ((const1a * v_0_2) / b + b * const2a - v_0);
+    const double v_1 = const3 * ((const1a * v_0_2) / b + b * const2a - v_0);
 
     return std::abs(v_1);
 }
@@ -435,20 +435,20 @@ float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t* bf)
  *  be used to compute feedholds or other cases where exact velocity is not mandatory.
  *
  *  This function can fail if the length is too short to get a good answer.
- *  Failures return (float)-1.0  Negative velocities should never be returned.
+ *  Failures return (double)-1.0  Negative velocities should never be returned.
  */
 
-float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
+double mp_get_decel_velocity(const double v_0, const double L, const mpBuf_t* bf)
 {
-    const float q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
-    float v_1 = 0;              // start the guess at zero
+    const double q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
+    double v_1 = 0;              // start the guess at zero
 
     int i = 0;                  // limit the iterations
     while (i++ < 20) {          // If it fails after 20 iterations something's wrong
 
         // l_t is the difference in length between the L provided and the current guessed deceleration length
-        const float sqrt_delta_v_0 = sqrt(v_0 - v_1);
-        const float l_t = q_recip_2_sqrt_j * (sqrt_delta_v_0 * (v_1 + v_0)) - L;
+        const double sqrt_delta_v_0 = sqrt(v_0 - v_1);
+        const double l_t = q_recip_2_sqrt_j * (sqrt_delta_v_0 * (v_1 + v_0)) - L;
 
         // The return condition allows a minor error in length (in mm).
         // Note: This comparison does NOT affect actual lengths or steps, which would be bad.
@@ -463,8 +463,8 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
             v_1 = v_0 - 0.1;
             continue;
         }
-        const float v_1x3 = 3 * v_1;
-        const float recip_l_t = (2 * sqrt_delta_v_0) / ((v_0 - v_1x3) * q_recip_2_sqrt_j);
+        const double v_1x3 = 3 * v_1;
+        const double recip_l_t = (2 * sqrt_delta_v_0) / ((v_0 - v_1x3) * q_recip_2_sqrt_j);
         v_1 = v_1 - (l_t * recip_l_t);
 
         // In some extreme cases there is no solution because the length is too short
@@ -486,20 +486,20 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
  *
  */
 
-static float _get_meet_velocity(const float          v_0,
-                                const float          v_2,
-                                const float          L,
+static double _get_meet_velocity(const double          v_0,
+                                const double          v_2,
+                                const double          L,
                                 mpBuf_t*             bf,
                                 mpBlockRuntimeBuf_t* block)
 {
-    const float q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
+    const double q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
 
     // v_1 can never be smaller than v_0 or v_2, so we keep track of this value
-    const float min_v_1 = std::max(v_0, v_2);
+    const double min_v_1 = std::max(v_0, v_2);
 
     // v_1 is our estimated return value.
     // We estimate with the speed obtained by L/2 traveled from the highest speed of v_0 or v_2.
-    float v_1 = mp_get_target_velocity(min_v_1, L / 2.0, bf);
+    double v_1 = mp_get_target_velocity(min_v_1, L / 2.0, bf);
     // var v_1 = min_v_1 + 100;
 
     if (fp_EQ(v_0, v_2)) {
@@ -555,17 +555,17 @@ static float _get_meet_velocity(const float          v_0,
         }
 
         // Precompute some common chunks -- note that some attempts may have v_1 < v_0 or v_1 < v_2
-        const float sqrt_delta_v_0 = sqrt(std::abs(v_1 - v_0));
-        const float sqrt_delta_v_2 = sqrt(std::abs(v_1 - v_2));  // 849us
+        const double sqrt_delta_v_0 = sqrt(std::abs(v_1 - v_0));
+        const double sqrt_delta_v_2 = sqrt(std::abs(v_1 - v_2));  // 849us
 
         // l_c is our total-length calculation with the current v_1 estimate, minus the expected length.
         // This makes l_c == 0 when v_1 is the correct value.
 
         // GAMBLE: At the cost of one more multiply per iteration, we will keep the two length calculations seperate.
         // This allows us to store the resulting head/tail lengths.
-        const float l_h = q_recip_2_sqrt_j * (sqrt_delta_v_0 * (v_1 + v_0));
-        const float l_t = q_recip_2_sqrt_j * (sqrt_delta_v_2 * (v_1 + v_2));
-        const float l_c = (l_h + l_t) - L;
+        const double l_h = q_recip_2_sqrt_j * (sqrt_delta_v_0 * (v_1 + v_0));
+        const double l_t = q_recip_2_sqrt_j * (sqrt_delta_v_2 * (v_1 + v_2));
+        const double l_c = (l_h + l_t) - L;
 
         block->head_length = l_h;
         block->tail_length = l_t;
@@ -588,8 +588,8 @@ static float _get_meet_velocity(const float          v_0,
             break;
         }
 
-        const float v_1x3     = 3 * v_1;
-        const float recip_l_d = (2 * sqrt_delta_v_0 * sqrt_delta_v_2) /
+        const double v_1x3     = 3 * v_1;
+        const double recip_l_d = (2 * sqrt_delta_v_0 * sqrt_delta_v_2) /
                                 ((sqrt_delta_v_0 * (v_1x3 - v_2) - (v_0 - v_1x3) * sqrt_delta_v_2) * q_recip_2_sqrt_j);
 
         v_1 = v_1 - (l_c * recip_l_d);

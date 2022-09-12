@@ -60,8 +60,8 @@ void spindle_reset() {
  * spindle_stop();
  * spindle_pause();
  * spindle_resume();
- * spindle_set_speed(float speed);                // S parameter - returns STAT_EAGAIN if a command should be queued
- * float  spindle_get_speed();                    // return current speed - in the same units as the S parameter
+ * spindle_set_speed(double speed);                // S parameter - returns STAT_EAGAIN if a command should be queued
+ * double  spindle_get_speed();                    // return current speed - in the same units as the S parameter
  * spindle_set_direction(spDirection direction);  // M3/M4/M5 - - returns STAT_EAGAIN if a command should be queued
  * spDirection spindle_get_direction();           // return if any fo M3/M4/M5 are active (actual, not gcode model)
  * bool is_spindle_ready_to_resume(); // if the spindle can resume at this time, return true
@@ -87,11 +87,11 @@ void spindle_resume() {
 }
 
 // A command for placing in the queue, which forces a PTS (plan-to-stop) as well as calls active_toolhead->engage()
-static void _exec_spindle_control(float *, bool *) {
+static void _exec_spindle_control(double *, bool *) {
     // not really anything to do here - engage() should have just been called
 }
 
-stat_t spindle_set_speed(float speed) {
+stat_t spindle_set_speed(double speed) {
     cm->gm.spindle_speed = speed;
 
     if (active_toolhead && active_toolhead->set_speed(speed) == true) {
@@ -100,7 +100,7 @@ stat_t spindle_set_speed(float speed) {
 
     return (STAT_OK);
 }
-float spindle_get_speed() {
+double spindle_get_speed() {
     if (active_toolhead) { return active_toolhead->get_speed(); }
     return cm->gm.spindle_speed; // if there's not active toolhead, return what the gcode model has
 }
@@ -146,7 +146,7 @@ bool is_a_toolhead_busy() {
  * spindle_end_override()
  */
 
-// stat_t spindle_override_control(const float P_word, const bool P_flag) // M51
+// stat_t spindle_override_control(const double P_word, const bool P_flag) // M51
 // {
 //     bool new_enable = true;
 //     bool new_override = false;
@@ -175,12 +175,12 @@ bool is_a_toolhead_busy() {
 //     return (STAT_OK);
 // }
 
-// void spindle_start_override(const float ramp_time, const float override_factor)
+// void spindle_start_override(const double ramp_time, const double override_factor)
 // {
 //     return;
 // }
 
-// void spindle_end_override(const float ramp_time)
+// void spindle_end_override(const double ramp_time)
 // {
 //     return;
 // }
@@ -221,25 +221,25 @@ stat_t sp_set_spdp(nvObj_t *nv) {
 stat_t sp_get_spph(nvObj_t *nv) { return (get_boolean(nv, spindle_pause_enabled)); }
 stat_t sp_set_spph(nvObj_t *nv) { return (set_boolean(nv, spindle_pause_enabled)); }
 
-stat_t sp_get_spde(nvObj_t *nv) { return (get_float(nv, active_toolhead->get_spinup_delay())); }
+stat_t sp_get_spde(nvObj_t *nv) { return (get_double(nv, active_toolhead->get_spinup_delay())); }
 stat_t sp_set_spde(nvObj_t *nv) {
-    float new_delay;
-    ritorno(set_float_range(nv, new_delay, 0, SPINDLE_DWELL_MAX));
+    double new_delay;
+    ritorno(set_double_range(nv, new_delay, 0, SPINDLE_DWELL_MAX));
     active_toolhead->set_spinup_delay(new_delay);
     return (STAT_OK);
 }
 
-stat_t sp_get_spsn(nvObj_t *nv) { return (get_float(nv, active_toolhead->get_speed_min())); }
+stat_t sp_get_spsn(nvObj_t *nv) { return (get_double(nv, active_toolhead->get_speed_min())); }
 stat_t sp_set_spsn(nvObj_t *nv) {
-    float new_speed;
-    ritorno(set_float_range(nv, new_speed, SPINDLE_SPEED_MIN, SPINDLE_SPEED_MAX));
+    double new_speed;
+    ritorno(set_double_range(nv, new_speed, SPINDLE_SPEED_MIN, SPINDLE_SPEED_MAX));
     active_toolhead->set_speed_min(new_speed);
     return (STAT_OK);
 }
-stat_t sp_get_spsm(nvObj_t *nv) { return (get_float(nv, active_toolhead->get_speed_max())); }
+stat_t sp_get_spsm(nvObj_t *nv) { return (get_double(nv, active_toolhead->get_speed_max())); }
 stat_t sp_set_spsm(nvObj_t *nv) {
-    float new_speed;
-    ritorno(set_float_range(nv, new_speed, SPINDLE_SPEED_MIN, SPINDLE_SPEED_MAX));
+    double new_speed;
+    ritorno(set_double_range(nv, new_speed, SPINDLE_SPEED_MIN, SPINDLE_SPEED_MAX));
     active_toolhead->set_speed_max(new_speed);
     return (STAT_OK);
 }
@@ -251,10 +251,10 @@ stat_t sp_set_spoe(nvObj_t *nv) {
     active_toolhead->set_override_enable(override_enable);
     return (STAT_OK);
 }
-stat_t sp_get_spo(nvObj_t *nv) { return(get_float(nv, active_toolhead->get_override())); }
+stat_t sp_get_spo(nvObj_t *nv) { return(get_double(nv, active_toolhead->get_override())); }
 stat_t sp_set_spo(nvObj_t *nv) {
-    float override;
-    ritorno (set_float_range(nv, override, SPINDLE_OVERRIDE_MIN, SPINDLE_OVERRIDE_MAX));
+    double override;
+    ritorno (set_double_range(nv, override, SPINDLE_OVERRIDE_MIN, SPINDLE_OVERRIDE_MAX));
     active_toolhead->set_override(override);
     return (STAT_OK);
 }
@@ -262,7 +262,7 @@ stat_t sp_set_spo(nvObj_t *nv) {
 // These are provided as a way to view and control spindles without using M commands
 stat_t sp_get_spc(nvObj_t *nv) { return(get_integer(nv, spindle_get_direction())); }
 stat_t sp_set_spc(nvObj_t *nv) { return(spindle_set_direction((spDirection)nv->value_int)); }
-stat_t sp_get_sps(nvObj_t *nv) { return(get_float(nv, spindle_get_speed())); }
+stat_t sp_get_sps(nvObj_t *nv) { return(get_double(nv, spindle_get_speed())); }
 stat_t sp_set_sps(nvObj_t *nv) { return(spindle_set_speed(nv->value_flt)); }
 
 /***********************************************************************************

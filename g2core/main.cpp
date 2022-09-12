@@ -168,7 +168,7 @@ __attribute((naked)) void MemManage_Handler(void){
 #define  SCB_CFSR_DACCVIOL                   ((uint32_t)0x00000002)        /*!< Data access violation */
 #define  SCB_CFSR_MUNSTKERR                  ((uint32_t)0x00000008)        /*!< Unstacking error */
 #define  SCB_CFSR_MSTKERR                    ((uint32_t)0x00000010)        /*!< Stacking error */
-#define  SCB_CFSR_MLSPERR                    ((uint32_t)0x00000020)        /*!< floating-point lazy state preservation error */
+#define  SCB_CFSR_MLSPERR                    ((uint32_t)0x00000020)        /*!< doubleing-point lazy state preservation error */
 #define  SCB_CFSR_MMARVALID                  ((uint32_t)0x00000080)        /*!< Memory Manage Address Register address valid flag */
 #endif
 

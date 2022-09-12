@@ -37,10 +37,10 @@
  *    upstream in the motion planner as 6th order (linear pop) equations. These
  *    generate accel/decel *segments* that are passed to the DDA for step output.
  *
- *  - The DDA accepts and processes fractional motor steps as floating point numbers
+ *  - The DDA accepts and processes fractional motor steps as doubleing point numbers
  *    from the planner. Steps do not need to be whole numbers and are not expected to be.
  *    The step values are converted to integer by multiplying by an integer value
- *    (DDA_SUBSTEPS) to roughly preserve the precision of the floating point number
+ *    (DDA_SUBSTEPS) to roughly preserve the precision of the doubleing point number
  *    in the 32 bit int. Rounding is performed to avoid a truncation bias.
  *
  *  - Constant Rate DDA clock: The DDA runs at a constant, maximum rate for every
@@ -279,8 +279,8 @@ enum stPowerMode {
 #define MOTOR_POWER_MODE_MAX_VALUE    MOTOR_POWER_REDUCED_WHEN_IDLE
 
 // Min/Max timeouts allowed for motor disable. Allow for inertial stop; must be non-zero
-#define MOTOR_TIMEOUT_SECONDS_MIN   (float)0.1      // seconds !!! SHOULD NEVER BE ZERO !!!
-#define MOTOR_TIMEOUT_SECONDS_MAX   (float)4294967  // (4294967295/1000) -- for conversion to uint32_t
+#define MOTOR_TIMEOUT_SECONDS_MIN   (double)0.1      // seconds !!! SHOULD NEVER BE ZERO !!!
+#define MOTOR_TIMEOUT_SECONDS_MAX   (double)4294967  // (4294967295/1000) -- for conversion to uint32_t
                                                     // 1 dog year (7 weeks)
 
 // Step generation constants
@@ -289,7 +289,7 @@ enum stPowerMode {
 /* DDA substepping
  *
  *  DDA Substepping is a fixed.point scheme to increase the resolution of the DDA pulse generation
- *  while still using integer math (as opposed to floating point). Improving the accuracy of the DDA
+ *  while still using integer math (as opposed to doubleing point). Improving the accuracy of the DDA
  *  results in more precise pulse timing and therefore less pulse jitter and smoother motor operation.
  *
  *  The DDA accumulator is an int32_t, so the accumulator has the number range of about 2.1 billion.
@@ -317,9 +317,9 @@ enum stPowerMode {
  *  is too small and/or amount too large and/or holdoff is too small you may get a runaway correction
  *  and error will grow instead of shrink (or oscillate).
  */
-#define STEP_CORRECTION_THRESHOLD   (float)0.75     // magnitude of forwarding error to apply correction (in steps)
-#define STEP_CORRECTION_FACTOR      (float)0.25     // factor to apply to step correction for a single segment
-#define STEP_CORRECTION_MAX         (float)0.60     // max step correction allowed in a single segment
+#define STEP_CORRECTION_THRESHOLD   (double)2.00     // magnitude of forwarding error to apply correction (in steps)
+#define STEP_CORRECTION_FACTOR      (double)0.25     // factor to apply to step correction for a single segment
+#define STEP_CORRECTION_MAX         (double)0.60     // max step correction allowed in a single segment
 #define STEP_CORRECTION_HOLDOFF            5        // minimum number of segments to wait between error correction
 
 /*
@@ -346,16 +346,16 @@ typedef struct cfgMotor {                   // per-motor configs
     uint8_t  motor_map;                     // map motor to axis
     uint32_t microsteps;                    // microsteps to apply for each axis (ex: 8)
     uint8_t  polarity;                      // 0=normal polarity, 1=reverse motor direction
-    float power_level;                      // set 0.000 to 1.000 for PWM vref setting
-    float power_level_idle;                 // set 0.000 to 1.000 for PWM vref idle setting
-    float step_angle;                       // degrees per whole step (ex: 1.8)
-    float travel_rev;                       // mm or deg of travel per motor revolution
-    float steps_per_unit;                   // microsteps per mm (or degree) of travel
-    float units_per_step;                   // mm or degrees of travel per microstep
+    double power_level;                      // set 0.000 to 1.000 for PWM vref setting
+    double power_level_idle;                 // set 0.000 to 1.000 for PWM vref idle setting
+    double step_angle;                       // degrees per whole step (ex: 1.8)
+    double travel_rev;                       // mm or deg of travel per motor revolution
+    double steps_per_unit;                   // microsteps per mm (or degree) of travel
+    double units_per_step;                   // mm or degrees of travel per microstep
 } cfgMotor_t;
 
 typedef struct stConfig {                   // stepper configs
-    float motor_power_timeout;              // seconds before setting motors to idle current (currently this is OFF)
+    double motor_power_timeout;              // seconds before setting motors to idle current (currently this is OFF)
     cfgMotor_t mot[MOTORS];                 // settings for motors 1-N
 } stConfig_t;
 
@@ -367,7 +367,7 @@ typedef struct stRunMotor {                 // one per controlled motor
     int64_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
     uint32_t power_systick;                 // sys_tick for next motor power state transition
-    float power_level_dynamic;              // power level for this segment of idle
+    double power_level_dynamic;              // power level for this segment of idle
 } stRunMotor_t;
 
 typedef struct stRunSingleton {             // Stepper static values and axis parameters
@@ -393,11 +393,11 @@ typedef struct stPrepMotor {
 
     // following error correction
     int32_t correction_holdoff;             // count down segments between corrections
-    float corrected_steps;                  // accumulated correction steps for the cycle (for diagnostic display only)
+    double corrected_steps;                  // accumulated correction steps for the cycle (for diagnostic display only)
 
     // accumulator phase correction
-    float prev_segment_time;                // segment time from previous segment run for this motor
-    float accumulator_correction;           // factor for adjusting accumulator between segments
+    double prev_segment_time;                // segment time from previous segment run for this motor
+    double accumulator_correction;           // factor for adjusting accumulator between segments
     uint8_t accumulator_correction_flag;    // signals accumulator needs correction
 } stPrepMotor_t;
 
@@ -408,7 +408,7 @@ typedef struct stPrepSingleton {
     blockType block_type;                   // move type (requires planner.h)
 
     uint32_t dda_ticks;                     // DDA ticks for the move
-    float dda_ticks_holdover;               // partial DDA ticks from previous segment
+    double dda_ticks_holdover;               // partial DDA ticks from previous segment
     uint32_t dwell_ticks;                   // dwell ticks remaining
     stPrepMotor_t mot[MOTORS];              // prep time motor structs
     magic_t magic_end;
@@ -465,21 +465,21 @@ public:
          return MOTOR_DISABLED;
     };
 
-    virtual float getCurrentPowerLevel()
+    virtual double getCurrentPowerLevel()
     {
         // Override to return a proper value
         return (0.0);
     };
 
     // turn on motor in all cases unless it's disabled
-    // this version is called from the loader, and explicitly does NOT have floating point computations
+    // this version is called from the loader, and explicitly does NOT have doubleing point computations
     // HOT - called from the DDA interrupt
     void enable() //HOT_FUNC
     {
         this->_enableImpl();
     };
 
-    virtual void enableWithTimeout(float timeout_ms) // override if wanted
+    virtual void enableWithTimeout(double timeout_ms) // override if wanted
     {
         this->_enableImpl();
     };
@@ -496,7 +496,7 @@ public:
     virtual void motionStopped() {};
 
     virtual void periodicCheck(bool have_actually_stopped) {}; // can be overridden
-    virtual void setActivityTimeout(float idle_milliseconds) {}; // can be overridden
+    virtual void setActivityTimeout(double idle_milliseconds) {}; // can be overridden
 
     /* Functions that must be implemented in subclasses */
 
@@ -507,24 +507,24 @@ public:
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };
-    virtual void setPowerLevels(float active_pl, float idle_pl) { /* must override */ };
+    virtual void setPowerLevels(double active_pl, double idle_pl) { /* must override */ };
 };
 
 /**** ExternalEncoder (base object) ****/
 
 class ExternalEncoder {
    public:
-    using callback_t = std::function<void(bool, float)>;
+    using callback_t = std::function<void(bool, double)>;
     enum ReturnFormat { ReturnDegrees, ReturnRadians, ReturnFraction };
 
-    virtual void setCallback(std::function<void(bool, float)> &&handler);
-    virtual void setCallback(std::function<void(bool, float)> &handler);
+    virtual void setCallback(std::function<void(bool, double)> &&handler);
+    virtual void setCallback(std::function<void(bool, double)> &handler);
 
     virtual void requestAngleDegrees();
     virtual void requestAngleRadians();
     virtual void requestAngleFraction();
 
-    virtual float getQuadratureFraction();
+    virtual double getQuadratureFraction();
 };
 
 /**** FUNCTION PROTOTYPES ****/
@@ -544,11 +544,11 @@ void st_request_exec_move(void) HOT_FUNC;
 void st_request_load_move(void) HOT_FUNC;
 void st_prep_null(void);
 void st_prep_command(void *bf);        // use a void pointer since we don't know about mpBuf_t yet)
-void st_prep_dwell(float milliseconds);
-void st_prep_out_of_band_dwell(float milliseconds);
-stat_t st_prep_line(const float start_velocity, const float end_velocity, const float travel_steps[], const float following_error[], const float segment_time)  HOT_FUNC;
+void st_prep_dwell(double milliseconds);
+void st_prep_out_of_band_dwell(double milliseconds);
+stat_t st_prep_line(const double start_velocity, const double end_velocity, const double travel_steps[], const double following_error[], const double segment_time)  HOT_FUNC;
 // NOTE: this version is the same, except it's passed an array of start/end velocities, one pair per motor
-stat_t st_prep_line(const float start_velocities[], const float end_velocities[], const float travel_steps[], const float following_error[], const float segment_time)  HOT_FUNC;
+stat_t st_prep_line(const double start_velocities[], const double end_velocities[], const double travel_steps[], const double following_error[], const double segment_time)  HOT_FUNC;
 
 stat_t st_get_ma(nvObj_t *nv);
 stat_t st_set_ma(nvObj_t *nv);

@@ -20,13 +20,13 @@
 #ifndef PLAN_ARC_H_ONCE
 #define PLAN_ARC_H_ONCE
 
-#define MIN_ARC_RADIUS ((float)0.1)             // min radius that can be executed
+#define MIN_ARC_RADIUS ((double)0.1)             // min radius that can be executed
 
 // Arc radius tests. See http://linuxcnc.org/docs/html/gcode/gcode.html#sec:G2-G3-Arc
-//#define ARC_RADIUS_ERROR_MAX ((float)0.5)     // max allowable mm between start and end radius
-#define ARC_RADIUS_ERROR_MAX ((float)1.0)       // max allowable mm between start and end radius
-#define ARC_RADIUS_ERROR_MIN ((float)0.005)     // min mm where 1% rule applies
-#define ARC_RADIUS_TOLERANCE ((float)0.001)     // 0.1% radius variance test
+//#define ARC_RADIUS_ERROR_MAX ((double)0.5)     // max allowable mm between start and end radius
+#define ARC_RADIUS_ERROR_MAX ((double)1.0)       // max allowable mm between start and end radius
+#define ARC_RADIUS_ERROR_MIN ((double)0.005)     // min mm where 1% rule applies
+#define ARC_RADIUS_TOLERANCE ((double)0.001)     // 0.1% radius variance test
 
 #define CHORDAL_TOLERANCE_MIN (0.001)           // values below this are not accepted
 

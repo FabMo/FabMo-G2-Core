@@ -66,15 +66,15 @@
  *	used during move execution (exec) to adjust the move to compensate for accumulated
  *	positional errors. It's also the basis of closed-loop (servoed) systems.
  *
- *	Positional error occurs due to floating point numerical inaccuracies. g2core uses
- *	32 bit floating point (GCC 32 bit, which is NOT IEEE 32 bit). Errors creep in
+ *	Positional error occurs due to doubleing point numerical inaccuracies. g2core uses
+ *	32 bit doubleing point (GCC 32 bit, which is NOT IEEE 32 bit). Errors creep in
  *	during planning, move execution, and stepper output phases. Care has been taken
  *	to minimize introducing errors throughout the process, but they still occur.
  *	In most cases errors are not noticeable as they fall below the step resolution
  *	for most jobs. For jobs that run > 1 hour the errors can accumulate and send
  *	results off by as much as a millimeter if not corrected.
  *
- *	Note: Going to doubles (from floats) would reduce the errors but not eliminate
+ *	Note: Going to doubles (from doubles) would reduce the errors but not eliminate
  *	them altogether. 
  *
  *	*** Applying the error term for error correction ***
@@ -113,7 +113,7 @@ typedef struct enEncoder {          // one real or virtual encoder per controlle
 typedef struct enEncoders {
     magic_t     magic_start;
     enEncoder_t en[MOTORS];         // runtime encoder structures
-    float       snapshot[MOTORS];   // snapshot vector
+    double       snapshot[MOTORS];   // snapshot vector
     magic_t     magic_end;
 } enEncoders_t;
 
@@ -127,11 +127,11 @@ void encoder_reset(void);
 void encoder_init_assertions(void);
 stat_t encoder_test_assertions(void);
 
-void en_set_encoder_steps(uint8_t motor, float steps);
-float en_read_encoder(uint8_t motor);
+void en_set_encoder_steps(uint8_t motor, double steps);
+double en_read_encoder(uint8_t motor);
 
 void en_take_encoder_snapshot();
-float en_get_encoder_snapshot_steps(uint8_t motor);
-float* en_get_encoder_snapshot_vector();
+double en_get_encoder_snapshot_steps(uint8_t motor);
+double* en_get_encoder_snapshot_vector();
 
 #endif  // End of include guard: ENCODER_H_ONCE

@@ -122,9 +122,9 @@ static stat_t _text_parser_kernal(char *str, nvObj_t *nv)
         strncpy(nv->token, str, TOKEN_LEN);
         str = ++rd;
         nv->value_int = atol(str);              // collect the number as an integer
-        nv->value_flt = strtof(str, &rd);       // collect the number as a float - rd used as end pointer
+        nv->value_flt = strtof(str, &rd);       // collect the number as a double - rd used as end pointer
         if (rd != str) {
-            nv->valuetype = TYPE_FLOAT;         // provisionally set it as a float
+            nv->valuetype = TYPE_FLOAT;         // provisionally set it as a double
         }
     }
 
@@ -198,7 +198,7 @@ void text_print_multiline_formatted(nvObj_t *nv)
 {
     for (uint8_t i=0; i<NV_BODY_LEN-1; i++) {
         if (nv->valuetype != TYPE_PARENT) {
-            convert_outgoing_float(nv);
+            convert_outgoing_double(nv);
             nv_print(nv);
         }
         if ((nv = nv->nx) == NULL) return;
@@ -211,7 +211,7 @@ void text_print_multiline_formatted(nvObj_t *nv)
  */
 static const char fmt_str[] = "%s\n";   // generic format for string message (with no formatting)
 static const char fmt_int[] = "%lu\n";  // generic format for ui16's and ui32s
-static const char fmt_flt[] = "%f\n";   // generic format for floats
+static const char fmt_flt[] = "%f\n";   // generic format for doubles
 
 void tx_print_nul(nvObj_t *nv) {}
 void tx_print_str(nvObj_t *nv) { text_print_str(nv, fmt_str);}

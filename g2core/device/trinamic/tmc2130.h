@@ -154,7 +154,7 @@ struct Trinamic2130 final : Stepper {
         _startNextReadWrite();
     };
 
-    void enableWithTimeout(float timeout_ms) override
+    void enableWithTimeout(double timeout_ms) override
     {
         if (_power_mode == MOTOR_DISABLED || _power_state == MOTOR_RUNNING) {
             return;
@@ -223,7 +223,7 @@ struct Trinamic2130 final : Stepper {
          return _power_mode;
     };
 
-    void setPowerLevels(float active_pl, float idle_pl) override
+    void setPowerLevels(double active_pl, double idle_pl) override
     {
         // scale the 0.0-1.0 to 0-31
         IHOLD_IRUN.IRUN = (active_pl * 31.0);
@@ -250,7 +250,7 @@ struct Trinamic2130 final : Stepper {
         }
     };
 
-    virtual void setActivityTimeout(float idle_milliseconds) override
+    virtual void setActivityTimeout(double idle_milliseconds) override
     {
         _motor_activity_timeout_ms = idle_milliseconds;
     };

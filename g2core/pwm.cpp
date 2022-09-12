@@ -82,13 +82,13 @@ void pwm_init() {
  * pwm_set_freq() - set PWM channel frequency
  *
  *  channel - PWM channel
- *  freq    - PWM frequency in Khz as a float
+ *  freq    - PWM frequency in Khz as a double
  *
  *  Assumes 32MHz clock.
  *  Doesn't turn time on until duty cycle is set
  */
 
-stat_t pwm_set_freq(uint8_t chan, float freq)
+stat_t pwm_set_freq(uint8_t chan, double freq)
 {
     if (chan > PWMS) { return (STAT_NO_SUCH_DEVICE);}
     //if (freq < PWM_MIN_FREQ) { return (STAT_INPUT_LESS_THAN_MIN_VALUE);}
@@ -120,7 +120,7 @@ stat_t pwm_set_freq(uint8_t chan, float freq)
  *  The frequency must have been set previously
  */
 
-stat_t pwm_set_duty(uint8_t chan, float duty)
+stat_t pwm_set_duty(uint8_t chan, double duty)
 {
     if (duty < 0.0) { return (STAT_INPUT_LESS_THAN_MIN_VALUE);}
     if (duty > 1.0) { return (STAT_INPUT_EXCEEDS_MAX_VALUE);}

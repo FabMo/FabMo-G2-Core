@@ -159,7 +159,7 @@ using Motate::Timeout;
  * All the enums that equal some starting value must be that value. Don't change them
  */
 
-typedef void (*cm_exec_t)(float[], bool[]); // callback to canonical_machine execution function
+typedef void (*cm_exec_t)(double[], bool[]); // callback to canonical_machine execution function
 
 typedef enum {                      // planner operating state
     PLANNER_IDLE = 0,               // planner and movement are idle
@@ -237,24 +237,24 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #define SECONDARY_QUEUE_SIZE        ((uint8_t)12)       // Secondary planner queue for feedhold operations
 #endif
 #define PLANNER_BUFFER_HEADROOM     ((uint8_t)4)        // Buffers to reserve in planner before processing new input line
-#define JERK_MULTIPLIER             ((float)1000000)    // DO NOT CHANGE - must always be 1 million
+#define JERK_MULTIPLIER             ((double)1000000)    // DO NOT CHANGE - must always be 1 million
 
 #define JUNCTION_INTEGRATION_MIN    (0.05)              // JT minimum allowable setting
 #define JUNCTION_INTEGRATION_MAX    (5.00)              // JT maximum allowable setting
 
 #ifndef MIN_SEGMENT_MS                                  // boards can override this value in hardware.h
-#define MIN_SEGMENT_MS              ((float)0.75)       // minimum segment milliseconds
+#define MIN_SEGMENT_MS              ((double)0.75)       // minimum segment milliseconds
 #endif
-#define NOM_SEGMENT_MS              ((float)MIN_SEGMENT_MS*2.0)        // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
-#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS*2.0)        // minimum block (whole move) milliseconds
-#define BLOCK_TIMEOUT_MS            ((float)30.0)       // MS before deciding there are no new blocks arriving
-#define PHAT_CITY_MS                ((float)100.0)      // if you have at least this much time in the planner
+#define NOM_SEGMENT_MS              ((double)MIN_SEGMENT_MS*2.0)        // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
+#define MIN_BLOCK_MS                ((double)MIN_SEGMENT_MS*2.0)        // minimum block (whole move) milliseconds
+#define BLOCK_TIMEOUT_MS            ((double)30.0)       // MS before deciding there are no new blocks arriving
+#define PHAT_CITY_MS                ((double)100.0)      // if you have at least this much time in the planner
 
-#define NOM_SEGMENT_TIME            ((float)(NOM_SEGMENT_MS / 60000))       // DO NOT CHANGE - time in minutes
-#define NOM_SEGMENT_USEC            ((float)(NOM_SEGMENT_MS * 1000))        // DO NOT CHANGE - time in microseconds
-#define MIN_SEGMENT_TIME            ((float)(MIN_SEGMENT_MS / 60000))       // DO NOT CHANGE - time in minutes
-#define MIN_BLOCK_TIME              ((float)(MIN_BLOCK_MS / 60000))         // DO NOT CHANGE - time in minutes
-#define PHAT_CITY_TIME              ((float)(PHAT_CITY_MS / 60000))         // DO NOT CHANGE - time in minutes
+#define NOM_SEGMENT_TIME            ((double)(NOM_SEGMENT_MS / 60000))       // DO NOT CHANGE - time in minutes
+#define NOM_SEGMENT_USEC            ((double)(NOM_SEGMENT_MS * 1000))        // DO NOT CHANGE - time in microseconds
+#define MIN_SEGMENT_TIME            ((double)(MIN_SEGMENT_MS / 60000))       // DO NOT CHANGE - time in minutes
+#define MIN_BLOCK_TIME              ((double)(MIN_BLOCK_MS / 60000))         // DO NOT CHANGE - time in minutes
+#define PHAT_CITY_TIME              ((double)(PHAT_CITY_MS / 60000))         // DO NOT CHANGE - time in minutes
 
 #define FEED_OVERRIDE_ENABLE        false               // initial value
 #define FEED_OVERRIDE_MIN           (0.05)              // 5% minimum
@@ -330,9 +330,9 @@ struct mpBuf_t { // mpBuf_t
 #ifdef __PLANNER_DIAGNOSTICS
     uint32_t linenum;                   // mirror of bf->gm.linenum
     int iterations;
-    float block_time_ms;
-    float plannable_time_ms;            // time in planner
-    float plannable_length;             // length in planner
+    double block_time_ms;
+    double plannable_time_ms;            // time in planner
+    double plannable_length;             // length in planner
     uint8_t meet_iterations;            // iterations needed in _get_meet_velocity
 #endif
 
@@ -342,39 +342,39 @@ struct mpBuf_t { // mpBuf_t
     blockHint hint;                     // hint the block for zoid and other planning operations. Must be accurate or NO_HINT
 
     // block parameters
-    float unit[AXES];               // unit vector for axis scaling & planning
+    double unit[AXES];               // unit vector for axis scaling & planning
     bool axis_flags[AXES];          // set true for axes participating in the move & for command parameters
 
-    float junction_unit[AXES];      // unit vector delta at the junction for cornering. Needed for groups of small moves.
-    float junction_length_since;    // length total of the moves since the junction_unit was captured. See _calculate_junction_vmax() comments.
+    double junction_unit[AXES];      // unit vector delta at the junction for cornering. Needed for groups of small moves.
+    double junction_length_since;    // length total of the moves since the junction_unit was captured. See _calculate_junction_vmax() comments.
 
     bool plannable;                 // set true when this block can be used for planning
 
-    float length;                   // total length of line or helix in mm
-    float block_time;               // computed move time for entire block (move)
-    float override_factor;          // feed rate or rapid override factor for this block ("override" is a reserved word)
+    double length;                   // total length of line or helix in mm
+    double block_time;               // computed move time for entire block (move)
+    double override_factor;          // feed rate or rapid override factor for this block ("override" is a reserved word)
 
     // *** SEE NOTES ON THESE VARIABLES, in aline() ***
     // We removed all entry_* values.
     // To get the entry_* values, look at pv->exit_* or mr->exit_*
-    float cruise_velocity;              // cruise velocity requested & achieved
-    float exit_velocity;                // exit velocity requested for the move
+    double cruise_velocity;              // cruise velocity requested & achieved
+    double exit_velocity;                // exit velocity requested for the move
     // is also the entry velocity of the *next* move
 
-    float cruise_vset;                  // cruise velocity requested for move - prior to overrides
-    float cruise_vmax;                  // cruise max velocity adjusted for overrides
-    float exit_vmax;                    // max exit velocity possible for this move
+    double cruise_vset;                  // cruise velocity requested for move - prior to overrides
+    double cruise_vmax;                  // cruise max velocity adjusted for overrides
+    double exit_vmax;                    // max exit velocity possible for this move
     // is also the maximum entry velocity of the next move
 
-    float absolute_vmax;                // fastest this block can move w/o exceeding constraints
-    float junction_vmax;                // maximum the exit velocity can be to go through the junction
+    double absolute_vmax;                // fastest this block can move w/o exceeding constraints
+    double junction_vmax;                // maximum the exit velocity can be to go through the junction
     // between the NEXT BLOCK AND THIS ONE
 
-    float jerk;                         // maximum linear jerk term for this move
-    float jerk_sq;                      // Jm^2 is used for planning (computed and cached)
-    float recip_jerk;                   // 1/Jm used for planning (computed and cached)
-    float sqrt_j;                       // sqrt(jM) used for planning (computed and cached)
-    float q_recip_2_sqrt_j;             // (q/(2 sqrt(jM))) where q = (sqrt(10)/(3^(1/4))), used in length computations (computed and cached)
+    double jerk;                         // maximum linear jerk term for this move
+    double jerk_sq;                      // Jm^2 is used for planning (computed and cached)
+    double recip_jerk;                   // 1/Jm used for planning (computed and cached)
+    double sqrt_j;                       // sqrt(jM) used for planning (computed and cached)
+    double q_recip_2_sqrt_j;             // (q/(2 sqrt(jM))) where q = (sqrt(10)/(3^(1/4))), used in length computations (computed and cached)
 
     GCodeState_t gm;                    // Gcode model state - passed from model, used by planner and runtime
 
@@ -437,16 +437,16 @@ typedef struct mpPlannerQueue {         // control structure for queue
 typedef struct mpBlockRuntimeBuf {      // Data structure for just the parts of RunTime that we need to plan a BLOCK
     struct mpBlockRuntimeBuf *nx;       // singly-linked-list
 
-    float head_length;                  // copies of bf variables of same name
-    float body_length;
-    float tail_length;
+    double head_length;                  // copies of bf variables of same name
+    double body_length;
+    double tail_length;
 
-    float head_time;                    // copies of bf variables of same name
-    float body_time;
-    float tail_time;
+    double head_time;                    // copies of bf variables of same name
+    double body_time;
+    double tail_time;
 
-    float cruise_velocity;              // velocity at the end of the head and the beginning of the tail
-    float exit_velocity;                // velocity at the end of the move
+    double cruise_velocity;              // velocity at the end of the head and the beginning of the tail
+    double exit_velocity;                // velocity at the end of the move
 } mpBlockRuntimeBuf_t;
 
 typedef struct mpPlannerRuntime {       // persistent runtime variables
@@ -457,19 +457,19 @@ typedef struct mpPlannerRuntime {       // persistent runtime variables
     sectionState section_state;         // state within a move section
 
     bool out_of_band_dwell_flag;        // set true to conditionally execute out-of-band dwell
-    float out_of_band_dwell_seconds;    // time for out-of-band dwell
+    double out_of_band_dwell_seconds;    // time for out-of-band dwell
 
-    float unit[AXES];                   // unit vector for axis scaling & planning
+    double unit[AXES];                   // unit vector for axis scaling & planning
     bool axis_flags[AXES];              // set true for axes participating in the move
-    float target[AXES];                 // final target for bf (used to correct rounding errors)
-    float position[AXES];               // current move position
-    float waypoint[SECTIONS][AXES];     // head/body/tail endpoints for correction
+    double target[AXES];                 // final target for bf (used to correct rounding errors)
+    double position[AXES];               // current move position
+    double waypoint[SECTIONS][AXES];     // head/body/tail endpoints for correction
 
-    float target_steps[MOTORS];         // current MR target (absolute target as steps)
-    float position_steps[MOTORS];       // current MR position (target from previous segment)
-    float commanded_steps[MOTORS];      // will align with next encoder sample (target from 2nd previous segment)
-    float encoder_steps[MOTORS];        // encoder position in steps - ideally the same as commanded_steps
-    float following_error[MOTORS];      // difference between encoder_steps and commanded steps
+    double target_steps[MOTORS];         // current MR target (absolute target as steps)
+    double position_steps[MOTORS];       // current MR position (target from previous segment)
+    double commanded_steps[MOTORS];      // will align with next encoder sample (target from 2nd previous segment)
+    double encoder_steps[MOTORS];        // encoder position in steps - ideally the same as commanded_steps
+    double following_error[MOTORS];      // difference between encoder_steps and commanded steps
 
     mpBlockRuntimeBuf_t *r;             // block that is running
     mpBlockRuntimeBuf_t *p;             // block that is being planned, p might == r
@@ -478,19 +478,19 @@ typedef struct mpPlannerRuntime {       // persistent runtime variables
     mpBuf_t *plan_bf;                   // DIAGNOSTIC - pointer to next buffer to plan
     mpBuf_t *run_bf;                    // DIAGNOSTIC - pointer to currently running buffer
 
-    float entry_velocity;               // entry values for the currently running block
+    double entry_velocity;               // entry values for the currently running block
 
-    float segments;                     // number of segments in line (also used by arc generation)
+    double segments;                     // number of segments in line (also used by arc generation)
     uint32_t segment_count;             // count of running segments
-    float segment_velocity;             // computed start velocity for aline segment
-    float target_velocity;              // computed end velocity for aline segment
-    float segment_time;                 // actual time increment per aline segment
+    double segment_velocity;             // computed start velocity for aline segment
+    double target_velocity;              // computed end velocity for aline segment
+    double segment_time;                 // actual time increment per aline segment
 
-    float forward_diff_1;               // forward difference level 1
-    float forward_diff_2;               // forward difference level 2
-    float forward_diff_3;               // forward difference level 3
-    float forward_diff_4;               // forward difference level 4
-    float forward_diff_5;               // forward difference level 5
+    double forward_diff_1;               // forward difference level 1
+    double forward_diff_2;               // forward difference level 2
+    double forward_diff_3;               // forward difference level 3
+    double forward_diff_4;               // forward difference level 4
+    double forward_diff_5;               // forward difference level 5
 
     GCodeState_t gm;                    // gcode model state currently executing
 
@@ -514,15 +514,15 @@ typedef struct mpPlanner {              // common variables for a planner contex
     magic_t magic_start;                // magic number to test memory integrity
 
     // DIAGNOSTICS
-    float run_time_remaining_ms;
-    float plannable_time_ms;
+    double run_time_remaining_ms;
+    double plannable_time_ms;
 
     // planner position
-    float position[AXES];               // final move position for planning purposes
+    double position[AXES];               // final move position for planning purposes
 
     // timing variables
-    float run_time_remaining;           // time left in runtime (including running block)
-    float plannable_time;               // time in planner that can actually be planned
+    double run_time_remaining;           // time left in runtime (including running block)
+    double plannable_time;               // time in planner that can actually be planned
 
     // planner state variables
     plannerState planner_state;         // current state of planner
@@ -533,9 +533,9 @@ typedef struct mpPlanner {              // common variables for a planner contex
     bool entry_changed;                 // mark if exit_velocity changed to invalidate next block's hint
 
     // feed overrides and ramp variables (these extend the variables in cm->gmx)
-    float mfo_factor;                   // runtime override factor
-    float ramp_target;
-    float ramp_dvdt;
+    double mfo_factor;                   // runtime override factor
+    double ramp_target;
+    double ramp_dvdt;
 
     // objects
     Timeout block_timeout;              // Timeout object for block planning
@@ -588,22 +588,22 @@ stat_t planner_assert(const mpPlanner_t *_mp);
 
 void mp_halt_runtime(void);
 
-void mp_set_planner_position(uint8_t axis, const float position);
-void mp_set_runtime_position(uint8_t axis, const float position);
+void mp_set_planner_position(uint8_t axis, const double position);
+void mp_set_runtime_position(uint8_t axis, const double position);
 void mp_set_steps_to_runtime_position(void);
-stat_t mp_set_target_steps(const float target_steps[]) HOT_FUNC;
-stat_t mp_set_target_steps(const float target_steps[MOTORS], const float start_velocities[MOTORS], const float end_velocities[MOTORS], const float segment_time) HOT_FUNC;
+stat_t mp_set_target_steps(const double target_steps[]) HOT_FUNC;
+stat_t mp_set_target_steps(const double target_steps[MOTORS], const double start_velocities[MOTORS], const double end_velocities[MOTORS], const double segment_time) HOT_FUNC;
 
-void mp_queue_command(void(*cm_exec)(float *, bool *), float *value, bool *flag);
+void mp_queue_command(void(*cm_exec)(double *, bool *), double *value, bool *flag);
 stat_t mp_runtime_command(mpBuf_t *bf);
 
 stat_t mp_json_command(char *json_string);
 stat_t mp_json_command_immediate(char *json_string);
 stat_t mp_json_wait(char *json_string);
 
-stat_t mp_dwell(const float seconds);
+stat_t mp_dwell(const double seconds);
 void mp_end_dwell(void);
-void mp_request_out_of_band_dwell(float seconds);
+void mp_request_out_of_band_dwell(double seconds);
 
 //**** planner functions and helpers
 uint8_t mp_get_planner_buffers(const mpPlanner_t *_mp);
@@ -613,10 +613,10 @@ bool mp_is_phat_city_time(void);
 
 stat_t mp_planner_callback();
 void mp_replan_queue(mpBuf_t *bf, bool back_too=false);
-// void mp_start_feed_override(const float ramp_time, const float override);
-// void mp_end_feed_override(const float ramp_time);
-// void mp_start_traverse_override(const float ramp_time, const float override);
-// void mp_end_traverse_override(const float ramp_time);
+// void mp_start_feed_override(const double ramp_time, const double override);
+// void mp_end_feed_override(const double ramp_time);
+// void mp_start_traverse_override(const double ramp_time, const double override);
+// void mp_end_traverse_override(const double ramp_time);
 void mp_planner_time_accounting(void);
 
 //**** planner buffer primitives
@@ -638,10 +638,10 @@ bool mp_free_run_buffer(void)  HOT_FUNC;
 
 //**** plan_line.c functions
 void mp_zero_segment_velocity(void);                    // getters and setters...
-float mp_get_runtime_velocity(void);
-float mp_get_runtime_absolute_position(mpPlannerRuntime_t *_mr, uint8_t axis);
-float mp_get_runtime_display_position(uint8_t axis);
-void mp_set_runtime_display_offset(float offset[]);
+double mp_get_runtime_velocity(void);
+double mp_get_runtime_absolute_position(mpPlannerRuntime_t *_mr, uint8_t axis);
+double mp_get_runtime_display_position(uint8_t axis);
+void mp_set_runtime_display_offset(double offset[]);
 bool mp_get_runtime_busy(void);
 bool mp_runtime_is_idle(void);
 
@@ -652,16 +652,16 @@ void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf);
 bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf);
 
 //**** plan_zoid.c functions
-stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const float entry_velocity);
-float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t *bf);
-float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t *bf); // acceleration ONLY
-float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t *bf);  // deceleration ONLY
-float mp_find_t(const float v_0, const float v_1, const float L, const float totalL, const float initial_t, const float T);
+stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t *block, mpBuf_t *bf, const double entry_velocity);
+double mp_get_target_length(const double v_0, const double v_1, const mpBuf_t *bf);
+double mp_get_target_velocity(const double v_0, const double L, const mpBuf_t *bf); // acceleration ONLY
+double mp_get_decel_velocity(const double v_0, const double L, const mpBuf_t *bf);  // deceleration ONLY
+double mp_find_t(const double v_0, const double v_1, const double L, const double totalL, const double initial_t, const double T);
 
-float mp_calc_v(const float t, const float v_0, const float v_1);                // compute the velocity along the curve accelerating from v_0 to v_1, at position t=[0,1]
-float mp_calc_a(const float t, const float v_0, const float v_1, const float T); // compute acceleration over curve accelerating from v_0 to v_1, at position t=[0,1], total time T
-float mp_calc_j(const float t, const float v_0, const float v_1, const float T); // compute jerk over curve accelerating from v_0 to v_1, at position t=[0,1], total time T
-//float mp_calc_l(const float t, const float v_0, const float v_1, const float T); // compute length over curve accelerating from v_0 to v_1, at position t=[0,1], total time T
+double mp_calc_v(const double t, const double v_0, const double v_1);                // compute the velocity along the curve accelerating from v_0 to v_1, at position t=[0,1]
+double mp_calc_a(const double t, const double v_0, const double v_1, const double T); // compute acceleration over curve accelerating from v_0 to v_1, at position t=[0,1], total time T
+double mp_calc_j(const double t, const double v_0, const double v_1, const double T); // compute jerk over curve accelerating from v_0 to v_1, at position t=[0,1], total time T
+//double mp_calc_l(const double t, const double v_0, const double v_1, const double T); // compute length over curve accelerating from v_0 to v_1, at position t=[0,1], total time T
 
 //**** plan_exec.c functions
 stat_t mp_forward_plan(void);

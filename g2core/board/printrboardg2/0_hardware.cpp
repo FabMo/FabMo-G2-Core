@@ -205,8 +205,8 @@ void _get_id(char *id)
  * hw_get_fbs() - get firmware build string
  */
 
-stat_t hw_get_fb(nvObj_t *nv) { return (get_float(nv, cs.fw_build)); }
-stat_t hw_get_fv(nvObj_t *nv) { return (get_float(nv, cs.fw_version)); }
+stat_t hw_get_fb(nvObj_t *nv) { return (get_double(nv, cs.fw_build)); }
+stat_t hw_get_fv(nvObj_t *nv) { return (get_double(nv, cs.fw_version)); }
 stat_t hw_get_hp(nvObj_t *nv) { return (get_string(nv, G2CORE_HARDWARE_PLATFORM)); }
 stat_t hw_get_hv(nvObj_t *nv) { return (get_string(nv, G2CORE_HARDWARE_VERSION)); }
 stat_t hw_get_fbs(nvObj_t *nv) { return (get_string(nv, G2CORE_FIRMWARE_BUILD_STRING)); }
@@ -257,7 +257,7 @@ stat_t _get_leds(nvObj_t *nv)
 {
     nv->valuetype = TYPE_INTEGER;
 
-    float red, green, blue;
+    double red, green, blue;
 
     LEDs::display_color[0].getRGB(red, green, blue);
 

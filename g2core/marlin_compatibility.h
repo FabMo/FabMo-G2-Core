@@ -49,11 +49,11 @@ stat_t marlin_list_sd_response();                               // M20
 stat_t marlin_select_sd_response(const char *file);             // M23
 stat_t marlin_set_extruder_mode(const uint8_t mode);            // M82, M82
 stat_t marlin_disable_motors();                                 // M84
-stat_t marlin_set_motor_timeout(float s);                       // M84 Sxxx, M85 Sxxx, M18 Sxxx
+stat_t marlin_set_motor_timeout(double s);                       // M84 Sxxx, M85 Sxxx, M18 Sxxx
 
-stat_t marlin_set_temperature(uint8_t tool, float temperature, bool wait); // M104, M109, M140, M190
+stat_t marlin_set_temperature(uint8_t tool, double temperature, bool wait); // M104, M109, M140, M190
 stat_t marlin_request_temperature_report();                     // M105
-stat_t marlin_set_fan_speed(const uint8_t fan, float speed);    // M106, M107
+stat_t marlin_set_fan_speed(const uint8_t fan, double speed);    // M106, M107
 
 stat_t marlin_request_position_report();                        // M114
 stat_t marlin_report_version();                                 // M115

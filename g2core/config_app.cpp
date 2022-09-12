@@ -100,8 +100,8 @@ static stat_t get_tick(nvObj_t *nv);        // get system tick count
  *  - The precision value 'p' only affects JSON responses. You need to also set
  *    the %f in the corresponding format string to set text mode display precision
  *
- *  - Unit conversions are now conditional, and handled by convert_incoming_float()
- *    and convert_outgoing_float(). Apply conversion flags to all axes, not just linear,
+ *  - Unit conversions are now conditional, and handled by convert_incoming_double()
+ *    and convert_outgoing_double(). Apply conversion flags to all axes, not just linear,
  *    as rotary axes may be treated as linear if in radius mode, so the flag is needed.
  */
 
@@ -1974,15 +1974,15 @@ bool nv_index_lt_groups(index_t index) { return ((index <= NV_INDEX_START_GROUPS
 
 /***** APPLICATION SPECIFIC CONFIGS AND EXTENSIONS TO GENERIC FUNCTIONS *****/
 /*
- * convert_incoming_float() - pre-process an incoming floating point number for canonical units
- * convert_outgoing_float() - pre-process an outgoing floating point number for units display
+ * convert_incoming_double() - pre-process an incoming doubleing point number for canonical units
+ * convert_outgoing_double() - pre-process an outgoing doubleing point number for units display
  *
- *  Incoming floats are destined for SET operations.
- *  Outgoing floats are the raw values from GET operations, destined for text or JSON display.
+ *  Incoming doubles are destined for SET operations.
+ *  Outgoing doubles are the raw values from GET operations, destined for text or JSON display.
  *
  *  Apologies in advance for these twisty little functions. These functions are used to
- *  convert incoming floats into the native, canonical form of a parameter (mm, or whatever)
- *  and outgoing floats into a display format appropriate to the units mode in effect.
+ *  convert incoming doubles into the native, canonical form of a parameter (mm, or whatever)
+ *  and outgoing doubles into a display format appropriate to the units mode in effect.
  *  They use the flags in the config table and other cues to determine what type of conversion
  *  to perform.
  *
@@ -1994,10 +1994,10 @@ bool nv_index_lt_groups(index_t index) { return ((index <= NV_INDEX_START_GROUPS
  *  form would be units-per-step.
  */
 
-static void _convert(nvObj_t *nv, float conversion_factor)
+static void _convert(nvObj_t *nv, double conversion_factor)
 {
     if (nv->valuetype != TYPE_FLOAT) { return; } // can be called non-destructively for any value type
-    if (isnan((double)nv->value_flt) || isinf((double)nv->value_flt)) { return; } // trap illegal float values
+    if (isnan((double)nv->value_flt) || isinf((double)nv->value_flt)) { return; } // trap illegal double values
     ///+++ transform these checks into NaN or INF strings with an error return?
 
     if (cm_get_units_mode(MODEL) == INCHES) {
@@ -2015,41 +2015,41 @@ static void _convert(nvObj_t *nv, float conversion_factor)
     nv->valuetype = TYPE_FLOAT;
 }
 
-void convert_incoming_float(nvObj_t *nv) { return(_convert (nv, MM_PER_INCH)); }
-void convert_outgoing_float(nvObj_t *nv) { return(_convert (nv, INCHES_PER_MM)); }
+void convert_incoming_double(nvObj_t *nv) { return(_convert (nv, MM_PER_INCH)); }
+void convert_outgoing_double(nvObj_t *nv) { return(_convert (nv, INCHES_PER_MM)); }
 
 /*
- * get_float()       - boilerplate for retrieving raw floating point value
- * set_float()       - boilerplate for setting a floating point value with unit conversion
- * set_float_range() - set a floating point value with inclusive range check
+ * get_double()       - boilerplate for retrieving raw doubleing point value
+ * set_double()       - boilerplate for setting a doubleing point value with unit conversion
+ * set_double_range() - set a doubleing point value with inclusive range check
  *
- *  get_float() loads nv->value with 'value' in internal canonical units (e.g. mm, degrees)
- *  without units conversion. If conversion is required call convert_outgoing_float()
+ *  get_double() loads nv->value with 'value' in internal canonical units (e.g. mm, degrees)
+ *  without units conversion. If conversion is required call convert_outgoing_double()
  *  afterwards. The text mode and JSON display routines do this, so you generally don't
  *  have to worry about this.
  *
- *  set_float() is designed to capture incoming float values, so it performs unit conversion.
- *  set_float_range() perfoems an inclusive range test on the CONVERTED value
+ *  set_double() is designed to capture incoming double values, so it performs unit conversion.
+ *  set_double_range() perfoems an inclusive range test on the CONVERTED value
  */
 
-stat_t get_float(nvObj_t *nv, const float value) {
+stat_t get_double(nvObj_t *nv, const double value) {
     nv->value_flt = value;
     nv->valuetype = TYPE_FLOAT;
     nv->precision = GET_TABLE_WORD(precision);
     return STAT_OK;
 }
 
-stat_t set_float(nvObj_t *nv, float &value) {
-    convert_incoming_float(nv);
+stat_t set_double(nvObj_t *nv, double &value) {
+    convert_incoming_double(nv);
     value = nv->value_flt;
     return (STAT_OK);
 }
 
-stat_t set_float_range(nvObj_t *nv, float &value, float low, float high) {
+stat_t set_double_range(nvObj_t *nv, double &value, double low, double high) {
 
     char msg[64];
 
-    convert_incoming_float(nv);      // conditional unit conversion
+    convert_incoming_double(nv);      // conditional unit conversion
     if (nv->value_flt < low) {
         sprintf(msg, "Input is less than minimum value %0.4f", low);
         nv_add_conditional_message(msg);
@@ -2287,14 +2287,14 @@ static stat_t _do_all(nvObj_t *nv)  // print all parameters
 
 static stat_t get_rx(nvObj_t *nv)
 {
-    nv->value_int = (float)254;        // ARM always says the serial buffer is available (max)
+    nv->value_int = (double)254;        // ARM always says the serial buffer is available (max)
     nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
 
 static stat_t get_tick(nvObj_t *nv)
 {
-    nv->value_int = (float)SysTickTimer.getValue();
+    nv->value_int = (double)SysTickTimer.getValue();
     nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }

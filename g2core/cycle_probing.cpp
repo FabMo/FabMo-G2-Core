@@ -47,7 +47,7 @@
 struct pbProbingSingleton {             // persistent probing runtime variables
 
     // probe target
-    float target[AXES];
+    double target[AXES];
     bool  flags[AXES];
 
     // controls for probing cycle
@@ -70,7 +70,7 @@ static stat_t _probing_start();
 static stat_t _probing_backoff();
 static stat_t _probing_finish();
 static stat_t _probing_exception_exit(stat_t status);
-static stat_t _probe_move(const float target[], const bool flags[]);
+static stat_t _probe_move(const double target[], const bool flags[]);
 static void _send_probe_report(void);
 
 void _prepare_for_probe();
@@ -118,7 +118,7 @@ void _store_probe_position() {
 }
 
 // helper
-static void _motion_end_callback(float* vect, bool* flag)
+static void _motion_end_callback(double* vect, bool* flag)
 {
     pb.waiting_for_motion_complete = false;
 }
@@ -196,7 +196,7 @@ gpioDigitalInputHandler _probing_handler {
  *  wait_for_motion_end callback is about.
  */
 
-uint8_t cm_straight_probe_global(float target[], bool flags[], bool trip_sense, bool alarm_flag)
+uint8_t cm_straight_probe_global(double target[], bool flags[], bool trip_sense, bool alarm_flag)
 {
     if (cm->cycle_type == CYCLE_PROBE) {
         return(cm_alarm(STAT_PROBE_CYCLE_FAILED, "Already probing - cannot start another probe"));
@@ -219,7 +219,7 @@ uint8_t cm_straight_probe_global(float target[], bool flags[], bool trip_sense, 
     }
 
     // Convert axes to mm if needed
-    float target_mm[AXES];
+    double target_mm[AXES];
     cm_axes_to_mm(target, target_mm, flags);
 
     // setup
@@ -311,7 +311,7 @@ void cm_abort_probing(cmMachine_t *_cm) {
  *  PROFILE_FAST_STOP makes a probe stop more immediate.
  */
 
-static stat_t _probe_move(const float target[], const bool flags[])
+static stat_t _probe_move(const double target[], const bool flags[])
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
     pb.waiting_for_motion_complete = true;          // set this BEFORE the motion starts
@@ -377,7 +377,7 @@ static stat_t _probing_backoff()
 
     if (pb.probe_tripped) {
         cm->probe_state[0] = PROBE_SUCCEEDED;
-        float contact_position[AXES];
+        double contact_position[AXES];
         kn_forward_kinematics(en_get_encoder_snapshot_vector(), contact_position);
         _probe_move(contact_position, pb.flags);   // NB: feed rate is the same as the probe move
     } else {

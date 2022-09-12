@@ -69,12 +69,12 @@ stat_t encoder_test_assertions() {
 /*
  * en_set_encoder_steps() - set encoder values to a current step count
  *
- *	Sets the encoder_position steps. Takes floating point steps as input,
+ *	Sets the encoder_position steps. Takes doubleing point steps as input,
  *	writes integer steps. So it's not an exact representation of machine
  *	position except if the machine is at zero.
  */
 
-void en_set_encoder_steps(uint8_t motor, float steps) { en.en[motor].encoder_steps = (int32_t)round(steps); }
+void en_set_encoder_steps(uint8_t motor, double steps) { en.en[motor].encoder_steps = (int32_t)round(steps); }
 
 /*
  * en_read_encoder()
@@ -86,7 +86,7 @@ void en_set_encoder_steps(uint8_t motor, float steps) { en.en[motor].encoder_ste
  *	that segment are complete.
  */
 
-float en_read_encoder(uint8_t motor) { return ((float)en.en[motor].encoder_steps); }
+double en_read_encoder(uint8_t motor) { return ((double)en.en[motor].encoder_steps); }
 
 /*
  * en_take_encoder_snapshot()
@@ -114,9 +114,9 @@ void en_take_encoder_snapshot() {
     */
 }
 
-float en_get_encoder_snapshot_steps(uint8_t motor) { return (en.snapshot[motor]); }
+double en_get_encoder_snapshot_steps(uint8_t motor) { return (en.snapshot[motor]); }
 
-float* en_get_encoder_snapshot_vector() { return (en.snapshot); }
+double* en_get_encoder_snapshot_vector() { return (en.snapshot); }
 
 /***********************************************************************************
  * CONFIGURATION AND INTERFACE FUNCTIONS

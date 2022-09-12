@@ -53,8 +53,8 @@ typedef struct cfgParameters {  // mostly communications variables at this point
 #endif
 
     // installed fixturing information
-    float fx_coords_a[4][2];  // x/y coordinates of up to 4 points on fixturing object
-    float fx_state_a;         // state flag
+    double fx_coords_a[4][2];  // x/y coordinates of up to 4 points on fixturing object
+    double fx_state_a;         // state flag
 
     uint32_t mark;            // just a rtransient value to return when asked
 

@@ -43,7 +43,7 @@
 template <uint8_t axes, uint8_t motors>
 struct KinematicsBase {
     // configure each joint (steps-per-unit, joint mapping)
-    virtual void configure(const float steps_per_unit[motors], const int8_t motor_map[motors]);
+    virtual void configure(const double steps_per_unit[motors], const int8_t motor_map[motors]);
 
     // take the target (in cartesian coordinates in mm), and convert them to steps for each joints
     // taking the joint_map into consideration, and returning the values in the provided array steps[]
@@ -52,7 +52,7 @@ struct KinematicsBase {
     // the derivatives (acceleration, jerk) or other considerations
     // the gcode model is passed in for additional context, and may be ignored
     // the target is in the gcode model, but may be modified, so it's passed separately
-    virtual void inverse_kinematics(const GCodeState_t &gm, const float target[axes], const float position[axes], const float start_velocity, const float end_velocity, const float segment_time, float steps[motors]) {
+    virtual void inverse_kinematics(const GCodeState_t &gm, const double target[axes], const double position[axes], const double start_velocity, const double end_velocity, const double segment_time, double steps[motors]) {
     }
 
     // if the planner buffer is empty, the idel_task will be given the opportunity to drive the runtime
@@ -65,16 +65,16 @@ struct KinematicsBase {
     // take the position (in steps) of each joint and convert them to cartesian coordinates
     // taking the joint_map into consideration, and returning the values in the provided array position[]
     // can be relatively slow, must be precise
-    virtual void forward_kinematics(const float steps[motors], float position[axes]);
+    virtual void forward_kinematics(const double steps[motors], double position[axes]);
 
 
     // take the position of each joint at idle time and convert them to cartesian coordinates
     // taking the joint_map into consideration, and returning the values in the provided array position[]
     // can be relatively slow, must be precise
-    virtual void get_position(float position[axes]);
+    virtual void get_position(double position[axes]);
 
     // sync any external sensors with the current step position
-    virtual void sync_encoders(const float step_position[motors], const float position[axes]);
+    virtual void sync_encoders(const double step_position[motors], const double position[axes]);
 };
 
 extern KinematicsBase<AXES, MOTORS> *kn;
@@ -148,6 +148,6 @@ stat_t get_flow_volume(nvObj_t *nv);
 #endif // KINEMATICS==KINE_PRESSURE
 
 void kn_config_changed();
-void kn_forward_kinematics(const float steps[], float travel[]);
+void kn_forward_kinematics(const double steps[], double travel[]);
 
 #endif  // End of include Guard: KINEMATICS_H_ONCE

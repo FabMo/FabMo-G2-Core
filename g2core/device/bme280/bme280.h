@@ -497,10 +497,10 @@ struct BME280 final {
 //         return _rtd_value;
 //     };
 
-//     float getPullupResistance() {
+//     double getPullupResistance() {
 //         return _pullup_resistance;
 //     }
-//     void setPullupResistance(const float r) {
+//     void setPullupResistance(const double r) {
 //         _pullup_resistance = r;
 //     }
 
@@ -512,36 +512,36 @@ struct BME280 final {
 // //    int32_t getBottom() {
 // //        return 0;
 // //    };
-// //    float getBottomVoltage() {
+// //    double getBottomVoltage() {
 // //        return 0;
 // //    };
 // //    int32_t getTop() {
 // //        return 32767;
 // //    };
-// //    float getTopVoltage() {
+// //    double getTopVoltage() {
 // //        return _vref;
 // //    };
 
-//     void setVoltageRange(const float vref,
-//                          const float min_expected = 0,
-//                          const float max_expected = -1,
-//                          const float ideal_steps = 1)
+//     void setVoltageRange(const double vref,
+//                          const double min_expected = 0,
+//                          const double max_expected = -1,
+//                          const double ideal_steps = 1)
 //     {
 // //        _vref = vref;
 
 //         // All of the rest are ignored, but here for compatibility of interface
 //     };
-//     float getVoltage() {
-//         float r = getRaw();
+//     double getVoltage() {
+//         double r = getRaw();
 //         if (r < 0) {
 //             return r*1000.0;
 //         }
 //         return ((r*_pullup_resistance)/32768.0);
 //     };
-//     operator float() { return getVoltage(); };
+//     operator double() { return getVoltage(); };
 
-//     float getResistance() {
-//         float r = getRaw();
+//     double getResistance() {
+//         double r = getRaw();
 //         if (r < 0) {
 //             return r*1000.0;
 //         }
@@ -608,14 +608,14 @@ struct BME280 final {
 //         return true;
 //     };
 
-//     float getValue() override
+//     double getValue() override
 //     {
 //         if (enabled != IO_ENABLED) {
 //             return 0;
 //         }
 //         return pin.getVoltage();
 //     };
-//     float getResistance() override
+//     double getResistance() override
 //     {
 //         if (enabled != IO_ENABLED) {
 //             return -1;
@@ -650,14 +650,14 @@ struct BME280 final {
 //         return false;
 //     };
 
-//     float getParameter(const uint8_t p) override
+//     double getParameter(const uint8_t p) override
 //     {
 //         if (p == 0) {
 //             return pin.getPullupResistance();
 //         }
 //         return 0;
 //     };
-//     bool setParameter(const uint8_t p, const float v) override
+//     bool setParameter(const uint8_t p, const double v) override
 //     {
 //         if (p == 0) {
 //             pin.setPullupResistance(v);
@@ -695,7 +695,7 @@ struct BME280 final {
 //     // support function for pin value update interrupt handling
 
 //     void adc_has_new_value(bool err) {
-// //        float raw_adc_value = pin.getRaw();
+// //        double raw_adc_value = pin.getRaw();
 // //        history.add_sample(raw_adc_value);
 //     };
 // };

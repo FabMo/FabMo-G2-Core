@@ -83,7 +83,7 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
     } active_address_;
 
     // For handling callbacks
-    std::function<void(bool, float)> interrupt_handler_;
+    std::function<void(bool, double)> interrupt_handler_;
 
     enum { INIT, SETUP, IDLE, SOMETHING, READING_ANGLE } state_ = SETUP;
     ExternalEncoder::ReturnFormat return_format_;
@@ -98,7 +98,7 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
    public:
     template <typename TWIBus_t, typename... Ts>
     I2C_AS5601(TWIBus_t &twi_bus, int8_t quadrature_a_input, int8_t quadrature_b_input,
-               std::function<void(bool, float)> &&interrupt_, Ts... v)
+               std::function<void(bool, double)> &&interrupt_, Ts... v)
         : gpioDigitalInputHandler{[&](const bool state, const inputEdgeFlag edge, const int8_t triggering_pin_number) {
                                       return this->handleQuadrature(state, edge, triggering_pin_number);
                                   },
@@ -111,7 +111,7 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
     }
 
     template <typename TWIBus_t, typename... Ts>
-    I2C_AS5601(TWIBus_t &twi_bus, int8_t quadrature_a_input, int8_t quadrature_b_input, std::function<void(bool, float)> &interrupt_, Ts... v)
+    I2C_AS5601(TWIBus_t &twi_bus, int8_t quadrature_a_input, int8_t quadrature_b_input, std::function<void(bool, double)> &interrupt_, Ts... v)
         : gpioDigitalInputHandler{[&](const bool state, const inputEdgeFlag edge, const int8_t triggering_pin_number) {
                                       return this->handleQuadrature(state, edge, triggering_pin_number);
                                   },
@@ -153,11 +153,11 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
     using dir = TWIMessage::Direction;
     using ias = Motate::TWIInternalAddressSize;
 
-    void setCallback(std::function<void(bool, float)> &&handler) override {
+    void setCallback(std::function<void(bool, double)> &&handler) override {
         interrupt_handler_ = std::move(handler);
     }
 
-    void setCallback(std::function<void(bool, float)> &handler) override {
+    void setCallback(std::function<void(bool, double)> &handler) override {
         interrupt_handler_ = handler;
     }
 
@@ -166,13 +166,13 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
         getPos_();
     }
 
-    // void getAngleDegrees(std::function<void(bool, float)> &&handler) {
+    // void getAngleDegrees(std::function<void(bool, double)> &&handler) {
     //     interrupt_handler_ = std::move(handler);
     //     return_format_ = ReturnDegrees;
     //     getPos_();
     // }
 
-    // void getAngleDegrees(std::function<void(bool, float)> &handler) {
+    // void getAngleDegrees(std::function<void(bool, double)> &handler) {
     //     interrupt_handler_ = handler;
     //     return_format_ = ReturnDegrees;
     //     getPos_();
@@ -183,13 +183,13 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
         getPos_();
     }
 
-    // void getAngleRadians(std::function<void(bool, float)> &&handler) {
+    // void getAngleRadians(std::function<void(bool, double)> &&handler) {
     //     interrupt_handler_ = std::move(handler);
     //     return_format_ = ReturnRadians;
     //     getPos_();
     // }
 
-    // void getAngleRadians(std::function<void(bool, float)> &handler) {
+    // void getAngleRadians(std::function<void(bool, double)> &handler) {
     //     interrupt_handler_ = handler;
     //     return_format_ = ReturnRadians;
     //     getPos_();
@@ -201,13 +201,13 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
     }
 
 
-    // void getAngleFraction(std::function<void(bool, float)> &&handler) {
+    // void getAngleFraction(std::function<void(bool, double)> &&handler) {
     //     interrupt_handler_ = std::move(handler);
     //     return_format_ = ReturnFraction;
     //     getPos_();
     // }
 
-    // void getAngleFraction(std::function<void(bool, float)> &handler) {
+    // void getAngleFraction(std::function<void(bool, double)> &handler) {
     //     interrupt_handler_ = handler;
     //     return_format_ = ReturnFraction;
     //     getPos_();
@@ -280,13 +280,13 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
     }
 
     void call_interrupt_() {
-        float value = 0;
+        double value = 0;
         if (return_format_ == ReturnDegrees) {
-            value = (float)position_ * (360.0/4096.0);
+            value = (double)position_ * (360.0/4096.0);
         } else if (return_format_ == ReturnRadians) {
-            value = (float)position_ * ((2.0 * M_PI)/4096.0);
+            value = (double)position_ * ((2.0 * M_PI)/4096.0);
         } else {
-            value = (float)position_ * (1.0 / 4096.0);
+            value = (double)position_ * (1.0 / 4096.0);
         }
         interrupt_handler_(true, value);
     }
@@ -344,7 +344,7 @@ class I2C_AS5601 final : public ExternalEncoder, public gpioDigitalInputHandler 
         return true;  // we are consuming this event, no one else gets to see it
     }
 
-    float getQuadratureFraction() override { return position_ / 4096.0; }
+    double getQuadratureFraction() override { return position_ / 4096.0; }
 };
 
 // Deduction guides

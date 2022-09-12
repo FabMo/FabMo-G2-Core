@@ -650,11 +650,11 @@ static void _load_move()
  *  the loader. It deals with all the DDA optimizations and timer setups so that
  *  loading can be performed as rapidly as possible. It works in joint space
  *  (motors) and it works in steps, not length units. All args are provided as
- *  floats and converted to their appropriate integer types for the loader.
+ *  doubles and converted to their appropriate integer types for the loader.
  *
  * Args:
  *    - travel_steps[] are signed relative motion in steps for each motor. Steps are
- *      floats that typically have fractional values (fractional steps). The sign
+ *      doubles that typically have fractional values (fractional steps). The sign
  *      indicates direction. Motors that are not in the move should be 0 steps on input.
  *
  *    - following_error[] is a vector of measured errors to the step count. Used for correction.
@@ -663,11 +663,11 @@ static void _load_move()
  *      100% accurate this will affect the move velocity, but not the distance traveled.
  *
  * NOTE:  Many of the expressions are sensitive to casting and execution order to avoid long-term
- *        accuracy errors due to floating point round off. One earlier failed attempt was:
+ *        accuracy errors due to doubleing point round off. One earlier failed attempt was:
  *          dda_ticks_X_substeps = (int32_t)((microseconds/1000000) * f_dda * dda_substeps);
  */
 
-stat_t st_prep_line(const float start_velocity, const float end_velocity, const float travel_steps[], const float following_error[], const float segment_time)
+stat_t st_prep_line(const double start_velocity, const double end_velocity, const double travel_steps[], const double following_error[], const double segment_time)
 {
     // trap assertion failures and other conditions that would prevent queuing the line
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_EXEC) {     // never supposed to happen
@@ -688,9 +688,9 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
     // this is explained later
     double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
 
-    float correction_steps;
+    double correction_steps;
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
-        float steps = travel_steps[motor];
+        double steps = travel_steps[motor];
 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
@@ -779,7 +779,7 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
 }
 
 // same as previous function, except it takes a different start and end velocity per motor
-stat_t st_prep_line(const float start_velocities[], const float end_velocities[], const float travel_steps[], const float following_error[], const float segment_time)
+stat_t st_prep_line(const double start_velocities[], const double end_velocities[], const double travel_steps[], const double following_error[], const double segment_time)
 {
     // TODO refactor out common parts of the two st_prep_line functions
 
@@ -800,9 +800,9 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
     //st_pre.dda_period = _f_to_period(FREQUENCY_DDA);                // FYI: this is a constant
     st_pre.dda_ticks = (int32_t)(segment_time * 60 * FREQUENCY_DDA);// NB: converts minutes to seconds
 
-    float correction_steps;
+    double correction_steps;
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
-        float steps = travel_steps[motor];
+        double steps = travel_steps[motor];
 
         // setup motor parameters
         double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
@@ -878,7 +878,7 @@ void st_prep_command(void *bf)
  * st_prep_dwell()      - Add a dwell to the move buffer
  */
 
-void st_prep_dwell(float milliseconds)
+void st_prep_dwell(double milliseconds)
 {
     st_pre.block_type = BLOCK_TYPE_DWELL;
     // we need dwell_ticks to be at least 1
@@ -894,7 +894,7 @@ void st_prep_dwell(float milliseconds)
  * Otherwise it is skipped.
  */
 
-void st_prep_out_of_band_dwell(float milliseconds)
+void st_prep_out_of_band_dwell(double milliseconds)
 {
     st_prep_dwell(milliseconds);
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_LOADER;    // signal that prep buffer is ready
@@ -932,7 +932,7 @@ static int8_t _motor(const index_t index)
  * This function will need to be rethought if microstep morphing is implemented
  */
 
-static float _set_motor_steps_per_unit(nvObj_t *nv)
+static double _set_motor_steps_per_unit(nvObj_t *nv)
 {
     uint8_t m = _motor(nv->index);
     st_cfg.mot[m].units_per_step = (st_cfg.mot[m].travel_rev * st_cfg.mot[m].step_angle) /
@@ -1017,19 +1017,19 @@ stat_t st_set_ma(nvObj_t *nv)
 }
 
 // step angle
-stat_t st_get_sa(nvObj_t *nv) { return(get_float(nv, st_cfg.mot[_motor(nv->index)].step_angle)); }
+stat_t st_get_sa(nvObj_t *nv) { return(get_double(nv, st_cfg.mot[_motor(nv->index)].step_angle)); }
 stat_t st_set_sa(nvObj_t *nv)
 {
-    ritorno(set_float_range(nv, st_cfg.mot[_motor(nv->index)].step_angle, 0.001, 360));
+    ritorno(set_double_range(nv, st_cfg.mot[_motor(nv->index)].step_angle, 0.001, 360));
     _set_motor_steps_per_unit(nv);
     return(STAT_OK);
 }
 
 // travel per revolution
-stat_t st_get_tr(nvObj_t *nv) { return(get_float(nv, st_cfg.mot[_motor(nv->index)].travel_rev)); }
+stat_t st_get_tr(nvObj_t *nv) { return(get_double(nv, st_cfg.mot[_motor(nv->index)].travel_rev)); }
 stat_t st_set_tr(nvObj_t *nv)
 {
-    ritorno(set_float_range(nv, st_cfg.mot[_motor(nv->index)].travel_rev, 0.0001, 1000000));
+    ritorno(set_double_range(nv, st_cfg.mot[_motor(nv->index)].travel_rev, 0.0001, 1000000));
     _set_motor_steps_per_unit(nv);
     return(STAT_OK);
 }
@@ -1057,7 +1057,7 @@ stat_t st_set_mi(nvObj_t *nv)
 // motor steps per unit (direct)
 stat_t st_get_su(nvObj_t *nv)
 {
-    return(get_float(nv, st_cfg.mot[_motor(nv->index)].steps_per_unit));
+    return(get_double(nv, st_cfg.mot[_motor(nv->index)].steps_per_unit));
 }
 
 stat_t st_set_su(nvObj_t *nv)
@@ -1069,7 +1069,7 @@ stat_t st_set_su(nvObj_t *nv)
         return(STAT_OK);
     }
 
-    // Do unit conversion here because it's a reciprocal value (rather than process_incoming_float())
+    // Do unit conversion here because it's a reciprocal value (rather than process_incoming_double())
     if (cm_get_units_mode(MODEL) == INCHES) {
         if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR) {
             nv->value_flt *= INCHES_PER_MM;
@@ -1093,7 +1093,7 @@ stat_t st_set_po(nvObj_t *nv) { return(set_integer(nv, st_cfg.mot[_motor(nv->ind
 // power management mode
 stat_t st_get_pm(nvObj_t *nv)
 {
-    nv->value_int = (float)Motors[_motor(nv->index)]->getPowerMode();
+    nv->value_int = (double)Motors[_motor(nv->index)]->getPowerMode();
     nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
@@ -1117,12 +1117,12 @@ stat_t st_set_pm(nvObj_t *nv)
  *  This function sets both the scaled and dynamic power levels, and applies the
  *  scaled value to the vref.
  */
-stat_t st_get_pl(nvObj_t *nv) { return(get_float(nv, st_cfg.mot[_motor(nv->index)].power_level)); }
-stat_t st_get_pi(nvObj_t *nv) { return(get_float(nv, st_cfg.mot[_motor(nv->index)].power_level_idle)); }
+stat_t st_get_pl(nvObj_t *nv) { return(get_double(nv, st_cfg.mot[_motor(nv->index)].power_level)); }
+stat_t st_get_pi(nvObj_t *nv) { return(get_double(nv, st_cfg.mot[_motor(nv->index)].power_level_idle)); }
 stat_t st_set_pl(nvObj_t *nv)
 {
     uint8_t m = _motor(nv->index);
-    ritorno(set_float_range(nv, st_cfg.mot[m].power_level, 0.0, 1.0));
+    ritorno(set_double_range(nv, st_cfg.mot[m].power_level, 0.0, 1.0));
     st_cfg.mot[m].power_level = nv->value_flt;
     Motors[m]->setPowerLevels(st_cfg.mot[m].power_level, st_cfg.mot[m].power_level_idle);
     return(STAT_OK);
@@ -1130,7 +1130,7 @@ stat_t st_set_pl(nvObj_t *nv)
 
 stat_t st_set_pi(nvObj_t *nv) {
     uint8_t m = _motor(nv->index);
-    ritorno(set_float_range(nv, st_cfg.mot[m].power_level_idle, 0.0, 1.0));
+    ritorno(set_double_range(nv, st_cfg.mot[m].power_level_idle, 0.0, 1.0));
     st_cfg.mot[m].power_level_idle = nv->value_flt;
     Motors[m]->setPowerLevels(st_cfg.mot[m].power_level, st_cfg.mot[m].power_level_idle);
     return (STAT_OK);
@@ -1176,7 +1176,7 @@ stat_t st_get_ep(nvObj_t *nv)            // get motor enable polarity
     uint8_t motor = _motor(nv->index);
     if (motor >= MOTORS) { return STAT_INPUT_VALUE_RANGE_ERROR; };
 
-    nv->value_int = (float)Motors[motor]->getEnablePolarity();
+    nv->value_int = (double)Motors[motor]->getEnablePolarity();
     nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
@@ -1201,7 +1201,7 @@ stat_t st_get_sp(nvObj_t *nv)            // get motor step polarity
     uint8_t motor = _motor(nv->index);
     if (motor >= MOTORS) { return STAT_INPUT_VALUE_RANGE_ERROR; };
 
-    nv->value_int = (float)Motors[motor]->getStepPolarity();
+    nv->value_int = (double)Motors[motor]->getStepPolarity();
     nv->valuetype = TYPE_INTEGER;
     return (STAT_OK);
 }
@@ -1220,9 +1220,9 @@ stat_t st_get_sp(nvObj_t *nv)            // get motor step polarity
  * Setting a value from 1 to MOTORS will enable or disable that motor only
  */
 
-stat_t st_get_mt(nvObj_t *nv) { return(get_float(nv, st_cfg.motor_power_timeout)); }
+stat_t st_get_mt(nvObj_t *nv) { return(get_double(nv, st_cfg.motor_power_timeout)); }
 stat_t st_set_mt(nvObj_t *nv) {
-    ritorno(set_float_range(nv, st_cfg.motor_power_timeout, MOTOR_TIMEOUT_SECONDS_MIN, MOTOR_TIMEOUT_SECONDS_MAX));
+    ritorno(set_double_range(nv, st_cfg.motor_power_timeout, MOTOR_TIMEOUT_SECONDS_MIN, MOTOR_TIMEOUT_SECONDS_MAX));
     for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
         Motors[motor]->setActivityTimeout(st_cfg.motor_power_timeout*1000.0);
     }

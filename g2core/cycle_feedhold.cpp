@@ -775,7 +775,7 @@ stat_t _feedhold_no_actions()
     return (STAT_OK);
 }
 
-void _feedhold_actions_done_callback(float* vect, bool* flag)
+void _feedhold_actions_done_callback(double* vect, bool* flag)
 {
     cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_COMPLETE; // penultimate state before transitioning to FEEDHOLD_HOLD
     sr_request_status_report(SR_REQUEST_IMMEDIATE);
@@ -808,7 +808,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
         // execute feedhold actions
         if (fp_NOT_ZERO(cm->feedhold_z_lift)) { // Optional Z lift
             bool flags[] = { 0,0,1,0,0,0 };
-            float target[] = { 0,0,0,0,0,0 };
+            double target[] = { 0,0,0,0,0,0 };
             bool skip_move = false;
             if (cm->feedhold_z_lift < 0) {      // If the value is negative, we want to go to Z-max position with G53
                 if (cmHomingState::HOMING_HOMED == cm->homed[AXIS_Z]) {    // ONLY IF HOMED
@@ -862,7 +862,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
  *  _feedhold_restart_actions_done_callback()
  */
 
-void _feedhold_restart_actions_done_callback(float* vect, bool* flag)
+void _feedhold_restart_actions_done_callback(double* vect, bool* flag)
 {
     cm1.hold_state = FEEDHOLD_EXIT_ACTIONS_COMPLETE;    // penultimate state before transitioning to FEEDHOLD_OFF
     sr_request_status_report(SR_REQUEST_IMMEDIATE);

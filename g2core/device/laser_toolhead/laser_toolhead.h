@@ -52,13 +52,13 @@ class LaserTool; // Need to forward declare since stepper.h may (eventually) inc
 template <typename KinematicsParent, Motate::pin_number fire_num>
 class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
     spDirection direction;        // direction
-    float speed;                  // S in RPM
+    double speed;                  // S in RPM
 
-    float speed_override_factor = 1;
+    double speed_override_factor = 1;
     bool speed_override_enable = true;
 
-    float speed_min;              // minimum settable spindle speed
-    float speed_max;              // maximum settable spindle speed
+    double speed_min;              // minimum settable spindle speed
+    double speed_max;              // maximum settable spindle speed
 
     bool paused;                  // true if paused, false is not
 
@@ -71,7 +71,7 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
     bool enabled = false;
     uint8_t laser_motor;
 
-    float laser_step_position;
+    double laser_step_position;
     int16_t pulse_tick_counter = 0;
     int16_t ticks_per_pulse;
     int16_t next_ticks_per_pulse;
@@ -79,10 +79,10 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
 
     uint32_t raw_fire_duty_cycle = 0;
 
-    float min_s;
-    float max_s;
-    float min_ppm;
-    float max_ppm;
+    double min_s;
+    double max_s;
+    double min_ppm;
+    double max_ppm;
 
     void complete_change();
 
@@ -102,12 +102,12 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
 
     // the result of an S word
     // override this to return false - "don't add a command to the buffer"
-    bool set_speed(float) override;
-    float get_speed() override;
+    bool set_speed(double) override;
+    double get_speed() override;
 
     // set the override value for spindle speed
-    bool set_override(float override) override;
-    float get_override() override;
+    bool set_override(double override) override;
+    double get_override() override;
 
     // enable or disable the override
     bool set_override_enable(bool override_enable) override;
@@ -128,39 +128,39 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
     bool set_pwm_output(const uint8_t pwm_pin_number) override;
     bool set_enable_output(const uint8_t enable_pin_number) override;
 
-    void set_frequency(float new_frequency) override;
-    float get_frequency() override;
+    void set_frequency(double new_frequency) override;
+    double get_frequency() override;
 
     // trivial getters and setters - inlined
-    void set_speed_min(float new_speed_min) override { speed_min = new_speed_min; }
-    float get_speed_min() override { return speed_min; }
-    void set_speed_max(float new_speed_max) override { speed_max = new_speed_max; }
-    float get_speed_max() override { return speed_max; }
-    // void set_speed_change_per_tick(float new_speed_change_per_tick) override { speed_change_per_tick = new_speed_change_per_tick; }
-    // float get_speed_change_per_tick() override { return speed_change_per_tick; }
-    // void set_spinup_delay(float new_spinup_delay) override { spinup_delay = new_spinup_delay; }
-    // float get_spinup_delay() override { return spinup_delay; }
+    void set_speed_min(double new_speed_min) override { speed_min = new_speed_min; }
+    double get_speed_min() override { return speed_min; }
+    void set_speed_max(double new_speed_max) override { speed_max = new_speed_max; }
+    double get_speed_max() override { return speed_max; }
+    // void set_speed_change_per_tick(double new_speed_change_per_tick) override { speed_change_per_tick = new_speed_change_per_tick; }
+    // double get_speed_change_per_tick() override { return speed_change_per_tick; }
+    // void set_spinup_delay(double new_spinup_delay) override { spinup_delay = new_spinup_delay; }
+    // double get_spinup_delay() override { return spinup_delay; }
 
-    // void set_cw_speed_lo(float new_speed_lo) override { cw.speed_lo = new_speed_lo; }
-    // float get_cw_speed_lo() override { return cw.speed_lo; }
-    // void set_cw_speed_hi(float new_speed_hi) override { cw.speed_hi = new_speed_hi; }
-    // float get_cw_speed_hi() override { return cw.speed_hi; }
-    // void set_cw_phase_lo(float new_phase_lo) override { cw.phase_lo = new_phase_lo; }
-    // float get_cw_phase_lo() override { return cw.phase_lo; }
-    // void set_cw_phase_hi(float new_phase_hi) override { cw.phase_hi = new_phase_hi; }
-    // float get_cw_phase_hi() override { return cw.phase_hi; }
+    // void set_cw_speed_lo(double new_speed_lo) override { cw.speed_lo = new_speed_lo; }
+    // double get_cw_speed_lo() override { return cw.speed_lo; }
+    // void set_cw_speed_hi(double new_speed_hi) override { cw.speed_hi = new_speed_hi; }
+    // double get_cw_speed_hi() override { return cw.speed_hi; }
+    // void set_cw_phase_lo(double new_phase_lo) override { cw.phase_lo = new_phase_lo; }
+    // double get_cw_phase_lo() override { return cw.phase_lo; }
+    // void set_cw_phase_hi(double new_phase_hi) override { cw.phase_hi = new_phase_hi; }
+    // double get_cw_phase_hi() override { return cw.phase_hi; }
 
-    // void set_ccw_speed_lo(float new_speed_lo) override { ccw.speed_lo = new_speed_lo; }
-    // float get_ccw_speed_lo() override { return ccw.speed_lo; }
-    // void set_ccw_speed_hi(float new_speed_hi) override { ccw.speed_hi = new_speed_hi; }
-    // float get_ccw_speed_hi() override { return ccw.speed_hi; }
-    // void set_ccw_phase_lo(float new_phase_lo) override { ccw.phase_lo = new_phase_lo; }
-    // float get_ccw_phase_lo() override { return ccw.phase_lo; }
-    // void set_ccw_phase_hi(float new_phase_hi) override { ccw.phase_hi = new_phase_hi; }
-    // float get_ccw_phase_hi() override { return ccw.phase_hi; }
+    // void set_ccw_speed_lo(double new_speed_lo) override { ccw.speed_lo = new_speed_lo; }
+    // double get_ccw_speed_lo() override { return ccw.speed_lo; }
+    // void set_ccw_speed_hi(double new_speed_hi) override { ccw.speed_hi = new_speed_hi; }
+    // double get_ccw_speed_hi() override { return ccw.speed_hi; }
+    // void set_ccw_phase_lo(double new_phase_lo) override { ccw.phase_lo = new_phase_lo; }
+    // double get_ccw_phase_lo() override { return ccw.phase_lo; }
+    // void set_ccw_phase_hi(double new_phase_hi) override { ccw.phase_hi = new_phase_hi; }
+    // double get_ccw_phase_hi() override { return ccw.phase_hi; }
 
-    // void set_phase_off(float new_phase_off) override { phase_off = new_phase_off; }
-    // float get_phase_off() override { return phase_off; }
+    // void set_phase_off(double new_phase_off) override { phase_off = new_phase_off; }
+    // double get_phase_off() override { return phase_off; }
 
 // Stepper functions ----
 
@@ -169,28 +169,28 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
     void stepStart() override;
     void stepEnd() override;
     void setDirection(uint8_t new_direction) override;
-    void setPowerLevels(float active_pl, float idle_pl) override;
+    void setPowerLevels(double active_pl, double idle_pl) override;
 
 // Kinematics functions ----
     uint8_t laser_motor_axis = 4;
-    void configure(const float steps_per_unit[MOTORS], const int8_t motor_map[MOTORS]) override;
-    void inverse_kinematics(const GCodeState_t &gm, const float target[AXES], const float position[AXES], const float start_velocity, const float end_velocity, const float segment_time, float steps[MOTORS]) override;
+    void configure(const double steps_per_unit[MOTORS], const int8_t motor_map[MOTORS]) override;
+    void inverse_kinematics(const GCodeState_t &gm, const double target[AXES], const double position[AXES], const double start_velocity, const double end_velocity, const double segment_time, double steps[MOTORS]) override;
 
 // Laser-specific configuration commands
     void set_pulse_duration_us(int16_t new_pulse_duration_us);
     int16_t get_pulse_duration_us();
 
-    float get_min_s();
-    void set_min_s(float new_min_s);
+    double get_min_s();
+    void set_min_s(double new_min_s);
 
-    float get_max_s();
-    void set_max_s(float new_max_s);
+    double get_max_s();
+    void set_max_s(double new_max_s);
 
-    float get_min_ppm();
-    void set_min_ppm(float new_min_ppm);
+    double get_min_ppm();
+    void set_min_ppm(double new_min_ppm);
 
-    float get_max_ppm();
-    void set_max_ppm(float new_max_ppm);
+    double get_max_ppm();
+    void set_max_ppm(double new_max_ppm);
 };
 
 // IMPLEMENTATION
@@ -245,18 +245,18 @@ bool LaserTool<KinematicsParent,fire_num>::ready_to_resume() { return paused && 
 // }
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_speed() { return speed; }
+double LaserTool<KinematicsParent,fire_num>::get_speed() { return speed; }
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-bool LaserTool<KinematicsParent,fire_num>::set_speed(float new_speed) {
+bool LaserTool<KinematicsParent,fire_num>::set_speed(double new_speed) {
     speed = new_speed;
 
-    float override_factor = speed_override_enable ? speed_override_factor : 1.0;
-    float s = std::min(1.0f, std::max(0.0f, (((speed * override_factor) - min_s) / (max_s - min_s))));
+    double override_factor = speed_override_enable ? speed_override_factor : 1.0;
+    double s = std::min(1.0f, std::max(0.0f, (((speed * override_factor) - min_s) / (max_s - min_s))));
 
     if (direction == /*M3*/SPINDLE_CW) {
         uint32_t top_value = fire.getTopValue();
-        raw_fire_duty_cycle = std::floor(s * (float)top_value);
+        raw_fire_duty_cycle = std::floor(s * (double)top_value);
         fire.writeRaw(raw_fire_duty_cycle);
     }
 
@@ -266,13 +266,13 @@ bool LaserTool<KinematicsParent,fire_num>::set_speed(float new_speed) {
 // TODO - make these work
 // set the override value for spindle speed
 template <typename KinematicsParent, Motate::pin_number fire_num>
-bool LaserTool<KinematicsParent,fire_num>::set_override(float override) {
+bool LaserTool<KinematicsParent,fire_num>::set_override(double override) {
     speed_override_factor = override;
     set_speed(speed); // use the set_speed() function to update the pin PWM
     return (true);
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_override() { return speed_override_factor; }
+double LaserTool<KinematicsParent,fire_num>::get_override() { return speed_override_factor; }
 
 // enable or disable the override
 template <typename KinematicsParent, Motate::pin_number fire_num>
@@ -351,12 +351,12 @@ bool LaserTool<KinematicsParent,fire_num>::set_enable_output(const uint8_t enabl
 }
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::set_frequency(float new_frequency)
+void LaserTool<KinematicsParent,fire_num>::set_frequency(double new_frequency)
 {
     // use to set pulse width
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_frequency()
+double LaserTool<KinematicsParent,fire_num>::get_frequency()
 {
     return 0.0;
 }
@@ -399,7 +399,7 @@ void LaserTool<KinematicsParent,fire_num>::setDirection(uint8_t new_direction) {
 };
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::setPowerLevels(float active_pl, float idle_pl) {
+void LaserTool<KinematicsParent,fire_num>::setPowerLevels(double active_pl, double idle_pl) {
     ; // ignore this
 };
 
@@ -430,7 +430,7 @@ void LaserTool<KinematicsParent,fire_num>::complete_change() {
 // Kinematics functions ----
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::configure(const float new_steps_per_unit[MOTORS], const int8_t new_motor_map[MOTORS]) {
+void LaserTool<KinematicsParent,fire_num>::configure(const double new_steps_per_unit[MOTORS], const int8_t new_motor_map[MOTORS]) {
     int8_t adjusted_motor_map[MOTORS];
     laser_motor_axis = new_motor_map[laser_motor];
     for (uint8_t motor = 0; motor < MOTORS; motor++) {
@@ -455,40 +455,40 @@ int16_t LaserTool<KinematicsParent,fire_num>::get_pulse_duration_us() {
 }
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_min_s() {
+double LaserTool<KinematicsParent,fire_num>::get_min_s() {
     return min_s;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::set_min_s(float new_min_s) {
+void LaserTool<KinematicsParent,fire_num>::set_min_s(double new_min_s) {
     min_s = new_min_s;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_max_s() {
+double LaserTool<KinematicsParent,fire_num>::get_max_s() {
     return max_s;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::set_max_s(float new_max_s) {
+void LaserTool<KinematicsParent,fire_num>::set_max_s(double new_max_s) {
     max_s = new_max_s;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_min_ppm() {
+double LaserTool<KinematicsParent,fire_num>::get_min_ppm() {
     return min_ppm;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::set_min_ppm(float new_min_ppm) {
+void LaserTool<KinematicsParent,fire_num>::set_min_ppm(double new_min_ppm) {
     min_ppm = new_min_ppm;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-float LaserTool<KinematicsParent,fire_num>::get_max_ppm() {
+double LaserTool<KinematicsParent,fire_num>::get_max_ppm() {
     return max_ppm;
 }
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::set_max_ppm(float new_max_ppm) {
+void LaserTool<KinematicsParent,fire_num>::set_max_ppm(double new_max_ppm) {
     max_ppm = new_max_ppm;
 }
 
 template <typename KinematicsParent, Motate::pin_number fire_num>
-void LaserTool<KinematicsParent,fire_num>::inverse_kinematics(const GCodeState_t &gm, const float target[AXES], const float position[AXES], const float start_velocity, const float end_velocity, const float segment_time, float steps[MOTORS]) {
+void LaserTool<KinematicsParent,fire_num>::inverse_kinematics(const GCodeState_t &gm, const double target[AXES], const double position[AXES], const double start_velocity, const double end_velocity, const double segment_time, double steps[MOTORS]) {
     // The plan:
     // 1. Call the parent kinematics to get the step count set for all the other motors
     // 2. Replace the step count for the laser_motor with the number of pulses (if any) for this segment
@@ -496,21 +496,21 @@ void LaserTool<KinematicsParent,fire_num>::inverse_kinematics(const GCodeState_t
 
     KinematicsParent::inverse_kinematics(gm, target, position, start_velocity, end_velocity, segment_time, steps);
 
-    float move_length = 0;
+    double move_length = 0;
     next_ticks_per_pulse = 0;
 
     // ONLY fire the laser for G1, G2, or G3, when M3 is on, and S > 0
     if (!paused && (gm.tool == LASER_TOOL) && ((gm.motion_mode == /*G1*/MOTION_MODE_STRAIGHT_FEED) || (gm.motion_mode == /*G2*/MOTION_MODE_CW_ARC) || (gm.motion_mode == /*G3*/MOTION_MODE_CCW_ARC)) && (gm.spindle_speed > min_s)) {
         // translate "spindle_speed" into a percentage of requested power, from 0.0 to 1.0
-        float s = std::min(1.0f, std::max(0.0f, ((gm.spindle_speed - min_s)/(max_s-min_s)) ));
+        double s = std::min(1.0f, std::max(0.0f, ((gm.spindle_speed - min_s)/(max_s-min_s)) ));
 
         if (gm.spindle_direction == /*M4*/ SPINDLE_CCW || gm.spindle_direction == /*M3*/ SPINDLE_CW) {
             // temporary ticks per pulse
-            float tpp = pulse_duration_us / (1000000 / FREQUENCY_DDA);
+            double tpp = pulse_duration_us / (1000000 / FREQUENCY_DDA);
 
             // Assume X/Y plane for now, also assume we don't need to worry about any encoder compensation that was done in the parent kinematics
-            float x_len = position[AXIS_X] - target[AXIS_X];
-            float y_len = position[AXIS_Y] - target[AXIS_Y];
+            double x_len = position[AXIS_X] - target[AXIS_X];
+            double y_len = position[AXIS_Y] - target[AXIS_Y];
 
             move_length = sqrt((x_len * x_len) + (y_len * y_len)) * (s * (max_ppm - min_ppm)  + min_ppm);
 
@@ -522,10 +522,10 @@ void LaserTool<KinematicsParent,fire_num>::inverse_kinematics(const GCodeState_t
         }
         // else if ((gm.spindle_direction == /*M3*/SPINDLE_CW)) {
         //     // Assume X/Y plane for now, also assume we don't need to worry about any encoder compensation that was done in the parent kinematics
-        //     // float x_len = position[AXIS_X] - target[AXIS_X];
-        //     // float y_len = position[AXIS_Y] - target[AXIS_Y];
+        //     // double x_len = position[AXIS_X] - target[AXIS_X];
+        //     // double y_len = position[AXIS_Y] - target[AXIS_Y];
 
-        //     // float s = ((gm.spindle_speed - min_s)/(max_s-min_s)) * (max_ppm - min_ppm)  + min_ppm;
+        //     // double s = ((gm.spindle_speed - min_s)/(max_s-min_s)) * (max_ppm - min_ppm)  + min_ppm;
 
         //     // move_length = sqrt((x_len * x_len) + (y_len * y_len)) * s;
         //     // // NOTE: segment_time is in minutes
@@ -533,7 +533,7 @@ void LaserTool<KinematicsParent,fire_num>::inverse_kinematics(const GCodeState_t
         //     // move_length = std::min(move_length, ticks_in_move);
 
         //     uint32_t top_value = fire.getTopValue();
-        //     raw_fire_duty_cycle = std::floor(s * (float)top_value);
+        //     raw_fire_duty_cycle = std::floor(s * (double)top_value);
 
         //     move_length = 1;  // don't individually pulse the fire
         // }

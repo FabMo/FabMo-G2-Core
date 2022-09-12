@@ -42,7 +42,7 @@ void persistence_init()
 }
 
 /*
- * read_persistent_value()	- return value (as float) by index
+ * read_persistent_value()	- return value (as double) by index
  *
  *	It's the responsibility of the caller to make sure the index does not exceed range
  */
@@ -60,7 +60,7 @@ stat_t read_persistent_value(nvObj_t *nv)
  * write_persistent_value() - write to NVM by index, but only if the value has changed
  *
  *	It's the responsibility of the caller to make sure the index does not exceed range
- *	Note: Removed NAN and INF checks on floats - not needed
+ *	Note: Removed NAN and INF checks on doubles - not needed
  */
 
 stat_t write_persistent_value(nvObj_t *nv)

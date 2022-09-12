@@ -120,12 +120,12 @@ typedef struct GCodeInputValue {    // Gcode inputs - meaning depends on context
     uint8_t program_flow;           // used only by the gcode_parser
     uint32_t linenum;               // gcode N word
 
-    float target[AXES];             // XYZABC where the move should go
-    float arc_offset[3];            // IJK - used by arc commands
-    float arc_radius;               // R word - radius value in arc radius mode
-    float F_word;                   // F word - feedrate as present in the F word (will be normalized later)
-    float P_word;                   // P word - parameter used for dwell time in seconds, G10 commands
-    float S_word;                   // S word - usually in RPM
+    double target[AXES];             // XYZABC where the move should go
+    double arc_offset[3];            // IJK - used by arc commands
+    double arc_radius;               // R word - radius value in arc radius mode
+    double F_word;                   // F word - feedrate as present in the F word (will be normalized later)
+    double P_word;                   // P word - parameter used for dwell time in seconds, G10 commands
+    double S_word;                   // S word - usually in RPM
     uint8_t H_word;                 // H word - used by G43s
     uint8_t L_word;                 // L word - used by G10s
 
@@ -153,7 +153,7 @@ typedef struct GCodeInputValue {    // Gcode inputs - meaning depends on context
     bool spo_control;               // M51 spindle speed override control
 
 #if MARLIN_COMPAT_ENABLED == true
-    float E_word;                       // E - "extruder" - may be interpreted any number of ways
+    double E_word;                       // E - "extruder" - may be interpreted any number of ways
     bool marlin_relative_extruder_mode; // M82, M83 (Marlin-only)
 #endif
 
@@ -219,8 +219,8 @@ GCodeFlag_t gf;     // gcode input flags
 
 // local helper functions and macros
 static void _normalize_gcode_block(char *str, char **active_comment, uint8_t *block_delete_flag);
-static stat_t _get_next_gcode_word(char **pstr, char *letter, float *value, int32_t *value_int);
-static stat_t _point(float value);
+static stat_t _get_next_gcode_word(char **pstr, char *letter, double *value, int32_t *value_int);
+static stat_t _point(double value);
 static stat_t _verify_checksum(char *str);
 static stat_t _validate_gcode_block(char *active_comment);
 static stat_t _parse_gcode_block(char *line, char *active_comment); // Parse the block into the GN/GF structs
@@ -566,7 +566,7 @@ void _normalize_gcode_block(char *str, char **active_comment, uint8_t *block_del
  *  G0X... is not interpreted as hexadecimal. This is trapped.
  */
 
-static stat_t _get_next_gcode_word(char **pstr, char *letter, float *value, int32_t *value_int)
+static stat_t _get_next_gcode_word(char **pstr, char *letter, double *value, int32_t *value_int)
 {
     if (**pstr == NUL) { return (STAT_COMPLETE); }    // no more words
 
@@ -614,7 +614,7 @@ static stat_t _get_next_gcode_word(char **pstr, char *letter, float *value, int3
  * _point() - isolate the decimal point value as an integer
  */
 
-static uint8_t _point(const float value)
+static uint8_t _point(const double value)
 {
     return((uint8_t)(std::round(value*10.0) - std::trunc(value)*10.0));    // isolate the decimal point as an int
 }
@@ -649,14 +649,14 @@ static stat_t _validate_gcode_block(char *active_comment)
  *
  *  All the parser does is load the state values in gn (next model state) and set flags
  *  in gf (model state flags). The execute routine applies them. The buffer is assumed to
- *  contain only uppercase characters and signed floats (no whitespace).
+ *  contain only uppercase characters and signed doubles (no whitespace).
  */
 
 static stat_t _parse_gcode_block(char *buf, char *active_comment)
 {
     char *pstr = (char *)buf;                   // persistent pointer into gcode block for parsing words
     char letter;                                // parsed letter, eg.g. G or X or Y
-    float value = 0;                            // value parsed from letter (e.g. 2 for G2)
+    double value = 0;                            // value parsed from letter (e.g. 2 for G2)
     int32_t value_int = 0;                      // integer value parsed from letter - needed for line numbers
     stat_t status = STAT_OK;
 
@@ -1153,7 +1153,7 @@ static stat_t _execute_gcode_block_marlin()
         case NEXT_ACTION_MARLIN_SET_EXTRUDER_TEMP:          // M104 or M109
         case NEXT_ACTION_MARLIN_SET_BED_TEMP:       {       // M140 or M190
             mst.marlin_flavor = true;                       // these gcodes are ONLY in marlin flavor
-            float temp = 0;
+            double temp = 0;
             if (gf.S_word) { temp = gv.S_word; }
             if (gf.P_word) { temp = gv.P_word; }            // we treat them the same, for now
 

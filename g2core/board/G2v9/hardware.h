@@ -103,7 +103,7 @@ using Motate::OutputPin;
 
 #define FREQUENCY_DDA		100000UL
 #define FREQUENCY_DWELL		1000UL
-#define MIN_SEGMENT_MS ((float)1.0)
+#define MIN_SEGMENT_MS ((double)1.0)
 
 #define PLANNER_QUEUE_SIZE (48)
 #define SECONDARY_QUEUE_SIZE (10)

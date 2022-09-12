@@ -94,7 +94,7 @@ stat_t cm_arc_callback(cmMachine_t *_cm)
 /*
  * cm_ofs_to_mm() - helper to convert all offsets to mm if needed
  */
-void cm_ofs_to_mm(const float *offset_global, float *offset_mm, const bool *flags) // Assumes both offset arrays are the same size
+void cm_ofs_to_mm(const double *offset_global, double *offset_mm, const bool *flags) // Assumes both offset arrays are the same size
 {
     offset_mm[OFS_I] = _to_millimeters(offset_global[OFS_I]);
     offset_mm[OFS_J] = _to_millimeters(offset_global[OFS_J]);
@@ -109,17 +109,17 @@ void cm_ofs_to_mm(const float *offset_global, float *offset_mm, const bool *flag
  * approximated by generating a large number of tiny, linear segments.
  */
 
-stat_t cm_arc_feed_global(const float target[], const bool target_f[],     // target endpoint
-                          const float offset[], const bool offset_f[],     // IJK offsets
-                          const float radius, const bool radius_f,         // radius if radius mode
-                          const float P_word, const bool P_word_f,         // parameter
+stat_t cm_arc_feed_global(const double target[], const bool target_f[],     // target endpoint
+                          const double offset[], const bool offset_f[],     // IJK offsets
+                          const double radius, const bool radius_f,         // radius if radius mode
+                          const double P_word, const bool P_word_f,         // parameter
                           const bool modal_g1_f,                           // modal group flag for motion group
                           const cmMotionMode motion_mode)                  // defined motion mode
 {
     // Convert axes, offsets and radii to mm if needed then call internal function
-    float target_mm[AXES];
-    float offset_mm[3]; // IJK
-    float radius_mm = 0.0;
+    double target_mm[AXES];
+    double offset_mm[3]; // IJK
+    double radius_mm = 0.0;
 
     cm_axes_to_mm(target, target_mm, target_f);
     cm_ofs_to_mm(offset, offset_mm, offset_f);
@@ -144,10 +144,10 @@ stat_t cm_arc_feed_global(const float target[], const bool target_f[],     // ta
  * approximated by generating a large number of tiny, linear segments.
  */
 
-stat_t cm_arc_feed_mm(const float target[], const bool target_f[],     // target endpoint
-                      const float offset[], const bool offset_f[],     // IJK offsets
-                      const float radius, const bool radius_f,         // radius if radius mode
-                      const float P_word, const bool P_word_f,         // parameter
+stat_t cm_arc_feed_mm(const double target[], const bool target_f[],     // target endpoint
+                      const double offset[], const bool offset_f[],     // IJK offsets
+                      const double radius, const bool radius_f,         // radius if radius mode
+                      const double P_word, const bool P_word_f,         // parameter
                       const bool modal_g1_f,                           // modal group flag for motion group
                       const cmMotionMode motion_mode)                  // defined motion mode
 {
@@ -337,15 +337,15 @@ static stat_t _compute_arc(const bool radius_f)
     //  center by more than (.05 inch/.5 mm) OR ((.0005 inch/.005mm) AND .1% of radius)."
 
     // Compute end radius from the center of circle (offsets) to target endpoint
-    float end_0 = cm->arc.gm.target[cm->arc.plane_axis_0] -
+    double end_0 = cm->arc.gm.target[cm->arc.plane_axis_0] -
                   cm->arc.position[cm->arc.plane_axis_0] -
                   cm->arc.ijk_offset[cm->arc.plane_axis_0];
 
-    float end_1 = cm->arc.gm.target[cm->arc.plane_axis_1] -
+    double end_1 = cm->arc.gm.target[cm->arc.plane_axis_1] -
                   cm->arc.position[cm->arc.plane_axis_1] -
                   cm->arc.ijk_offset[cm->arc.plane_axis_1];
 
-    float err = std::abs(hypotf(end_0, end_1) - cm->arc.radius);   // end radius - start radius
+    double err = std::abs(hypotf(end_0, end_1) - cm->arc.radius);   // end radius - start radius
     if ((err > ARC_RADIUS_ERROR_MAX) ||
        ((err > ARC_RADIUS_ERROR_MIN) && (err > cm->arc.radius * ARC_RADIUS_TOLERANCE))) {
         return (STAT_ARC_HAS_IMPOSSIBLE_CENTER_POINT);
@@ -389,9 +389,9 @@ static stat_t _compute_arc(const bool radius_f)
 
     // Find the minimum number of segments that meet accuracy and time constraints...
     // Note: removed segment_length test as segment_time accounts for this (build 083.37)
-    float segments_for_chordal_accuracy = cm->arc.length / sqrt(4*cm->chordal_tolerance * (2 * cm->arc.radius - cm->chordal_tolerance));
+    double segments_for_chordal_accuracy = cm->arc.length / sqrt(4*cm->chordal_tolerance * (2 * cm->arc.radius - cm->chordal_tolerance));
     cm->arc.segments = std::floor(segments_for_chordal_accuracy);
-    cm->arc.segments = std::max(cm->arc.segments, (float)1.0);        //...but is at least 1 segment
+    cm->arc.segments = std::max(cm->arc.segments, (double)1.0);        //...but is at least 1 segment
 
     if (cm->arc.gm.feed_rate_mode == INVERSE_TIME_MODE) {
         cm->arc.gm.feed_rate /= cm->arc.segments;
@@ -484,8 +484,8 @@ static stat_t _compute_arc(const bool radius_f)
 static void _compute_arc_offsets_from_radius()
 {
     // Calculate the change in position along each selected axis
-    float x = cm->arc.gm.target[cm->arc.plane_axis_0] - cm->arc.position[cm->arc.plane_axis_0];
-    float y = cm->arc.gm.target[cm->arc.plane_axis_1] - cm->arc.position[cm->arc.plane_axis_1];
+    double x = cm->arc.gm.target[cm->arc.plane_axis_0] - cm->arc.position[cm->arc.plane_axis_0];
+    double y = cm->arc.gm.target[cm->arc.plane_axis_1] - cm->arc.position[cm->arc.plane_axis_1];
 
     // *** From Forrest Green - Other Machine Co, 3/27/14
     // If the distance between endpoints is greater than the arc diameter, disc will be
@@ -496,10 +496,10 @@ static void _compute_arc_offsets_from_radius()
     // risks obscuring g-code errors where the radius is actually too small (they will be
     // treated as half circles), but ensures that all valid arcs end up reasonably close
     // to their intended paths regardless of any numerical issues.
-    float disc = 4 * square(cm->arc.radius) - (square(x) + square(y));
+    double disc = 4 * square(cm->arc.radius) - (square(x) + square(y));
 
     // h_x2_div_d == -(h * 2 / d)
-    float h_x2_div_d = (disc > 0) ? -sqrt(disc) / hypotf(x,y) : 0;
+    double h_x2_div_d = (disc > 0) ? -sqrt(disc) / hypotf(x,y) : 0;
 
     // Invert the sign of h_x2_div_d if circle is counter clockwise (see header notes)
     if (cm->arc.gm.motion_mode == MOTION_MODE_CCW_ARC) {
@@ -577,7 +577,7 @@ static void _compute_arc_offsets_from_radius()
  *    - max and min travel in axis 0 and axis 1 (in cm struct)
  */
 /*
-static stat_t _test_arc_soft_limit_plane_axis(float center, uint8_t plane_axis)
+static stat_t _test_arc_soft_limit_plane_axis(double center, uint8_t plane_axis)
 {
     if (center <= arc.position[plane_axis]) {
         if (arc.angular_travel < M_PI) {                            // case (1)

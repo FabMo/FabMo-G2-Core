@@ -543,11 +543,11 @@ struct gpioDigitalOutput {
     virtual ioPolarity getPolarity();
     virtual bool setPolarity(const ioPolarity);
 
-    virtual float getValue();
-    virtual bool setValue(const float);
+    virtual double getValue();
+    virtual bool setValue(const double);
 
-    virtual float getFrequency();
-    virtual bool setFrequency(const float);
+    virtual double getFrequency();
+    virtual bool setFrequency(const double);
 
     virtual bool setExternalNumber(const uint8_t);
     virtual const uint8_t getExternalNumber();
@@ -598,7 +598,7 @@ struct gpioDigitalOutput {
         } else {
             nv->valuetype = TYPE_FLOAT;
             nv->precision = 2;
-            nv->value_flt = getValue(); // read it as a float
+            nv->value_flt = getValue(); // read it as a double
         }
         return (STAT_OK);
     };
@@ -608,7 +608,7 @@ struct gpioDigitalOutput {
         if (enabled != IO_ENABLED) {
             nv->valuetype = TYPE_NULL;   // reports back as NULL
         } else {
-            float value = nv->value_flt; // read it as a float
+            double value = nv->value_flt; // read it as a double
 
             if (!setValue(value)) {
                 return STAT_INPUT_VALUE_RANGE_ERROR;
@@ -654,11 +654,11 @@ struct gpioDigitalOutputWriter final {
         return pin; // might be null
     };
 
-    float getValue() {
+    double getValue() {
         if (!pin) { return false; }
         return pin->getValue();
     };
-    bool setValue(const float v) {
+    bool setValue(const double v) {
         if (!pin) { return false; }
         return pin->setValue(v);
     };
@@ -757,9 +757,9 @@ struct gpioDigitalOutputPin final : gpioDigitalOutput {
         return true;
     };
 
-    float getValue() override
+    double getValue() override
     {
-        float value = (const float)pin;
+        double value = (const double)pin;
         bool invert = (getPolarity() == IO_ACTIVE_LOW);
         if (invert) {
             return 1.0 - value;
@@ -767,7 +767,7 @@ struct gpioDigitalOutputPin final : gpioDigitalOutput {
 
         return value;
     };
-    bool setValue(const float v) override
+    bool setValue(const double v) override
     {
         if (pin.isNull()) {
             return false;
@@ -782,13 +782,13 @@ struct gpioDigitalOutputPin final : gpioDigitalOutput {
         return true;
     };
 
-    float _last_set_frequency = 0;
+    double _last_set_frequency = 0;
     // it must be set through this interface at least once before it can be read back
-    float getFrequency() override
+    double getFrequency() override
     {
         return _last_set_frequency;
     };
-    bool setFrequency(const float freq) override
+    bool setFrequency(const double freq) override
     {
         pin.setFrequency(freq);
         _last_set_frequency = freq;
@@ -863,8 +863,8 @@ struct gpioAnalogInput {
     virtual ioEnabled getEnabled();
     virtual bool setEnabled(const ioEnabled);
 
-    virtual float getValue();
-    virtual float getResistance();
+    virtual double getValue();
+    virtual double getResistance();
 
     virtual AnalogInputType_t getType();
     virtual bool setType(const AnalogInputType_t);
@@ -872,8 +872,8 @@ struct gpioAnalogInput {
     virtual AnalogCircuit_t getCircuit();
     virtual bool setCircuit(const AnalogCircuit_t);
 
-    virtual float getParameter(const uint8_t p);
-    virtual bool setParameter(const uint8_t p, const float v);
+    virtual double getParameter(const uint8_t p);
+    virtual bool setParameter(const uint8_t p, const double v);
 
     virtual bool setExternalNumber(const uint8_t);
     virtual const uint8_t getExternalNumber();
@@ -1011,11 +1011,11 @@ struct gpioAnalogInputReader final {
         return pin; // might be null
     };
 
-    float getValue() {
+    double getValue() {
         if (!pin) { return -1; }
         return pin->getValue();
     };
-    float getResistance() {
+    double getResistance() {
         if (!pin) { return -1; }
         return pin->getResistance();
     };
@@ -1055,14 +1055,14 @@ extern gpioAnalogInputReader ain8;
 template<uint16_t sample_count>
 struct ValueHistory {
 
-    float variance_max = 2.0;
+    double variance_max = 2.0;
     ValueHistory() {};
-    ValueHistory(float v_max) : variance_max{v_max} {};
+    ValueHistory(double v_max) : variance_max{v_max} {};
 
     struct sample_t {
-        float value;
-        float value_sq;
-        void set(float v) { value = v; value_sq = v*v; }
+        double value;
+        double value_sq;
+        void set(double v) { value = v; value_sq = v*v; }
     };
     sample_t samples[sample_count];
     uint16_t next_sample = 0;
@@ -1074,10 +1074,10 @@ struct ValueHistory {
     };
     uint16_t sampled = 0;
 
-    float rolling_sum = 0;
-    float rolling_sum_sq = 0;
-    float rolling_mean = 0;
-    void add_sample(float t) {
+    double rolling_sum = 0;
+    double rolling_sum_sq = 0;
+    double rolling_mean = 0;
+    void add_sample(double t) {
         last_value_valid = false;
 
         rolling_sum -= samples[next_sample].value;
@@ -1091,23 +1091,23 @@ struct ValueHistory {
         _bump_index(next_sample);
         if (sampled < sample_count) { ++sampled; }
 
-        rolling_mean = rolling_sum/(float)sampled;
+        rolling_mean = rolling_sum/(double)sampled;
     };
 
-    float get_std_dev() {
+    double get_std_dev() {
         // Important note: this is a POPULATION standard deviation, not a population standard deviation
-        float variance = (rolling_sum_sq/(float)sampled) - (rolling_mean*rolling_mean);
+        double variance = (rolling_sum_sq/(double)sampled) - (rolling_mean*rolling_mean);
         return std::sqrt(std::abs(variance));
     };
 
-    float last_value = 0;
+    double last_value = 0;
     bool last_value_valid = false;
-    float value() {
+    double value() {
         if (last_value_valid) { return last_value; }
         // we'll shoot through the samples and ignore the outliers
         uint16_t samples_kept = 0;
-        float temp = 0;
-        float std_dev = get_std_dev();
+        double temp = 0;
+        double std_dev = get_std_dev();
 
         for (uint16_t i=0; i<sampled; i++) {
             if (std::abs(samples[i].value - rolling_mean) < (variance_max * std_dev)) {
@@ -1121,7 +1121,7 @@ struct ValueHistory {
             return rolling_mean;
         }
 
-        last_value = (temp / (float)samples_kept);
+        last_value = (temp / (double)samples_kept);
         last_value_valid = true;
 
         return last_value;
@@ -1134,15 +1134,15 @@ protected: // so we know if anyone tries to reach in
     ioEnabled enabled;                  // -1=unavailable, 0=disabled, 1=enabled
     AnalogInputType_t type;
     AnalogCircuit_t circuit;
-    float parameters[6];
+    double parameters[6];
 
     const uint8_t ext_pin_number;             // external number to configure this pin ("ai" + ext_pin_number)
     uint8_t proxy_pin_number;                 // optional external number to access this pin ("ain" + proxy_pin_number)
 
-    const float variance_max = 1.1;
+    const double variance_max = 1.1;
     ValueHistory<20> history {variance_max};
 
-    float last_raw_value;
+    double last_raw_value;
 
     ADCPin_t pin;                        // the actual pin object itself
 
@@ -1183,27 +1183,27 @@ public:
         return true;
     };
 
-    float getValue() override
+    double getValue() override
     {
         if (enabled != IO_ENABLED) {
             return 0;
         }
         return history.value();
     };
-    float getResistance() override
+    double getResistance() override
     {
         // NOTE: AIN_CIRCUIT_EXTERNAL is NOT handled here!
         //       That needs to be handled in a separate override!
         if (enabled != IO_ENABLED || circuit == AIN_CIRCUIT_DISABLED) {
             return -1;
         }
-        const float v = history.value();
-        const float s = pin.getTopVoltage();
+        const double v = history.value();
+        const double s = pin.getTopVoltage();
         switch (circuit) {
 
             case AIN_CIRCUIT_PULLUP:
             {
-                float r1 = parameters[0]; // pull-up
+                double r1 = parameters[0]; // pull-up
 
                 if (ADCPin_t::is_differential) {
                     return (v * 2.0 * r1)/(s - v);
@@ -1215,9 +1215,9 @@ public:
 
             case AIN_CIRCUIT_INV_OPAMP:
             {
-                float r1 = parameters[0]; // pull-down from bias(+) side of op-amp
-                float r2 = parameters[1]; // pull-up from gain(-) side of op-amp
-                float r3 = parameters[2]; // pull-to-output from gain(-) side of op-amp
+                double r1 = parameters[0]; // pull-down from bias(+) side of op-amp
+                double r2 = parameters[1]; // pull-up from gain(-) side of op-amp
+                double r3 = parameters[2]; // pull-to-output from gain(-) side of op-amp
 
                 return (r1 * r2 * (s - v))/(r2 * v + r3 * s);
                 break;
@@ -1226,11 +1226,11 @@ public:
             case AIN_CIRCUIT_CC_INV_OPAMP:
             {
                 //  the pull-up resistance to the current source is measured (rt)
-                float r4 = parameters[3]; // pull-up resistance of the bias(+) side of op-amp
-                float r1 = parameters[0]; // pull-down from bias(+) side of op-amp
-                float r2 = parameters[1]; // pull-up from gain(-) side of op-amp
-                float r3 = parameters[2]; // pull-to-output from gain(-) side of op-amp
-                float c = parameters[4]; // constant current in volts (c1)
+                double r4 = parameters[3]; // pull-up resistance of the bias(+) side of op-amp
+                double r1 = parameters[0]; // pull-down from bias(+) side of op-amp
+                double r2 = parameters[1]; // pull-up from gain(-) side of op-amp
+                double r3 = parameters[2]; // pull-to-output from gain(-) side of op-amp
+                double c = parameters[4]; // constant current in volts (c1)
 
                 // r_0 = (r_1 (r_2 (s - v) + r_3 s) - v r_2 r_4)/(c r_3 (r_1 + r_4))
                 return (r1 * (r2 * (s - v) + r3 * s) - v * r2 * r4)/(c * r3 * (r1 + r4));
@@ -1274,14 +1274,14 @@ public:
         return true;
     };
 
-    float getParameter(const uint8_t p) override
+    double getParameter(const uint8_t p) override
     {
         if (p < 0 || p >= 6) {
             return 0;
         }
         return parameters[p];
     };
-    bool setParameter(const uint8_t p, const float v) override
+    bool setParameter(const uint8_t p, const double v) override
     {
         if (p < 0 || p >= 6) {
             return false;
@@ -1354,7 +1354,7 @@ stat_t dout_get_po(nvObj_t *nv);     // output sense
 stat_t dout_set_po(nvObj_t *nv);
 stat_t dout_get_out(nvObj_t *nv);    // external number
 stat_t dout_set_out(nvObj_t *nv);
-stat_t dout_get_output(nvObj_t *nv); // actual output value (float)
+stat_t dout_get_output(nvObj_t *nv); // actual output value (double)
 stat_t dout_set_output(nvObj_t *nv);
 
 stat_t ain_get_value(nvObj_t *nv);      // get the voltage level

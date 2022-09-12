@@ -151,8 +151,8 @@ using Motate::OutputPin;
 #define FREQUENCY_DDA  400000UL  // Hz step frequency. Interrupts actually fire at 2x (300 KHz)
 #define FREQUENCY_DWELL  1000UL
 
-// #define MIN_SEGMENT_MS ((float)0.125)       // S70 can handle much much smaller segements
-#define MIN_SEGMENT_MS ((float)0.5)       // S70 can handle much much smaller segements
+// #define MIN_SEGMENT_MS ((double)0.125)       // S70 can handle much much smaller segements
+#define MIN_SEGMENT_MS ((double)0.5)       // S70 can handle much much smaller segements
 
 // #define PLANNER_QUEUE_SIZE (60)
 

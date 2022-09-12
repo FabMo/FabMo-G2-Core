@@ -80,7 +80,7 @@ enum class MarlinSetTempState {
 };
 MarlinSetTempState set_temp_state; // record the state for the temperature-control pseudo-cycle
 // These next parameters for the next temperature-control pseudo-cycle are only needed until the calls are queued.
-float next_temperature;            // as it says
+double next_temperature;            // as it says
 uint8_t next_temperature_tool;     // 0-based, with 2 being the heat-bed
 
 // Information about if we are to be dumping periodic temperature updates
@@ -114,20 +114,20 @@ void _report_temperatures(char *(&str)) {
     uint8_t tool = cm->gm.tool;
 
     str_concat(str, " T:");
-    str += floattoa(str, cm_get_temperature(tool), 2);
+    str += doubletoa(str, cm_get_temperature(tool), 2);
     str_concat(str, " /");
-    str += floattoa(str, cm_get_set_temperature(tool), 2);
+    str += doubletoa(str, cm_get_set_temperature(tool), 2);
 
     str_concat(str, " B:");
-    str += floattoa(str, cm_get_temperature(3), 2);
+    str += doubletoa(str, cm_get_temperature(3), 2);
     str_concat(str, " /");
-    str += floattoa(str, cm_get_set_temperature(3), 2);
+    str += doubletoa(str, cm_get_set_temperature(3), 2);
 
     str_concat(str, " @:");
-    str += floattoa(str, cm_get_heater_output(tool), 0);
+    str += doubletoa(str, cm_get_heater_output(tool), 0);
 
     str_concat(str, " B@:");
-    str += floattoa(str, cm_get_heater_output(3), 0);
+    str += doubletoa(str, cm_get_heater_output(3), 0);
 }
 
 /***********************************************************************************
@@ -135,16 +135,16 @@ void _report_temperatures(char *(&str)) {
  */
 void _report_position(char *(&str)) {
     str_concat(str, " X:");
-    str += floattoa(str, cm_get_display_position(ACTIVE_MODEL, 0), 2);
+    str += doubletoa(str, cm_get_display_position(ACTIVE_MODEL, 0), 2);
     str_concat(str, " Y:");
-    str += floattoa(str, cm_get_display_position(ACTIVE_MODEL, 1), 2);
+    str += doubletoa(str, cm_get_display_position(ACTIVE_MODEL, 1), 2);
     str_concat(str, " Z:");
-    str += floattoa(str, cm_get_display_position(ACTIVE_MODEL, 2), 2);
+    str += doubletoa(str, cm_get_display_position(ACTIVE_MODEL, 2), 2);
 
     uint8_t tool = cm->gm.tool;
     if ((tool > 0) && (tool < 3)) {
         str_concat(str, " E:");
-        str += floattoa(str, cm_get_display_position(ACTIVE_MODEL, 2), tool + 2); // A or B, depending on tool
+        str += doubletoa(str, cm_get_display_position(ACTIVE_MODEL, 2), tool + 2); // A or B, depending on tool
     }
 }
 
@@ -237,7 +237,7 @@ stat_t marlin_disable_motors()
  * marlin_set_motor_timeout() - M84 (with S), M85 Sxxx called from gcode parser
  */
 
-stat_t marlin_set_motor_timeout(float s) // M18 Sxxx, M84 Sxxx, M85 Sxxx
+stat_t marlin_set_motor_timeout(double s) // M18 Sxxx, M84 Sxxx, M85 Sxxx
 {
     if (s < MOTOR_TIMEOUT_SECONDS_MIN) {
         return (STAT_INPUT_LESS_THAN_MIN_VALUE);
@@ -250,7 +250,7 @@ stat_t marlin_set_motor_timeout(float s) // M18 Sxxx, M84 Sxxx, M85 Sxxx
 
     // TODO: support other fans, or remapping output
     str_concat(str, "{mt:");
-    str += floattoa(str, s, 1);
+    str += doubletoa(str, s, 1);
     str_concat(str, "}");
 
     cm_json_command(buffer);
@@ -264,12 +264,12 @@ stat_t marlin_set_motor_timeout(float s) // M18 Sxxx, M84 Sxxx, M85 Sxxx
  * _marlin_end_temperature_updates()
  */
 
-void _marlin_start_temperature_updates(float* vect, bool* flag) {
+void _marlin_start_temperature_updates(double* vect, bool* flag) {
     temperature_updates_requested = true;
     temperature_update_timeout.set(1); // immediately
 }
 
-void _marlin_end_temperature_updates(float* vect, bool* flag) {
+void _marlin_end_temperature_updates(double* vect, bool* flag) {
     temperature_updates_requested = false;
 }
 
@@ -289,7 +289,7 @@ bool _queue_next_temperature_commands()
             str_concat(str, "{he");
             str += inttoa(str, next_temperature_tool);
             str_concat(str, "st:");
-            str += floattoa(str, next_temperature, 2);
+            str += doubletoa(str, next_temperature, 2);
             str_concat(str, "}");
             cm_json_command(buffer);
 
@@ -335,7 +335,7 @@ bool _queue_next_temperature_commands()
     return true;
 }
 
-stat_t marlin_set_temperature(uint8_t tool, float temperature, bool wait) {
+stat_t marlin_set_temperature(uint8_t tool, double temperature, bool wait) {
     if (MarlinSetTempState::Idle != set_temp_state) {
         return (STAT_BUFFER_FULL_FATAL); // we shouldn't be here
     }
@@ -370,7 +370,7 @@ stat_t marlin_request_temperature_report() // M105
  * marlin_set_fan_speed() - M106, M107 called from gcode parser
  */
 
-stat_t marlin_set_fan_speed(const uint8_t fan, float speed)
+stat_t marlin_set_fan_speed(const uint8_t fan, double speed)
 {
     char buffer[128];
     char *str = buffer;
@@ -380,7 +380,7 @@ stat_t marlin_set_fan_speed(const uint8_t fan, float speed)
 
     // TODO: support other fans, or remapping output
     str_concat(str, "{out4:");
-    str += floattoa(str, (speed < 1.0) ? speed : (speed / 255.0), 4);
+    str += doubletoa(str, (speed < 1.0) ? speed : (speed / 255.0), 4);
     str_concat(str, "}");
 
     cm_json_command(buffer);

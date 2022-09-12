@@ -69,13 +69,13 @@ stat_t kn_get_force(nvObj_t *nv)
 {
     nv->valuetype = TYPE_FLOAT;
     nv->precision = 4;
-    nv->value = four_cable_kinematics.sensor_zero_target; // read it as a float
+    nv->value = four_cable_kinematics.sensor_zero_target; // read it as a double
 
     return (STAT_OK);
 };
 stat_t kn_set_force(nvObj_t *nv)
 {
-    float value = nv->value; // read it as a float
+    double value = nv->value; // read it as a double
     four_cable_kinematics.sensor_zero_target = value;
     return (STAT_OK);
 };
@@ -140,13 +140,13 @@ stat_t kn_get_force(nvObj_t *nv)
 {
     nv->valuetype = TYPE_FLOAT;
     nv->precision = 4;
-    nv->value_flt = pressure_kinematics.event_pressure_target; // read it as a float
+    nv->value_flt = pressure_kinematics.event_pressure_target; // read it as a double
 
     return (STAT_OK);
 };
 stat_t kn_set_force(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.event_pressure_target = value;
     return (STAT_OK);
@@ -156,13 +156,13 @@ stat_t kn_get_target(nvObj_t *nv)
 {
     nv->valuetype = TYPE_FLOAT;
     nv->precision = 4;
-    nv->value_flt = pressure_kinematics.event_pressure_target; // read it as a float
+    nv->value_flt = pressure_kinematics.event_pressure_target; // read it as a double
 
     return (STAT_OK);
 };
 stat_t kn_set_target(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.event_pressure_target = value;
     return (STAT_OK);
@@ -178,7 +178,7 @@ stat_t kn_get_epm(nvObj_t *nv)
 };
 stat_t kn_set_epm(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.seconds_between_events = 60.0 / value;
     pressure_kinematics.seconds_to_hold_event =
@@ -198,7 +198,7 @@ stat_t kn_get_hold_time(nvObj_t *nv)
 };
 stat_t kn_set_hold_time(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.seconds_to_hold_event = value;
     pressure_kinematics.pressure_hold_release_ratio =
@@ -218,7 +218,7 @@ stat_t kn_get_hold_ratio(nvObj_t *nv)
 };
 stat_t kn_set_hold_ratio(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.pressure_hold_release_ratio = value;
     pressure_kinematics.seconds_to_hold_event =
@@ -237,7 +237,7 @@ stat_t kn_get_backoff_pressure(nvObj_t *nv)
 };
 stat_t kn_set_backoff_pressure(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.reverse_target_pressure = value;
     return (STAT_OK);
@@ -301,7 +301,7 @@ stat_t kn_get_p_factor(nvObj_t *nv)
 };
 stat_t kn_set_p_factor(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.sensor_proportional_factor = value;
     return (STAT_OK);
@@ -318,7 +318,7 @@ stat_t kn_get_i_factor(nvObj_t *nv)
 };
 stat_t kn_set_i_factor(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.sensor_inetgral_factor = value;
     return (STAT_OK);
@@ -335,7 +335,7 @@ stat_t kn_get_d_factor(nvObj_t *nv)
 };
 stat_t kn_set_d_factor(nvObj_t *nv)
 {
-    float value = nv->value_flt; // read it as a float
+    double value = nv->value_flt; // read it as a double
     nv->precision = 4;
     pressure_kinematics.sensor_derivative_factor = value;
     return (STAT_OK);
@@ -358,7 +358,7 @@ stat_t kn_set_anchored(nvObj_t *nv)
 };
 
 stat_t _kn_get_pos(uint8_t joint, nvObj_t *nv) {
-    float position[AXES];
+    double position[AXES];
     pressure_kinematics.get_position(position);
 
     nv->valuetype = TYPE_FLOAT;
@@ -394,7 +394,7 @@ stat_t get_flow_volume(nvObj_t *nv)
 void kn_config_changed() {
     // temporary load these up every time until we can hook them to the configuration
     int8_t motor_map[MOTORS];
-    float steps_per_unit[MOTORS];
+    double steps_per_unit[MOTORS];
 
     for (uint8_t motor = 0; motor < MOTORS; motor++) {
         auto axis = st_cfg.mot[motor].motor_map;
@@ -427,7 +427,7 @@ void kn_config_changed() {
  *
  */
 
-void kn_forward_kinematics(const float steps[], float travel[]) {
+void kn_forward_kinematics(const double steps[], double travel[]) {
     // PRESUMPTION: inverse kinematics has been called at least once since the mapping or steps_unit has changed
     kn->forward_kinematics(steps, travel);
 }

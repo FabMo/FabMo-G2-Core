@@ -61,15 +61,15 @@ static void _hold_everything (uint32_t n1, uint32_t n2) // example of function
 
 //*** vector utilities ***
 
-extern float vector[AXES]; // vector of axes for passing to subroutines
+extern double vector[AXES]; // vector of axes for passing to subroutines
 
 #define clear_vector(a) (memset(a,0,sizeof(a)))
 #define copy_vector(d,s) (memcpy(d,s,sizeof(d)))
 
-float get_axis_vector_length(const float a[], const float b[]);
-uint8_t vector_equal(const float a[], const float b[]);
-float *set_vector(float x, float y, float z, float a, float b, float c);
-float *set_vector_by_axis(float value, uint8_t axis);
+double get_axis_vector_length(const double a[], const double b[]);
+uint8_t vector_equal(const double a[], const double b[]);
+double *set_vector(double x, double y, double z, double a, double b, double c);
+double *set_vector_by_axis(double value, uint8_t axis);
 
 // *** canned initializers ***
 
@@ -89,11 +89,11 @@ float *set_vector_by_axis(float value, uint8_t axis);
 
 //*** math utilities ***
 
-//float min3(float x1, float x2, float x3);
-//float min4(float x1, float x2, float x3, float x4);
-//float max3(float x1, float x2, float x3);
-//float max4(float x1, float x2, float x3, float x4);
-//float std_dev(float a[], uint8_t n, float *mean);
+//double min3(double x1, double x2, double x3);
+//double min4(double x1, double x2, double x3, double x4);
+//double max3(double x1, double x2, double x3);
+//double max4(double x1, double x2, double x3, double x4);
+//double std_dev(double a[], uint8_t n, double *mean);
 
 //*** string utilities ***
 
@@ -101,7 +101,7 @@ uint8_t isnumber(char c);
 char *escape_string(char *dst, char *src);
 uint16_t compute_checksum(char const *string, const uint16_t length);
 uint32_t crc32(uint32_t crc, const void *buf, size_t size);
-char floattoa(char *buffer, float in, int precision, int maxlen = 16);
+char doubletoa(char *buffer, double in, int precision, int maxlen = 16);
 char inttoa(char *str, int n);
 
 //**** Math Support *****
@@ -116,7 +116,7 @@ using std::isinf;
 template <typename T>
 inline T square(const T x) { return (x)*(x); }        /* UNSAFE */
 
-//inline float abs(const float a) { return std::abs(a); }
+//inline double abs(const double a) { return std::abs(a); }
 
 #ifndef avg
 template <typename T>
@@ -124,10 +124,10 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 #endif
 
 #ifndef EPSILON
-#define EPSILON     ((float)0.00001)    // allowable rounding error for floats
-#define EPSILON4    ((float)0.0001)     // reduced precision epsilon
-#define EPSILON3    ((float)0.001)      // reduced precision epsilon
-#define EPSILON2    ((float)0.01)       // reduced precision epsilon
+#define EPSILON     ((double)0.00001)    // allowable rounding error for doubles
+#define EPSILON4    ((double)0.0001)     // reduced precision epsilon
+#define EPSILON3    ((double)0.001)      // reduced precision epsilon
+#define EPSILON2    ((double)0.01)       // reduced precision epsilon
 #endif
 
 // These functions all require math.h to be included in each file that uses them
@@ -159,9 +159,9 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 #define MAX_FP_INTEGER (8388608)  // maximum integer 32 bit FP will represent exactly (23 bits)
 #define MM_PER_INCH (25.4)
 #define INCHES_PER_MM (1/25.4)
-#define MICROSECONDS_PER_MINUTE ((float)60000000)
-#define MINUTES_PER_MICROSECOND ((float)1/MICROSECONDS_PER_MINUTE)
-#define uSec(a) ((float)(a * MICROSECONDS_PER_MINUTE))
+#define MICROSECONDS_PER_MINUTE ((double)60000000)
+#define MINUTES_PER_MICROSECOND ((double)1/MICROSECONDS_PER_MINUTE)
+#define uSec(a) ((double)(a * MICROSECONDS_PER_MINUTE))
 
 #define RADIAN (57.2957795)
 
@@ -178,20 +178,20 @@ inline T avg(const T a,const T b) {return (a+b)/2; }
 #endif
 
 // Fraction part
-constexpr float c_atof_frac_(char *&p_, float v_, float m_) {
+constexpr double c_atof_frac_(char *&p_, double v_, double m_) {
     return ((*p_ >= '0') && (*p_ <= '9')) ? (v_ = ((v_) + ((*p_) - '0') * m_), c_atof_frac_(++p_, v_, m_ / 10.0)) : v_;
 }
 
 // Integer part
 template <typename int_type>
-constexpr float c_atof_int_(char *&p_, int_type v_) {
+constexpr double c_atof_int_(char *&p_, int_type v_) {
     return (*p_ == '.')
-    ? (float)(v_) + c_atof_frac_(++p_, 0, 1.0 / 10.0)
+    ? (double)(v_) + c_atof_frac_(++p_, 0, 1.0 / 10.0)
     : (((*p_ >= '0') && (*p_ <= '9')) ? ((v_ = ((*p_) - '0') + (v_ * 10)), c_atof_int_(++p_, v_)) : v_);
 }
 
 // Start portion
-constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) * -1.0) : ( (*p_ == '+') ? c_atof_int_(++p_, 0) : (c_atof_int_(p_, 0))); }
+constexpr double c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) * -1.0) : ( (*p_ == '+') ? c_atof_int_(++p_, 0) : (c_atof_int_(p_, 0))); }
 
 // It's assumed that the string buffer contains at lest count_ non-\0 chars
 //constexpr int c_strreverse(char * const t, const int count_, char hold = 0) {
@@ -229,7 +229,7 @@ constexpr float c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0) 
 
 /*
  * debug_trap() - trap unconditionally
- * debug_trap_if_zero() - trap if floating point value is zero
+ * debug_trap_if_zero() - trap if doubleing point value is zero
  * debug_trap_if_true() - trap if condition is true
  *
  *  The 'reason' value will display in GDB (but maybe not in AS7), and can also be passed
@@ -249,7 +249,7 @@ inline void debug_trap(const char *reason) {
 #endif
 }
 
-inline void debug_trap_if_zero(float value, const char *reason) {
+inline void debug_trap_if_zero(double value, const char *reason) {
 #if IN_DEBUGGER == 1
     if (fp_ZERO(value)) {
         __NOP();

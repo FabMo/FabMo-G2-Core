@@ -220,7 +220,7 @@ stat_t config_test_assertions()
  *  get_nul()  - get nothing (returns STAT_NOOP)
  *  get_int32()  - get value as 32 bit integer
  *  get_data() - get value as 32 bit integer blind cast
- *  get_flt()  - get value as float
+ *  get_flt()  - get value as double
  */
 stat_t get_nul(nvObj_t *nv)
 {
@@ -237,7 +237,7 @@ stat_t get_int32(nvObj_t *nv)
 
 stat_t get_flt(nvObj_t *nv)
 {
-    nv->value_flt= *((float *)GET_TABLE_WORD(target));
+    nv->value_flt= *((double *)GET_TABLE_WORD(target));
     nv->precision = (int8_t)GET_TABLE_WORD(precision);
     nv->valuetype = TYPE_FLOAT;
     return (STAT_OK);
@@ -255,7 +255,7 @@ stat_t get_data(nvObj_t *nv)
  *  set_nul()   - set nothing and return READ_ONLY error
  *  set_ro()    - set nothing, return read-only error
  *  set_int32() - set value as 32 bit unsigned integer
- *  set_flt()   - set value as float
+ *  set_flt()   - set value as double
  *  set_data()  - set value as 32 bit integer blind cast
  */
 
@@ -292,7 +292,7 @@ stat_t set_int32(nvObj_t *nv)
 
 stat_t set_flt(nvObj_t *nv)
 {
-    *((float *)GET_TABLE_WORD(target)) = nv->value_flt;
+    *((double *)GET_TABLE_WORD(target)) = nv->value_flt;
     nv->precision = GET_TABLE_WORD(precision);
     nv->valuetype = TYPE_FLOAT;
     return(STAT_OK);
@@ -467,14 +467,14 @@ void nv_coerce_types(nvObj_t *nv)
         return;
     }
     valueType type = (valueType)(cfgArray[nv->index].flags & F_TYPE_MASK);
-    // if the data type should be integer, and we got a float, round it
-    // note that we keep the original float value around
+    // if the data type should be integer, and we got a double, round it
+    // note that we keep the original double value around
     if (type == TYPE_INTEGER) {
         if (nv->valuetype == TYPE_FLOAT) {
             nv->value_int = std::floor(nv->value_flt+0.5f);
         }
 
-        nv->valuetype = TYPE_INTEGER;   // will pay attention to the int value, not the float
+        nv->valuetype = TYPE_INTEGER;   // will pay attention to the int value, not the double
     } else
     if (type == TYPE_BOOLEAN) {  // it may have been marked as a boolean, but if it's not...
         if (nv->valuetype == TYPE_INTEGER) {
@@ -494,7 +494,7 @@ void nv_coerce_types(nvObj_t *nv)
  * nv_copy_string()     - used to write a string to shared string storage and link it
  * nv_add_object()      - write contents of parameter to  first free object in the body
  * nv_add_integer()     - add an integer value to end of nv body (Note 1)
- * nv_add_float()       - add a floating point value to end of nv body
+ * nv_add_double()       - add a doubleing point value to end of nv body
  * nv_add_string()      - add a string object to end of nv body
  * nv_add_conditional_message() - add a message to nv body if messages are enabled
  *
@@ -502,7 +502,7 @@ void nv_coerce_types(nvObj_t *nv)
  *  a NULL pointer if there was an error.
  *
  *  Note: Adding a really large integer (like a checksum value) may lose precision due
- *  to the cast to a float. Sometimes it's better to load an integer as a string if
+ *  to the cast to a double. Sometimes it's better to load an integer as a string if
  *  all you want to do is display it.
  *
  *  Note: A trick is to cast all string constants for nv_copy_string(), nv_add_object(),
@@ -663,7 +663,7 @@ nvObj_t *nv_add_data(const char *token, const uint32_t value)// add an data obje
     return (NULL);
 }
 
-nvObj_t *nv_add_float(const char *token, const float value)    // add a float object to the body
+nvObj_t *nv_add_double(const char *token, const double value)    // add a double object to the body
 {
     nvObj_t *nv = nv_body;
     for (uint8_t i=0; i<NV_BODY_LEN; i++) {

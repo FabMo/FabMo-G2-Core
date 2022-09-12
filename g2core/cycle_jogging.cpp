@@ -35,23 +35,23 @@
 #include "report.h"
 #include "xio.h"
 
-#define JOGGING_START_VELOCITY ((float)10.0)
+#define JOGGING_START_VELOCITY ((double)10.0)
 
 /**** Jogging singleton structure ****/
 
 struct jmJoggingSingleton {         // persistent jogging runtime variables
     // controls for jogging cycle
     int8_t  axis;                   // axis currently being jogged
-    float   dest_pos;               // distance relative to start position to travel
-    float   start_pos;
-    float   velocity_start;         // initial jog feed
-    float   velocity_max;
+    double   dest_pos;               // distance relative to start position to travel
+    double   start_pos;
+    double   velocity_start;         // initial jog feed
+    double   velocity_max;
     uint8_t step;                   // what step of the ramp the jogging cycle is currently on
 
     uint8_t (*func)(int8_t axis);   // binding for callback function state machine
 
     // state saved from gcode model
-    float   saved_feed_rate;        // F setting
+    double   saved_feed_rate;        // F setting
     uint8_t saved_coord_system;     // G54 - G59 setting
     uint8_t saved_distance_mode;    // G90,G91 global setting
     uint8_t saved_feed_rate_mode;
@@ -64,7 +64,7 @@ static struct jmJoggingSingleton jog;
 static stat_t _set_jogging_func(uint8_t (*func)(int8_t axis));
 static stat_t _jogging_axis_start(int8_t axis);
 static stat_t _jogging_axis_ramp_jog(int8_t axis);
-static stat_t _jogging_axis_move(int8_t axis, float target, float velocity);
+static stat_t _jogging_axis_move(int8_t axis, double target, double velocity);
 static stat_t _jogging_finalize_exit(int8_t axis);
 
 /*****************************************************************************
@@ -150,18 +150,18 @@ static stat_t _jogging_axis_start(int8_t axis) {
 
 static stat_t _jogging_axis_ramp_jog(int8_t axis)  // run the jog ramp
 {
-    float   direction = jog.start_pos <= jog.dest_pos ? 1. : -1.;
-    float   delta     = std::abs(jog.dest_pos - jog.start_pos);
+    double   direction = jog.start_pos <= jog.dest_pos ? 1. : -1.;
+    double   delta     = std::abs(jog.dest_pos - jog.start_pos);
     uint8_t last      = 0;
 
-    float velocity =
-        jog.velocity_start + (jog.velocity_max - jog.velocity_start) * pow(10.0, (jog.step / ((float)MAX_STEPS)) - 1.0);
-    float offset = INITIAL_RAMP + RAMP_DIST * ((jog.step * (jog.step + 1.0)) / (2.0 * MAX_STEPS));
+    double velocity =
+        jog.velocity_start + (jog.velocity_max - jog.velocity_start) * pow(10.0, (jog.step / ((double)MAX_STEPS)) - 1.0);
+    double offset = INITIAL_RAMP + RAMP_DIST * ((jog.step * (jog.step + 1.0)) / (2.0 * MAX_STEPS));
     if (offset >= delta || jog.step >= MAX_STEPS) {
         offset = delta;
         last   = 1;
     }
-    float target = jog.start_pos + offset * direction;
+    double target = jog.start_pos + offset * direction;
 
     _jogging_axis_move(axis, target, velocity);
     jog.step++;
@@ -173,8 +173,8 @@ static stat_t _jogging_axis_ramp_jog(int8_t axis)  // run the jog ramp
     }
 }
 
-static stat_t _jogging_axis_move(int8_t axis, float target, float velocity) {
-    float vect[]  = INIT_AXES_ZEROES;
+static stat_t _jogging_axis_move(int8_t axis, double target, double velocity) {
+    double vect[]  = INIT_AXES_ZEROES;
     bool  flags[] = INIT_AXES_FALSE;
 
     vect[axis]  = target;

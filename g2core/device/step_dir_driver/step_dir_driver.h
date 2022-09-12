@@ -81,9 +81,9 @@ struct StepDirStepper final : Stepper  {
     } _power_state;              // state machine for managing motor power
     stPowerMode _power_mode;                // See stPowerMode for values
 
-    float _active_power_level; // the power level during motion
-    float _idle_power_level; // the power level when idle
-    float _power_level; // the power level now
+    double _active_power_level; // the power level during motion
+    double _idle_power_level; // the power level when idle
+    double _power_level; // the power level now
 
     void _updatePowerLevel() {
         if ((MOTOR_IDLE == _power_state) || (MOTOR_OFF == _power_state)) {
@@ -157,7 +157,7 @@ struct StepDirStepper final : Stepper  {
         }
     };
 
-    void enableWithTimeout(float timeout_ms) override {
+    void enableWithTimeout(double timeout_ms) override {
         if (_power_mode == MOTOR_DISABLED || _power_state == MOTOR_RUNNING) {
             return;
         }
@@ -249,12 +249,12 @@ struct StepDirStepper final : Stepper  {
          return _power_mode;
     };
 
-    float getCurrentPowerLevel() override
+    double getCurrentPowerLevel() override
     {
         return _power_level;
     };
 
-    void setPowerLevels(float new_active_pl, float new_idle_pl) override
+    void setPowerLevels(double new_active_pl, double new_idle_pl) override
     {
         _active_power_level = new_active_pl;
         _idle_power_level = new_idle_pl;
@@ -299,7 +299,7 @@ struct StepDirStepper final : Stepper  {
         }
     };
 
-    virtual void setActivityTimeout(float idle_milliseconds) override
+    virtual void setActivityTimeout(double idle_milliseconds) override
     {
         _motor_activity_timeout_ms = idle_milliseconds;
     };

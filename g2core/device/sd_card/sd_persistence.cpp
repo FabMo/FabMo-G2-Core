@@ -37,7 +37,7 @@
 #include "sd_persistence.h"  // needed for nvObj_t definition
 #include "config.h"  // needed for nvObj_t definition
 
-#define NVM_VALUE_LEN 4             // NVM value length (float, fixed length)
+#define NVM_VALUE_LEN 4             // NVM value length (double, fixed length)
 #define NVM_BASE_ADDR 0x0000        // base address of usable NVM
 
 #define IO_BUFFER_SIZE 512          // this should be evenly divisible by NVM_VALUE_LEN, and <=512 until multi-block reads are fixed (right now they are hanging...)
@@ -52,7 +52,7 @@
 //**** persistence singleton ****
 
 struct nvmSingleton_t {
-    float tmp_value;
+    double tmp_value;
     FATFS fat_fs;
     FIL file;
     uint8_t file_index;
@@ -127,7 +127,7 @@ void SD_Persistence::init()
 }
 
 /*
- * read_persistent_value()	- return value (as float) by index
+ * read_persistent_value()	- return value (as double) by index
  *
  *	It's the responsibility of the caller to make sure the index does not exceed range
  */
@@ -154,7 +154,7 @@ stat_t SD_Persistence::read(nvObj_t *nv)
         DEBUG_PRINT("value (b) copied from address %l in file: %l\n", nv->index * NVM_VALUE_LEN, nv->value_int);
     } else {
         nv->valuetype = TYPE_FLOAT;
-        nv->value_flt = *(float *)nvm.io_buffer;
+        nv->value_flt = *(double *)nvm.io_buffer;
         DEBUG_PRINT("value (f) copied from address %l in file: %f\n", nv->index * NVM_VALUE_LEN, nv->value_flt);
     }
 
@@ -165,7 +165,7 @@ stat_t SD_Persistence::read(nvObj_t *nv)
  * write_persistent_value() - write to NVM by index, but only if the value has changed
  *
  *	It's the responsibility of the caller to make sure the index does not exceed range
- *	Note: Removed NAN and INF checks on floats - not needed
+ *	Note: Removed NAN and INF checks on doubles - not needed
  */
 
 stat_t SD_Persistence::write(nvObj_t *nv)
@@ -337,7 +337,7 @@ stat_t write_persistent_values()
 
    for (index_t cnt = 0; cnt < nv_index_max(); cnt += step) {
        // try to read old values from existing file
-       uint16_t io_byte_count = std::min((float)IO_BUFFER_SIZE, (float)((nv_index_max()-cnt) * NVM_VALUE_LEN));
+       uint16_t io_byte_count = std::min((double)IO_BUFFER_SIZE, (double)((nv_index_max()-cnt) * NVM_VALUE_LEN));
        UINT br = 0;
        f_read(&nvm.file, &nvm.io_buffer, io_byte_count, &br);
        DEBUG_PRINT("read %i bytes from old file\n", br);

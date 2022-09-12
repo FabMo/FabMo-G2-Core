@@ -50,11 +50,11 @@ typedef enum {                          // manages startup lines
 
 typedef struct controllerSingleton {    // main TG controller struct
     magic_t magic_start;                // magic number to test memory integrity
-    float null;                         // dumping ground for items with no target
+    double null;                         // dumping ground for items with no target
 
     // system identification values
-    float fw_build;                     // firmware build number
-    float fw_version;                   // firmware version number
+    double fw_build;                     // firmware build number
+    double fw_version;                   // firmware version number
 
     // system state variables
     csControllerState controller_state;

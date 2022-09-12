@@ -72,7 +72,7 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
 
     double reverse_target_pressure = 0;
 
-    const float sensor_skip_detection_jump = 10000;
+    const double sensor_skip_detection_jump = 10000;
 
     double event_pressure_target = 0;
     double seconds_between_events = 6.0;
@@ -87,8 +87,8 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
     double joint_min_limit[motors];
     double joint_max_limit[motors];
 
-    float start_velocities[motors];
-    float end_velocities[motors];
+    double start_velocities[motors];
+    double end_velocities[motors];
     double target_accel[4] = {0.0, 0.0, 0.0, 0.0};
     bool last_switch_state[4];
 
@@ -141,14 +141,14 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
     //  7 = V (maybe)
     //  8 = W (maybe)
 
-    float steps_per_unit[motors];
-    float motor_offset[motors];
+    double steps_per_unit[motors];
+    double motor_offset[motors];
     bool needs_sync_encoders = true; // if true, we need to update the steps_offset
     int8_t motor_map[motors];  // for each motor, which joint it maps from
 
-    float joint_position[joints];
+    double joint_position[joints];
 
-    void configure(const float new_steps_per_unit[motors], const int8_t new_motor_map[motors]) override
+    void configure(const double new_steps_per_unit[motors], const int8_t new_motor_map[motors]) override
     {
         for (uint8_t motor = 0; motor < motors; motor++) {
             motor_map[motor] = new_motor_map[motor];
@@ -157,7 +157,7 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
                 motor_offset[motor] = 0;
                 steps_per_unit[motor] = 1;
             } else {
-                float steps = (joint_position[joint] * steps_per_unit[motor]) + motor_offset[motor];
+                double steps = (joint_position[joint] * steps_per_unit[motor]) + motor_offset[motor];
                 steps_per_unit[motor] = new_steps_per_unit[motor];
                 motor_offset[motor] = steps - (joint_position[joint] * steps_per_unit[motor]);
             }
@@ -167,8 +167,8 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
         }
     }
 
-    void inverse_kinematics(const GCodeState_t &gm, const float target[axes], const float position[axes], const float start_velocity,
-                            const float end_velocity, const float segment_time, float steps[motors]) override
+    void inverse_kinematics(const GCodeState_t &gm, const double target[axes], const double position[axes], const double start_velocity,
+                            const double end_velocity, const double segment_time, double steps[motors]) override
     {
         // joint == axis in cartesian kinematics
         for (uint8_t motor = 0; motor < motors; motor++) {
@@ -187,16 +187,16 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
         last_segment_was_idle = false;
     }
 
-    void get_position(float position[axes]) override
+    void get_position(double position[axes]) override
     {
         for (uint8_t axis = 0; axis < axes; axis++) {
             position[axis] = joint_position[axis];
         }
     }
 
-    float best_steps_per_unit[axes];
+    double best_steps_per_unit[axes];
 
-    void forward_kinematics(const float steps[joints], float position[axes]) override
+    void forward_kinematics(const double steps[joints], double position[axes]) override
     {
         // Setup
         for (uint8_t axis = 0; axis < axes; axis++) {
@@ -221,7 +221,7 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
         }
     }
 
-    void sync_encoders(const float step_position[motors], const float position[axes]) override {
+    void sync_encoders(const double step_position[motors], const double position[axes]) override {
         // We need to make joint_offset[joint] adjust any given position so that if it's given as a target
         // to inverse_kinematics then step_position[motor] will be given as the return steps[motor]
 
@@ -388,8 +388,8 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
 
         /*
         immediate_pressure_target
-            float seconds_between_events = 6.0;
-            float seconds_to_hold_event = 2;
+            double seconds_between_events = 6.0;
+            double seconds_to_hold_event = 2;
             inter_event_timer
         */
 
@@ -548,7 +548,7 @@ struct PressureKinematics : KinematicsBase<axes, motors> {
         } // for joint
 
         // convert them to steps
-        float target_steps[motors];
+        double target_steps[motors];
         for (uint8_t motor = 0; motor < motors; motor++) {
             int8_t joint = motor_map[motor];
             if (joint == -1) {

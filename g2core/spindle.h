@@ -63,12 +63,12 @@ class ToolHead  // TODO: Move to a toolhead file
 
     // the result of an S word
     // return true if a command (and plan-to-stop) is needed, and false if not
-    virtual bool set_speed(float speed) { return (true); }
-    virtual float get_speed();
+    virtual bool set_speed(double speed) { return (true); }
+    virtual double get_speed();
 
     // set the override value for spindle speed
-    virtual bool set_override(float override) { return (true); }
-    virtual float get_override();
+    virtual bool set_override(double override) { return (true); }
+    virtual double get_override();
 
     // enable or disable the override
     virtual bool set_override_enable(bool override_enable) { return (true); }
@@ -102,38 +102,38 @@ class ToolHead  // TODO: Move to a toolhead file
     virtual ioPolarity get_direction_polarity() { return IO_ACTIVE_HIGH; };
 
     // getters and setters for optional stuff - to support legacy JSON
-    virtual void set_frequency(float new_frequency) { /* do nothing */ }
-    virtual float get_frequency() { return 0.0; }
+    virtual void set_frequency(double new_frequency) { /* do nothing */ }
+    virtual double get_frequency() { return 0.0; }
 
-    virtual void set_speed_min(float new_speed_min) { /* do nothing */ }
-    virtual float get_speed_min() { return 0.0; }
-    virtual void set_speed_max(float new_speed_max) { /* do nothing */ }
-    virtual float get_speed_max() { return 0.0; }
-    virtual void set_speed_change_per_tick(float new_speed_change_per_tick) { /* do nothing */ }
-    virtual float get_speed_change_per_tick() { return 0.0; }
-    virtual void set_spinup_delay(float new_spinup_delay) { /* do nothing */ }
-    virtual float get_spinup_delay() { return 0.0; }
+    virtual void set_speed_min(double new_speed_min) { /* do nothing */ }
+    virtual double get_speed_min() { return 0.0; }
+    virtual void set_speed_max(double new_speed_max) { /* do nothing */ }
+    virtual double get_speed_max() { return 0.0; }
+    virtual void set_speed_change_per_tick(double new_speed_change_per_tick) { /* do nothing */ }
+    virtual double get_speed_change_per_tick() { return 0.0; }
+    virtual void set_spinup_delay(double new_spinup_delay) { /* do nothing */ }
+    virtual double get_spinup_delay() { return 0.0; }
 
-    virtual void set_cw_speed_lo(float new_speed_lo) { /* do nothing */ }
-    virtual float get_cw_speed_lo() { return 0.0; }
-    virtual void set_cw_speed_hi(float new_speed_hi) { /* do nothing */ }
-    virtual float get_cw_speed_hi() { return 0.0; }
-    virtual void set_cw_phase_lo(float new_phase_lo) { /* do nothing */ }
-    virtual float get_cw_phase_lo() { return 0.0; }
-    virtual void set_cw_phase_hi(float new_phase_hi) { /* do nothing */ }
-    virtual float get_cw_phase_hi() { return 0.0; }
+    virtual void set_cw_speed_lo(double new_speed_lo) { /* do nothing */ }
+    virtual double get_cw_speed_lo() { return 0.0; }
+    virtual void set_cw_speed_hi(double new_speed_hi) { /* do nothing */ }
+    virtual double get_cw_speed_hi() { return 0.0; }
+    virtual void set_cw_phase_lo(double new_phase_lo) { /* do nothing */ }
+    virtual double get_cw_phase_lo() { return 0.0; }
+    virtual void set_cw_phase_hi(double new_phase_hi) { /* do nothing */ }
+    virtual double get_cw_phase_hi() { return 0.0; }
 
-    virtual void set_ccw_speed_lo(float new_speed_lo) { /* do nothing */ }
-    virtual float get_ccw_speed_lo() { return 0.0; }
-    virtual void set_ccw_speed_hi(float new_speed_hi) { /* do nothing */ }
-    virtual float get_ccw_speed_hi() { return 0.0; }
-    virtual void set_ccw_phase_lo(float new_phase_lo) { /* do nothing */ }
-    virtual float get_ccw_phase_lo() { return 0.0; }
-    virtual void set_ccw_phase_hi(float new_phase_hi) { /* do nothing */ }
-    virtual float get_ccw_phase_hi() { return 0.0; }
+    virtual void set_ccw_speed_lo(double new_speed_lo) { /* do nothing */ }
+    virtual double get_ccw_speed_lo() { return 0.0; }
+    virtual void set_ccw_speed_hi(double new_speed_hi) { /* do nothing */ }
+    virtual double get_ccw_speed_hi() { return 0.0; }
+    virtual void set_ccw_phase_lo(double new_phase_lo) { /* do nothing */ }
+    virtual double get_ccw_phase_lo() { return 0.0; }
+    virtual void set_ccw_phase_hi(double new_phase_hi) { /* do nothing */ }
+    virtual double get_ccw_phase_hi() { return 0.0; }
 
-    virtual void set_phase_off(float new_phase_off) { /* do nothing */ }
-    virtual float get_phase_off() { return 0.0; }
+    virtual void set_phase_off(double new_phase_off) { /* do nothing */ }
+    virtual double get_phase_off() { return 0.0; }
 };
 
 /*
@@ -149,8 +149,8 @@ void spindle_reset();  // reset the current toolhead
 void spindle_stop();
 void spindle_pause();
 void spindle_resume();
-stat_t spindle_set_speed(float speed);                // S parameter - returns STAT_EAGAIN if a command should be queued
-float  spindle_get_speed();                           // return current speed - in the same units as the S parameter
+stat_t spindle_set_speed(double speed);                // S parameter - returns STAT_EAGAIN if a command should be queued
+double  spindle_get_speed();                           // return current speed - in the same units as the S parameter
 stat_t spindle_set_direction(spDirection direction);  // M3/M4/M5 - returns STAT_EAGAIN if a command should be queued
 spDirection spindle_get_direction();                  // return if any fo M3/M4/M5 are active (actual, not gcode model)
 
@@ -160,9 +160,9 @@ bool is_spindle_ready_to_resume();  // if the spindle can resume at this time, r
 bool is_spindle_on_or_paused();     // returns if the spindle is on or paused - IOW would it try to resume from feedhold
 bool is_a_toolhead_busy();          // returns true if motion should continue to hold for ANY toolhead
 
-// stat_t spindle_override_control(const float P_word, const bool P_flag);  // M51
-// void spindle_start_override(const float ramp_time, const float override_factor);
-// void spindle_end_override(const float ramp_time);
+// stat_t spindle_override_control(const double P_word, const bool P_flag);  // M51
+// void spindle_start_override(const double ramp_time, const double override_factor);
+// void spindle_end_override(const double ramp_time);
 
 const configSubtable *const getSpindleConfig_1();
 const configSubtable *const getP1Config_1();

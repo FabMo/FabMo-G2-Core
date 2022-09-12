@@ -53,16 +53,16 @@ stat_t cm_get_pid_i(nvObj_t* nv);
 stat_t cm_get_pid_d(nvObj_t* nv);
 stat_t cm_get_pid_f(nvObj_t* nv);
 
-float cm_get_set_temperature(const uint8_t heater);
+double cm_get_set_temperature(const uint8_t heater);
 stat_t cm_get_set_temperature(nvObj_t *nv);
 
-void cm_set_set_temperature(const uint8_t heater, const float value);
+void cm_set_set_temperature(const uint8_t heater, const double value);
 stat_t cm_set_set_temperature(nvObj_t* nv);
 
-float cm_get_fan_power(const uint8_t heater);
+double cm_get_fan_power(const uint8_t heater);
 stat_t cm_get_fan_power(nvObj_t* nv);
 
-void cm_set_fan_power(const uint8_t heater, const float value);
+void cm_set_fan_power(const uint8_t heater, const double value);
 stat_t cm_set_fan_power(nvObj_t* nv);
 
 stat_t cm_get_fan_min_power(nvObj_t* nv);
@@ -75,12 +75,12 @@ stat_t cm_set_fan_high_temp(nvObj_t* nv);
 bool cm_get_at_temperature(const uint8_t heater);
 stat_t cm_get_at_temperature(nvObj_t* nv);
 
-float cm_get_heater_output(const uint8_t heater);
+double cm_get_heater_output(const uint8_t heater);
 stat_t cm_get_heater_output(nvObj_t* nv);
 
 stat_t cm_get_heater_adc(nvObj_t* nv);
 
-float cm_get_temperature(const uint8_t heater);
+double cm_get_temperature(const uint8_t heater);
 stat_t cm_get_temperature(nvObj_t* nv);
 
 stat_t cm_get_thermistor_resistance(nvObj_t* nv);
