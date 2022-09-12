@@ -21,19 +21,19 @@
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <eraseonlaunchrule>1</eraseonlaunchrule>
     <AsfVersion>3.5.0</AsfVersion>
-    <avrtoolinterface>JTAG</avrtoolinterface>
+    <avrtoolinterface>SWD</avrtoolinterface>
     <avrtool>com.atmel.avrdbg.tool.samice</avrtool>
     <com_atmel_avrdbg_tool_samice>
       <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
       <ToolName>J-Link</ToolName>
-      <ToolNumber>51013548</ToolNumber>
+      <ToolNumber>50107300</ToolNumber>
       <Channel>
         <host>127.0.0.1</host>
         <port>1063</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
-        <InterfaceName>JTAG</InterfaceName>
+        <InterfaceName>SWD</InterfaceName>
         <InterfaceProperties>
           <JtagDbgClock>4000000</JtagDbgClock>
           <JtagProgClock>1000000</JtagProgClock>
@@ -104,7 +104,7 @@
       <HWProgramCounterSampling>True</HWProgramCounterSampling>
     </PercepioTrace>
     <preserveEEPROM>true</preserveEEPROM>
-    <avrtoolserialnumber>51013548</avrtoolserialnumber>
+    <avrtoolserialnumber>50107300</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x285E0A60</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>4000000</avrtoolinterfaceclock>
     <custom>

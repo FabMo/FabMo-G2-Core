@@ -317,7 +317,7 @@ enum stPowerMode {
  *  is too small and/or amount too large and/or holdoff is too small you may get a runaway correction
  *  and error will grow instead of shrink (or oscillate).
  */
-#define STEP_CORRECTION_THRESHOLD   (float)2.00     // magnitude of forwarding error to apply correction (in steps)
+#define STEP_CORRECTION_THRESHOLD   (float)0.75     // magnitude of forwarding error to apply correction (in steps)
 #define STEP_CORRECTION_FACTOR      (float)0.25     // factor to apply to step correction for a single segment
 #define STEP_CORRECTION_MAX         (float)0.60     // max step correction allowed in a single segment
 #define STEP_CORRECTION_HOLDOFF            5        // minimum number of segments to wait between error correction

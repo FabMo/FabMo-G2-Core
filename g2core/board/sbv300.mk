@@ -44,7 +44,7 @@ ifeq ("$(BASE_BOARD)","sbv300")
     CHIP_LOWERCASE = sam3x8e
 
     BOARD_PATH = ./board/sbv300
-    SOURCE_DIRS += ${BOARD_PATH} device/step_dir_driver device/esc_spindle device/laser_toolhead
+    SOURCE_DIRS += ${BOARD_PATH} device/step_dir_driver device/esc_spindle
 
     PLATFORM_BASE = ${MOTATE_PATH}/platform/atmel_sam
 
