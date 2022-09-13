@@ -90,7 +90,8 @@
                                "vel", "stat", "hold", "line", "coor", "unit", "spc",\
                                "in1", "in2", "in3", "in4",\
                                "out1", "out2", "out3", "out4",\
-                               "_ts1","_ts2","_ps1","_ps2","_cs1","_cs2","_es1","_es2","_fe1","_fe2" 	
+                               "_es1","_es2","_fe1","_fe2",\
+                               "1scn", "1scu", "1scd", "2scn", "2scu", "2scd", "3scn", "3scu", "3scd"	
 
 // Gcode startup defaults
 // #define GCODE_DEFAULT_UNITS         INCHES              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???

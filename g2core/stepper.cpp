@@ -185,6 +185,9 @@ void stepper_reset()
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
         st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
+        st_run.mot[motor].step_count = 0;               // reset step pulse counts
+        st_run.mot[motor].step_count_up = 0;
+        st_run.mot[motor].step_count_down = 0;
     }
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
 }
@@ -328,12 +331,24 @@ void dda_timer_type::interrupt()
     if  ((st_run.mot[MOTOR_1].substep_accumulator += st_run.mot[MOTOR_1].substep_increment) > 0) {
         motor_1.stepStart();        // turn step bit on
         st_run.mot[MOTOR_1].substep_accumulator -= DDA_SUBSTEPS;
+        st_run.mot[MOTOR_1].step_count += st_run.mot[MOTOR_1].step_sign;
+        if (st_run.mot[MOTOR_1].step_sign > 0) {
+            st_run.mot[MOTOR_1].step_count_up++;
+        } else {
+            st_run.mot[MOTOR_1].step_count_down++;
+        }
         INCREMENT_ENCODER(MOTOR_1);
     }
     st_run.mot[MOTOR_1].substep_increment += st_run.mot[MOTOR_1].substep_increment_increment;
     if ((st_run.mot[MOTOR_2].substep_accumulator += st_run.mot[MOTOR_2].substep_increment) > 0) {
         motor_2.stepStart();        // turn step bit on
         st_run.mot[MOTOR_2].substep_accumulator -= DDA_SUBSTEPS;
+        st_run.mot[MOTOR_2].step_count += st_run.mot[MOTOR_2].step_sign;
+        if (st_run.mot[MOTOR_2].step_sign > 0) {
+            st_run.mot[MOTOR_2].step_count_up++;
+        } else {
+            st_run.mot[MOTOR_2].step_count_down++;
+        }
         INCREMENT_ENCODER(MOTOR_2);
     }
     st_run.mot[MOTOR_2].substep_increment += st_run.mot[MOTOR_2].substep_increment_increment;
@@ -341,6 +356,12 @@ void dda_timer_type::interrupt()
     if ((st_run.mot[MOTOR_3].substep_accumulator += st_run.mot[MOTOR_3].substep_increment) > 0) {
         motor_3.stepStart();        // turn step bit on
         st_run.mot[MOTOR_3].substep_accumulator -= DDA_SUBSTEPS;
+        st_run.mot[MOTOR_3].step_count += st_run.mot[MOTOR_3].step_sign;
+        if (st_run.mot[MOTOR_3].step_sign > 0) {
+            st_run.mot[MOTOR_3].step_count_up++;
+        } else {
+            st_run.mot[MOTOR_3].step_count_down++;
+        }
         INCREMENT_ENCODER(MOTOR_3);
     }
     st_run.mot[MOTOR_3].substep_increment += st_run.mot[MOTOR_3].substep_increment_increment;
@@ -349,6 +370,12 @@ void dda_timer_type::interrupt()
     if ((st_run.mot[MOTOR_4].substep_accumulator += st_run.mot[MOTOR_4].substep_increment) > 0) {
         motor_4.stepStart();        // turn step bit on
         st_run.mot[MOTOR_4].substep_accumulator -= DDA_SUBSTEPS;
+        st_run.mot[MOTOR_4].step_count += st_run.mot[MOTOR_4].step_sign;
+        if (st_run.mot[MOTOR_4].step_sign > 0) {
+            st_run.mot[MOTOR_4].step_count_up++;
+        } else {
+            st_run.mot[MOTOR_4].step_count_down++;
+        }
         INCREMENT_ENCODER(MOTOR_4);
     }
     st_run.mot[MOTOR_4].substep_increment += st_run.mot[MOTOR_4].substep_increment_increment;
@@ -357,6 +384,12 @@ void dda_timer_type::interrupt()
     if ((st_run.mot[MOTOR_5].substep_accumulator += st_run.mot[MOTOR_5].substep_increment) > 0) {
         motor_5.stepStart();        // turn step bit on
         st_run.mot[MOTOR_5].substep_accumulator -= DDA_SUBSTEPS;
+        st_run.mot[MOTOR_5].step_count += st_run.mot[MOTOR_5].step_sign;
+        if (st_run.mot[MOTOR_5].step_sign > 0) {
+            st_run.mot[MOTOR_5].step_count_up++;
+        } else {
+            st_run.mot[MOTOR_5].step_count_down++;
+        }
         INCREMENT_ENCODER(MOTOR_5);
     }
     st_run.mot[MOTOR_5].substep_increment += st_run.mot[MOTOR_5].substep_increment_increment;
@@ -365,6 +398,12 @@ void dda_timer_type::interrupt()
     if ((st_run.mot[MOTOR_6].substep_accumulator += st_run.mot[MOTOR_6].substep_increment) > 0) {
         motor_6.stepStart();        // turn step bit on
         st_run.mot[MOTOR_6].substep_accumulator -= DDA_SUBSTEPS;
+        st_run.mot[MOTOR_6].step_count += st_run.mot[MOTOR_6].step_sign;
+        if (st_run.mot[MOTOR_6].step_sign > 0) {
+            st_run.mot[MOTOR_6].step_count_up++;
+        } else {
+            st_run.mot[MOTOR_6].step_count_down++;
+        }
         INCREMENT_ENCODER(MOTOR_6);
     }
     st_run.mot[MOTOR_6].substep_increment += st_run.mot[MOTOR_6].substep_increment_increment;
@@ -530,6 +569,7 @@ static void _load_move()
 
             // Enable the stepper and start/update motor power management
             motor_1.enable();
+            st_run.mot[MOTOR_1].step_sign = st_pre.mot[MOTOR_1].step_sign;
             SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);
 
         } else {  // Motor has 0 steps; might need to energize motor for power mode processing
@@ -548,6 +588,7 @@ static void _load_move()
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
             }
             motor_2.enable();
+            st_run.mot[MOTOR_2].step_sign = st_pre.mot[MOTOR_2].step_sign;
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
         } else {
             st_run.mot[MOTOR_2].substep_increment_increment = 0;
@@ -564,6 +605,7 @@ static void _load_move()
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
             }
             motor_3.enable();
+            st_run.mot[MOTOR_3].step_sign = st_pre.mot[MOTOR_3].step_sign;
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
         } else {
             st_run.mot[MOTOR_3].substep_increment_increment = 0;
@@ -580,6 +622,7 @@ static void _load_move()
                 motor_4.setDirection(st_pre.mot[MOTOR_4].direction);
             }
             motor_4.enable();
+            st_run.mot[MOTOR_4].step_sign = st_pre.mot[MOTOR_4].step_sign;
             SET_ENCODER_STEP_SIGN(MOTOR_4, st_pre.mot[MOTOR_4].step_sign);
         } else {
             st_run.mot[MOTOR_4].substep_increment_increment = 0;
@@ -596,6 +639,7 @@ static void _load_move()
                 motor_5.setDirection(st_pre.mot[MOTOR_5].direction);
             }
             motor_5.enable();
+            st_run.mot[MOTOR_5].step_sign = st_pre.mot[MOTOR_5].step_sign;
             SET_ENCODER_STEP_SIGN(MOTOR_5, st_pre.mot[MOTOR_5].step_sign);
         } else {
             st_run.mot[MOTOR_5].substep_increment_increment = 0;
@@ -612,6 +656,7 @@ static void _load_move()
                 motor_6.setDirection(st_pre.mot[MOTOR_6].direction);
             }
             motor_6.enable();
+            st_run.mot[MOTOR_6].step_sign = st_pre.mot[MOTOR_6].step_sign;
             SET_ENCODER_STEP_SIGN(MOTOR_6, st_pre.mot[MOTOR_6].step_sign);
         } else {
             st_run.mot[MOTOR_6].substep_increment_increment = 0;
@@ -1269,6 +1314,26 @@ stat_t st_get_dw(nvObj_t *nv)
     return (STAT_OK);
 }
 
+stat_t st_get_scn(nvObj_t *nv) { return(get_integer(nv, st_run.mot[_motor(nv->index)].step_count)); }
+stat_t st_get_scu(nvObj_t *nv) { return(get_integer(nv, st_run.mot[_motor(nv->index)].step_count_up)); }
+stat_t st_get_scd(nvObj_t *nv) { return(get_integer(nv, st_run.mot[_motor(nv->index)].step_count_down)); }
+stat_t st_set_sc(nvObj_t *nv)
+{
+    if (nv->value_int < 0) {
+        nv->valuetype = TYPE_NULL;
+        return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+    }
+    if (nv->value_int > 0) {
+        nv->valuetype = TYPE_NULL;
+        return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+    }
+
+    // set all motor step counts to zero for consistency
+    ritorno(set_int64(nv, st_run.mot[_motor(nv->index)].step_count, 0, 0));
+    ritorno(set_int64(nv, st_run.mot[_motor(nv->index)].step_count_up, 0, 0));
+    ritorno(set_int64(nv, st_run.mot[_motor(nv->index)].step_count_down, 0, 0));
+    return (STAT_OK);
+}
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table
@@ -1299,6 +1364,9 @@ static const char fmt_0pm[] = "[%s%s] m%s power management%10d [0=disabled,1=alw
 static const char fmt_0pl[] = "[%s%s] m%s motor power level%13.3f [0.000=minimum, 1.000=maximum]\n";
 static const char fmt_0pi[] = "[%s%s] m%s motor idle power level%13.3f [0.000=minimum, 1.000=maximum]\n";
 static const char fmt_pwr[] = "[%s%s] Motor %c power level:%12.3f\n";
+static const char fmt_0scn[] = "[%s%s] m%s net step count: %d\n";
+static const char fmt_0scu[] = "[%s%s] m%s UP step count: %d\n";
+static const char fmt_0scd[] = "[%s%s] m%s DOWN step count: %d\n";
 
 void st_print_me(nvObj_t *nv) { text_print(nv, fmt_me);}    // TYPE_NULL - message only
 void st_print_md(nvObj_t *nv) { text_print(nv, fmt_md);}    // TYPE_NULL - message only
@@ -1340,5 +1408,8 @@ void st_print_pm(nvObj_t *nv) { _print_motor_int(nv, fmt_0pm);}
 void st_print_pl(nvObj_t *nv) { _print_motor_flt(nv, fmt_0pl);}
 void st_print_pi(nvObj_t *nv) { _print_motor_flt(nv, fmt_0pi);}
 void st_print_pwr(nvObj_t *nv){ _print_motor_pwr(nv, fmt_pwr);}
+void st_print_scn(nvObj_t *nv) { _print_motor_int(nv, fmt_0scn);}
+void st_print_scu(nvObj_t *nv) { _print_motor_int(nv, fmt_0scu);}
+void st_print_scd(nvObj_t *nv) { _print_motor_int(nv, fmt_0scd);}
 
 #endif // __TEXT_MODE

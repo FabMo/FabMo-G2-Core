@@ -362,12 +362,16 @@ typedef struct stConfig {                   // stepper configs
 // Motor runtime structure. Used exclusively by step generation ISR (HI)
 
 typedef struct stRunMotor {                 // one per controlled motor
-    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
-    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+    int64_t step_count;                     // net step pulse count 
+    int64_t step_count_up;                  // UP step pulse count 
+    int64_t step_count_down;                // DOWN step pulse count 
+    int8_t step_sign;                       // set to +1 or -1 for step count
+    int64_t substep_increment;              // partial steps to increment substep_accumulator per tick
+    int64_t substep_increment_increment;    // partial steps to increment substep_increment per tick
     int64_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
     uint32_t power_systick;                 // sys_tick for next motor power state transition
-    double power_level_dynamic;              // power level for this segment of idle
+    double power_level_dynamic;             // power level for this segment of idle
 } stRunMotor_t;
 
 typedef struct stRunSingleton {             // Stepper static values and axis parameters
@@ -583,6 +587,11 @@ stat_t st_set_md(nvObj_t *nv);
 stat_t st_set_me(nvObj_t *nv);
 stat_t st_get_dw(nvObj_t *nv);
 
+stat_t st_get_scn(nvObj_t *nv);
+stat_t st_get_scu(nvObj_t *nv);
+stat_t st_get_scd(nvObj_t *nv);
+stat_t st_set_sc(nvObj_t *nv);
+
 #ifdef __TEXT_MODE
 
     void st_print_ma(nvObj_t *nv);
@@ -600,6 +609,9 @@ stat_t st_get_dw(nvObj_t *nv);
     void st_print_mt(nvObj_t *nv);
     void st_print_me(nvObj_t *nv);
     void st_print_md(nvObj_t *nv);
+    void st_print_scn(nvObj_t *nv);
+    void st_print_scu(nvObj_t *nv);
+    void st_print_scd(nvObj_t *nv);
 
 #else
 
@@ -618,6 +630,9 @@ stat_t st_get_dw(nvObj_t *nv);
     #define st_print_mt tx_print_stub
     #define st_print_me tx_print_stub
     #define st_print_md tx_print_stub
+    #define st_print_scn tx_print_stub
+    #define st_print_scu tx_print_stub
+    #define st_print_scd tx_print_stub
 
 #endif // __TEXT_MODE
 
