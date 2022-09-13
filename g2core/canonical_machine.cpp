@@ -3047,7 +3047,7 @@ void cm_print_nxln(nvObj_t *nv) { text_print(nv, fmt_nxln);};   // TYPE INT
  * axis print functions
  *
  *    _print_axis_ui8() - helper to print an integer value with no units
- *    _print_axis_flt() - helper to print a doubleing point linear value in prevailing units
+ *    _print_axis_flt() - helper to print a floating point linear value in prevailing units
  *    _print_pos_helper()
  *
  *    cm_print_am()

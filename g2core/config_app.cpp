@@ -1974,8 +1974,8 @@ bool nv_index_lt_groups(index_t index) { return ((index <= NV_INDEX_START_GROUPS
 
 /***** APPLICATION SPECIFIC CONFIGS AND EXTENSIONS TO GENERIC FUNCTIONS *****/
 /*
- * convert_incoming_double() - pre-process an incoming doubleing point number for canonical units
- * convert_outgoing_double() - pre-process an outgoing doubleing point number for units display
+ * convert_incoming_double() - pre-process an incoming floating point number for canonical units
+ * convert_outgoing_double() - pre-process an outgoing floating point number for units display
  *
  *  Incoming doubles are destined for SET operations.
  *  Outgoing doubles are the raw values from GET operations, destined for text or JSON display.
@@ -2019,9 +2019,9 @@ void convert_incoming_double(nvObj_t *nv) { return(_convert (nv, MM_PER_INCH)); 
 void convert_outgoing_double(nvObj_t *nv) { return(_convert (nv, INCHES_PER_MM)); }
 
 /*
- * get_double()       - boilerplate for retrieving raw doubleing point value
- * set_double()       - boilerplate for setting a doubleing point value with unit conversion
- * set_double_range() - set a doubleing point value with inclusive range check
+ * get_double()       - boilerplate for retrieving raw floating point value
+ * set_double()       - boilerplate for setting a floating point value with unit conversion
+ * set_double_range() - set a floating point value with inclusive range check
  *
  *  get_double() loads nv->value with 'value' in internal canonical units (e.g. mm, degrees)
  *  without units conversion. If conversion is required call convert_outgoing_double()

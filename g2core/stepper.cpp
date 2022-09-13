@@ -663,7 +663,7 @@ static void _load_move()
  *      100% accurate this will affect the move velocity, but not the distance traveled.
  *
  * NOTE:  Many of the expressions are sensitive to casting and execution order to avoid long-term
- *        accuracy errors due to doubleing point round off. One earlier failed attempt was:
+ *        accuracy errors due to floating point round off. One earlier failed attempt was:
  *          dda_ticks_X_substeps = (int32_t)((microseconds/1000000) * f_dda * dda_substeps);
  */
 

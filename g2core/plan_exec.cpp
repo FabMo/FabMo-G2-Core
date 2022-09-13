@@ -1096,7 +1096,7 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
 
         // The deceleration distance either fits in the available length or fits exactly or close
         // enough (to EPSILON2) (1e). Case 1e happens frequently when the tail in the move was
-        // already planned to zero. EPSILON2 deals with doubleing point rounding errors that can
+        // already planned to zero. EPSILON2 deals with floating point rounding errors that can
         // mis-classify this case. EPSILON2 is 0.0001, which is 0.1 microns in length.
         double available_length = get_axis_vector_length(mr->target, mr->position);
 

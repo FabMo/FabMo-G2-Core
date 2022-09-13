@@ -229,7 +229,7 @@ constexpr double c_atof(char *&p_) { return (*p_ == '-') ? (c_atof_int_(++p_, 0)
 
 /*
  * debug_trap() - trap unconditionally
- * debug_trap_if_zero() - trap if doubleing point value is zero
+ * debug_trap_if_zero() - trap if floating point value is zero
  * debug_trap_if_true() - trap if condition is true
  *
  *  The 'reason' value will display in GDB (but maybe not in AS7), and can also be passed

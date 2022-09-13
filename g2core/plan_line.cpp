@@ -135,7 +135,7 @@ bool mp_runtime_is_idle() { return (!st_runtime_isbusy()); }
  *  Controlling jerk smooths transitions between moves and allows for faster feeds while
  *  controlling machine oscillations and other undesirable side-effects.
  *
- *  Note: All math is done in absolute coordinates using single precision doubleing point (double).
+ *  Note: All math is done in absolute coordinates using single precision floating point (double).
  *
  *  Note: Returning a status that is not STAT_OK means the endpoint is NOT advanced. So lines
  *        that are too short to move will accumulate and get executed once the accumulated error

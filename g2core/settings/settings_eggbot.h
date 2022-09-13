@@ -186,7 +186,7 @@
  * If the value is over 1 million, the code will divide it by 1 million,
  * so you have to pre-multiply it by 1000000.0. (The value is in millions, btw.)
  *
- * Note that you need these to be doubleing point values, so always have a .0 at the end!
+ * Note that you need these to be floating point values, so always have a .0 at the end!
  *
  ***************************************************************************************/
 

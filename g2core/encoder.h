@@ -66,8 +66,8 @@
  *	used during move execution (exec) to adjust the move to compensate for accumulated
  *	positional errors. It's also the basis of closed-loop (servoed) systems.
  *
- *	Positional error occurs due to doubleing point numerical inaccuracies. g2core uses
- *	32 bit doubleing point (GCC 32 bit, which is NOT IEEE 32 bit). Errors creep in
+ *	Positional error occurs due to floating point numerical inaccuracies. g2core uses
+ *	32 bit floating point (GCC 32 bit, which is NOT IEEE 32 bit). Errors creep in
  *	during planning, move execution, and stepper output phases. Care has been taken
  *	to minimize introducing errors throughout the process, but they still occur.
  *	In most cases errors are not noticeable as they fall below the step resolution

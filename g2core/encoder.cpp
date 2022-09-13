@@ -69,7 +69,7 @@ stat_t encoder_test_assertions() {
 /*
  * en_set_encoder_steps() - set encoder values to a current step count
  *
- *	Sets the encoder_position steps. Takes doubleing point steps as input,
+ *	Sets the encoder_position steps. Takes floating point steps as input,
  *	writes integer steps. So it's not an exact representation of machine
  *	position except if the machine is at zero.
  */

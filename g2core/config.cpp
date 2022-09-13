@@ -494,7 +494,7 @@ void nv_coerce_types(nvObj_t *nv)
  * nv_copy_string()     - used to write a string to shared string storage and link it
  * nv_add_object()      - write contents of parameter to  first free object in the body
  * nv_add_integer()     - add an integer value to end of nv body (Note 1)
- * nv_add_double()       - add a doubleing point value to end of nv body
+ * nv_add_double()       - add a floating point value to end of nv body
  * nv_add_string()      - add a string object to end of nv body
  * nv_add_conditional_message() - add a message to nv body if messages are enabled
  *

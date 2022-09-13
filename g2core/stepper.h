@@ -37,10 +37,10 @@
  *    upstream in the motion planner as 6th order (linear pop) equations. These
  *    generate accel/decel *segments* that are passed to the DDA for step output.
  *
- *  - The DDA accepts and processes fractional motor steps as doubleing point numbers
+ *  - The DDA accepts and processes fractional motor steps as floating point numbers
  *    from the planner. Steps do not need to be whole numbers and are not expected to be.
  *    The step values are converted to integer by multiplying by an integer value
- *    (DDA_SUBSTEPS) to roughly preserve the precision of the doubleing point number
+ *    (DDA_SUBSTEPS) to roughly preserve the precision of the floating point number
  *    in the 32 bit int. Rounding is performed to avoid a truncation bias.
  *
  *  - Constant Rate DDA clock: The DDA runs at a constant, maximum rate for every
@@ -289,7 +289,7 @@ enum stPowerMode {
 /* DDA substepping
  *
  *  DDA Substepping is a fixed.point scheme to increase the resolution of the DDA pulse generation
- *  while still using integer math (as opposed to doubleing point). Improving the accuracy of the DDA
+ *  while still using integer math (as opposed to floating point). Improving the accuracy of the DDA
  *  results in more precise pulse timing and therefore less pulse jitter and smoother motor operation.
  *
  *  The DDA accumulator is an int32_t, so the accumulator has the number range of about 2.1 billion.
@@ -472,7 +472,7 @@ public:
     };
 
     // turn on motor in all cases unless it's disabled
-    // this version is called from the loader, and explicitly does NOT have doubleing point computations
+    // this version is called from the loader, and explicitly does NOT have floating point computations
     // HOT - called from the DDA interrupt
     void enable() //HOT_FUNC
     {

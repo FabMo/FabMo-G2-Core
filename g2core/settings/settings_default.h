@@ -970,7 +970,7 @@
  * If the value is over 1 million, the code will divide it by 1 million,
  * so you have to pre-multiply it by 1000000.0. (The value is in millions, btw.)
  *
- * Note that you need doubleing point values to always have a .0 at the end!
+ * Note that you need floating point values to always have a .0 at the end!
 
 #define A_AXIS_MODE                 AXIS_RADIUS
 #define A_RADIUS                    (M4_TRAVEL_PER_REV/(2*3.14159628))

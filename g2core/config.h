@@ -218,7 +218,7 @@ typedef enum {                      // value typing for config and JSON
     TYPE_STRING = 3,                // value is in string field
 
     // derived data types           // must be 4-7. Do not change.
-    TYPE_FLOAT = 4,                 // value is a doubleing point number
+    TYPE_FLOAT = 4,                 // value is a floating point number
     TYPE_UINT32 = 5,                // unsigned 32 bit integer (unused)
     TYPE_ARRAY = 6,                 // value is array element count, values are CSV ASCII in string field
     TYPE_DATA = 7,                  // value is blind cast to uint32_t (willbe removed)
@@ -269,7 +269,7 @@ typedef enum {                      // value typing for config and JSON
 #define _iip    (TYPE_INTEGER | F_INITIALIZE | F_PERSIST)
 #define _iipn   (TYPE_INTEGER | F_INITIALIZE | F_PERSIST | F_NOSTRIP)
 
-#define _f0	    (TYPE_FLOAT)    // doubleing point data types (only listing the ones we use)
+#define _f0	    (TYPE_FLOAT)    // floating point data types (only listing the ones we use)
 #define _fi     (TYPE_FLOAT | F_INITIALIZE)
 #define _fp     (TYPE_FLOAT | F_PERSIST)
 #define _fn     (TYPE_FLOAT | F_NOSTRIP)
@@ -302,8 +302,8 @@ typedef struct nvObject {               // depending on use, not all elements ma
     char token[TOKEN_LEN+1];            // full mnemonic token for lookup
     index_t index;                      // index of tokenized name, or -1 if no token (optional)
     valueType valuetype;                // type of value that follows: see valueType enum
-    int8_t precision;                   // decimal precision for reporting doubleing point numbers (JSON only)
-    double value_flt;                    // doubleing point values
+    int8_t precision;                   // decimal precision for reporting floating point numbers (JSON only)
+    double value_flt;                    // floating point values
     int32_t value_int;                  // signed integer values and booleans
     char (*stringp)[];                  // string value: pointer to array of characters from shared character array
 } nvObj_t;                              // OK, so it's not REALLY an object
@@ -417,14 +417,14 @@ bool nv_group_is_prefixed(char *group);
 // generic internal functions and accessors
 stat_t get_nul(nvObj_t *nv);            // get null value type
 stat_t get_int32(nvObj_t *nv);          // get int32_t integer value
-stat_t get_flt(nvObj_t *nv);            // get doubleing point value
+stat_t get_flt(nvObj_t *nv);            // get floating point value
 stat_t get_data(nvObj_t *nv);           // get uint32_t integer value blind cast
 
 stat_t set_noop(nvObj_t *nv);           // set nothing and return OK
 stat_t set_nul(nvObj_t *nv);            // set nothing and return READ_ONLY error
 stat_t set_ro(nvObj_t *nv);             // set nothing, return read-only error
 stat_t set_int32(nvObj_t *nv);          // set int32_t integer value
-stat_t set_flt(nvObj_t *nv);            // set doubleing point value
+stat_t set_flt(nvObj_t *nv);            // set floating point value
 stat_t set_data(nvObj_t *nv);           // set uint32_t integer value blind cast
 
 stat_t set_grp(nvObj_t *nv);            // set data for a group
@@ -448,8 +448,8 @@ void nv_print_list(stat_t status, uint8_t text_flags, uint8_t json_flags);
 void convert_incoming_double(nvObj_t *nv);           // pre-process outgoing double values for units and illegal values
 void convert_outgoing_double(nvObj_t *nv);           // pre-process incoming double values for canonical units
 
-stat_t get_double(nvObj_t *nv, const double value);   // boilerplate for retrieving raw doubleing point value
-stat_t set_double(nvObj_t *nv, double &value);        // boilerplate for setting a doubleing point value w/conversion
+stat_t get_double(nvObj_t *nv, const double value);   // boilerplate for retrieving raw floating point value
+stat_t set_double(nvObj_t *nv, double &value);        // boilerplate for setting a floating point value w/conversion
 stat_t set_double_range(nvObj_t *nv, double &value, double low, double high);
 
 stat_t get_boolean(nvObj_t *nv, const bool value);   // boilerplate for retrieving 1 bit integer value
