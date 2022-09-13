@@ -702,7 +702,7 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
 // suggested by RobG, no effect noticed
-            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
+////##            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
             continue;
         }
 

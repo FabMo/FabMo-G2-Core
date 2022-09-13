@@ -744,8 +744,7 @@ static stat_t _exec_aline_head(mpBuf_t *bf)
             mr->section = SECTION_BODY;
             return(_exec_aline_body(bf));                              // skip ahead to the body generator
         }
-////##        mr->segments = ceil(uSec(mr->r->head_time) / NOM_SEGMENT_USEC);    // # of segments for the section
-        mr->segments = (uSec(mr->r->head_time) / NOM_SEGMENT_USEC);    // # of segments for the section
+        mr->segments = ceil(uSec(mr->r->head_time) / NOM_SEGMENT_USEC);    // # of segments for the section
         mr->segment_count = (uint32_t)mr->segments;
         mr->segment_time = mr->r->head_time / mr->segments;            // time to advance for each segment
 
@@ -798,8 +797,7 @@ static stat_t _exec_aline_body(mpBuf_t *bf)
         }
 
         float body_time = mr->r->body_time;
-////##        mr->segments = ceil(uSec(body_time) / NOM_SEGMENT_USEC);
-        mr->segments = (uSec(body_time) / NOM_SEGMENT_USEC);
+        mr->segments = ceil(uSec(body_time) / NOM_SEGMENT_USEC);
         mr->segment_time = body_time / mr->segments;
         mr->segment_velocity = mr->r->cruise_velocity;
         mr->target_velocity = mr->segment_velocity;
@@ -833,8 +831,7 @@ static stat_t _exec_aline_tail(mpBuf_t *bf)
         bf->plannable = false;
 
         if (fp_ZERO(mr->r->tail_length)) { return(STAT_OK);}         // end the move
-////##        mr->segments = ceil(uSec(mr->r->tail_time) / NOM_SEGMENT_USEC);// # of segments for the section
-        mr->segments = (uSec(mr->r->tail_time) / NOM_SEGMENT_USEC);  // # of segments for the section
+        mr->segments = ceil(uSec(mr->r->tail_time) / NOM_SEGMENT_USEC);// # of segments for the section
         mr->segment_count = (uint32_t)mr->segments;
         mr->segment_time = mr->r->tail_time / mr->segments;          // time to advance for each segment
 
