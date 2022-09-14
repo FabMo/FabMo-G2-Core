@@ -2147,14 +2147,6 @@ stat_t set_int32(nvObj_t *nv, int32_t &value, int32_t low, int32_t high)
     return (STAT_OK);
 }
 
-stat_t set_int64(nvObj_t *nv, int64_t &value, int64_t low, int64_t high)
-{
-    ritorno(_set_int_tests(nv, low, high))
-    value = nv->value_int;  // note: valuetype = TYPE_INT already set
-    nv->valuetype = TYPE_INTEGER;
-    return (STAT_OK);
-}
-
 stat_t set_uint32(nvObj_t *nv, uint32_t &value, int32_t low, int32_t high)
 {
     ritorno(_set_int_tests(nv, low, high))

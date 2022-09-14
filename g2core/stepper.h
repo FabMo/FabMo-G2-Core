@@ -505,9 +505,9 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
-    virtual int32_t getStepCount() { return 0; };
-    virtual int32_t getStepCountUp() { return 0; };
-    virtual int32_t getStepCountDown() { return 0; };
+    virtual int64_t getStepCount() { return 0; };
+    virtual int64_t getStepCountUp() { return 0; };
+    virtual int64_t getStepCountDown() { return 0; };
     virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };

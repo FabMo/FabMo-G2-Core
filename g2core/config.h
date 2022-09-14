@@ -458,7 +458,6 @@ stat_t set_boolean(nvObj_t *nv, bool &value);   // boilerplate for retrieving 1 
 stat_t get_integer(nvObj_t *nv, const int32_t value);   // boilerplate for retrieving 8 bit integer value
 stat_t set_integer(nvObj_t *nv, uint8_t &value, uint8_t low, uint8_t high);
 stat_t set_int32(nvObj_t *nv, int32_t &value, int32_t low, int32_t high);
-stat_t set_int64(nvObj_t *nv, int64_t &value, int64_t low, int64_t high);
 stat_t set_uint32(nvObj_t *nv, uint32_t &value, int32_t low, int32_t high);
 
 stat_t get_string(nvObj_t *nv, const char *str);

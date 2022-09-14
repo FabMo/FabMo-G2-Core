@@ -85,9 +85,9 @@ struct StepDirStepper final : Stepper  {
     double _idle_power_level; // the power level when idle
     double _power_level; // the power level now
 
-    int32_t _step_count;
-    int32_t _step_count_up;
-    int32_t _step_count_down;
+    int64_t _step_count;
+    int64_t _step_count_up;
+    int64_t _step_count_down;
     uint8_t _step_dir;
 
     void _updatePowerLevel() {
@@ -243,15 +243,15 @@ struct StepDirStepper final : Stepper  {
     	    _step.clear();
     };
 
-    int32_t getStepCount() override {
+    int64_t getStepCount() override {
         return _step_count;
     }
 
-    int32_t getStepCountUp() override {
+    int64_t getStepCountUp() override {
         return _step_count_up;
     }
 
-    int32_t getStepCountDown() override {
+    int64_t getStepCountDown() override {
         return _step_count_down;
     }
 
