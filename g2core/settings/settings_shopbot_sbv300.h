@@ -165,7 +165,7 @@
 
 #define M1_MOTOR_MAP                AXIS_X_EXTERNAL     // 1ma
 #define M1_STEP_ANGLE               1.8                 // 1sa
-#define M1_TRAVEL_PER_REV           20
+#define M1_TRAVEL_PER_REV           12.7
 #define M1_MICROSTEPS               10                  // 1mi        1,2,4,8
 #define M1_POLARITY                 0                   // 1po        0=normal, 1=reversed
 #define M1_POWER_MODE               MOTOR_POWER_MODE    // 1pm        TRUE=low power idle enabled
@@ -173,7 +173,7 @@
 
 #define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
-#define M2_TRAVEL_PER_REV           20
+#define M2_TRAVEL_PER_REV           12.7
 #define M2_MICROSTEPS               10
 #define M2_POLARITY                 0
 #define M2_POWER_MODE               MOTOR_POWER_MODE
@@ -181,7 +181,7 @@
 
 #define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
-#define M3_TRAVEL_PER_REV           20
+#define M3_TRAVEL_PER_REV           12.7
 #define M3_MICROSTEPS               10
 #define M3_POLARITY                 0
 #define M3_POWER_MODE               MOTOR_POWER_MODE
