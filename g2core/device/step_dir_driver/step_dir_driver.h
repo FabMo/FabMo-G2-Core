@@ -85,6 +85,11 @@ struct StepDirStepper final : Stepper  {
     double _idle_power_level; // the power level when idle
     double _power_level; // the power level now
 
+    int32_t _step_count;
+    int32_t _step_count_up;
+    int32_t _step_count_down;
+    uint8_t _step_dir;
+
     void _updatePowerLevel() {
         if ((MOTOR_IDLE == _power_state) || (MOTOR_OFF == _power_state)) {
             _power_level = _idle_power_level;
@@ -105,7 +110,11 @@ struct StepDirStepper final : Stepper  {
         _enable{enable_polarity==IO_ACTIVE_LOW?kStartHigh:kStartLow},
         _vref{kNormal, frequency},
         _step_polarity{step_polarity},
-        _enable_polarity{enable_polarity}
+        _enable_polarity{enable_polarity},
+        _step_count{0},
+        _step_count_up{0},
+        _step_count_down{0},
+        _step_dir{DIRECTION_CW}
     {};
 
     /* Optional override of init */
@@ -215,6 +224,16 @@ struct StepDirStepper final : Stepper  {
     	    _step.clear();
     	else
     	    _step.set();
+	
+        // update step counts
+        if (_step_dir == DIRECTION_CW) {
+            _step_count++;
+            _step_count_up++;
+
+        } else {
+            _step_count--;
+            _step_count_down++;
+        }
     };
 
     void stepEnd() override {
@@ -224,6 +243,24 @@ struct StepDirStepper final : Stepper  {
     	    _step.clear();
     };
 
+    int32_t getStepCount() override {
+        return _step_count;
+    }
+
+    int32_t getStepCountUp() override {
+        return _step_count_up;
+    }
+
+    int32_t getStepCountDown() override {
+        return _step_count_down;
+    }
+
+    void resetStepCounts() override {
+        _step_count = 0;
+        _step_count_up = 0;
+        _step_count_down = 0;
+    }
+
     void setDirection(uint8_t new_direction) override {
         if (!_dir.isNull()) {
             if (new_direction == DIRECTION_CW) {
@@ -231,6 +268,7 @@ struct StepDirStepper final : Stepper  {
             } else {
                 _dir.set();  // set the bit for CCW motion
             }
+            _step_dir = new_direction;
         }
     };
 

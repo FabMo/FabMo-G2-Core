@@ -362,10 +362,6 @@ typedef struct stConfig {                   // stepper configs
 // Motor runtime structure. Used exclusively by step generation ISR (HI)
 
 typedef struct stRunMotor {                 // one per controlled motor
-    int64_t step_count;                     // net step pulse count 
-    int64_t step_count_up;                  // UP step pulse count 
-    int64_t step_count_down;                // DOWN step pulse count 
-    int8_t step_sign;                       // set to +1 or -1 for step count
     int64_t substep_increment;              // partial steps to increment substep_accumulator per tick
     int64_t substep_increment_increment;    // partial steps to increment substep_increment per tick
     int64_t substep_accumulator;            // DDA phase angle accumulator
@@ -509,6 +505,10 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
+    virtual int32_t getStepCount() { return 0; };
+    virtual int32_t getStepCountUp() { return 0; };
+    virtual int32_t getStepCountDown() { return 0; };
+    virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };
     virtual void setPowerLevels(double active_pl, double idle_pl) { /* must override */ };
