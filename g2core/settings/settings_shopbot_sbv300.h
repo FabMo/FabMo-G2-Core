@@ -91,6 +91,16 @@
                                "in1", "in2", "in3", "in4", "in5", "in6", "in7", "in8", "in9","in10","in11","in12",\
                                "out1", "out2", "out3", "out4", "out5", "out6", "out7", "out8", "out9", "out10", "out11", "out12" 	
 
+////## tests from Matt
+// #define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", "posc", \
+//                                "vel", "stat", "hold", "line", "coor", "unit", "spc",\
+//                                "in1", "in2", "in3", "in4",\
+//                                "out1", "out2", "out3", "out4",\
+//                                "_es1","_es2","_fe1","_fe2",\
+//                                "1scn", "1scu", "1scd", "2scn", "2scu", "2scd", "3scn", "3scu", "3scd"	
+
+
+
 // Gcode startup defaults
 // #define GCODE_DEFAULT_UNITS         INCHES              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
 #define GCODE_DEFAULT_UNITS         MILLIMETERS              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
@@ -163,7 +173,7 @@
 
 #define M1_MOTOR_MAP                AXIS_X_EXTERNAL     // 1ma
 #define M1_STEP_ANGLE               1.8                 // 1sa
-#define M1_TRAVEL_PER_REV           12.7
+#define M1_TRAVEL_PER_REV           20
 #define M1_MICROSTEPS               10                  // 1mi        1,2,4,8
 #define M1_POLARITY                 0                   // 1po        0=normal, 1=reversed
 #define M1_POWER_MODE               MOTOR_POWER_MODE    // 1pm        TRUE=low power idle enabled
@@ -171,7 +181,7 @@
 
 #define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
-#define M2_TRAVEL_PER_REV           12.7
+#define M2_TRAVEL_PER_REV           20
 #define M2_MICROSTEPS               10
 #define M2_POLARITY                 0
 #define M2_POWER_MODE               MOTOR_POWER_MODE
@@ -179,7 +189,7 @@
 
 #define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
-#define M3_TRAVEL_PER_REV           12.7
+#define M3_TRAVEL_PER_REV           20
 #define M3_MICROSTEPS               10
 #define M3_POLARITY                 0
 #define M3_POWER_MODE               MOTOR_POWER_MODE

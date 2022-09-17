@@ -159,9 +159,10 @@ void stepper_init()
     board_stepper_init();
     stepper_reset();                            // reset steppers to known state
 
-    // setup motor power levels and apply power level to stepper drivers
+    // setup motor power levels, apply power level to stepper drivers and reset step pulse counts
     for (uint8_t motor=0; motor<MOTORS; motor++) {
         Motors[motor]->setPowerLevels(st_cfg.mot[motor].power_level, st_cfg.mot[motor].power_level_idle);
+        Motors[motor]->resetStepCounts();
     }
 
     dda_timer.start();                          // start the DDA timer if not already running
@@ -185,6 +186,8 @@ void stepper_reset()
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
         st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
+        Motors[motor]->resetStepCounts();				// reset step pulse counts
+    
 ////## testing better zeroing        
         // st_run.mot[motor].substep_increment = 0;
         // st_pre.mot[motor].substep_increment = 0;
@@ -1277,6 +1280,25 @@ stat_t st_get_dw(nvObj_t *nv)
     return (STAT_OK);
 }
 
+stat_t st_get_scn(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCount())); }
+stat_t st_get_scu(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountUp())); }
+stat_t st_get_scd(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountDown())); }
+stat_t st_set_sc(nvObj_t *nv)
+{
+    if (nv->value_int < 0) {
+        nv->valuetype = TYPE_NULL;
+        return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+    }
+    if (nv->value_int > 0) {
+        nv->valuetype = TYPE_NULL;
+        return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+    }
+
+    // set all motor step counts to zero for consistency
+    Motors[_motor(nv->index)]->resetStepCounts();
+
+    return (STAT_OK);
+}
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table
@@ -1307,6 +1329,9 @@ static const char fmt_0pm[] = "[%s%s] m%s power management%10d [0=disabled,1=alw
 static const char fmt_0pl[] = "[%s%s] m%s motor power level%13.3f [0.000=minimum, 1.000=maximum]\n";
 static const char fmt_0pi[] = "[%s%s] m%s motor idle power level%13.3f [0.000=minimum, 1.000=maximum]\n";
 static const char fmt_pwr[] = "[%s%s] Motor %c power level:%12.3f\n";
+static const char fmt_0scn[] = "[%s%s] m%s net step count: %d\n";
+static const char fmt_0scu[] = "[%s%s] m%s UP step count: %d\n";
+static const char fmt_0scd[] = "[%s%s] m%s DOWN step count: %d\n";
 
 void st_print_me(nvObj_t *nv) { text_print(nv, fmt_me);}    // TYPE_NULL - message only
 void st_print_md(nvObj_t *nv) { text_print(nv, fmt_md);}    // TYPE_NULL - message only
@@ -1348,5 +1373,8 @@ void st_print_pm(nvObj_t *nv) { _print_motor_int(nv, fmt_0pm);}
 void st_print_pl(nvObj_t *nv) { _print_motor_flt(nv, fmt_0pl);}
 void st_print_pi(nvObj_t *nv) { _print_motor_flt(nv, fmt_0pi);}
 void st_print_pwr(nvObj_t *nv){ _print_motor_pwr(nv, fmt_pwr);}
+void st_print_scn(nvObj_t *nv) { _print_motor_int(nv, fmt_0scn);}
+void st_print_scu(nvObj_t *nv) { _print_motor_int(nv, fmt_0scu);}
+void st_print_scd(nvObj_t *nv) { _print_motor_int(nv, fmt_0scd);}
 
 #endif // __TEXT_MODE
