@@ -186,15 +186,10 @@ void stepper_reset()
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
         st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
-        Motors[motor]->resetStepCounts();				// reset step pulse counts
-    
-////## testing better zeroing        
-        // st_run.mot[motor].substep_increment = 0;
-        // st_pre.mot[motor].substep_increment = 0;
-        // st_run.mot[motor].substep_increment_increment = 0;
-        // st_pre.mot[motor].substep_increment_increment = 0;
         
+        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
+     
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
 }
 
@@ -382,6 +377,9 @@ void dda_timer_type::interrupt()
     // Process end of segment.
     // One more interrupt will occur to turn of any pulses set in this pass.
     if (--st_run.dda_ticks_downcount == 0) {
+
+        motor_4.stepStart();        ////## TEMP segment diagnostic indicator
+
         _load_move();       // load the next move at the current interrupt level
     }
 } // MOTATE_TIMER_INTERRUPT
@@ -1295,8 +1293,25 @@ stat_t st_set_sc(nvObj_t *nv)
     }
 
     // set all motor step counts to zero for consistency
-    Motors[_motor(nv->index)]->resetStepCounts();
+//    Motors[_motor(nv->index)]->resetStepCounts();
 
+    for (uint8_t motor=0; motor<MOTORS; motor++) {
+        Motors[motor]->resetStepCounts();
+
+
+////## testing better zeroing
+        st_run.mot[motor].substep_increment = 0;
+        st_pre.mot[motor].substep_increment = 0;
+        st_run.mot[motor].substep_increment_increment = 0;
+        st_pre.mot[motor].substep_increment_increment = 0;
+        st_run.mot[motor].substep_accumulator = 0;
+        st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
+        st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
+    }    
+    motor_1.setDirection(STEP_INITIAL_DIRECTION);
+    motor_2.setDirection(STEP_INITIAL_DIRECTION);
+    
+ 
     return (STAT_OK);
 }
 /***********************************************************************************

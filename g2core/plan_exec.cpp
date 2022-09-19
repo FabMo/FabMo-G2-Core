@@ -925,6 +925,9 @@ static stat_t _exec_aline_segment()
 
     copy_vector(mr->position, mr->gm.target);                 // update position from target
     if (mr->segment_count == 0) {
+
+        motor_5.stepStart();        ////## TEMP segment diagnostic indicator
+
         return (STAT_OK);                                   // this section has run all its segments
     }
     return (STAT_EAGAIN);                                   // this section still has more segments to run
