@@ -923,10 +923,10 @@ static stat_t _exec_aline_segment()
     // Set the target steps and call the stepper prep function
     ritorno(mp_set_target_steps(exec_target_steps));
 
-    copy_vector(mr->position, mr->gm.target);                 // update position from target
+    copy_vector(mr->position, mr->gm.target);               // update position from target
     if (mr->segment_count == 0) {
 
-        motor_5.stepStart();        ////## TEMP segment diagnostic indicator
+        motor_5.stepStart();                                ////## TEMP SECTION diagnostic indicator
 
         return (STAT_OK);                                   // this section has run all its segments
     }

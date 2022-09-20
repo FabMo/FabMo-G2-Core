@@ -377,10 +377,10 @@ void dda_timer_type::interrupt()
     // Process end of segment.
     // One more interrupt will occur to turn of any pulses set in this pass.
     if (--st_run.dda_ticks_downcount == 0) {
-
-        motor_4.stepStart();        ////## TEMP segment diagnostic indicator
-
         _load_move();       // load the next move at the current interrupt level
+
+        motor_4.stepStart();        ////## TEMP SEGMENT diagnostic indicator
+
     }
 } // MOTATE_TIMER_INTERRUPT
 } // namespace Motate
