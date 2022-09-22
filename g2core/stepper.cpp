@@ -184,8 +184,11 @@ void stepper_reset()
     for (uint8_t motor=0; motor<MOTORS; motor++) {
         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
-        st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
+////##        st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
+
+        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);      // will become max negative during per-motor setup;
+        st_run.mot[motor].block_start = true;           ////##* conceptual key to centering blocks within their alloted time
         
         Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
@@ -529,10 +532,15 @@ static void _load_move()
             //    Set the direction bit in hardware.
             //    Compensate for direction change by flipping substep accumulator value about its midpoint.
 
-            if (st_pre.mot[MOTOR_1].direction != st_pre.mot[MOTOR_1].prev_direction) {
+////##* This is where we need to check for a block start, and just routinely set next direction
+            if (st_pre.mot[MOTOR_1].block_start) {
+                ////##if (st_pre.mot[MOTOR_1].direction != st_pre.mot[MOTOR_1].prev_direction) {
                 st_pre.mot[MOTOR_1].prev_direction = st_pre.mot[MOTOR_1].direction;
-                st_run.mot[MOTOR_1].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_1].substep_accumulator); // invert the accumulator for the direction change
+    ////##* Make first/transitional time to first step in block 1/2 the DDA_SUBSTEPS; this should leave the last step in block roughly symetrical
+                st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); // seed the first/transitional accumulator
+                ////##st_run.mot[MOTOR_1].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_1].substep_accumulator); // invert the accumulator for the direction change
                 motor_1.setDirection(st_pre.mot[MOTOR_1].direction);
+                st_pre.mot[MOTOR_1].block_start = false;
             }
 
             // Enable the stepper and start/update motor power management
@@ -821,6 +829,9 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
             continue;
         }
+
+        ////##* SET UP FOR NEW BLOCK ... right place?
+        st_pre.mot[motor].block_start = true; 
 
         // Setup the direction, compensating for polarity.
         // Set the step_sign which is used by the stepper ISR to accumulate step position
@@ -1304,7 +1315,7 @@ stat_t st_set_sc(nvObj_t *nv)
         st_pre.mot[motor].substep_increment = 0;
         st_run.mot[motor].substep_increment_increment = 0;
         st_pre.mot[motor].substep_increment_increment = 0;
-        st_run.mot[motor].substep_accumulator = 0;
+        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
     }    

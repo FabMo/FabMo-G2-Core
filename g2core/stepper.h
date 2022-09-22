@@ -307,6 +307,7 @@ enum stPowerMode {
  *  Decreasing the nominal segment time increases the number precision.
  */
  #define DDA_SUBSTEPS (INT64_MAX-100)
+ #define DDA_HALF_SUBSTEPS (DDA_SUBSTEPS/2)
 
 /* Step correction settings
  *
@@ -366,6 +367,7 @@ typedef struct stRunMotor {                 // one per controlled motor
     int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     int64_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
+    bool block_start;                    ////## transferring during the milk run ???
     uint32_t power_systick;                 // sys_tick for next motor power state transition
     float power_level_dynamic;              // power level for this segment of idle
 } stRunMotor_t;
@@ -386,6 +388,9 @@ typedef struct stPrepMotor {
     int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     bool motor_flag;                        // true if motor is participating in this move
 
+////## Block Initialization Marker          : Used to set initial SUSBSTEP_DDA in a block to make moves symetrical
+    bool block_start;                      // travel direction corrected for polarity (CW==0. CCW==1)
+    
     // direction and direction change
     uint8_t direction;                      // travel direction corrected for polarity (CW==0. CCW==1)
     uint8_t prev_direction;                 // travel direction from previous segment run for this motor
