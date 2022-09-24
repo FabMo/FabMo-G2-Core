@@ -381,7 +381,7 @@ void dda_timer_type::interrupt()
     if (--st_run.dda_ticks_downcount == 0) {
         _load_move();       // load the next move at the current interrupt level
 
-        motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnal
+        motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
 
     }
 } // MOTATE_TIMER_INTERRUPT
@@ -482,7 +482,7 @@ static void _load_move()
         return;                     // exit if the runtime is busy
     }
 
-////## Test a step-pin turn-off here to clean up pulse size at interval change ???    
+////## Test a step-pin turn-off here to clean up pulse size at interval change ??? 
 
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
@@ -540,7 +540,7 @@ static void _load_move()
                 st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
                 motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT]
                 st_pre.mot[MOTOR_1].start_new_block = false;
-                motor_5.stepStart();  ////## (uncomment to enable) LogicAnal DIAGNOSTIC indicator for when new dirs made active, several axes needed
+                motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
 
             // Enable the stepper and start/update motor power management

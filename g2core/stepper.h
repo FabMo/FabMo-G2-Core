@@ -367,7 +367,7 @@ typedef struct stRunMotor {                 // one per controlled motor
     int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     int64_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
-    bool start_new_block;                    ////## transferring during the milk run ???
+    bool start_new_block;                   ////## to be used in run and prep ??
     uint32_t power_systick;                 // sys_tick for next motor power state transition
     float power_level_dynamic;              // power level for this segment of idle
 } stRunMotor_t;
@@ -388,8 +388,8 @@ typedef struct stPrepMotor {
     int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     bool motor_flag;                        // true if motor is participating in this move
 
-////## Block Initialization Marker          : Used to set initial SUSBSTEP_DDA in a block to make moves symetrical
-    bool start_new_block;                      // travel direction corrected for polarity (CW==0. CCW==1)
+////## Block Initialization Marker          // Used to set initial SUSBSTEP_HALF_DDA in a block to make moves symetrical
+    bool start_new_block;                   ////## to be used in run and prep ??
     
     // direction and direction change
     uint8_t direction;                      // travel direction corrected for polarity (CW==0. CCW==1)
