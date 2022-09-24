@@ -473,7 +473,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 
         ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
         for (uint8_t motor=0; motor<MOTORS; motor++) { 
-            st_pre.mot[motor].block_start = true;
+            st_pre.mot[motor].start_new_block = true;
         }          
 
         // generate the way points for position correction at section ends
