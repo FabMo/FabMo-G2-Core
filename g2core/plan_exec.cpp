@@ -48,7 +48,6 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf);
 
 static void _init_forward_diffs(float v_0, float v_1);
 
-volatile bool breakpoint = false;
 
 /****************************************************************************************
  * mp_forward_plan() - plan commands and moves ahead of exec; call ramping for moves
@@ -469,6 +468,13 @@ stat_t mp_exec_aline(mpBuf_t *bf)
                 mr->section = SECTION_TAIL;
             }
         }
+
+        motor_5.stepStart();             ////## (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
+
+        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
+        for (uint8_t motor=0; motor<MOTORS; motor++) { 
+            st_pre.mot[motor].block_start = true;
+        }          
 
         // generate the way points for position correction at section ends
         for (uint8_t axis=0; axis<AXES; axis++) {
@@ -927,9 +933,6 @@ static stat_t _exec_aline_segment()
 
     copy_vector(mr->position, mr->gm.target);               // update position from target
     if (mr->segment_count == 0) {
-       breakpoint = true;                                  
-        motor_5.stepStart();                                ////## TEMP SECTION diagnostic indicator
-
         return (STAT_OK);                                   // this section has run all its segments
     }
     return (STAT_EAGAIN);                                   // this section still has more segments to run

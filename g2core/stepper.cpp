@@ -184,12 +184,10 @@ void stepper_reset()
     for (uint8_t motor=0; motor<MOTORS; motor++) {
         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
-////##        st_run.mot[motor].substep_accumulator = 0;      // will become max negative during per-motor setup;
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
-
-        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);      // will become max negative during per-motor setup;
-        st_run.mot[motor].block_start = true;           ////##* conceptual key to centering blocks within their alloted time
-        
+////##* Conceptual key to centering blocks within their alloted time // here probably redundant with later loading
+        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+        st_run.mot[motor].block_start = true;           
         Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
      
@@ -302,6 +300,7 @@ void dda_timer_type::interrupt()
     // clear all steps from the previous interrupt
     motor_1.stepEnd();
     motor_2.stepEnd();
+
 #if MOTORS > 2
     motor_3.stepEnd();
 #endif
@@ -382,7 +381,7 @@ void dda_timer_type::interrupt()
     if (--st_run.dda_ticks_downcount == 0) {
         _load_move();       // load the next move at the current interrupt level
 
-        motor_4.stepStart();        ////## TEMP SEGMENT diagnostic indicator
+        motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnal
 
     }
 } // MOTATE_TIMER_INTERRUPT
@@ -483,6 +482,8 @@ static void _load_move()
         return;                     // exit if the runtime is busy
     }
 
+////## Test a step-pin turn-off here to clean up pulse size at interval change ???    
+
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
         motor_1.motionStopped();    // ...start motor power timeouts
@@ -532,35 +533,36 @@ static void _load_move()
             //    Set the direction bit in hardware.
             //    Compensate for direction change by flipping substep accumulator value about its midpoint.
 
-////##* This is where we need to check for a block start, and just routinely set next direction
+////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [NOT USING DIRECTION CHANGE TEST]
             if (st_pre.mot[MOTOR_1].block_start) {
-                ////##if (st_pre.mot[MOTOR_1].direction != st_pre.mot[MOTOR_1].prev_direction) {
                 st_pre.mot[MOTOR_1].prev_direction = st_pre.mot[MOTOR_1].direction;
-    ////##* Make first/transitional time to first step in block 1/2 the DDA_SUBSTEPS; this should leave the last step in block roughly symetrical
-                st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); // seed the first/transitional accumulator
-                ////##st_run.mot[MOTOR_1].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_1].substep_accumulator); // invert the accumulator for the direction change
-                motor_1.setDirection(st_pre.mot[MOTOR_1].direction);
+    ////##* Make transitional time to first step in new block 1/2 the DDA_SUBSTEPS; should leave the last step in block roughly symetrical if computed correctly
+                st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
+                motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT]
                 st_pre.mot[MOTOR_1].block_start = false;
+                motor_5.stepStart();  ////## (uncomment to enable) LogicAnal DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
 
             // Enable the stepper and start/update motor power management
             motor_1.enable();
-            SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);
+            SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);      ////##* Don't think we will need the encoder stuff
 
         } else {  // Motor has 0 steps; might need to energize motor for power mode processing
             st_run.mot[MOTOR_1].substep_increment_increment = 0;
             motor_1.motionStopped();
         }
         // accumulate counted steps to the step position and zero out counted steps for the segment currently being loaded
-        ACCUMULATE_ENCODER(MOTOR_1);
+        ACCUMULATE_ENCODER(MOTOR_1);                                            ////##* Don't think we will need the encoder stuff
 
 #if (MOTORS >= 2)
         if ((st_run.mot[MOTOR_2].substep_increment = st_pre.mot[MOTOR_2].substep_increment) != 0) {
             st_run.mot[MOTOR_2].substep_increment_increment = st_pre.mot[MOTOR_2].substep_increment_increment;
-            if (st_pre.mot[MOTOR_2].direction != st_pre.mot[MOTOR_2].prev_direction) {
+            if (st_pre.mot[MOTOR_2].block_start) {
                 st_pre.mot[MOTOR_2].prev_direction = st_pre.mot[MOTOR_2].direction;
-                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_2].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
+                st_pre.mot[MOTOR_2].block_start = false;
+                motor_5.stepStart(); 
             }
             motor_2.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
@@ -573,10 +575,12 @@ static void _load_move()
 #if (MOTORS >= 3)
         if ((st_run.mot[MOTOR_3].substep_increment = st_pre.mot[MOTOR_3].substep_increment) != 0) {
             st_run.mot[MOTOR_3].substep_increment_increment = st_pre.mot[MOTOR_3].substep_increment_increment;
-            if (st_pre.mot[MOTOR_3].direction != st_pre.mot[MOTOR_3].prev_direction) {
+            if (st_pre.mot[MOTOR_3].block_start) {
                 st_pre.mot[MOTOR_3].prev_direction = st_pre.mot[MOTOR_3].direction;
                 st_run.mot[MOTOR_3].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_3].substep_accumulator); // invert the accumulator for the direction change
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
+                st_pre.mot[MOTOR_3].block_start = false;
+                motor_5.stepStart(); 
             }
             motor_3.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
@@ -589,10 +593,11 @@ static void _load_move()
 #if (MOTORS >= 4)
         if ((st_run.mot[MOTOR_4].substep_increment = st_pre.mot[MOTOR_4].substep_increment) != 0) {
             st_run.mot[MOTOR_4].substep_increment_increment = st_pre.mot[MOTOR_4].substep_increment_increment;
-            if (st_pre.mot[MOTOR_4].direction != st_pre.mot[MOTOR_4].prev_direction) {
+            if (st_pre.mot[MOTOR_4].block_start) {
                 st_pre.mot[MOTOR_4].prev_direction = st_pre.mot[MOTOR_4].direction;
                 st_run.mot[MOTOR_4].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_4].substep_accumulator); // invert the accumulator for the direction change
                 motor_4.setDirection(st_pre.mot[MOTOR_4].direction);
+                st_pre.mot[MOTOR_4].block_start = false;
             }
             motor_4.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_4, st_pre.mot[MOTOR_4].step_sign);
@@ -605,10 +610,11 @@ static void _load_move()
 #if (MOTORS >= 5)
         if ((st_run.mot[MOTOR_5].substep_increment = st_pre.mot[MOTOR_5].substep_increment) != 0) {
             st_run.mot[MOTOR_5].substep_increment_increment = st_pre.mot[MOTOR_5].substep_increment_increment;
-            if (st_pre.mot[MOTOR_5].direction != st_pre.mot[MOTOR_5].prev_direction) {
+            if (st_pre.mot[MOTOR_5].block_start) {
                 st_pre.mot[MOTOR_5].prev_direction = st_pre.mot[MOTOR_5].direction;
                 st_run.mot[MOTOR_5].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_5].substep_accumulator); // invert the accumulator for the direction change
                 motor_5.setDirection(st_pre.mot[MOTOR_5].direction);
+                st_pre.mot[MOTOR_5].block_start = false;
             }
             motor_5.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_5, st_pre.mot[MOTOR_5].step_sign);
@@ -621,10 +627,11 @@ static void _load_move()
 #if (MOTORS >= 6)
         if ((st_run.mot[MOTOR_6].substep_increment = st_pre.mot[MOTOR_6].substep_increment) != 0) {
             st_run.mot[MOTOR_6].substep_increment_increment = st_pre.mot[MOTOR_6].substep_increment_increment;
-            if (st_pre.mot[MOTOR_6].direction != st_pre.mot[MOTOR_6].prev_direction) {
+            if (st_pre.mot[MOTOR_6].block_start) {
                 st_pre.mot[MOTOR_6].prev_direction = st_pre.mot[MOTOR_6].direction;
                 st_run.mot[MOTOR_6].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_6].substep_accumulator); // invert the accumulator for the direction change
                 motor_6.setDirection(st_pre.mot[MOTOR_6].direction);
+                st_pre.mot[MOTOR_6].block_start = false;
             }
             motor_6.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_6, st_pre.mot[MOTOR_6].step_sign);
@@ -710,8 +717,7 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
-// suggested by RobG, no effect noticed
-////##            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
+            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
             continue;
         }
 
@@ -829,9 +835,6 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
             continue;
         }
-
-        ////##* SET UP FOR NEW BLOCK ... right place?
-        st_pre.mot[motor].block_start = true; 
 
         // Setup the direction, compensating for polarity.
         // Set the step_sign which is used by the stepper ISR to accumulate step position
@@ -1310,7 +1313,7 @@ stat_t st_set_sc(nvObj_t *nv)
         Motors[motor]->resetStepCounts();
 
 
-////## testing better zeroing
+////## testing better zeroing; make efficient; add encoder stuff
         st_run.mot[motor].substep_increment = 0;
         st_pre.mot[motor].substep_increment = 0;
         st_run.mot[motor].substep_increment_increment = 0;
@@ -1319,9 +1322,12 @@ stat_t st_set_sc(nvObj_t *nv)
         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
     }    
-    motor_1.setDirection(STEP_INITIAL_DIRECTION);
+    motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////## set this up right ...
     motor_2.setDirection(STEP_INITIAL_DIRECTION);
-    
+    motor_3.setDirection(STEP_INITIAL_DIRECTION);
+    motor_4.setDirection(STEP_INITIAL_DIRECTION);
+    motor_5.setDirection(STEP_INITIAL_DIRECTION);
+    motor_6.setDirection(STEP_INITIAL_DIRECTION);
  
     return (STAT_OK);
 }

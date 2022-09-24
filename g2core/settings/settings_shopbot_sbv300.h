@@ -38,8 +38,8 @@
 
 //**** GLOBAL / GENERAL SETTINGS ******************************************************
 
-#define JUNCTION_INTEGRATION_TIME   0.8     // cornering - between 0.10 and 2.00 (higher is faster)
-#define CHORDAL_TOLERANCE           0.001   // chordal accuracy for arc drawing (in mm) ////##inches
+#define JUNCTION_INTEGRATION_TIME   1.5     // cornering - between 0.10 and 2.00 (higher is faster)
+#define CHORDAL_TOLERANCE           0.01    // chordal accuracy for arc drawing (in mm) 
 
 #define HAS_LASER                   0       // We don't have a laser ... yet
 
@@ -65,7 +65,7 @@
 #define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
 #define SPINDLE_PWM_NUMBER              0
 
-#define FEEDHOLD_Z_LIFT             0.5     ////## (0.5 * 25.4)
+#define FEEDHOLD_Z_LIFT             12.7
 
 #define MANUAL_FEEDRATE_OVERRIDE_ENABLE false
 #define MANUAL_FEEDRATE_OVERRIDE_PARAMETER 1.00
@@ -85,24 +85,13 @@
 #define STATUS_REPORT_MIN_MS        100                 // milliseconds - enforces a viable minimum
 #define STATUS_REPORT_INTERVAL_MS   250                 // milliseconds - set $SV=0 to disable
 
-////##added c, spc, inputs, and outputs
+////##added c, spc, inputs, and outputs (tests from Matt are in FabMo config)
 #define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", "posc", \
                                "vel", "stat", "hold", "line", "coor", "unit", "spc",\
                                "in1", "in2", "in3", "in4", "in5", "in6", "in7", "in8", "in9","in10","in11","in12",\
                                "out1", "out2", "out3", "out4", "out5", "out6", "out7", "out8", "out9", "out10", "out11", "out12" 	
 
-////## tests from Matt
-// #define STATUS_REPORT_DEFAULTS "posx", "posy", "posz", "posa", "posb", "posc", \
-//                                "vel", "stat", "hold", "line", "coor", "unit", "spc",\
-//                                "in1", "in2", "in3", "in4",\
-//                                "out1", "out2", "out3", "out4",\
-//                                "_es1","_es2","_fe1","_fe2",\
-//                                "1scn", "1scu", "1scd", "2scn", "2scu", "2scd", "3scn", "3scu", "3scd"	
-
-
-
 // Gcode startup defaults
-// #define GCODE_DEFAULT_UNITS         INCHES              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
 #define GCODE_DEFAULT_UNITS         MILLIMETERS              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
 #define GCODE_DEFAULT_PLANE         CANON_PLANE_XY      // CANON_PLANE_XY, CANON_PLANE_XZ, or CANON_PLANE_YZ
 // #define GCODE_DEFAULT_COORD_SYSTEM  G55                 // G54, G55, G56, G57, G58 or G59
@@ -165,7 +154,7 @@
 // #define M6_POWER_LEVEL              MOTOR_POWER_LEVEL
 
 
-// *** motor settings SIMPLIFIED METRIC (su=100) ************************************************************************************
+// *** SIMPLIFIED METRIC (su=157.48031) ************[su=100 provides a simplified version with travel @ 20]*************
 
 #define MOTOR_POWER_MODE            MOTOR_POWERED_IN_CYCLE  // default motor power mode (see cmMotorPowerMode in stepper.h)
 #define MOTOR_POWER_TIMEOUT         2.00                // motor power timeout in seconds
@@ -173,7 +162,7 @@
 
 #define M1_MOTOR_MAP                AXIS_X_EXTERNAL     // 1ma
 #define M1_STEP_ANGLE               1.8                 // 1sa
-#define M1_TRAVEL_PER_REV           20
+#define M1_TRAVEL_PER_REV           12.7
 #define M1_MICROSTEPS               10                  // 1mi        1,2,4,8
 #define M1_POLARITY                 0                   // 1po        0=normal, 1=reversed
 #define M1_POWER_MODE               MOTOR_POWER_MODE    // 1pm        TRUE=low power idle enabled
@@ -181,7 +170,7 @@
 
 #define M2_MOTOR_MAP                AXIS_Y_EXTERNAL
 #define M2_STEP_ANGLE               1.8
-#define M2_TRAVEL_PER_REV           20
+#define M2_TRAVEL_PER_REV           12.7
 #define M2_MICROSTEPS               10
 #define M2_POLARITY                 0
 #define M2_POWER_MODE               MOTOR_POWER_MODE
@@ -189,7 +178,7 @@
 
 #define M3_MOTOR_MAP                AXIS_Z_EXTERNAL
 #define M3_STEP_ANGLE               1.8
-#define M3_TRAVEL_PER_REV           20
+#define M3_TRAVEL_PER_REV           12.7
 #define M3_MICROSTEPS               10
 #define M3_POLARITY                 0
 #define M3_POWER_MODE               MOTOR_POWER_MODE
@@ -310,7 +299,7 @@
 // #define C_ZERO_BACKOFF              0.25 ////##(0.375 * 25.4)
 
 
-// *** axis settings  SIMPLIFIED METRIC (su=100) *********************************************************************************
+// *** axis settings  METRIC ************************************************************************************
 
 #define X_AXIS_MODE                 AXIS_STANDARD   // xam  see canonical_machine.h cmAxisMode for valid values
 #define X_VELOCITY_MAX              9000           // xvm  G0 max velocity in mm/min
