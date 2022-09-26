@@ -119,14 +119,14 @@ using Motate::OutputPin;
 /**** Stepper DDA and dwell timer settings ****/
 
 //#define FREQUENCY_DDA		200000UL		// Hz step frequency. Interrupts actually fire at 2x (400 KHz)
-//#define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz) ////**Used in previous FabMo
-#define FREQUENCY_DDA     100000UL        // Hz step frequency. Interrupts actually fire at 2x (200 KHz) *Speed of other boards! ////** Reverted for E-P test fix
+#define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz) ////**Used in previous FabMo
+//#define FREQUENCY_DDA     100000UL        // Hz step frequency. Interrupts actually fire at 2x (200 KHz) *Speed of other boards! ////** Reverted for E-P test fix
 ////## This in 101.03 versions #define FREQUENCY_SGI       200000UL        // 200,000 Hz means software interrupts will fire 5 uSec after being called
 ////## But setting to 100000UL seemed to fix stuttering in 101.06 variants ...
 
 #define FREQUENCY_DWELL		1000UL
-#define MIN_SEGMENT_MS ((float)1.0)        ////## tryied shorter, default =.75 tried .5; did not seem to work
-//#define MIN_SEGMENT_MS ((float)0.75)        ////## tryied shorter, default =.75 tried .5; did not seem to work
+#define MIN_SEGMENT_MS ((float)1.0)        ////## tried shorter, default =.75 tried .5; did not seem to work
+//#define MIN_SEGMENT_MS ((float)0.75)        ////## tried shorter, default =.75 tried .5; did not seem to work
 
 #define PLANNER_QUEUE_SIZE (48)
 #define SECONDARY_QUEUE_SIZE (10)
