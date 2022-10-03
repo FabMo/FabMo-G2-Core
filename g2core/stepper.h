@@ -505,6 +505,10 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
+    virtual int64_t getStepCount() { return 0; };
+    virtual int64_t getStepCountUp() { return 0; };
+    virtual int64_t getStepCountDown() { return 0; };
+    virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };
     virtual void setPowerLevels(float active_pl, float idle_pl) { /* must override */ };
@@ -583,6 +587,11 @@ stat_t st_set_md(nvObj_t *nv);
 stat_t st_set_me(nvObj_t *nv);
 stat_t st_get_dw(nvObj_t *nv);
 
+stat_t st_get_scn(nvObj_t *nv);
+stat_t st_get_scu(nvObj_t *nv);
+stat_t st_get_scd(nvObj_t *nv);
+stat_t st_set_sc(nvObj_t *nv);
+
 #ifdef __TEXT_MODE
 
     void st_print_ma(nvObj_t *nv);
@@ -600,6 +609,9 @@ stat_t st_get_dw(nvObj_t *nv);
     void st_print_mt(nvObj_t *nv);
     void st_print_me(nvObj_t *nv);
     void st_print_md(nvObj_t *nv);
+    void st_print_scn(nvObj_t *nv);
+    void st_print_scu(nvObj_t *nv);
+    void st_print_scd(nvObj_t *nv);
 
 #else
 
@@ -618,6 +630,9 @@ stat_t st_get_dw(nvObj_t *nv);
     #define st_print_mt tx_print_stub
     #define st_print_me tx_print_stub
     #define st_print_md tx_print_stub
+    #define st_print_scn tx_print_stub
+    #define st_print_scu tx_print_stub
+    #define st_print_scd tx_print_stub
 
 #endif // __TEXT_MODE
 
