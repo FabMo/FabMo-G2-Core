@@ -558,7 +558,7 @@ static void _load_move()
                 st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
                 motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT]
                 st_pre.mot[MOTOR_1].start_new_block = false;
-                motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
+                //motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
 
             // Enable the stepper and start/update motor power management
@@ -580,7 +580,7 @@ static void _load_move()
                 st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
                 st_pre.mot[MOTOR_2].start_new_block = false;
-                motor_5.stepStart(); 
+                //motor_5.stepStart(); ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
             motor_2.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
@@ -598,7 +598,7 @@ static void _load_move()
                 st_run.mot[MOTOR_3].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_3].substep_accumulator); // invert the accumulator for the direction change
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
                 st_pre.mot[MOTOR_3].start_new_block = false;
-                motor_5.stepStart(); 
+                //motor_5.stepStart(); ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
             motor_3.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
