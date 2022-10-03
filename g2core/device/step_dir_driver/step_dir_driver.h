@@ -224,7 +224,7 @@ struct StepDirStepper final : Stepper  {
     	    _step.clear();
     	else
     	    _step.set();
-	
+
         // update step counts
         if (_step_dir == DIRECTION_CW) {
             _step_count++;
@@ -268,6 +268,7 @@ struct StepDirStepper final : Stepper  {
             } else {
                 _dir.set();  // set the bit for CCW motion
             }
+			_step_dir = new_direction;
         }
     };
 
