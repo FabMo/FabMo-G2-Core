@@ -187,10 +187,10 @@ void stepper_reset()
         st_pre.mot[motor].corrected_steps = 0;          // diagnostic only - no action effect
 ////##* Conceptual key to centering blocks within their alloted time // here probably redundant with later loading
         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
-        st_run.mot[motor].start_new_block = true;           
+        st_run.mot[motor].start_new_block = true;
         Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
-     
+
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
 }
 
@@ -479,28 +479,6 @@ static void _load_move()
     // Be aware that dda_ticks_downcount must equal zero for the loader to run.
     // So the initial load must also have this set to zero as part of initialization
 
-    ////## Test additional step-pin turn-off here to clean up large pulse (~20uS) when coincident with segment change
-    //       -probably need a better method; placed here the contingent pulse becomes ~3.4uS or ~7uS
-    //       -placed after st_runtime_isBusy(); contingent pulse becomes ~6.3uS or ~10uS
-    //       -and place after the segment loading work below it becomes ~7uS or ~16uS
-    //       ## I'm testing this out for a bit .... (all values above are for DDA_FREQ 100K)
-    //       ### There is still a very rare 20uS and 16uS pulse unrelated to segment or anything else obvious
-        motor_1.stepEnd();
-        motor_2.stepEnd();
-#if MOTORS > 2
-        motor_3.stepEnd();
-#endif
-#if MOTORS > 3
-        motor_4.stepEnd();
-#endif
-#if MOTORS > 4
-        motor_5.stepEnd();
-#endif
-#if MOTORS > 5
-        motor_6.stepEnd();
-#endif
-
-
     if (st_runtime_isbusy()) {
         return;                     // exit if the runtime is busy
     }
@@ -583,7 +561,7 @@ static void _load_move()
                 st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
                 st_pre.mot[MOTOR_2].start_new_block = false;
-                motor_5.stepStart(); 
+                motor_5.stepStart();
             }
             motor_2.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
@@ -601,7 +579,7 @@ static void _load_move()
                 st_run.mot[MOTOR_3].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_3].substep_accumulator); // invert the accumulator for the direction change
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
                 st_pre.mot[MOTOR_3].start_new_block = false;
-                motor_5.stepStart(); 
+                motor_5.stepStart();
             }
             motor_3.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
@@ -1342,14 +1320,14 @@ stat_t st_set_sc(nvObj_t *nv)
         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
-    }    
+    }
     motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////## set this up right ...
     motor_2.setDirection(STEP_INITIAL_DIRECTION);
     motor_3.setDirection(STEP_INITIAL_DIRECTION);
     motor_4.setDirection(STEP_INITIAL_DIRECTION);
     motor_5.setDirection(STEP_INITIAL_DIRECTION);
     motor_6.setDirection(STEP_INITIAL_DIRECTION);
- 
+
     return (STAT_OK);
 }
 /***********************************************************************************
