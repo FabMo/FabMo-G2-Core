@@ -380,9 +380,6 @@ void dda_timer_type::interrupt()
     // One more interrupt will occur to turn of any pulses set in this pass.
     if (--st_run.dda_ticks_downcount == 0) {
         _load_move();       // load the next move at the current interrupt level
-
-        motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
-
     }
 } // MOTATE_TIMER_INTERRUPT
 } // namespace Motate
@@ -505,6 +502,8 @@ static void _load_move()
         return;                     // exit if the runtime is busy
     }
 
+    motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
+
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
         motor_1.motionStopped();    // ...start motor power timeouts
@@ -598,7 +597,7 @@ static void _load_move()
             st_run.mot[MOTOR_3].substep_increment_increment = st_pre.mot[MOTOR_3].substep_increment_increment;
             if (st_pre.mot[MOTOR_3].start_new_block) {
                 st_pre.mot[MOTOR_3].prev_direction = st_pre.mot[MOTOR_3].direction;
-                st_run.mot[MOTOR_3].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_3].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_3].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
                 st_pre.mot[MOTOR_3].start_new_block = false;
                 motor_5.stepStart(); 
@@ -616,7 +615,7 @@ static void _load_move()
             st_run.mot[MOTOR_4].substep_increment_increment = st_pre.mot[MOTOR_4].substep_increment_increment;
             if (st_pre.mot[MOTOR_4].start_new_block) {
                 st_pre.mot[MOTOR_4].prev_direction = st_pre.mot[MOTOR_4].direction;
-                st_run.mot[MOTOR_4].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_4].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_4.setDirection(st_pre.mot[MOTOR_4].direction);
                 st_pre.mot[MOTOR_4].start_new_block = false;
             }
@@ -633,7 +632,7 @@ static void _load_move()
             st_run.mot[MOTOR_5].substep_increment_increment = st_pre.mot[MOTOR_5].substep_increment_increment;
             if (st_pre.mot[MOTOR_5].start_new_block) {
                 st_pre.mot[MOTOR_5].prev_direction = st_pre.mot[MOTOR_5].direction;
-                st_run.mot[MOTOR_5].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_5].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_5.setDirection(st_pre.mot[MOTOR_5].direction);
                 st_pre.mot[MOTOR_5].start_new_block = false;
             }
@@ -650,7 +649,7 @@ static void _load_move()
             st_run.mot[MOTOR_6].substep_increment_increment = st_pre.mot[MOTOR_6].substep_increment_increment;
             if (st_pre.mot[MOTOR_6].start_new_block) {
                 st_pre.mot[MOTOR_6].prev_direction = st_pre.mot[MOTOR_6].direction;
-                st_run.mot[MOTOR_6].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_6].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_6.setDirection(st_pre.mot[MOTOR_6].direction);
                 st_pre.mot[MOTOR_6].start_new_block = false;
             }
