@@ -271,7 +271,8 @@ void mp_set_steps_to_runtime_position()
         return;
     }
     float step_position[MOTORS];
-    // There use to be a call to kn_inverse_kinematics here, but we don't do that now, instead we call kn->sync_encoders()
+    ////## This use of "steps" is only at set-up time
+    // There used to be a call to kn_inverse_kinematics here, but we don't do that now, instead we call kn->sync_encoders()
     // after handling the steps, allowing the kinematics to intelligently handle the offset of step and position.
 
     // Reset everything to match the internal encoders

@@ -471,7 +471,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 
         motor_5.stepStart();             ////## (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
 
-        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
+        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors (maybe just a 'st_pre' flag)?
         for (uint8_t motor=0; motor<MOTORS; motor++) { 
             st_pre.mot[motor].start_new_block = true;
         }          
@@ -901,6 +901,8 @@ static stat_t _exec_aline_segment()
     // If the segment ends on a section waypoint synchronize to the head, body or tail end
     // Otherwise if not at a section waypoint compute target from segment time and velocity
     // Don't do waypoint correction if you are going into a hold.
+    ////## If I undertand the waypoint correctly, this is just a minor replacement of whatever
+    ////     ... value may have wandered in. Not currently thinking it is of much interest.    
 
     if ((--mr->segment_count == 0) && (cm->hold_state == FEEDHOLD_OFF)) {
         copy_vector(mr->gm.target, mr->waypoint[mr->section]);
@@ -920,6 +922,10 @@ static stat_t _exec_aline_segment()
     }
 
     // Convert target position to steps
+    ////## As far as I can tell, this is the only point real steps are swapped in to the
+    ////    ... original g2 method; this means that previously, all speeds and times were
+    ////    ... were based on conceptual distance, not real distances between steps.
+    ////   Now corrected by converting locations to nearest true step location in plan_line.cpp
     kn->inverse_kinematics(mr->gm, mr->gm.target, mr->position, mr->segment_velocity, mr->target_velocity, mr->segment_time, exec_target_steps);
 
     // Update the mb->run_time_remaining -- we know it's missing the current segment's time before it's loaded, that's ok.
