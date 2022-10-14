@@ -2513,6 +2513,10 @@ stat_t cm_set_troe(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.mto_
 stat_t cm_get_tro(nvObj_t *nv)  { return(get_float(nv, cm->gmx.mto_factor)); }
 stat_t cm_set_tro(nvObj_t *nv)  { return(set_float_range(nv, cm->gmx.mto_factor, TRAVERSE_OVERRIDE_MIN, TRAVERSE_OVERRIDE_MAX)); }
 
+//2dm
+stat_t cm_get_plmo(nvObj_t *nv) { return(get_integer(nv, cm->gmx.planning_mode)); }
+stat_t cm_set_plmo(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.planning_mode, 2, 4)); }
+
 stat_t cm_get_gpl(nvObj_t *nv) { return(get_integer(nv, cm->default_select_plane)); }
 stat_t cm_set_gpl(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_select_plane, CANON_PLANE_XY, CANON_PLANE_YZ)); }
 
@@ -3033,6 +3037,10 @@ static const char fmt_froe[] = "[froe] feed override enable%8d [0=disable,1=enab
 static const char fmt_fro[]  = "[fro]  feedrate override%15.3f [0.05 < mfo < 2.00]\n";
 static const char fmt_troe[] = "[troe] traverse over enable%8d [0=disable,1=enable]\n";
 static const char fmt_tro[]  = "[tro]  traverse override%15.3f [0.05 < mto < 1.00]\n";
+
+//2dm
+static const char fmt_plmo[] = "[plmo] 2d/3d planning mode%9d [2=2d, 3=3d]\n";
+
 static const char fmt_tram[] = "[tram] is coordinate space rotated to be tram %s\n";
 static const char fmt_nxln[] = "[nxln] next line number %lu\n";
 
@@ -3041,6 +3049,7 @@ void cm_print_froe(nvObj_t *nv) { text_print(nv, fmt_froe);}    // TYPE INT
 void cm_print_fro(nvObj_t *nv)  { text_print(nv, fmt_fro);}     // TYPE FLOAT
 void cm_print_troe(nvObj_t *nv) { text_print(nv, fmt_troe);}    // TYPE INT
 void cm_print_tro(nvObj_t *nv)  { text_print(nv, fmt_tro);}     // TYPE FLOAT
+void cm_print_plmo(nvObj_t *nv)  { text_print(nv, fmt_plmo);}    // TYPE_INT
 void cm_print_tram(nvObj_t *nv) { text_print(nv, fmt_tram);};   // TYPE BOOL
 void cm_print_nxln(nvObj_t *nv) { text_print(nv, fmt_nxln);};   // TYPE INT
 

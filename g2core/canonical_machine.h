@@ -659,6 +659,10 @@ stat_t cm_set_troe(nvObj_t *nv);        // set traverse override enable
 stat_t cm_get_tro(nvObj_t *nv);         // get traverse override factor
 stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
 
+//2dm
+stat_t cm_get_plmo(nvObj_t *nv);        // get planner mode - 2d/3d
+stat_t cm_set_plmo(nvObj_t *nv);        // set planner mode - 2d/3d
+
 stat_t cm_set_probe(nvObj_t *nv);       // store current position as the latest probe
 
 
@@ -729,6 +733,9 @@ stat_t cm_set_gdi(nvObj_t *nv);         // set gcode default distance mode
     void cm_print_troe(nvObj_t *nv);
     void cm_print_tro(nvObj_t *nv);
 
+    //2dm
+    void cm_print_plmo(nvObj_t *nv);
+
     void cm_print_tram(nvObj_t *nv);        // print if the axis has been rotated
     void cm_print_nxln(nvObj_t *nv);    // print the value of the next line number expected
 
@@ -796,6 +803,10 @@ stat_t cm_set_gdi(nvObj_t *nv);         // set gcode default distance mode
     #define cm_print_fro tx_print_stub
     #define cm_print_troe tx_print_stub
     #define cm_print_tro tx_print_stub
+
+    //2dm
+    #define cm_print_plmo tx_print_stub
+
     #define cm_print_tram tx_print_stub
 
     #define cm_print_tram tx_print_stub

@@ -1013,6 +1013,9 @@ constexpr cfgItem_t sys_config_items_2[] = {
     { "sys","mt",  _fipn, 2, st_print_mt,  st_get_mt,  st_set_mt,  nullptr, MOTOR_POWER_TIMEOUT}, // N is seconds of timeout
     { "",   "me",  _f0,   0, st_print_me,  get_nul,    st_set_me,  nullptr, 0 },    // SET to enable motors
     { "",   "md",  _f0,   0, st_print_md,  get_nul,    st_set_md,  nullptr, 0 },    // SET to disable motors
+    //2dm
+    { "sys","plmo",_iipn, 0, cm_print_plmo,cm_get_plmo,cm_set_plmo,nullptr, PLANNING_MODE},
+
 
     // kinematics controls
 #if KINEMATICS==KINE_FOUR_CABLE

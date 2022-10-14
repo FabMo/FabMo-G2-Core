@@ -161,6 +161,13 @@
 
 #ifndef MANUAL_FEEDRATE_OVERRIDE_PARAMETER
 #define MANUAL_FEEDRATE_OVERRIDE_PARAMETER 1.00
+
+//2dm
+#endif
+
+#ifndef PLANNING_MODE
+#define PLANNING_MODE               PLAN_3D     // PLAN_2D, PLAN_3D
+
 #endif
 
 // *** Communications and Reporting Settings *** //

@@ -1,0 +1,233 @@
+Searching 175 files for "PLANNING_MODE"
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.cpp:
+ 2306  stat_t cm_set_tro(nvObj_t *nv)  { return(set_float_range(nv, cm->gmx.mto_factor, TRAVERSE_OVERRIDE_MIN, TRAVERSE_OVERRIDE_MAX)); }
+ 2307  
+ 2308: stat_t cm_get_plmo(nvObj_t *nv) { return(get_integer(nv, cm->gmx.planning_mode)); }
+ 2309: stat_t cm_set_plmo(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.planning_mode, 2, 4)); }
+ 2310  
+ 2311  /*** Canonical Machine Gcode Defaults ***/
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\config_app.cpp:
+  727      { "",   "me",  _f0,   0, st_print_me,  get_nul,    st_set_me,  nullptr, 0 },    // SET to enable motors
+  728      { "",   "md",  _f0,   0, st_print_md,  get_nul,    st_set_md,  nullptr, 0 },    // SET to disable motors
+  729:     { "sys","plmo",_iipn, 0, cm_print_plmo,cm_get_plmo,cm_set_plmo,nullptr, PLANNING_MODE},
+  730  
+  731      // Communications and reporting parameters
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\gcode.h:
+  225      bool mto_enable;                    // traverse override enable
+  226      float mto_factor;                   // valid from 0.05 to 1.00
+  227:     uint8_t planning_mode;              // 2=2d planning, 3=3d planning (default)
+  228  
+  229      bool g92_offset_enable;             // G92 offsets enabled/disabled.  0=disabled, 1=enabled
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\plan_line.cpp:
+  644          } else {
+  645              // compute length of linear move in millimeters divided by the feed rate provided as mm/min
+  646:             if (cm->gmx.planning_mode == PLAN_3D) {
+  647                  feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + 
+  648                                   axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W])
+  ...
+  748      for (uint8_t axis = 0; axis < AXES; axis++) {
+  749  
+  750:         if (cm->gmx.planning_mode == PLAN_2DB) {    // do not incorporate Z/W cornering if in 2D mode B 
+  751              if (axis == AXIS_Z || axis == AXIS_W) { 
+  752                  continue;
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\settings\settings_default.h:
+  142  #endif
+  143  
+  144: #ifndef PLANNING_MODE
+  145: #define PLANNING_MODE               PLAN_3D     // PLAN_2D, PLAN_3D
+  146  #endif
+  147  
+
+8 matches across 5 files
+
+
+Searching 175 files for "plmo"
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.cpp:
+ 2306  stat_t cm_set_tro(nvObj_t *nv)  { return(set_float_range(nv, cm->gmx.mto_factor, TRAVERSE_OVERRIDE_MIN, TRAVERSE_OVERRIDE_MAX)); }
+ 2307  
+ 2308: stat_t cm_get_plmo(nvObj_t *nv) { return(get_integer(nv, cm->gmx.planning_mode)); }
+ 2309: stat_t cm_set_plmo(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.planning_mode, 2, 4)); }
+ 2310  
+ 2311  /*** Canonical Machine Gcode Defaults ***/
+ ....
+ 2439  static const char fmt_troe[] = "[troe] traverse over enable%8d [0=disable,1=enable]\n";
+ 2440  static const char fmt_tro[]  = "[tro]  traverse override%15.3f [0.05 < mto < 1.00]\n";
+ 2441: static const char fmt_plmo[] = "[plmo] 2d/3d planning mode%9d [2=2d, 3=3d]\n";
+ 2442  static const char fmt_tram[] = "[tram] is coordinate space rotated to be tram %s\n";
+ 2443  static const char fmt_nxln[] = "[nxln] next line number %lu\n";
+ ....
+ 2448  void cm_print_troe(nvObj_t *nv) { text_print(nv, fmt_troe);}    // TYPE INT
+ 2449  void cm_print_tro(nvObj_t *nv)  { text_print(nv, fmt_tro);}     // TYPE FLOAT
+ 2450: void cm_print_plmo(nvObj_t *nv) { text_print(nv, fmt_plmo);}    // TYPE INT
+ 2451  void cm_print_tram(nvObj_t *nv) { text_print(nv, fmt_tram);};   // TYPE BOOL
+ 2452  void cm_print_nxln(nvObj_t *nv) { text_print(nv, fmt_nxln);};   // TYPE INT
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.h:
+  649  stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
+  650  
+  651: stat_t cm_get_plmo(nvObj_t *nv);        // get planner mode - 2d/3d
+  652: stat_t cm_set_plmo(nvObj_t *nv);        // set planner mode - 2d/3d
+  653  
+  654  stat_t cm_set_tram(nvObj_t *nv);        // attempt setting the rotation matrix
+  ...
+  719      void cm_print_tro(nvObj_t *nv);
+  720  
+  721:     void cm_print_plmo(nvObj_t *nv);
+  722      void cm_print_tram(nvObj_t *nv);        // print if the axis has been rotated
+  723      void cm_print_nxln(nvObj_t *nv);    // print the value of the next line number expected
+  ...
+  787      #define cm_print_troe tx_print_stub
+  788      #define cm_print_tro tx_print_stub
+  789:     #define cm_print_plmo tx_print_stub
+  790      #define cm_print_tram tx_print_stub
+  791  
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\config_app.cpp:
+  727      { "",   "me",  _f0,   0, st_print_me,  get_nul,    st_set_me,  nullptr, 0 },    // SET to enable motors
+  728      { "",   "md",  _f0,   0, st_print_md,  get_nul,    st_set_md,  nullptr, 0 },    // SET to disable motors
+  729:     { "sys","plmo",_iipn, 0, cm_print_plmo,cm_get_plmo,cm_set_plmo,nullptr, PLANNING_MODE},
+  730  
+  731      // Communications and reporting parameters
+
+14 matches across 3 files
+
+
+Searching 175 files for " 2d"
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.cpp:
+ 2439  static const char fmt_troe[] = "[troe] traverse over enable%8d [0=disable,1=enable]\n";
+ 2440  static const char fmt_tro[]  = "[tro]  traverse override%15.3f [0.05 < mto < 1.00]\n";
+ 2441: static const char fmt_plmo[] = "[plmo] 2d/3d planning mode%9d [2=2d, 3=3d]\n";
+ 2442  static const char fmt_tram[] = "[tram] is coordinate space rotated to be tram %s\n";
+ 2443  static const char fmt_nxln[] = "[nxln] next line number %lu\n";
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.h:
+  649  stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
+  650  
+  651: stat_t cm_get_plmo(nvObj_t *nv);        // get planner mode - 2d/3d
+  652: stat_t cm_set_plmo(nvObj_t *nv);        // set planner mode - 2d/3d
+  653  
+  654  stat_t cm_set_tram(nvObj_t *nv);        // attempt setting the rotation matrix
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\plan_exec.cpp:
+  207      }
+  208  
+  209:     // bf points to a command block; start cases 1f, 1g, 1h, 1i, 1j, 1k, 2c, 2d, 2e, 2h, 2i, 2j
+  210      bool planned_something = false;
+  211  
+  ...
+  227      // process move                           
+  228      if (bf->block_type == BLOCK_TYPE_ALINE) {           // do cases 1a - 1e; finish cases 1f - 1k
+  229:         if (bf->buffer_state == MP_BUFFER_BACK_PLANNED) {// do 1a; finish 1f, 1j, 2d, 2i
+  230              _plan_aline(bf, entry_velocity);
+  231              planned_something = true;
+  ...
+  632   *        a = A, b = B, c = C, d = D, e = E, f = F
+  633   *        F_5(t+h)-F_5(t) = (5ah)t^4 + (10ah^2 + 4bh)t^3 + (10ah^3 + 6bh^2 + 3ch)t^2 +
+  634:  *            (5ah^4 + 4bh^3 + 3ch^2 + 2dh)t + ah^5 + bh^4 + ch^3 + dh^2 + eh
+  635   *
+  636   *        a = 5ah
+  637   *        b = 10ah^2 + 4bh
+  638   *        c = 10ah^3 + 6bh^2 + 3ch
+  639:  *        d = 5ah^4 + 4bh^3 + 3ch^2 + 2dh
+  640   *
+  641   *  (After substitution, simplification, and rearranging):
+  642   *        F_4(t+h)-F_4(t) = (20ah^2)t^3 + (60ah^3 + 12bh^2)t^2 + (70ah^4 + 24bh^3 + 6ch^2)t +
+  643:  *            30ah^5 + 14bh^4 + 6ch^3 + 2dh^2
+  644   *
+  645   *        a = (20ah^2)
+  ...
+  658   *  V be be at t = h/2 and iterate I-1 times. So, the resulting F_* values are (steps not shown):
+  659   *
+  660:  *        F_5 = (121Ah^5)/16 + 5Bh^4 + (13Ch^3)/4 + 2Dh^2 + Eh
+  661:  *        F_4 = (165Ah^5)/2 + 29Bh^4 + 9Ch^3 + 2Dh^2
+  662   *        F_3 = 255Ah^5 + 48Bh^4 + 6Ch^3
+  663   *        F_2 = 300Ah^5 + 24Bh^4
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\plan_line.cpp:
+  611   *    - 3D mode   (Machining)   - All XYZABC axes must obey full jerk constraints
+  612   *    - 2.5d mode (Contouring)  - Treat as 3D mode (at least for now)
+  613:  *    - 2D mode   (Routing)     - Routing moves: XY obey jerk, Z movement does not affect move time
+  614   *
+  615   *    - Case 1 - Z tab move w/XY movement - Z movement below 'delta' threshold
+  ...
+  626   *  Feedrate / move time planning
+  627   *    - 3D feed rate: Compute feed time as Cartesian sum of XYZUVW axes, or 3 rotary axes if no linear component
+  628:  *    - 2D feed rate: Compute feed time as Cartesian sum of XYUV axes, or 3 rotary axes if no linear component
+  629   *    - Velocity limit: Find the slowest axis and reduce move time if necessary 
+  630   */
+  ...
+  649                                   / bf->gm.feed_rate;
+  650              }            
+  651:             // in 2D mode the XY/UV plane is used to set feed rate
+  652              // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
+  653:             else { // 2D planning mode
+  654                  feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] +
+  655                                   axis_square[AXIS_U] + axis_square[AXIS_V])
+  ...
+  748      for (uint8_t axis = 0; axis < AXES; axis++) {
+  749  
+  750:         if (cm->gmx.planning_mode == PLAN_2DB) {    // do not incorporate Z/W cornering if in 2D mode B 
+  751              if (axis == AXIS_Z || axis == AXIS_W) { 
+  752                  continue;
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\xio.h:
+  257  010 1011    053    43    2B    +
+  258  010 1100    054    44    2C    ,
+  259: 010 1101    055    45    2D    -
+  260  010 1110    056    46    2E    .
+  261  010 1111    057    47    2F    /
+
+16 matches across 5 files
+
+
+Searching 175 files for " 2d/3d"
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.cpp:
+ 2439  static const char fmt_troe[] = "[troe] traverse over enable%8d [0=disable,1=enable]\n";
+ 2440  static const char fmt_tro[]  = "[tro]  traverse override%15.3f [0.05 < mto < 1.00]\n";
+ 2441: static const char fmt_plmo[] = "[plmo] 2d/3d planning mode%9d [2=2d, 3=3d]\n";
+ 2442  static const char fmt_tram[] = "[tram] is coordinate space rotated to be tram %s\n";
+ 2443  static const char fmt_nxln[] = "[nxln] next line number %lu\n";
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.h:
+  649  stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
+  650  
+  651: stat_t cm_get_plmo(nvObj_t *nv);        // get planner mode - 2d/3d
+  652: stat_t cm_set_plmo(nvObj_t *nv);        // set planner mode - 2d/3d
+  653  
+  654  stat_t cm_set_tram(nvObj_t *nv);        // attempt setting the rotation matrix
+
+3 matches across 2 files
+
+
+Searching 175 files for "planner mode"
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\canonical_machine.h:
+  649  stat_t cm_set_tro(nvObj_t *nv);         // set traverse override factor
+  650  
+  651: stat_t cm_get_plmo(nvObj_t *nv);        // get planner mode - 2d/3d
+  652: stat_t cm_set_plmo(nvObj_t *nv);        // set planner mode - 2d/3d
+  653  
+  654  stat_t cm_set_tram(nvObj_t *nv);        // attempt setting the rotation matrix
+
+C:\Users\Ted\Dropbox\GitHub\g2_private_extra\g2core\planner.cpp:
+   38   *
+   39   *  One important concept is isolation of state at the three layers of the data model -
+   40:  *  the Gcode model (gm), motion planner model (bf queue & mm), and motion runtime model (mr).
+   41   *  These are designated as "model", "planner" and "runtime" in function names.
+   42   *
+   ..
+   45   *  functions called by the canonical machine.
+   46   *
+   47:  *  The planner should only use data in the planner model. When a move (buffer) is ready for
+   48   *  execution the relevant data from the planner is transferred to the runtime model,
+   49   *  which should also be isolated.
+
+4 matches across 2 files
