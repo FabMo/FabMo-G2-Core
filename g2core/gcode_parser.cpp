@@ -940,9 +940,11 @@ stat_t _execute_gcode_block(char *active_comment)
 
     EXEC_FUNC(cm_m48_enable, m48_enable);
 
-    // if (gf.fro_control) {                                   // feedrate override
-    //     ritorno(cm_fro_control(gv.P_word, gf.P_word));
-    // }
+    ////##fro
+    if (gf.fro_control) {                                   // feedrate override
+        ritorno(cm_fro_control(gv.P_word, gf.P_word));
+    }
+
     // if (gf.tro_control) {                                   // traverse override
     //     ritorno(cm_tro_control(gv.P_word, gf.P_word));
     // }

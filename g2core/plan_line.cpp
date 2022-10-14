@@ -531,6 +531,7 @@ bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
     return false;
 }
 
+////## Important feed rate concepts and reference
 /****************************************************************************************
  * _calculate_vmaxes() - compute cruise_vmax and absolute_vmax based on velocity constraints
  *
@@ -639,8 +640,9 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
     bf->cruise_vmax   = bf->absolute_vmax;                  // starting value for cruise vmax to absolute highest
 }
 
+////## I removed this from FabMo-G2 in order to get e-p to compile and run correctly 2 years ago, it may work fine ...
 ////## Test Reversion to 101.03 for junction
-////## Is this version supporting 2D Mode as per 101.03?
+////## Is this version supporting 2D Mode as per 101.03? ... no, don't think so
 // /****************************************************************************************
 //  * _calculate_junction_vmax() - Giseburt's Algorithm ;-)
 //  *
