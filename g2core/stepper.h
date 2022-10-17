@@ -306,7 +306,8 @@ enum stPowerMode {
  *  The ARM is roughly the same as the DDA clock rate is 4x higher but the segment time is ~1/5
  *  Decreasing the nominal segment time increases the number precision.
  */
-#define DDA_SUBSTEPS (INT64_MAX-100)
+ #define DDA_SUBSTEPS (INT64_MAX-100)
+ #define DDA_HALF_SUBSTEPS (DDA_SUBSTEPS/2)
 
 /* Step correction settings
  *
@@ -366,6 +367,7 @@ typedef struct stRunMotor {                 // one per controlled motor
     int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     int64_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
+    bool start_new_block;                   ////## to be used in run and prep ??
     uint32_t power_systick;                 // sys_tick for next motor power state transition
     float power_level_dynamic;              // power level for this segment of idle
 } stRunMotor_t;
@@ -386,6 +388,9 @@ typedef struct stPrepMotor {
     int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     bool motor_flag;                        // true if motor is participating in this move
 
+////## Block Initialization Marker          // Used to set initial SUSBSTEP_HALF_DDA in a block to make moves symetrical
+    bool start_new_block;                   ////## to be used in run and prep ??
+    
     // direction and direction change
     uint8_t direction;                      // travel direction corrected for polarity (CW==0. CCW==1)
     uint8_t prev_direction;                 // travel direction from previous segment run for this motor
@@ -505,6 +510,7 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
+    virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };
     virtual void setPowerLevels(float active_pl, float idle_pl) { /* must override */ };
@@ -582,6 +588,8 @@ stat_t st_set_mt(nvObj_t *nv);
 stat_t st_set_md(nvObj_t *nv);
 stat_t st_set_me(nvObj_t *nv);
 stat_t st_get_dw(nvObj_t *nv);
+
+stat_t st_set_sc(nvObj_t *nv);
 
 #ifdef __TEXT_MODE
 
