@@ -187,7 +187,7 @@ void stepper_reset()
 ////##* Conceptual key to centering blocks within their alloted time // here probably redundant with later loading
         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
         st_run.mot[motor].start_new_block = true;           
-        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
+////        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
      
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
@@ -1318,43 +1318,44 @@ stat_t st_get_dw(nvObj_t *nv)
 ////stat_t st_get_scn(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCount())); }
 ////stat_t st_get_scu(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountUp())); }
 ////stat_t st_get_scd(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountDown())); }
-////stat_t st_set_sc(nvObj_t *nv)
-{
-    if (nv->value_int < 0) {
-        nv->valuetype = TYPE_NULL;
-        return (STAT_INPUT_LESS_THAN_MIN_VALUE);
-    }
-    if (nv->value_int > 0) {
-        nv->valuetype = TYPE_NULL;
-        return (STAT_INPUT_EXCEEDS_MAX_VALUE);
-    }
+//// stat_t st_set_sc(nvObj_t *nv) {
 
-    // set all motor step counts to zero for consistency
-//    Motors[_motor(nv->index)]->resetStepCounts();
+////     if (nv->value_int < 0) {
+////         nv->valuetype = TYPE_NULL;
+////         return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+////     }
+////     if (nv->value_int > 0) {
+////         nv->valuetype = TYPE_NULL;
+////         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+////     }
 
-    for (uint8_t motor=0; motor<MOTORS; motor++) {
-        Motors[motor]->resetStepCounts();
+////     // set all motor step counts to zero for consistency
+//// //    Motors[_motor(nv->index)]->resetStepCounts();
+
+////     for (uint8_t motor=0; motor<MOTORS; motor++) {
+////         Motors[motor]->resetStepCounts();
 
 
-////##* this is messy ... needs some work
-////##* testing better zeroing; make efficient; zero stuff for g28.3?
-        st_run.mot[motor].substep_increment = 0;
-        st_pre.mot[motor].substep_increment = 0;
-        st_run.mot[motor].substep_increment_increment = 0;
-        st_pre.mot[motor].substep_increment_increment = 0;
-        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
-        st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
-        st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
-    }    
-    motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////##* set this up right ...
-    motor_2.setDirection(STEP_INITIAL_DIRECTION);
-    motor_3.setDirection(STEP_INITIAL_DIRECTION);
-    motor_4.setDirection(STEP_INITIAL_DIRECTION);
-    motor_5.setDirection(STEP_INITIAL_DIRECTION);
-    motor_6.setDirection(STEP_INITIAL_DIRECTION);
+//// ////##* this is messy ... needs some work
+//// ////##* testing better zeroing; make efficient; zero stuff for g28.3?
+////         st_run.mot[motor].substep_increment = 0;
+////         st_pre.mot[motor].substep_increment = 0;
+////         st_run.mot[motor].substep_increment_increment = 0;
+////         st_pre.mot[motor].substep_increment_increment = 0;
+////         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+////         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
+////         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
+////     }    
+////## this needed w/o stepctr?     
+////     motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////##* set this up right ...
+////     motor_2.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_3.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_4.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_5.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_6.setDirection(STEP_INITIAL_DIRECTION);
  
-    return (STAT_OK);
-}
+////     return (STAT_OK);
+//// }
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table
