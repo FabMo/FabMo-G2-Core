@@ -396,7 +396,7 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
 
 //#### CHANGES made to input switch behavior. Bias applied in BOTH polarity cases, with G2 interpreting
 //       differently. Creates an apparent Normally-Open / Normally-Closed; input-normally-low;
-//       input-normally_ high; with normal condition interpreted by G2 as OFF.   
+//       input-normally_ high; with normal condition interpreted by G2 as OFF.
 
     // In constructor, simply forward all values to the Pin_t
     // To get a different behavior, override this object.
