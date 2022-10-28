@@ -162,7 +162,6 @@ void stepper_init()
     // setup motor power levels and apply power level to stepper drivers
     for (uint8_t motor=0; motor<MOTORS; motor++) {
         Motors[motor]->setPowerLevels(st_cfg.mot[motor].power_level, st_cfg.mot[motor].power_level_idle);
-        Motors[motor]->resetStepCounts();
     }
 
     dda_timer.start();                          // start the DDA timer if not already running
@@ -188,7 +187,7 @@ void stepper_reset()
 ////##* Conceptual key to centering blocks within their alloted time // here probably redundant with later loading
         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
         st_run.mot[motor].start_new_block = true;           
-        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
+////        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
      
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
@@ -300,6 +299,7 @@ void dda_timer_type::interrupt()
     // clear all steps from the previous interrupt
     motor_1.stepEnd();
     motor_2.stepEnd();
+
 #if MOTORS > 2
     motor_3.stepEnd();
 #endif
@@ -379,7 +379,6 @@ void dda_timer_type::interrupt()
     // One more interrupt will occur to turn of any pulses set in this pass.
     if (--st_run.dda_ticks_downcount == 0) {
         _load_move();       // load the next move at the current interrupt level
-        //motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
     }
 } // MOTATE_TIMER_INTERRUPT
 } // namespace Motate
@@ -476,6 +475,28 @@ static void _load_move()
     // Be aware that dda_ticks_downcount must equal zero for the loader to run.
     // So the initial load must also have this set to zero as part of initialization
 
+    ////## Test additional step-pin turn-off here to clean up large pulse (~20uS) when coincident with segment change
+    //       -probably need a better method; placed here the contingent pulse becomes ~3.4uS or ~7uS
+    //       -placed after st_runtime_isBusy(); contingent pulse becomes ~6.3uS or ~10uS
+    //       -and place after the segment loading work below it becomes ~7uS or ~16uS
+    //       ## I'm testing this out for a bit .... (all values above are for DDA_FREQ 100K)
+    //       ### There is still a very rare 20uS and 16uS pulse unrelated to segment or anything else obvious
+        motor_1.stepEnd();
+        motor_2.stepEnd();
+#if MOTORS > 2
+        motor_3.stepEnd();
+#endif
+#if MOTORS > 3
+        motor_4.stepEnd();
+#endif
+#if MOTORS > 4
+        motor_5.stepEnd();
+#endif
+#if MOTORS > 5
+        motor_6.stepEnd();
+#endif
+
+
     if (st_runtime_isbusy()) {
         return;                     // exit if the runtime is busy
     }
@@ -529,27 +550,29 @@ static void _load_move()
             //    Set the direction bit in hardware.
             //    Compensate for direction change by flipping substep accumulator value about its midpoint.
 
-////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [NOT USING DIRECTION CHANGE TEST]
+////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [WE ARE NO LONGER USING DIRECTION CHANGE TEST]
             if (st_pre.mot[MOTOR_1].start_new_block) {
                 st_pre.mot[MOTOR_1].prev_direction = st_pre.mot[MOTOR_1].direction;
-    ////##* Make transitional time to first step in new block 1/2 the DDA_SUBSTEPS; should leave the last step in block roughly symetrical if computed correctly
+    ////##* Make transitional time to first step in new block 1/2 the DDA_SUBSTEPS;
+    ////      - Originally, their was consideralbe wandering of the location of the last step because of the imprecision of timing based on requested target locations;
+    ////      - This has been fixed in plan_line so that all planning is done to true (step-based) target locations.
                 st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
-                motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT]
+                motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT and source of much error]
                 st_pre.mot[MOTOR_1].start_new_block = false;
-                //motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
 
             // Enable the stepper and start/update motor power management
             motor_1.enable();
-            SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);      ////##* Don't think we will need the encoder stuff
+            SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);      ////##* Don't think we will need the encoder stuff now (see Nudge).
 
         } else {  // Motor has 0 steps; might need to energize motor for power mode processing
             st_run.mot[MOTOR_1].substep_increment_increment = 0;
             motor_1.motionStopped();
         }
         // accumulate counted steps to the step position and zero out counted steps for the segment currently being loaded
-        ACCUMULATE_ENCODER(MOTOR_1);                                            ////##* Don't think we will need the encoder stuff
+        ACCUMULATE_ENCODER(MOTOR_1);                                            ////##* Don't think we will need the encoder stuff now (see Nudge).
 
+////##* All subsequent motors should match #1
 #if (MOTORS >= 2)
         if ((st_run.mot[MOTOR_2].substep_increment = st_pre.mot[MOTOR_2].substep_increment) != 0) {
             st_run.mot[MOTOR_2].substep_increment_increment = st_pre.mot[MOTOR_2].substep_increment_increment;
@@ -558,7 +581,6 @@ static void _load_move()
                 st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
                 st_pre.mot[MOTOR_2].start_new_block = false;
-                //motor_5.stepStart(); ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
             motor_2.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
@@ -573,10 +595,9 @@ static void _load_move()
             st_run.mot[MOTOR_3].substep_increment_increment = st_pre.mot[MOTOR_3].substep_increment_increment;
             if (st_pre.mot[MOTOR_3].start_new_block) {
                 st_pre.mot[MOTOR_3].prev_direction = st_pre.mot[MOTOR_3].direction;
-                st_run.mot[MOTOR_3].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_3].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_3].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
                 st_pre.mot[MOTOR_3].start_new_block = false;
-                //motor_5.stepStart(); ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
             motor_3.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
@@ -591,7 +612,7 @@ static void _load_move()
             st_run.mot[MOTOR_4].substep_increment_increment = st_pre.mot[MOTOR_4].substep_increment_increment;
             if (st_pre.mot[MOTOR_4].start_new_block) {
                 st_pre.mot[MOTOR_4].prev_direction = st_pre.mot[MOTOR_4].direction;
-                st_run.mot[MOTOR_4].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_4].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_4.setDirection(st_pre.mot[MOTOR_4].direction);
                 st_pre.mot[MOTOR_4].start_new_block = false;
             }
@@ -608,7 +629,7 @@ static void _load_move()
             st_run.mot[MOTOR_5].substep_increment_increment = st_pre.mot[MOTOR_5].substep_increment_increment;
             if (st_pre.mot[MOTOR_5].start_new_block) {
                 st_pre.mot[MOTOR_5].prev_direction = st_pre.mot[MOTOR_5].direction;
-                st_run.mot[MOTOR_5].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_5].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_5.setDirection(st_pre.mot[MOTOR_5].direction);
                 st_pre.mot[MOTOR_5].start_new_block = false;
             }
@@ -625,7 +646,7 @@ static void _load_move()
             st_run.mot[MOTOR_6].substep_increment_increment = st_pre.mot[MOTOR_6].substep_increment_increment;
             if (st_pre.mot[MOTOR_6].start_new_block) {
                 st_pre.mot[MOTOR_6].prev_direction = st_pre.mot[MOTOR_6].direction;
-                st_run.mot[MOTOR_6].substep_accumulator = -(DDA_SUBSTEPS + st_run.mot[MOTOR_6].substep_accumulator); // invert the accumulator for the direction change
+                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_6.setDirection(st_pre.mot[MOTOR_6].direction);
                 st_pre.mot[MOTOR_6].start_new_block = false;
             }
@@ -728,23 +749,28 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
             st_pre.mot[motor].step_sign = -1;
         }
 
-
+////##* So far, all my testing confirms that we are no longer generating any encoder or following errors!
+////      Thus I have commented this out, and will eventually remove all the calcs it is based on.
+////         - For the moment, we may want to keep it available as a test. The new 'if' will only test
+////             ... test at blocks intervals, otherwise all sections are tested.
         // 'Nudge' correction strategy. Inject a single, scaled correction value then hold off
         // NOTE: This clause can be commented out to test for numerical accuracy and accumulating errors
-        if ((--st_pre.mot[motor].correction_holdoff < 0) &&
-            (std::abs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
+    ////    if (st_pre.mot[motor].start_new_block) { 
+    ////     if ((--st_pre.mot[motor].correction_holdoff < 0) &&
+    ////        (std::abs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
 
-            st_pre.mot[motor].correction_holdoff = STEP_CORRECTION_HOLDOFF;
-            correction_steps = following_error[motor] * STEP_CORRECTION_FACTOR;
+    ////          st_pre.mot[motor].correction_holdoff = STEP_CORRECTION_HOLDOFF;
+    ////          correction_steps = following_error[motor] * STEP_CORRECTION_FACTOR;
 
-            if (correction_steps > 0) {
-                correction_steps = std::min(std::min(correction_steps, std::abs(steps)), STEP_CORRECTION_MAX);
-            } else {
-                correction_steps = std::max(std::max(correction_steps, -std::abs(steps)), -STEP_CORRECTION_MAX);
-            }
-            st_pre.mot[motor].corrected_steps += correction_steps;
-            steps -= correction_steps;
-        }
+    ////          if (correction_steps > 0) {
+    ////              correction_steps = std::min(std::min(correction_steps, std::abs(steps)), STEP_CORRECTION_MAX);
+    ////          } else {
+    ////              correction_steps = std::max(std::max(correction_steps, -std::abs(steps)), -STEP_CORRECTION_MAX);
+    ////          }
+    ////          st_pre.mot[motor].corrected_steps += correction_steps;
+    ////          steps -= correction_steps;
+    ////     }
+    ////    } 
 
         // Compute substep increment. The accumulator must be *exactly* the incoming
         // fractional steps times the substep multiplier or positional drift will occur.
@@ -843,23 +869,23 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
             st_pre.mot[motor].step_sign = -1;
         }
 
-
+////##* Commented out as per above. We do not use this function in any case ...
         // 'Nudge' correction strategy. Inject a single, scaled correction value then hold off
         // NOTE: This clause can be commented out to test for numerical accuracy and accumulating errors
-        if ((--st_pre.mot[motor].correction_holdoff < 0) &&
-            (std::abs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
+        //// if ((--st_pre.mot[motor].correction_holdoff < 0) &&
+        ////     (std::abs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
 
-            st_pre.mot[motor].correction_holdoff = STEP_CORRECTION_HOLDOFF;
-            correction_steps = following_error[motor] * STEP_CORRECTION_FACTOR;
+        ////     st_pre.mot[motor].correction_holdoff = STEP_CORRECTION_HOLDOFF;
+        ////     correction_steps = following_error[motor] * STEP_CORRECTION_FACTOR;
 
-            if (correction_steps > 0) {
-                correction_steps = std::min(std::min(correction_steps, std::abs(steps)), STEP_CORRECTION_MAX);
-            } else {
-                correction_steps = std::max(std::max(correction_steps, -std::abs(steps)), -STEP_CORRECTION_MAX);
-            }
-            st_pre.mot[motor].corrected_steps += correction_steps;
-            steps -= correction_steps;
-        }
+        ////     if (correction_steps > 0) {
+        ////         correction_steps = std::min(std::min(correction_steps, std::abs(steps)), STEP_CORRECTION_MAX);
+        ////     } else {
+        ////         correction_steps = std::max(std::max(correction_steps, -std::abs(steps)), -STEP_CORRECTION_MAX);
+        ////     }
+        ////     st_pre.mot[motor].corrected_steps += correction_steps;
+        ////     steps -= correction_steps;
+        //// }
 
         // All math is explained in the previous function
 
@@ -1288,41 +1314,48 @@ stat_t st_get_dw(nvObj_t *nv)
     return (STAT_OK);
 }
 
-stat_t st_set_sc(nvObj_t *nv)
-{
-    if (nv->value_int < 0) {
-        nv->valuetype = TYPE_NULL;
-        return (STAT_INPUT_LESS_THAN_MIN_VALUE);
-    }
-    if (nv->value_int > 0) {
-        nv->valuetype = TYPE_NULL;
-        return (STAT_INPUT_EXCEEDS_MAX_VALUE);
-    }
+////## stuff in here from Matt, Me and others ... needs working through
+////stat_t st_get_scn(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCount())); }
+////stat_t st_get_scu(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountUp())); }
+////stat_t st_get_scd(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountDown())); }
+//// stat_t st_set_sc(nvObj_t *nv) {
 
-    // set all motor step counts to zero for consistency
-//    Motors[_motor(nv->index)]->resetStepCounts();
+////     if (nv->value_int < 0) {
+////         nv->valuetype = TYPE_NULL;
+////         return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+////     }
+////     if (nv->value_int > 0) {
+////         nv->valuetype = TYPE_NULL;
+////         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+////     }
 
-    for (uint8_t motor=0; motor<MOTORS; motor++) {
-        Motors[motor]->resetStepCounts();
+////     // set all motor step counts to zero for consistency
+//// //    Motors[_motor(nv->index)]->resetStepCounts();
 
-////## testing better zeroing; make efficient; add encoder stuff
-        st_run.mot[motor].substep_increment = 0;
-        st_pre.mot[motor].substep_increment = 0;
-        st_run.mot[motor].substep_increment_increment = 0;
-        st_pre.mot[motor].substep_increment_increment = 0;
-        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
-        st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
-        st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
-    }    
-    motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////## set this up right ...
-    motor_2.setDirection(STEP_INITIAL_DIRECTION);
-    motor_3.setDirection(STEP_INITIAL_DIRECTION);
-    motor_4.setDirection(STEP_INITIAL_DIRECTION);
-    motor_5.setDirection(STEP_INITIAL_DIRECTION);
-    motor_6.setDirection(STEP_INITIAL_DIRECTION);
+////     for (uint8_t motor=0; motor<MOTORS; motor++) {
+////         Motors[motor]->resetStepCounts();
+
+
+//// ////##* this is messy ... needs some work
+//// ////##* testing better zeroing; make efficient; zero stuff for g28.3?
+////         st_run.mot[motor].substep_increment = 0;
+////         st_pre.mot[motor].substep_increment = 0;
+////         st_run.mot[motor].substep_increment_increment = 0;
+////         st_pre.mot[motor].substep_increment_increment = 0;
+////         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+////         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
+////         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
+////     }    
+////## this needed w/o stepctr?     
+////     motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////##* set this up right ...
+////     motor_2.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_3.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_4.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_5.setDirection(STEP_INITIAL_DIRECTION);
+////     motor_6.setDirection(STEP_INITIAL_DIRECTION);
  
-    return (STAT_OK);
-}
+////     return (STAT_OK);
+//// }
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table

@@ -510,7 +510,6 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
-    virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };
     virtual void setPowerLevels(float active_pl, float idle_pl) { /* must override */ };
@@ -588,8 +587,6 @@ stat_t st_set_mt(nvObj_t *nv);
 stat_t st_set_md(nvObj_t *nv);
 stat_t st_set_me(nvObj_t *nv);
 stat_t st_get_dw(nvObj_t *nv);
-
-stat_t st_set_sc(nvObj_t *nv);
 
 #ifdef __TEXT_MODE
 
