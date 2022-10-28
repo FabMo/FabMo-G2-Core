@@ -468,9 +468,8 @@ stat_t mp_exec_aline(mpBuf_t *bf)
             }
         }
 
-        //motor_5.stepStart();             ////## (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
 
-        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
+        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors (maybe just a 'st_pre' flag)?
         for (uint8_t motor=0; motor<MOTORS; motor++) { 
             st_pre.mot[motor].start_new_block = true;
         }          
