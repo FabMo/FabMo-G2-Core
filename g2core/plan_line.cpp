@@ -197,18 +197,23 @@ stat_t mp_aline(GCodeState_t* _gm)
     target_rotated[AXIS_C] = _gm->target[AXIS_C];
 
 ////##* Rob & Kyle, This is where we convert locations to true step target locations (and
-////      ... then put them back in the original units)
-////       - There is probably a better c++ way to do this ('long int' right ?)
-////       - Even then, this is very inefficient! (the whole thing should be done with steps!)
-////       - Also, note that in handling of steps_pre_unit, I have confounded motor#s with axis#s
+////      ... then put them back in the original units){note that the float might be a little imprecise, but this won't effect anything and does not accumulate}
+////       - There is probably a better c++ way to do this math (is 'long int' right ?)
+////       - Even then, this is very inefficient! (the whole thing should be done with steps!; but we are stuck with g2's method for setting accelerations)
+////       - Also, note that in handling of steps_per_unit, I have confounded motor#s with axis#s
 ////          ... but since g2 does that in kinematics_cartesian anyway, I don't feel to bad;
-////          ..... but noting that there may be a cleaner way to handle it.
-////       - This could be put in the next loop, but I put it here for the moment so you could
+////          ..... just noting that there may be a cleaner way to handle it.
+////       - The following work could be put in the subsequent loop, but I put it here for the moment so you could
 ////          ... see what is going on.
+////##Have repaired the rounding to full steps for the case of negative locations
+////       - Steps are a little special because we want to honor the best step estimate of distance from 0;
+////          ... so negative locations are the done with absolute values to mirror positive locations in steps from zero for the same value.
     long int temp_toSteps;
     for (uint8_t axis = 0; axis < AXES; axis++) {
-        temp_toSteps = ((target_rotated[axis] * st_cfg.mot[axis].steps_per_unit) + .5);  // round interger of full steps 
-        target_rotated[axis] = temp_toSteps / st_cfg.mot[axis].steps_per_unit;           // convert back to float of true target location
+        int temp_sign = 1;
+        if (target_rotated[axis] < 0 ) temp_sign = -1;
+        temp_toSteps = ((std::abs(target_rotated[axis]) * st_cfg.mot[axis].steps_per_unit) + .5);   // round interger of full steps 
+        target_rotated[axis] = (temp_toSteps * temp_sign) / st_cfg.mot[axis].steps_per_unit;        // convert back to float of true target location and asign sign
     }
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
