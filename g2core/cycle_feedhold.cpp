@@ -406,7 +406,17 @@ void cm_request_cycle_start()
         }
     } else {                                        // execute cycle start directly
         if (mp_has_runnable_buffer(&mp1)) {
+
+////##ted, cleanly starting a new block here ... ck this out
             cm_cycle_start();
+
+            motor_5.stepStart();             ////##temp diagnositc (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
+
+        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
+        for (uint8_t motor=0; motor<MOTORS; motor++) { 
+            st_pre.mot[motor].start_new_block = true;
+        }          
+
             st_request_exec_move();
         }
         cm1.cycle_start_state = CYCLE_START_OFF;
@@ -653,6 +663,8 @@ void _start_p2_feedhold()
  * Encapsulate entering and exiting p2, as this is tricky and must be done exactly right
  */
 
+
+////##ted, note this is entry into P2 !!!
 void _enter_p2()
 {
     // Copy the primary canonical machine to the secondary. Here it's OK to co a memcpy.
@@ -682,6 +694,7 @@ void _enter_p2()
     copy_vector(mp2.position, mr1.position);
     copy_vector(mr2.position, mr1.position);
 
+////##ted, probably don't need this stuff ... unless there is some restart consequence ???
     // Copy MR position and encoder terms - needed for following error correction state
     copy_vector(mr2.target_steps, mr1.target_steps);
     copy_vector(mr2.position_steps, mr1.position_steps);
@@ -820,6 +833,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
                 }
             } else {
                 // cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
+                ////##ted, note that this is from earlier work, not recent step counting
                 ////## for this standard pull up on FeedHold
                 ////## Need Z to pull to fixed location; 
                 ////##  and, BETTER pull to fixed location if not above
@@ -896,6 +910,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         coolant_control_sync(COOLANT_RESUME, COOLANT_BOTH); // resume coolant if paused
         spindle_resume();                                   // resume spindle if paused
 
+////##ted, last stop before continuing after feedhold
         // do return move though an intermediate point; queue a wait
         cm2.return_flags[AXIS_Z] = false;
         cm_goto_g30_position_mm(cm2.gmx.g30_position, cm2.return_flags);
@@ -943,8 +958,17 @@ stat_t _run_restart_cycle(void)
     }
     cm1.hold_state = FEEDHOLD_OFF;          // must precede st_request_exec_move()
 
+////##ted, second place where we are cleanly starting a new block ... Check!
     if (mp_has_runnable_buffer(&mp1)) {
+
         cm_cycle_start();
+        motor_5.stepStart();             ////## marking (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
+
+        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
+        for (uint8_t motor=0; motor<MOTORS; motor++) { 
+            st_pre.mot[motor].start_new_block = true;
+        }          
+
         st_request_exec_move();
     } else {
         cm_cycle_end();
