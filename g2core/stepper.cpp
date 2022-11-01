@@ -733,7 +733,6 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
     // this is explained later
     double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
 
-    float correction_steps;
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
 
@@ -851,7 +850,6 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
     //st_pre.dda_period = _f_to_period(FREQUENCY_DDA);                // FYI: this is a constant
     st_pre.dda_ticks = (int32_t)(segment_time * 60 * FREQUENCY_DDA);// NB: converts minutes to seconds
 
-    float correction_steps;
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
 
