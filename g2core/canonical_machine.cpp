@@ -1551,7 +1551,7 @@ void cm_message(const char *message)
 /****************************************************************************************
  **** Overrides *************************************************************************
  ****************************************************************************************/
-
+////## ... starting to explore FEED RATE OVERRIDE; '////##fro' indicates uncommented lines for commit ...
 /****************************************************************************************
  * cm_reset_overrides() - reset manual feedrate and spindle overrides to initial conditions
  */
@@ -1637,34 +1637,35 @@ stat_t cm_m48_enable(uint8_t enable)        // M48, M49
  *                                                  (Note: new ramp will supercede any existing ramp)
  */
 
-// stat_t cm_fro_control(const float P_word, const bool P_flag) // M50
-// {
-//     bool new_enable = true;
-//     bool new_override = false;
-//     if (P_flag) {                           // if parameter is present in Gcode block
-//         if (fp_ZERO(P_word)) {
-//             new_enable = false;             // P0 disables override
-//         } else {
-//             if (P_word < FEED_OVERRIDE_MIN) {
-//                 return (STAT_INPUT_LESS_THAN_MIN_VALUE);
-//             }
-//             if (P_word > FEED_OVERRIDE_MAX) {
-//                 return (STAT_INPUT_EXCEEDS_MAX_VALUE);
-//             }
-//             cm->gmx.mfo_factor = P_word;    // P word is valid, store it.
-//             new_override = true;
-//         }
-//     }
-//     if (cm->gmx.m48_enable) {               // if master enable is ON
-//         if (new_enable && (new_override || !cm->gmx.mfo_enable)) {   // 3 cases to start a ramp
-//             mp_start_feed_override(FEED_OVERRIDE_RAMP_TIME, cm->gmx.mfo_factor);
-//         } else if (cm->gmx.mfo_enable && !new_enable) {              // case to turn off the ramp
-//             mp_end_feed_override(FEED_OVERRIDE_RAMP_TIME);
-//         }
-//     }
-//     cm->gmx.mfo_enable = new_enable;        // always update the enable state
-//     return (STAT_OK);
-// }
+////##fro
+stat_t cm_fro_control(const float P_word, const bool P_flag) // M50
+{
+    bool new_enable = true;
+    bool new_override = false;
+    if (P_flag) {                           // if parameter is present in Gcode block
+        if (fp_ZERO(P_word)) {
+            new_enable = false;             // P0 disables override
+        } else {
+            if (P_word < FEED_OVERRIDE_MIN) {
+                return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+            }
+            if (P_word > FEED_OVERRIDE_MAX) {
+                return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+            }
+            cm->gmx.mfo_factor = P_word;    // P word is valid, store it.
+            new_override = true;
+        }
+    }
+    if (cm->gmx.m48_enable) {               // if master enable is ON
+        if (new_enable && (new_override || !cm->gmx.mfo_enable)) {   // 3 cases to start a ramp
+            mp_start_feed_override(FEED_OVERRIDE_RAMP_TIME, cm->gmx.mfo_factor);
+        } else if (cm->gmx.mfo_enable && !new_enable) {              // case to turn off the ramp
+            mp_end_feed_override(FEED_OVERRIDE_RAMP_TIME);
+        }
+    }
+    cm->gmx.mfo_enable = new_enable;        // always update the enable state
+    return (STAT_OK);
+}
 
 // stat_t cm_tro_control(const float P_word, const bool P_flag) // M50.1
 // {
@@ -2512,6 +2513,10 @@ stat_t cm_set_troe(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.mto_
 stat_t cm_get_tro(nvObj_t *nv)  { return(get_float(nv, cm->gmx.mto_factor)); }
 stat_t cm_set_tro(nvObj_t *nv)  { return(set_float_range(nv, cm->gmx.mto_factor, TRAVERSE_OVERRIDE_MIN, TRAVERSE_OVERRIDE_MAX)); }
 
+//2dm
+stat_t cm_get_plmo(nvObj_t *nv) { return(get_integer(nv, cm->gmx.planning_mode)); }
+stat_t cm_set_plmo(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->gmx.planning_mode, 2, 4)); }
+
 stat_t cm_get_gpl(nvObj_t *nv) { return(get_integer(nv, cm->default_select_plane)); }
 stat_t cm_set_gpl(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_select_plane, CANON_PLANE_XY, CANON_PLANE_YZ)); }
 
@@ -3032,6 +3037,10 @@ static const char fmt_froe[] = "[froe] feed override enable%8d [0=disable,1=enab
 static const char fmt_fro[]  = "[fro]  feedrate override%15.3f [0.05 < mfo < 2.00]\n";
 static const char fmt_troe[] = "[troe] traverse over enable%8d [0=disable,1=enable]\n";
 static const char fmt_tro[]  = "[tro]  traverse override%15.3f [0.05 < mto < 1.00]\n";
+
+//2dm
+static const char fmt_plmo[] = "[plmo] 2d/3d planning mode%9d [2=2d, 3=3d]\n";
+
 static const char fmt_tram[] = "[tram] is coordinate space rotated to be tram %s\n";
 static const char fmt_nxln[] = "[nxln] next line number %lu\n";
 
@@ -3040,6 +3049,7 @@ void cm_print_froe(nvObj_t *nv) { text_print(nv, fmt_froe);}    // TYPE INT
 void cm_print_fro(nvObj_t *nv)  { text_print(nv, fmt_fro);}     // TYPE FLOAT
 void cm_print_troe(nvObj_t *nv) { text_print(nv, fmt_troe);}    // TYPE INT
 void cm_print_tro(nvObj_t *nv)  { text_print(nv, fmt_tro);}     // TYPE FLOAT
+void cm_print_plmo(nvObj_t *nv)  { text_print(nv, fmt_plmo);}    // TYPE_INT
 void cm_print_tram(nvObj_t *nv) { text_print(nv, fmt_tram);};   // TYPE BOOL
 void cm_print_nxln(nvObj_t *nv) { text_print(nv, fmt_nxln);};   // TYPE INT
 

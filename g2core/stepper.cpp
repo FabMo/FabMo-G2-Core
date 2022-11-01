@@ -159,9 +159,10 @@ void stepper_init()
     board_stepper_init();
     stepper_reset();                            // reset steppers to known state
 
-    // setup motor power levels and apply power level to stepper drivers
+    // setup motor power levels, apply power level to stepper drivers and reset step pulse counts
     for (uint8_t motor=0; motor<MOTORS; motor++) {
         Motors[motor]->setPowerLevels(st_cfg.mot[motor].power_level, st_cfg.mot[motor].power_level_idle);
+        Motors[motor]->resetStepCounts();
     }
 
     dda_timer.start();                          // start the DDA timer if not already running
@@ -187,7 +188,7 @@ void stepper_reset()
 ////##* Conceptual key to centering blocks within their alloted time // here probably redundant with later loading
         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
         st_run.mot[motor].start_new_block = true;           
-////        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
+        Motors[motor]->resetStepCounts();				// reset diagnostic internal step pulse counters
     }
      
     mp_set_steps_to_runtime_position();                 // reset encoder to agree with the above
@@ -501,6 +502,8 @@ static void _load_move()
         return;                     // exit if the runtime is busy
     }
 
+    motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
+
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
         motor_1.motionStopped();    // ...start motor power timeouts
@@ -559,6 +562,7 @@ static void _load_move()
                 st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
                 motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT and source of much error]
                 st_pre.mot[MOTOR_1].start_new_block = false;
+                motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
             }
 
             // Enable the stepper and start/update motor power management
@@ -581,6 +585,7 @@ static void _load_move()
                 st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
                 st_pre.mot[MOTOR_2].start_new_block = false;
+                motor_5.stepStart();   ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed 
             }
             motor_2.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
@@ -598,6 +603,7 @@ static void _load_move()
                 st_run.mot[MOTOR_3].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
                 st_pre.mot[MOTOR_3].start_new_block = false;
+                motor_5.stepStart();   ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed 
             }
             motor_3.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
@@ -727,7 +733,6 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
     // this is explained later
     double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
 
-    float correction_steps;
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
 
@@ -845,7 +850,6 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
     //st_pre.dda_period = _f_to_period(FREQUENCY_DDA);                // FYI: this is a constant
     st_pre.dda_ticks = (int32_t)(segment_time * 60 * FREQUENCY_DDA);// NB: converts minutes to seconds
 
-    float correction_steps;
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
 
@@ -1314,48 +1318,46 @@ stat_t st_get_dw(nvObj_t *nv)
     return (STAT_OK);
 }
 
-////## stuff in here from Matt, Me and others ... needs working through
-////stat_t st_get_scn(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCount())); }
-////stat_t st_get_scu(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountUp())); }
-////stat_t st_get_scd(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountDown())); }
-//// stat_t st_set_sc(nvObj_t *nv) {
+stat_t st_get_scn(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCount())); }
+stat_t st_get_scu(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountUp())); }
+stat_t st_get_scd(nvObj_t *nv) { return(get_integer(nv, Motors[_motor(nv->index)]->getStepCountDown())); }
+stat_t st_set_sc(nvObj_t *nv)
+{
+    if (nv->value_int < 0) {
+        nv->valuetype = TYPE_NULL;
+        return (STAT_INPUT_LESS_THAN_MIN_VALUE);
+    }
+    if (nv->value_int > 0) {
+        nv->valuetype = TYPE_NULL;
+        return (STAT_INPUT_EXCEEDS_MAX_VALUE);
+    }
 
-////     if (nv->value_int < 0) {
-////         nv->valuetype = TYPE_NULL;
-////         return (STAT_INPUT_LESS_THAN_MIN_VALUE);
-////     }
-////     if (nv->value_int > 0) {
-////         nv->valuetype = TYPE_NULL;
-////         return (STAT_INPUT_EXCEEDS_MAX_VALUE);
-////     }
+    // set all motor step counts to zero for consistency
+//    Motors[_motor(nv->index)]->resetStepCounts();
 
-////     // set all motor step counts to zero for consistency
-//// //    Motors[_motor(nv->index)]->resetStepCounts();
-
-////     for (uint8_t motor=0; motor<MOTORS; motor++) {
-////         Motors[motor]->resetStepCounts();
+    for (uint8_t motor=0; motor<MOTORS; motor++) {
+        Motors[motor]->resetStepCounts();
 
 
-//// ////##* this is messy ... needs some work
-//// ////##* testing better zeroing; make efficient; zero stuff for g28.3?
-////         st_run.mot[motor].substep_increment = 0;
-////         st_pre.mot[motor].substep_increment = 0;
-////         st_run.mot[motor].substep_increment_increment = 0;
-////         st_pre.mot[motor].substep_increment_increment = 0;
-////         st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
-////         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
-////         st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
-////     }    
-////## this needed w/o stepctr?     
-////     motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////##* set this up right ...
-////     motor_2.setDirection(STEP_INITIAL_DIRECTION);
-////     motor_3.setDirection(STEP_INITIAL_DIRECTION);
-////     motor_4.setDirection(STEP_INITIAL_DIRECTION);
-////     motor_5.setDirection(STEP_INITIAL_DIRECTION);
-////     motor_6.setDirection(STEP_INITIAL_DIRECTION);
+////##* this is messy ... needs some work
+////##* testing better zeroing; make efficient; zero stuff for g28.3?
+        st_run.mot[motor].substep_increment = 0;
+        st_pre.mot[motor].substep_increment = 0;
+        st_run.mot[motor].substep_increment_increment = 0;
+        st_pre.mot[motor].substep_increment_increment = 0;
+        st_run.mot[motor].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+        st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
+        st_pre.mot[motor].direction = STEP_INITIAL_DIRECTION;
+    }    
+    motor_1.setDirection(STEP_INITIAL_DIRECTION);  ////##* set this up right ...
+    motor_2.setDirection(STEP_INITIAL_DIRECTION);
+    motor_3.setDirection(STEP_INITIAL_DIRECTION);
+    motor_4.setDirection(STEP_INITIAL_DIRECTION);
+    motor_5.setDirection(STEP_INITIAL_DIRECTION);
+    motor_6.setDirection(STEP_INITIAL_DIRECTION);
  
-////     return (STAT_OK);
-//// }
+    return (STAT_OK);
+}
 /***********************************************************************************
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table
@@ -1386,6 +1388,9 @@ static const char fmt_0pm[] = "[%s%s] m%s power management%10d [0=disabled,1=alw
 static const char fmt_0pl[] = "[%s%s] m%s motor power level%13.3f [0.000=minimum, 1.000=maximum]\n";
 static const char fmt_0pi[] = "[%s%s] m%s motor idle power level%13.3f [0.000=minimum, 1.000=maximum]\n";
 static const char fmt_pwr[] = "[%s%s] Motor %c power level:%12.3f\n";
+static const char fmt_0scn[] = "[%s%s] m%s net step count: %d\n";
+static const char fmt_0scu[] = "[%s%s] m%s UP step count: %d\n";
+static const char fmt_0scd[] = "[%s%s] m%s DOWN step count: %d\n";
 
 void st_print_me(nvObj_t *nv) { text_print(nv, fmt_me);}    // TYPE_NULL - message only
 void st_print_md(nvObj_t *nv) { text_print(nv, fmt_md);}    // TYPE_NULL - message only
@@ -1427,5 +1432,8 @@ void st_print_pm(nvObj_t *nv) { _print_motor_int(nv, fmt_0pm);}
 void st_print_pl(nvObj_t *nv) { _print_motor_flt(nv, fmt_0pl);}
 void st_print_pi(nvObj_t *nv) { _print_motor_flt(nv, fmt_0pi);}
 void st_print_pwr(nvObj_t *nv){ _print_motor_pwr(nv, fmt_pwr);}
+void st_print_scn(nvObj_t *nv) { _print_motor_int(nv, fmt_0scn);}
+void st_print_scu(nvObj_t *nv) { _print_motor_int(nv, fmt_0scu);}
+void st_print_scd(nvObj_t *nv) { _print_motor_int(nv, fmt_0scd);}
 
 #endif // __TEXT_MODE

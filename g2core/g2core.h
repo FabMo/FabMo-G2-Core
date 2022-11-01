@@ -135,6 +135,14 @@ typedef enum {
     PWM_2
 } cmPWMs;
 
+//2dm
+typedef enum {
+    PLAN_2D = 2,
+    PLAN_3D = 3,
+    PLAN_2DB = 4
+} cmPlanningMode;
+
+
 /**********************************************************************************
  * AVR/ARM Compatibility
  *

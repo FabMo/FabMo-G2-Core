@@ -260,6 +260,7 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #define FEED_OVERRIDE_MIN           (0.05)              // 5% minimum
 #define FEED_OVERRIDE_MAX           (2.00)              // 200% maximum
 #define FEED_OVERRIDE_FACTOR        (1.00)              // initial value
+#define FEED_OVERRIDE_RAMP_TIME     (1.00)              ////##fro ////## just mad this up??; will probably need for traverse too
 
 #define TRAVERSE_OVERRIDE_ENABLE    false               // initial value
 #define TRAVERSE_OVERRIDE_MIN       (0.05)              // 5% minimum
@@ -613,8 +614,9 @@ bool mp_is_phat_city_time(void);
 
 stat_t mp_planner_callback();
 void mp_replan_queue(mpBuf_t *bf, bool back_too=false);
-// void mp_start_feed_override(const float ramp_time, const float override);
-// void mp_end_feed_override(const float ramp_time);
+////##fro
+void mp_start_feed_override(const float ramp_time, const float override);
+void mp_end_feed_override(const float ramp_time);
 // void mp_start_traverse_override(const float ramp_time, const float override);
 // void mp_end_traverse_override(const float ramp_time);
 void mp_planner_time_accounting(void);

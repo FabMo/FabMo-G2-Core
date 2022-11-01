@@ -235,6 +235,9 @@ typedef struct GCodeStateExtended {     // Gcode dynamic state extensions - used
     bool mto_enable;                    // traverse override enable
     float mto_factor;                   // valid from 0.05 to 1.00
 
+    //2dm
+    uint8_t planning_mode;              // 2=2d planning, 3=3d planning (default)
+
     bool g92_offset_enable;             // G92 offsets enabled/disabled.  0=disabled, 1=enabled
     bool block_delete_switch;           // set true to enable block deletes (true is default)
 

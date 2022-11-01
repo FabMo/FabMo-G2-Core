@@ -197,18 +197,23 @@ stat_t mp_aline(GCodeState_t* _gm)
     target_rotated[AXIS_C] = _gm->target[AXIS_C];
 
 ////##* Rob & Kyle, This is where we convert locations to true step target locations (and
-////      ... then put them back in the original units)
-////       - There is probably a better c++ way to do this ('long int' right ?)
-////       - Even then, this is very inefficient! (the whole thing should be done with steps!)
-////       - Also, note that in handling of steps_pre_unit, I have confounded motor#s with axis#s
+////      ... then put them back in the original units){note that the float might be a little imprecise, but this won't effect anything and does not accumulate}
+////       - There is probably a better c++ way to do this math (is 'long int' right ?)
+////       - Even then, this is very inefficient! (the whole thing should be done with steps!; but we are stuck with g2's method for setting accelerations)
+////       - Also, note that in handling of steps_per_unit, I have confounded motor#s with axis#s
 ////          ... but since g2 does that in kinematics_cartesian anyway, I don't feel to bad;
-////          ..... but noting that there may be a cleaner way to handle it.
-////       - This could be put in the next loop, but I put it here for the moment so you could
+////          ..... just noting that there may be a cleaner way to handle it.
+////       - The following work could be put in the subsequent loop, but I put it here for the moment so you could
 ////          ... see what is going on.
+////##Have repaired the rounding to full steps for the case of negative locations
+////       - Steps are a little special because we want to honor the best step estimate of distance from 0;
+////          ... so negative locations are the done with absolute values to mirror positive locations in steps from zero for the same value.
     long int temp_toSteps;
     for (uint8_t axis = 0; axis < AXES; axis++) {
-        temp_toSteps = ((target_rotated[axis] * st_cfg.mot[axis].steps_per_unit) + .5);  // round interger of full steps 
-        target_rotated[axis] = temp_toSteps / st_cfg.mot[axis].steps_per_unit;           // convert back to float of true target location
+        int temp_sign = 1;
+        if (target_rotated[axis] < 0 ) temp_sign = -1;
+        temp_toSteps = ((std::abs(target_rotated[axis]) * st_cfg.mot[axis].steps_per_unit) + .5);   // round interger of full steps 
+        target_rotated[axis] = (temp_toSteps * temp_sign) / st_cfg.mot[axis].steps_per_unit;        // convert back to float of true target location and asign sign
     }
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
@@ -531,6 +536,7 @@ bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
     return false;
 }
 
+////## Important feed rate concepts and reference
 /****************************************************************************************
  * _calculate_vmaxes() - compute cruise_vmax and absolute_vmax based on velocity constraints
  *
@@ -590,6 +596,34 @@ bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
  *       so that the elapsed time from the start to the end of the motion is T plus
  *       any time required for acceleration or deceleration.
  */
+
+//2dm
+/*
+ *  Axis Decoupling Notes
+ *
+ *  Use cases:
+ *    - 3D mode   (Machining)   - All XYZABC axes must obey full jerk constraints
+ *    - 2.5d mode (Contouring)  - Treat as 3D mode (at least for now)
+ *    - 2D mode   (Routing)     - Routing moves: XY obey jerk, Z movement does not affect move time
+ *
+ *    - Case 1 - Z tab move w/XY movement - Z movement below 'delta' threshold
+ *               Z is allowed to move at indicated velocity without slowing down XY (decoupled)
+ *
+ *    - Case 2 - Z climb or plunge w/XY movement - Z movement above 'delta' threshold
+ *    - Case 3 - Z climb or plunge w/o X or Y movement - Z must obey velocity/jerk constraints
+ *
+ *  Z side loading factor - what's the maximum lateral force that be applied to the cutter?
+ *      F = ma
+ *      S(z) / V(xy)
+ */
+/*
+ *  Feedrate / move time planning
+ *    - 3D feed rate: Compute feed time as Cartesian sum of XYZUVW axes, or 3 rotary axes if no linear component
+ *    - 2D feed rate: Compute feed time as Cartesian sum of XYUV axes, or 3 rotary axes if no linear component
+ *    - Velocity limit: Find the slowest axis and reduce move time if necessary 
+ */
+
+
 static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[])
 {
     float feed_time = 0;        // one of: XYZ time, ABC time or inverse time. Mutually exclusive
@@ -603,12 +637,34 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
             feed_time = bf->gm.feed_rate;  // NB: feed rate was un-inverted to minutes by cm_set_feed_rate()
             bf->gm.feed_rate_mode = UNITS_PER_MINUTE_MODE;
         } else {
-            // compute length of linear move in millimeters. Feed rate is provided as mm/min
+          // compute length of linear move in millimeters. Feed rate is provided as mm/min
+
+          //2dm ////## main action for 2d planning mode axis decoupling  
+          if (cm->gmx.planning_mode == PLAN_3D) {
+          
 #if (AXES == 9)
             feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / bf->gm.feed_rate;
 #else
             feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / bf->gm.feed_rate;
 #endif
+          }
+            // in 2D mode the XY/UV plane is used to set feed rate
+            // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
+          else { // 2D planning mode
+#if (AXES == 9)
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / bf->gm.feed_rate;
+                if (fp_ZERO(feed_time)) {
+                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+                }                    
+#else
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / bf->gm.feed_rate;
+                if (fp_ZERO(feed_time)) {
+                    feed_time = sqrt(axis_square[AXIS_Z]) / bf->gm.feed_rate;
+                }                    
+#endif                
+          }
+          //2dm
+
             // if no linear axes, compute length of multi-axis rotary move in degrees.
             // Feed rate is provided as degrees/min
             if (fp_ZERO(feed_time)) {
@@ -639,8 +695,8 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
     bf->cruise_vmax   = bf->absolute_vmax;                  // starting value for cruise vmax to absolute highest
 }
 
+////## I removed this from FabMo-G2 in order to get e-p to compile and run correctly 2 years ago, it may work fine ...
 ////## Test Reversion to 101.03 for junction
-////## Is this version supporting 2D Mode as per 101.03?
 // /****************************************************************************************
 //  * _calculate_junction_vmax() - Giseburt's Algorithm ;-)
 //  *
@@ -800,6 +856,21 @@ static void _calculate_junction_vmax(mpBuf_t* bf)
     // cmAxes jerk_axis = AXIS_X;   // a diagnostic in case you want to find the limiting axis
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
+
+        //2dm  ////## not in commented out code above!
+        if (cm->gmx.planning_mode == PLAN_2DB) {    // do not incorporate Z/W cornering if in 2D mode B 
+ 
+#if (AXES == 9)
+            if (axis == AXIS_Z || axis == AXIS_W) { 
+                continue;
+            }
+#else
+            if (axis == AXIS_Z) { 
+                continue;
+            }
+#endif
+        }
+
         if (bf->axis_flags[axis] || bf->nx->axis_flags[axis]) {       // skip axes with no movement
             float delta = fabs(bf->unit[axis] - bf->nx->unit[axis]);  // formula (1)
 
