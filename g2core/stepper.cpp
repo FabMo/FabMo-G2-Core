@@ -502,7 +502,14 @@ static void _load_move()
         return;                     // exit if the runtime is busy
     }
 
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the A axis at the beginning of a segment in the realtime state
+    // machine
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
     motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
+#endif
 
     // If there are no moves to load start motor power timeouts
     if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {
@@ -562,7 +569,14 @@ static void _load_move()
                 st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
                 motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT and source of much error]
                 st_pre.mot[MOTOR_1].start_new_block = false;
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
+    // machine
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
                 motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
+#endif
             }
 
             // Enable the stepper and start/update motor power management
@@ -585,7 +599,14 @@ static void _load_move()
                 st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_2.setDirection(st_pre.mot[MOTOR_2].direction);
                 st_pre.mot[MOTOR_2].start_new_block = false;
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
+    // machine
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
                 motor_5.stepStart();   ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed 
+#endif
             }
             motor_2.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_2, st_pre.mot[MOTOR_2].step_sign);
@@ -603,7 +624,14 @@ static void _load_move()
                 st_run.mot[MOTOR_3].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_3.setDirection(st_pre.mot[MOTOR_3].direction);
                 st_pre.mot[MOTOR_3].start_new_block = false;
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
+    // machine
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
                 motor_5.stepStart();   ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed 
+#endif
             }
             motor_3.enable();
             SET_ENCODER_STEP_SIGN(MOTOR_3, st_pre.mot[MOTOR_3].step_sign);
