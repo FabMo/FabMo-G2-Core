@@ -476,28 +476,6 @@ static void _load_move()
     // Be aware that dda_ticks_downcount must equal zero for the loader to run.
     // So the initial load must also have this set to zero as part of initialization
 
-    ////## Test additional step-pin turn-off here to clean up large pulse (~20uS) when coincident with segment change
-    //       -probably need a better method; placed here the contingent pulse becomes ~3.4uS or ~7uS
-    //       -placed after st_runtime_isBusy(); contingent pulse becomes ~6.3uS or ~10uS
-    //       -and place after the segment loading work below it becomes ~7uS or ~16uS
-    //       ## I'm testing this out for a bit .... (all values above are for DDA_FREQ 100K)
-    //       ### There is still a very rare 20uS and 16uS pulse unrelated to segment or anything else obvious
-        motor_1.stepEnd();
-        motor_2.stepEnd();
-#if MOTORS > 2
-        motor_3.stepEnd();
-#endif
-#if MOTORS > 3
-        motor_4.stepEnd();
-#endif
-#if MOTORS > 4
-        motor_5.stepEnd();
-#endif
-#if MOTORS > 5
-        motor_6.stepEnd();
-#endif
-
-
     if (st_runtime_isbusy()) {
         return;                     // exit if the runtime is busy
     }
@@ -533,8 +511,27 @@ static void _load_move()
 
         //**** setup the new segment ****
 
+////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
+// * POSITION HERE for FREQUENCY_DDA = 150000
+// # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
+    motor_1.stepEnd();
+    motor_2.stepEnd();
+#if MOTORS > 2
+    motor_3.stepEnd();
+#endif
+#if MOTORS > 3
+    motor_4.stepEnd();
+#endif
+#if MOTORS > 4
+    motor_5.stepEnd();
+#endif
+#if MOTORS > 5
+    motor_6.stepEnd();
+#endif
+
         // st_run.dda_ticks_downcount is setup right before turning on the interrupt, since we don't turn it off
         // INLINED VERSION: 4.3us
+
         //**** MOTOR_1 LOAD ****
 
         // These sections are somewhat optimized for execution speed. The whole load operation
@@ -548,10 +545,6 @@ static void _load_move()
 
             // Prepare the substep increment increment for linear velocity ramping
             st_run.mot[MOTOR_1].substep_increment_increment = st_pre.mot[MOTOR_1].substep_increment_increment;
-
-            // Detect direction change and if so:
-            //    Set the direction bit in hardware.
-            //    Compensate for direction change by flipping substep accumulator value about its midpoint.
 
 ////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [WE ARE NO LONGER USING DIRECTION CHANGE TEST]
             if (st_pre.mot[MOTOR_1].start_new_block) {
@@ -665,8 +658,25 @@ static void _load_move()
         ACCUMULATE_ENCODER(MOTOR_6);
 #endif
 
-        //**** do this last ****
+////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
+//    * POSITION HERE for FREQUENCY_DDA = 100000
+//    # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
+//    motor_1.stepEnd();
+//    motor_2.stepEnd();
+// #if MOTORS > 2
+//    motor_3.stepEnd();
+// #endif
+// #if MOTORS > 3
+//    motor_4.stepEnd();
+// #endif
+// #if MOTORS > 4
+//    motor_5.stepEnd();
+// #endif
+// #if MOTORS > 5
+//    motor_6.stepEnd();
+// #endif
 
+        //**** do this last ****
         st_run.dda_ticks_downcount = st_pre.dda_ticks;
 
     // handle dwells and commands
@@ -731,7 +741,8 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
 
     // setup motor parameters
     // this is explained later
-    double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
+////##th_prec    double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
+    float t_v0_v1 = (float)st_pre.dda_ticks * (start_velocity + end_velocity);
 
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
@@ -811,15 +822,18 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         // option 2:
         //  d = (b (v_1 - v_0))/((t-1) a)
 
-        double s_double = std::abs(steps * 2.0);
+////##th_prec        double s_double = std::abs(steps * 2.0);
+        float s_double = std::abs(steps * 2.0);
 
         // 1/m_0 = (2 s v_0)/(t (v_0 + v_1))
-        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (float)DDA_SUBSTEPS);
         // option 1:
         //  d = ((b v_1)/a - c)/(t-1)
         // option 2:
         //  d = (b (v_1 - v_0))/((t-1) a)
-        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((float)st_pre.dda_ticks-1.0)*t_v0_v1)) * (float)DDA_SUBSTEPS);
     }
     st_pre.block_type = BLOCK_TYPE_ALINE;
     st_pre.bf = nullptr;
@@ -854,11 +868,14 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
         float steps = travel_steps[motor];
 
         // setup motor parameters
-        double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
+////##th_prec        double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
+        float t_v0_v1 = (float)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
+////##th_prec should add this here too 
+            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
             continue;
         }
 
@@ -892,10 +909,12 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
         //// }
 
         // All math is explained in the previous function
-
-        double s_double = std::abs(steps * 2.0);
-        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (double)DDA_SUBSTEPS);
-        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        double s_double = std::abs(steps * 2.0);
+////##th_prec        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+        float s_double = std::abs(steps * 2.0);
+        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (float)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((float)st_pre.dda_ticks-1.0)*t_v0_v1)) * (float)DDA_SUBSTEPS);
     }
     st_pre.block_type = BLOCK_TYPE_ALINE;
     st_pre.bf = nullptr;
