@@ -363,9 +363,12 @@ typedef struct stConfig {                   // stepper configs
 // Motor runtime structure. Used exclusively by step generation ISR (HI)
 
 typedef struct stRunMotor {                 // one per controlled motor
-    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
-    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
-    int64_t substep_accumulator;            // DDA phase angle accumulator
+////##th_prec    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
+////##th_prec    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+////##th_prec    int64_t substep_accumulator;            // DDA phase angle accumulator
+    int32_t substep_increment;             // partial steps to increment substep_accumulator per tick
+    int32_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+    int32_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
     bool start_new_block;                   ////## to be used in run and prep ??
     uint32_t power_systick;                 // sys_tick for next motor power state transition
@@ -384,8 +387,10 @@ typedef struct stRunSingleton {             // Stepper static values and axis pa
 // Must be careful about volatiles in this one
 
 typedef struct stPrepMotor {
-    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
-    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+////##th_prec    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
+////##th_prec    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+    int32_t substep_increment;             // partial steps to increment substep_accumulator per tick
+    int32_t substep_increment_increment;   // partial steps to increment substep_increment per tick
     bool motor_flag;                        // true if motor is participating in this move
 
 ////## Block Initialization Marker          // Used to set initial SUSBSTEP_HALF_DDA in a block to make moves symetrical
@@ -510,9 +515,12 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
-    virtual int64_t getStepCount() { return 0; };
-    virtual int64_t getStepCountUp() { return 0; };
-    virtual int64_t getStepCountDown() { return 0; };
+////##th_prec    virtual int64_t getStepCount() { return 0; };
+////##th_prec    virtual int64_t getStepCountUp() { return 0; };
+////##th_prec    virtual int64_t getStepCountDown() { return 0; };
+    virtual int32_t getStepCount() { return 0; };
+    virtual int32_t getStepCountUp() { return 0; };
+    virtual int32_t getStepCountDown() { return 0; };
     virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };

@@ -759,7 +759,8 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
 
     // setup motor parameters
     // this is explained later
-    double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
+////##th_prec    double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
+    float t_v0_v1 = (float)st_pre.dda_ticks * (start_velocity + end_velocity);
 
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
@@ -839,15 +840,18 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         // option 2:
         //  d = (b (v_1 - v_0))/((t-1) a)
 
-        double s_double = std::abs(steps * 2.0);
+////##th_prec        double s_double = std::abs(steps * 2.0);
+        float s_double = std::abs(steps * 2.0);
 
         // 1/m_0 = (2 s v_0)/(t (v_0 + v_1))
-        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (float)DDA_SUBSTEPS);
         // option 1:
         //  d = ((b v_1)/a - c)/(t-1)
         // option 2:
         //  d = (b (v_1 - v_0))/((t-1) a)
-        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((float)st_pre.dda_ticks-1.0)*t_v0_v1)) * (float)DDA_SUBSTEPS);
     }
     st_pre.block_type = BLOCK_TYPE_ALINE;
     st_pre.bf = nullptr;
@@ -882,11 +886,14 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
         float steps = travel_steps[motor];
 
         // setup motor parameters
-        double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
+////##th_prec        double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
+        float t_v0_v1 = (float)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
+////##th_prec should add this here too 
+            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
             continue;
         }
 
@@ -920,10 +927,12 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
         //// }
 
         // All math is explained in the previous function
-
-        double s_double = std::abs(steps * 2.0);
-        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (double)DDA_SUBSTEPS);
-        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        double s_double = std::abs(steps * 2.0);
+////##th_prec        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+////##th_prec        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+        float s_double = std::abs(steps * 2.0);
+        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (float)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((float)st_pre.dda_ticks-1.0)*t_v0_v1)) * (float)DDA_SUBSTEPS);
     }
     st_pre.block_type = BLOCK_TYPE_ALINE;
     st_pre.bf = nullptr;
