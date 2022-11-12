@@ -300,28 +300,27 @@ enum stPowerMode {
  *    MAX_LONG == 2^31, maximum signed long (depth of accumulator. NB: accumulator values are negative)
  *    FREQUENCY_DDA == DDA clock rate in Hz.
  *    NOM_SEGMENT_TIME == upper bound of segment time in minutes
- *    0.90 == a safety factor used to reduce the result from theoretical maximum
+ *    0.90 == a safety factor used to reduce the result from theoretical maximum ////##th I can't find where this is used ???
  *
- *  The number is about 8.5 million for the Xmega running a 50 KHz DDA with 5 millisecond segments
- *  The ARM is roughly the same as the DDA clock rate is 4x higher but the segment time is ~1/5
- *  Decreasing the nominal segment time increases the number precision.
  */
- #define DDA_SUBSTEPS (INT64_MAX-100)
+////##th_prec #define DDA_SUBSTEPS (INT64_MAX-100) NOTE: reversion actually makes preceeding description right; last paragraph distracting
+ #define DDA_SUBSTEPS (2147483600L)
  #define DDA_HALF_SUBSTEPS (DDA_SUBSTEPS/2)
 
-/* Step correction settings
- *
- *  Step correction settings determine how the encoder error is fed back to correct position errors.
- *  Since the following_error is running 2 segments behind the current segment you have to be careful
- *  not to overcompensate. The threshold determines if a correction should be applied, and the factor
- *  is how much. The holdoff is how many segments to wait before applying another correction. If threshold
- *  is too small and/or amount too large and/or holdoff is too small you may get a runaway correction
- *  and error will grow instead of shrink (or oscillate).
- */
-#define STEP_CORRECTION_THRESHOLD   (float)2.00     // magnitude of forwarding error to apply correction (in steps)
-#define STEP_CORRECTION_FACTOR      (float)0.25     // factor to apply to step correction for a single segment
-#define STEP_CORRECTION_MAX         (float)0.60     // max step correction allowed in a single segment
-#define STEP_CORRECTION_HOLDOFF            5        // minimum number of segments to wait between error correction
+////##th OBSOLETE (remove?)
+// /* Step correction settings
+//  *
+//  *  Step correction settings determine how the encoder error is fed back to correct position errors.
+//  *  Since the following_error is running 2 segments behind the current segment you have to be careful
+//  *  not to overcompensate. The threshold determines if a correction should be applied, and the factor
+//  *  is how much. The holdoff is how many segments to wait before applying another correction. If threshold
+//  *  is too small and/or amount too large and/or holdoff is too small you may get a runaway correction
+//  *  and error will grow instead of shrink (or oscillate).
+//  */
+// #define STEP_CORRECTION_THRESHOLD   (float)2.00     // magnitude of forwarding error to apply correction (in steps)
+// #define STEP_CORRECTION_FACTOR      (float)0.25     // factor to apply to step correction for a single segment
+// #define STEP_CORRECTION_MAX         (float)0.60     // max step correction allowed in a single segment
+// #define STEP_CORRECTION_HOLDOFF            5        // minimum number of segments to wait between error correction
 
 /*
  * Stepper control structures
