@@ -476,28 +476,6 @@ static void _load_move()
     // Be aware that dda_ticks_downcount must equal zero for the loader to run.
     // So the initial load must also have this set to zero as part of initialization
 
-    ////## Test additional step-pin turn-off here to clean up large pulse (~20uS) when coincident with segment change
-    //       -probably need a better method; placed here the contingent pulse becomes ~3.4uS or ~7uS
-    //       -placed after st_runtime_isBusy(); contingent pulse becomes ~6.3uS or ~10uS
-    //       -and place after the segment loading work below it becomes ~7uS or ~16uS
-    //       ## I'm testing this out for a bit .... (all values above are for DDA_FREQ 100K)
-    //       ### There is still a very rare 20uS and 16uS pulse unrelated to segment or anything else obvious
-        motor_1.stepEnd();
-        motor_2.stepEnd();
-#if MOTORS > 2
-        motor_3.stepEnd();
-#endif
-#if MOTORS > 3
-        motor_4.stepEnd();
-#endif
-#if MOTORS > 4
-        motor_5.stepEnd();
-#endif
-#if MOTORS > 5
-        motor_6.stepEnd();
-#endif
-
-
     if (st_runtime_isbusy()) {
         return;                     // exit if the runtime is busy
     }
@@ -540,8 +518,27 @@ static void _load_move()
 
         //**** setup the new segment ****
 
+////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
+// * POSITION HERE for FREQUENCY_DDA = 150000
+// # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
+//     motor_1.stepEnd();
+//     motor_2.stepEnd();
+// #if MOTORS > 2
+//     motor_3.stepEnd();
+// #endif
+// #if MOTORS > 3
+//     motor_4.stepEnd();
+// #endif
+// #if MOTORS > 4
+//     motor_5.stepEnd();
+// #endif
+// #if MOTORS > 5
+//     motor_6.stepEnd();
+// #endif
+
         // st_run.dda_ticks_downcount is setup right before turning on the interrupt, since we don't turn it off
         // INLINED VERSION: 4.3us
+
         //**** MOTOR_1 LOAD ****
 
         // These sections are somewhat optimized for execution speed. The whole load operation
@@ -555,10 +552,6 @@ static void _load_move()
 
             // Prepare the substep increment increment for linear velocity ramping
             st_run.mot[MOTOR_1].substep_increment_increment = st_pre.mot[MOTOR_1].substep_increment_increment;
-
-            // Detect direction change and if so:
-            //    Set the direction bit in hardware.
-            //    Compensate for direction change by flipping substep accumulator value about its midpoint.
 
 ////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [WE ARE NO LONGER USING DIRECTION CHANGE TEST]
             if (st_pre.mot[MOTOR_1].start_new_block) {
@@ -691,6 +684,24 @@ static void _load_move()
             motor_6.motionStopped();
         }
         ACCUMULATE_ENCODER(MOTOR_6);
+#endif
+
+////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
+//    * POSITION HERE for FREQUENCY_DDA = 100000
+//    # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
+   motor_1.stepEnd();
+   motor_2.stepEnd();
+#if MOTORS > 2
+   motor_3.stepEnd();
+#endif
+#if MOTORS > 3
+   motor_4.stepEnd();
+#endif
+#if MOTORS > 4
+   motor_5.stepEnd();
+#endif
+#if MOTORS > 5
+   motor_6.stepEnd();
 #endif
 
         //**** do this last ****
