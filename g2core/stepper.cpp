@@ -843,6 +843,7 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
 }
 
 // same as previous function, except it takes a different start and end velocity per motor
+////##th NOTE re:FabMo  : I believe this version of the function is only used by Four-Cable Kinematics. Do we want it?
 stat_t st_prep_line(const float start_velocities[], const float end_velocities[], const float travel_steps[], const float following_error[], const float segment_time)
 {
     // TODO refactor out common parts of the two st_prep_line functions
