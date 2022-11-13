@@ -125,7 +125,8 @@ using Motate::OutputPin;
 ////## But setting to 100000UL seemed to fix stuttering in 101.06 variants ...
 
 #define FREQUENCY_DWELL		1000UL
-#define MIN_SEGMENT_MS ((float)1.0)        ////## tryied shorter, default =.75 tried .5; did not seem to work
+#define MIN_SEGMENT_MS ((float)1.0)        ////## tried shorter, default =.75 tried .5; did not seem to work
+//#define MIN_SEGMENT_MS ((float)0.75)        ////## tried shorter, default =.75 tried .5; did not seem to work
 
 #define PLANNER_QUEUE_SIZE (48)
 #define SECONDARY_QUEUE_SIZE (10)

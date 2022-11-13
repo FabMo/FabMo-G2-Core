@@ -394,6 +394,11 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
 
     Pin_t pin;                          // the actual pin object itself
 
+//#### CHANGES made to input switch behavior. Bias applied in BOTH polarity cases, with G2 interpreting
+//       differently. Creates an apparent Normally-Open / Normally-Closed; input-normally-low;
+//       input-normally_ high; with normal condition interpreted by G2 as OFF.
+//       See lines marked "//****" below.    
+
     // In constructor, simply forward all values to the Pin_t
     // To get a different behavior, override this object.
     template <typename... T>
@@ -403,7 +408,8 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
         polarity{_polarity},
         ext_pin_number{ _ext_pin_number },
         proxy_pin_number{ 0 },
-        pin{((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kDebounce), [&]{this->pin_changed();}, std::forward<T>(V)...}
+        //**** original: pin{((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kDebounce), [&]{this->pin_changed();}, std::forward<T>(V)...}
+        pin{((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kPullUp|kDebounce), [&]{this->pin_changed();}, std::forward<T>(V)...}
     {
         if (pin.isNull()) {
             enabled = IO_UNAVAILABLE;
@@ -455,7 +461,8 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
     bool setPolarity(const ioPolarity new_polarity) override
     {
         polarity = new_polarity;
-        pin.setOptions((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kDebounce);
+        //**** original: pin.setOptions((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kDebounce);
+        pin.setOptions((polarity == IO_ACTIVE_LOW) ? kPullUp|kDebounce : kPullUp|kDebounce);
         return true;
     };
 
