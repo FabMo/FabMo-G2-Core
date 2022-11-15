@@ -306,7 +306,8 @@ enum stPowerMode {
  *  The ARM is roughly the same as the DDA clock rate is 4x higher but the segment time is ~1/5
  *  Decreasing the nominal segment time increases the number precision.
  */
- #define DDA_SUBSTEPS (INT64_MAX-100)
+////##th_prec #define DDA_SUBSTEPS (INT64_MAX-100) NOTE: reversion actually makes preceeding description right
+ #define DDA_SUBSTEPS (2147483600L)
  #define DDA_HALF_SUBSTEPS (DDA_SUBSTEPS/2)
 
 /* Step correction settings
