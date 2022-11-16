@@ -300,28 +300,15 @@ enum stPowerMode {
  *    MAX_LONG == 2^31, maximum signed long (depth of accumulator. NB: accumulator values are negative)
  *    FREQUENCY_DDA == DDA clock rate in Hz.
  *    NOM_SEGMENT_TIME == upper bound of segment time in minutes
- *    0.90 == a safety factor used to reduce the result from theoretical maximum
+ *    0.90 == a safety factor used to reduce the result from theoretical maximum ////##th I can't find where this is used ???
  *
- *  The number is about 8.5 million for the Xmega running a 50 KHz DDA with 5 millisecond segments
- *  The ARM is roughly the same as the DDA clock rate is 4x higher but the segment time is ~1/5
- *  Decreasing the nominal segment time increases the number precision.
  */
- #define DDA_SUBSTEPS (INT64_MAX-100)
+ 
+ #define DDA_SUBSTEPS (2147483600L)
  #define DDA_HALF_SUBSTEPS (DDA_SUBSTEPS/2)
 
-/* Step correction settings
- *
- *  Step correction settings determine how the encoder error is fed back to correct position errors.
- *  Since the following_error is running 2 segments behind the current segment you have to be careful
- *  not to overcompensate. The threshold determines if a correction should be applied, and the factor
- *  is how much. The holdoff is how many segments to wait before applying another correction. If threshold
- *  is too small and/or amount too large and/or holdoff is too small you may get a runaway correction
- *  and error will grow instead of shrink (or oscillate).
- */
-#define STEP_CORRECTION_THRESHOLD   (float)2.00     // magnitude of forwarding error to apply correction (in steps)
-#define STEP_CORRECTION_FACTOR      (float)0.25     // factor to apply to step correction for a single segment
-#define STEP_CORRECTION_MAX         (float)0.60     // max step correction allowed in a single segment
-#define STEP_CORRECTION_HOLDOFF            5        // minimum number of segments to wait between error correction
+
+//  Step correction settings ... ////##th OBSOLETE (removed)
 
 /*
  * Stepper control structures
@@ -363,11 +350,11 @@ typedef struct stConfig {                   // stepper configs
 // Motor runtime structure. Used exclusively by step generation ISR (HI)
 
 typedef struct stRunMotor {                 // one per controlled motor
-    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
-    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
-    int64_t substep_accumulator;            // DDA phase angle accumulator
+    int32_t substep_increment;              // partial steps to increment substep_accumulator per tick
+    int32_t substep_increment_increment;    // partial steps to increment substep_increment per tick
+    int32_t substep_accumulator;            // DDA phase angle accumulator
     bool motor_flag;                        // true if motor is participating in this move
-    bool start_new_block;                   ////## to be used in run and prep ??
+    bool start_new_block;                   // Used in stepping runtime and prep
     uint32_t power_systick;                 // sys_tick for next motor power state transition
     float power_level_dynamic;              // power level for this segment of idle
 } stRunMotor_t;
@@ -384,12 +371,12 @@ typedef struct stRunSingleton {             // Stepper static values and axis pa
 // Must be careful about volatiles in this one
 
 typedef struct stPrepMotor {
-    int64_t substep_increment;             // partial steps to increment substep_accumulator per tick
-    int64_t substep_increment_increment;   // partial steps to increment substep_increment per tick
+    int32_t substep_increment;              // partial steps to increment substep_accumulator per tick
+    int32_t substep_increment_increment;    // partial steps to increment substep_increment per tick
     bool motor_flag;                        // true if motor is participating in this move
 
 ////## Block Initialization Marker          // Used to set initial SUSBSTEP_HALF_DDA in a block to make moves symetrical
-    bool start_new_block;                   ////## to be used in run and prep ??
+    bool start_new_block;                   // Used in stepping runtime and prep
     
     // direction and direction change
     uint8_t direction;                      // travel direction corrected for polarity (CW==0. CCW==1)
@@ -510,9 +497,9 @@ public:
     virtual void _disableImpl() { /* must override */ };
     virtual void stepStart() HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void stepEnd() HOT_FUNC { /* must override */ };   // HOT - called from the DDA interrupt
-    virtual int64_t getStepCount() { return 0; };
-    virtual int64_t getStepCountUp() { return 0; };
-    virtual int64_t getStepCountDown() { return 0; };
+    virtual int32_t getStepCount() { return 0; };
+    virtual int32_t getStepCountUp() { return 0; };
+    virtual int32_t getStepCountDown() { return 0; };
     virtual void resetStepCounts() { /* must override */ };
     virtual void setDirection(uint8_t direction) HOT_FUNC { /* must override */ }; // HOT - called from the DDA interrupt
     virtual void setMicrosteps(const uint16_t microsteps) { /* must override */ };

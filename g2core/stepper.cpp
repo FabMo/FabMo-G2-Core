@@ -486,7 +486,7 @@ static void _load_move()
     // with LogicAnalyzer. It outputs a step on the A axis at the beginning of a segment in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
-    motor_4.stepStart();        ////## (uncomment to enable) SEGMENT diagnostic indicator for LogicAnalyzer
+    motor_4.stepStart();
 #endif
 
     // If there are no moves to load start motor power timeouts
@@ -521,20 +521,20 @@ static void _load_move()
 ////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
 // * POSITION HERE for FREQUENCY_DDA = 150000
 // # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
-//     motor_1.stepEnd();
-//     motor_2.stepEnd();
-// #if MOTORS > 2
-//     motor_3.stepEnd();
-// #endif
-// #if MOTORS > 3
-//     motor_4.stepEnd();
-// #endif
-// #if MOTORS > 4
-//     motor_5.stepEnd();
-// #endif
-// #if MOTORS > 5
-//     motor_6.stepEnd();
-// #endif
+    motor_1.stepEnd();
+    motor_2.stepEnd();
+#if MOTORS > 2
+    motor_3.stepEnd();
+#endif
+#if MOTORS > 3
+    motor_4.stepEnd();
+#endif
+#if MOTORS > 4
+    motor_5.stepEnd();
+#endif
+#if MOTORS > 5
+    motor_6.stepEnd();
+#endif
 
         // st_run.dda_ticks_downcount is setup right before turning on the interrupt, since we don't turn it off
         // INLINED VERSION: 4.3us
@@ -553,14 +553,12 @@ static void _load_move()
             // Prepare the substep increment increment for linear velocity ramping
             st_run.mot[MOTOR_1].substep_increment_increment = st_pre.mot[MOTOR_1].substep_increment_increment;
 
-////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [WE ARE NO LONGER USING DIRECTION CHANGE TEST]
+////##* Check for start of NEW BLOCK here and routinely set all directions for consistent time [WE ARE NO LONGER USING G2 DIRECTION CHANGE TEST]
             if (st_pre.mot[MOTOR_1].start_new_block) {
                 st_pre.mot[MOTOR_1].prev_direction = st_pre.mot[MOTOR_1].direction;
     ////##* Make transitional time to first step in new block 1/2 the DDA_SUBSTEPS;
-    ////      - Originally, their was consideralbe wandering of the location of the last step because of the imprecision of timing based on requested target locations;
-    ////      - This has been fixed in plan_line so that all planning is done to true (step-based) target locations.
                 st_run.mot[MOTOR_1].substep_accumulator = -(DDA_HALF_SUBSTEPS); ////##* Seeding the transitional accumulator
-                motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT and source of much error]
+                motor_1.setDirection(st_pre.mot[MOTOR_1].direction);            ////##* [INVERSION OF TIMING in TRANSITION was INCORRECT and source of G2 error]
                 st_pre.mot[MOTOR_1].start_new_block = false;
 #ifdef INSTRUMENT_SEGMENTS_N_MOVES
     // The above define should always be provided by through the make command line and never defined in the code
@@ -568,22 +566,22 @@ static void _load_move()
     // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
-                motor_5.stepStart();  ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed
+                motor_5.stepStart();  
 #endif
             }
 
             // Enable the stepper and start/update motor power management
             motor_1.enable();
-            SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);      ////##* Don't think we will need the encoder stuff now (see Nudge).
+            SET_ENCODER_STEP_SIGN(MOTOR_1, st_pre.mot[MOTOR_1].step_sign);     ////## Need to continue tracking encoder for use in getting probing location
 
         } else {  // Motor has 0 steps; might need to energize motor for power mode processing
             st_run.mot[MOTOR_1].substep_increment_increment = 0;
             motor_1.motionStopped();
         }
         // accumulate counted steps to the step position and zero out counted steps for the segment currently being loaded
-        ACCUMULATE_ENCODER(MOTOR_1);                                            ////##* Don't think we will need the encoder stuff now (see Nudge).
+        ACCUMULATE_ENCODER(MOTOR_1);
 
-////##* All subsequent motors should match #1
+// All subsequent motors should match #1
 #if (MOTORS >= 2)
         if ((st_run.mot[MOTOR_2].substep_increment = st_pre.mot[MOTOR_2].substep_increment) != 0) {
             st_run.mot[MOTOR_2].substep_increment_increment = st_pre.mot[MOTOR_2].substep_increment_increment;
@@ -598,7 +596,7 @@ static void _load_move()
     // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
-                motor_5.stepStart();   ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed 
+                motor_5.stepStart(); 
 #endif
             }
             motor_2.enable();
@@ -623,7 +621,7 @@ static void _load_move()
     // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
-                motor_5.stepStart();   ////## (uncomment to enable) LogicAnalyzer DIAGNOSTIC indicator for when new dirs made active, several axes needed 
+                motor_5.stepStart(); 
 #endif
             }
             motor_3.enable();
@@ -689,23 +687,22 @@ static void _load_move()
 ////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
 //    * POSITION HERE for FREQUENCY_DDA = 100000
 //    # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
-   motor_1.stepEnd();
-   motor_2.stepEnd();
-#if MOTORS > 2
-   motor_3.stepEnd();
-#endif
-#if MOTORS > 3
-   motor_4.stepEnd();
-#endif
-#if MOTORS > 4
-   motor_5.stepEnd();
-#endif
-#if MOTORS > 5
-   motor_6.stepEnd();
-#endif
+//    motor_1.stepEnd();
+//    motor_2.stepEnd();
+// #if MOTORS > 2
+//    motor_3.stepEnd();
+// #endif
+// #if MOTORS > 3
+//    motor_4.stepEnd();
+// #endif
+// #if MOTORS > 4
+//    motor_5.stepEnd();
+// #endif
+// #if MOTORS > 5
+//    motor_6.stepEnd();
+// #endif
 
         //**** do this last ****
-
         st_run.dda_ticks_downcount = st_pre.dda_ticks;
 
     // handle dwells and commands
@@ -768,9 +765,9 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
     //st_pre.dda_period = _f_to_period(FREQUENCY_DDA);                // FYI: this is a constant
     st_pre.dda_ticks = (int32_t)(segment_time * 60 * FREQUENCY_DDA);// NB: converts minutes to seconds
 
-    // setup motor parameters
+    // setup motor parameters  ////## Note reversion to single point floats
     // this is explained later
-    double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocity + end_velocity);
+    float t_v0_v1 = (float)st_pre.dda_ticks * (start_velocity + end_velocity);
 
     for (uint8_t motor=0; motor<MOTORS; motor++) {          // remind us that this is motors, not axes
         float steps = travel_steps[motor];
@@ -778,7 +775,7 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
-            st_pre.mot[motor].substep_increment_increment = 0;        ////## added per RobG suggestion 09/08/22
+            st_pre.mot[motor].substep_increment_increment = 0;  
             continue;
         }
 
@@ -792,29 +789,6 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
             st_pre.mot[motor].direction = DIRECTION_CCW ^ st_cfg.mot[motor].polarity;
             st_pre.mot[motor].step_sign = -1;
         }
-
-////##* So far, all my testing confirms that we are no longer generating any encoder or following errors!
-////      Thus I have commented this out, and will eventually remove all the calcs it is based on.
-////         - For the moment, we may want to keep it available as a test. The new 'if' will only test
-////             ... test at blocks intervals, otherwise all sections are tested.
-        // 'Nudge' correction strategy. Inject a single, scaled correction value then hold off
-        // NOTE: This clause can be commented out to test for numerical accuracy and accumulating errors
-    ////    if (st_pre.mot[motor].start_new_block) { 
-    ////     if ((--st_pre.mot[motor].correction_holdoff < 0) &&
-    ////        (std::abs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
-
-    ////          st_pre.mot[motor].correction_holdoff = STEP_CORRECTION_HOLDOFF;
-    ////          correction_steps = following_error[motor] * STEP_CORRECTION_FACTOR;
-
-    ////          if (correction_steps > 0) {
-    ////              correction_steps = std::min(std::min(correction_steps, std::abs(steps)), STEP_CORRECTION_MAX);
-    ////          } else {
-    ////              correction_steps = std::max(std::max(correction_steps, -std::abs(steps)), -STEP_CORRECTION_MAX);
-    ////          }
-    ////          st_pre.mot[motor].corrected_steps += correction_steps;
-    ////          steps -= correction_steps;
-    ////     }
-    ////    } 
 
         // Compute substep increment. The accumulator must be *exactly* the incoming
         // fractional steps times the substep multiplier or positional drift will occur.
@@ -850,15 +824,15 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
         // option 2:
         //  d = (b (v_1 - v_0))/((t-1) a)
 
-        double s_double = std::abs(steps * 2.0);
+        float s_double = std::abs(steps * 2.0);
 
         // 1/m_0 = (2 s v_0)/(t (v_0 + v_1))
-        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (double)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment = round(((s_double * start_velocity)/(t_v0_v1)) * (float)DDA_SUBSTEPS);
         // option 1:
         //  d = ((b v_1)/a - c)/(t-1)
         // option 2:
         //  d = (b (v_1 - v_0))/((t-1) a)
-        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocity-start_velocity))/(((float)st_pre.dda_ticks-1.0)*t_v0_v1)) * (float)DDA_SUBSTEPS);
     }
     st_pre.block_type = BLOCK_TYPE_ALINE;
     st_pre.bf = nullptr;
@@ -868,6 +842,7 @@ stat_t st_prep_line(const float start_velocity, const float end_velocity, const 
 }
 
 // same as previous function, except it takes a different start and end velocity per motor
+////##th NOTE re:FabMo  : I believe this version of the function is only used by Four-Cable Kinematics. Do we still want it?
 stat_t st_prep_line(const float start_velocities[], const float end_velocities[], const float travel_steps[], const float following_error[], const float segment_time)
 {
     // TODO refactor out common parts of the two st_prep_line functions
@@ -893,11 +868,12 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
         float steps = travel_steps[motor];
 
         // setup motor parameters
-        double t_v0_v1 = (double)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
+        float t_v0_v1 = (float)st_pre.dda_ticks * (start_velocities[motor] + end_velocities[motor]);
 
         // Skip this motor if there are no new steps. Leave all other values intact.
         if (fp_ZERO(steps)) {
             st_pre.mot[motor].substep_increment = 0;        // substep increment also acts as a motor flag
+            st_pre.mot[motor].substep_increment_increment = 0;
             continue;
         }
 
@@ -912,29 +888,10 @@ stat_t st_prep_line(const float start_velocities[], const float end_velocities[]
             st_pre.mot[motor].step_sign = -1;
         }
 
-////##* Commented out as per above. We do not use this function in any case ...
-        // 'Nudge' correction strategy. Inject a single, scaled correction value then hold off
-        // NOTE: This clause can be commented out to test for numerical accuracy and accumulating errors
-        //// if ((--st_pre.mot[motor].correction_holdoff < 0) &&
-        ////     (std::abs(following_error[motor]) > STEP_CORRECTION_THRESHOLD)) {
-
-        ////     st_pre.mot[motor].correction_holdoff = STEP_CORRECTION_HOLDOFF;
-        ////     correction_steps = following_error[motor] * STEP_CORRECTION_FACTOR;
-
-        ////     if (correction_steps > 0) {
-        ////         correction_steps = std::min(std::min(correction_steps, std::abs(steps)), STEP_CORRECTION_MAX);
-        ////     } else {
-        ////         correction_steps = std::max(std::max(correction_steps, -std::abs(steps)), -STEP_CORRECTION_MAX);
-        ////     }
-        ////     st_pre.mot[motor].corrected_steps += correction_steps;
-        ////     steps -= correction_steps;
-        //// }
-
         // All math is explained in the previous function
-
-        double s_double = std::abs(steps * 2.0);
-        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (double)DDA_SUBSTEPS);
-        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((double)st_pre.dda_ticks-1.0)*t_v0_v1)) * (double)DDA_SUBSTEPS);
+        float s_double = std::abs(steps * 2.0);
+        st_pre.mot[motor].substep_increment = round(((s_double * start_velocities[motor])/(t_v0_v1)) * (float)DDA_SUBSTEPS);
+        st_pre.mot[motor].substep_increment_increment = round(((s_double*(end_velocities[motor]-start_velocities[motor]))/(((float)st_pre.dda_ticks-1.0)*t_v0_v1)) * (float)DDA_SUBSTEPS);
     }
     st_pre.block_type = BLOCK_TYPE_ALINE;
     st_pre.bf = nullptr;
