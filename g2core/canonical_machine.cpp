@@ -375,25 +375,39 @@ cmProbeState    cm_get_probe_state()   { return cm->probe_state[0];}
  */
 cmCombinedState cm_get_combined_state(cmMachine_t *_cm)
 {
-    switch(_cm->machine_state) {
-        case MACHINE_INITIALIZING:
-        case MACHINE_READY:
-        case MACHINE_ALARM:
-        case MACHINE_PROGRAM_STOP:
-        case MACHINE_PROGRAM_END:     { return ((cmCombinedState)_cm->machine_state); }
-        case MACHINE_INTERLOCK:       { return (COMBINED_INTERLOCK); }
-        case MACHINE_SHUTDOWN:        { return (COMBINED_SHUTDOWN); }
-        case MACHINE_PANIC:           { return (COMBINED_PANIC); }
-        case MACHINE_CYCLE: {
-            switch(_cm->cycle_type)   {
-                case CYCLE_NONE:      { break; } // CYCLE_NONE cannot ever get here
-                case CYCLE_MACHINING: { return (_cm->hold_state == FEEDHOLD_OFF ? COMBINED_RUN : COMBINED_HOLD); }
-                case CYCLE_HOMING:    { return (COMBINED_HOMING); }
-                case CYCLE_PROBE:     { return (COMBINED_PROBE); }
-                case CYCLE_JOG:       { return (COMBINED_JOG); }
-            }
-        }
-    }
+	switch(_cm->machine_state) {
+		case MACHINE_INITIALIZING:
+		case MACHINE_READY:
+		case MACHINE_ALARM:
+		case MACHINE_PROGRAM_STOP:    {
+			if(_cm->hold_state == FEEDHOLD_HOLD){
+				return COMBINED_HOLD;
+			}
+			else{
+				return ((cmCombinedState)_cm->machine_state);
+			}
+		}
+		case MACHINE_PROGRAM_END:     {
+			if(_cm->hold_state == FEEDHOLD_HOLD){
+				return COMBINED_HOLD;
+			}
+			else{
+				return ((cmCombinedState)_cm->machine_state);
+			}
+			}//{ return ((cmCombinedState)_cm->machine_state); }
+			case MACHINE_INTERLOCK:       { return (COMBINED_INTERLOCK); }
+			case MACHINE_SHUTDOWN:        { return (COMBINED_SHUTDOWN); }
+			case MACHINE_PANIC:           { return (COMBINED_PANIC); }
+			case MACHINE_CYCLE: {
+				switch(_cm->cycle_type)   {
+					case CYCLE_NONE:      { break; } // CYCLE_NONE cannot ever get here
+					case CYCLE_MACHINING: { return (_cm->hold_state == FEEDHOLD_OFF ? COMBINED_RUN : COMBINED_HOLD); }
+					case CYCLE_HOMING:    { return (COMBINED_HOMING); }
+					case CYCLE_PROBE:     { return (COMBINED_PROBE); }
+					case CYCLE_JOG:       { return (COMBINED_JOG); }
+				}
+			}
+		}
     cm_panic(STAT_STATE_MANAGEMENT_ASSERTION_FAILURE, "cm_get_combined_state() undefined state");
     return (COMBINED_PANIC);
 }
