@@ -483,7 +483,7 @@ static void _load_move()
 #ifdef INSTRUMENT_SEGMENTS_N_MOVES
     // The above define should always be provided by through the make command line and never defined in the code
     // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
-    // with LogicAnalyzer. It outputs a step on the A axis at the beginning of a segment in the realtime state
+    // with LogicAnalyzer. It outputs a step on the A axis at the beginning of a SEGMENT in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
     motor_4.stepStart();
@@ -563,7 +563,7 @@ static void _load_move()
 #ifdef INSTRUMENT_SEGMENTS_N_MOVES
     // The above define should always be provided by through the make command line and never defined in the code
     // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
-    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
+    // with LogicAnalyzer. It outputs a step on the B axis at the exact beginning of a new BLOCK in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
                 motor_5.stepStart();  
@@ -593,7 +593,7 @@ static void _load_move()
 #ifdef INSTRUMENT_SEGMENTS_N_MOVES
     // The above define should always be provided by through the make command line and never defined in the code
     // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
-    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
+    // with LogicAnalyzer. It outputs a step on the B axis at the exact beginning of a new BLOCK in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
                 motor_5.stepStart(); 
@@ -618,7 +618,7 @@ static void _load_move()
 #ifdef INSTRUMENT_SEGMENTS_N_MOVES
     // The above define should always be provided by through the make command line and never defined in the code
     // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
-    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a segment in the realtime state
+    // with LogicAnalyzer. It outputs a step on the B axis at the exact beginning of a new BLOCK in the realtime state
     // machine
     // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
                 motor_5.stepStart(); 
