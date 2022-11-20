@@ -469,7 +469,14 @@ stat_t mp_exec_aline(mpBuf_t *bf)
             }
         }
 
-        motor_5.stepStart();             ////## (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the B axis at the prep of new BLOCK parameters in the realtime state
+    // machine
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
+        motor_5.stepStart();
+#endif
 
         ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors (maybe just a 'st_pre' flag)?
         for (uint8_t motor=0; motor<MOTORS; motor++) { 

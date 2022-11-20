@@ -410,7 +410,14 @@ void cm_request_cycle_start()
 ////##ted, cleanly starting a new block here ... ck this out
             cm_cycle_start();
 
-            motor_5.stepStart();             ////##temp diagnositc (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a new BLOCK in feedhold move
+    // 
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
+            motor_5.stepStart();
+#endif
 
         ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
         for (uint8_t motor=0; motor<MOTORS; motor++) { 
@@ -939,7 +946,15 @@ stat_t _run_restart_cycle(void)
     if (mp_has_runnable_buffer(&mp1)) {
 
         cm_cycle_start();
-        motor_5.stepStart();             ////## marking (uncomment to enable) START-NEW-BLOCK "planned" diagnostic indicator
+
+#ifdef INSTRUMENT_SEGMENTS_N_MOVES
+    // The above define should always be provided by through the make command line and never defined in the code
+    // we do not want the following code to ever appear in a customer release. It is diagnostic code for use
+    // with LogicAnalyzer. It outputs a step on the B axis at the beginning of a new BLOCK in feedhold move
+    // 
+    // make CONFIG=sbv300 USER_DEFINES=INSTRUMENT_SEGMENTS_N_MOVES
+        motor_5.stepStart();
+#endif
 
         ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
         for (uint8_t motor=0; motor<MOTORS; motor++) { 
