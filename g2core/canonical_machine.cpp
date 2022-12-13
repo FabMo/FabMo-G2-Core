@@ -375,25 +375,37 @@ cmProbeState    cm_get_probe_state()   { return cm->probe_state[0];}
  */
 cmCombinedState cm_get_combined_state(cmMachine_t *_cm)
 {
-    switch(_cm->machine_state) {
-        case MACHINE_INITIALIZING:
-        case MACHINE_READY:
-        case MACHINE_ALARM:
-        case MACHINE_PROGRAM_STOP:
-        case MACHINE_PROGRAM_END:     { return ((cmCombinedState)_cm->machine_state); }
-        case MACHINE_INTERLOCK:       { return (COMBINED_INTERLOCK); }
-        case MACHINE_SHUTDOWN:        { return (COMBINED_SHUTDOWN); }
-        case MACHINE_PANIC:           { return (COMBINED_PANIC); }
-        case MACHINE_CYCLE: {
-            switch(_cm->cycle_type)   {
-                case CYCLE_NONE:      { break; } // CYCLE_NONE cannot ever get here
-                case CYCLE_MACHINING: { return (_cm->hold_state == FEEDHOLD_OFF ? COMBINED_RUN : COMBINED_HOLD); }
-                case CYCLE_HOMING:    { return (COMBINED_HOMING); }
-                case CYCLE_PROBE:     { return (COMBINED_PROBE); }
-                case CYCLE_JOG:       { return (COMBINED_JOG); }
-            }
-        }
-    }
+	switch(_cm->machine_state) {
+		case MACHINE_INITIALIZING:
+		case MACHINE_READY:
+		case MACHINE_ALARM:
+		case MACHINE_PROGRAM_STOP:    {
+			if(_cm->hold_state == FEEDHOLD_HOLD){
+				return COMBINED_HOLD;
+			} else {
+				return ((cmCombinedState)_cm->machine_state);
+			}
+		}
+		case MACHINE_PROGRAM_END:     {
+			if(_cm->hold_state == FEEDHOLD_HOLD){
+				return COMBINED_HOLD;
+			} else {
+				return ((cmCombinedState)_cm->machine_state);
+			}
+			}//{ return ((cmCombinedState)_cm->machine_state); }
+			case MACHINE_INTERLOCK:       { return (COMBINED_INTERLOCK); }
+			case MACHINE_SHUTDOWN:        { return (COMBINED_SHUTDOWN); }
+			case MACHINE_PANIC:           { return (COMBINED_PANIC); }
+			case MACHINE_CYCLE: {
+				switch(_cm->cycle_type)   {
+					case CYCLE_NONE:      { break; } // CYCLE_NONE cannot ever get here
+					case CYCLE_MACHINING: { return (_cm->hold_state == FEEDHOLD_OFF ? COMBINED_RUN : COMBINED_HOLD); }
+					case CYCLE_HOMING:    { return (COMBINED_HOMING); }
+					case CYCLE_PROBE:     { return (COMBINED_PROBE); }
+					case CYCLE_JOG:       { return (COMBINED_JOG); }
+				}
+			}
+		}
     cm_panic(STAT_STATE_MANAGEMENT_ASSERTION_FAILURE, "cm_get_combined_state() undefined state");
     return (COMBINED_PANIC);
 }
@@ -1841,7 +1853,7 @@ stat_t cm_is_in_program_end_state() {
     // Checking for all the conditions that an M2/M30 sets
     if (!(cm->gm.spindle_direction == SPINDLE_OFF && fp_EQ(cm->gm.spindle_speed, BASE_STATE_SPINDLE_STOPPED))) { return 0; }
     if (!(coolant.mist.state == COOLANT_OFF && coolant.flood.state == COOLANT_OFF))                            { return 0; }
-    if (!(cm->gmx.m48_enable == true && cm->gmx.mfo_enable == true 
+    if (!(cm->gmx.m48_enable == true && cm->gmx.mfo_enable == true
        && fp_EQ(cm->gmx.mfo_factor, BASE_STATE_MFO_FACTOR) && fp_EQ(cm->gmx.mto_factor, BASE_STATE_MTO_FACTOR)
        && cm->gmx.mto_enable == true ))                                                                        { return 0; }
     if (!(cm->gmx.g92_offset_enable == false))                                                                 { return 0; }
@@ -1851,7 +1863,7 @@ stat_t cm_is_in_program_end_state() {
     if (!(cm->gm.arc_distance_mode == INCREMENTAL_DISTANCE_MODE))                                              { return 0; }
     if (!(cm->gm.feed_rate_mode == UNITS_PER_MINUTE_MODE))                                                     { return 0; }
     if (!(cm->gm.motion_mode == MOTION_MODE_CANCEL_MOTION_MODE))                                               { return 0; }
-    
+
     return 1; // All conditions met
 }
 
@@ -2525,9 +2537,9 @@ stat_t cm_get_gun(nvObj_t *nv) { return(get_integer(nv, cm->default_units_mode))
 
 
 ////##
-stat_t cm_set_gun(nvObj_t *nv) { 
+stat_t cm_set_gun(nvObj_t *nv) {
     stat_t status;
-    status = set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS); 
+    status = set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS);
     return status == STAT_OK ? cm_set_units_mode(cm->default_units_mode) : status;
 }
 ////##

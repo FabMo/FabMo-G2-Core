@@ -22,7 +22,7 @@
     <eraseonlaunchrule>1</eraseonlaunchrule>
     <AsfVersion>3.5.0</AsfVersion>
     <avrtoolinterface>JTAG</avrtoolinterface>
-    <avrtool>com.atmel.avrdbg.tool.samice</avrtool>
+    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <com_atmel_avrdbg_tool_samice>
       <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
       <ToolName>SAM-ICE</ToolName>
@@ -35,7 +35,7 @@
       <ToolOptions>
         <InterfaceName>JTAG</InterfaceName>
         <InterfaceProperties>
-          <JtagDbgClock>4000000</JtagDbgClock>
+          <JtagDbgClock>0</JtagDbgClock>
           <JtagProgClock>1000000</JtagProgClock>
           <IspClock>150000</IspClock>
           <JtagInChain>false</JtagInChain>
@@ -54,15 +54,15 @@
     </com_atmel_avrdbg_tool_samice>
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.44.1" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.44.1" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
@@ -73,11 +73,12 @@
       <ToolOptions>
         <InterfaceProperties>
           <SwdClock>0</SwdClock>
+          <JtagDbgClock>7500000</JtagDbgClock>
         </InterfaceProperties>
-        <InterfaceName>SWD</InterfaceName>
+        <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800019454</ToolNumber>
+      <ToolNumber>J42700055544</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
     <UseGdb>True</UseGdb>
@@ -104,9 +105,9 @@
       <HWProgramCounterSampling>True</HWProgramCounterSampling>
     </PercepioTrace>
     <preserveEEPROM>true</preserveEEPROM>
-    <avrtoolserialnumber>28012829</avrtoolserialnumber>
+    <avrtoolserialnumber>J42700055544</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x285E0A60</avrdeviceexpectedsignature>
-    <avrtoolinterfaceclock>4000000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>7500000</avrtoolinterfaceclock>
     <custom>
       <ToolOptions xmlns="">
         <InterfaceProperties>

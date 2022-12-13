@@ -604,7 +604,7 @@ void _start_job_kill()
 void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 {
 	// Reset the request if it's invalid
-	if ((cm1.machine_state != MACHINE_CYCLE) && (cm1.motion_state == MOTION_STOP)) {
+	if ((cm1.machine_state != MACHINE_CYCLE) && (cm1.machine_state != MACHINE_PROGRAM_STOP)) {
 		cm->hold_state = FEEDHOLD_OFF;          // cannot honor the feedhold request. reset it
 	}
 	else{
@@ -644,24 +644,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 			}
 		}
 	}
-    // Look for p2 feedhold (feedhold in a feedhold)
-    //if ((cm1.hold_state >= FEEDHOLD_HOLD) &&
-    //    (cm2.hold_state == FEEDHOLD_OFF) && (cm2.machine_state == MACHINE_CYCLE)) {
-    //    cm2.hold_state = FEEDHOLD_SYNC;
-    //    return;
-    //}
-
 }
-/*
-void _start_p2_feedhold()
-{
-    // P2 feedholds only allow skip types
-    if ((cm2.hold_state == FEEDHOLD_REQUESTED) && (cm2.motion_state == MOTION_RUN)) {
-        op.add_action(_feedhold_skip);
-        cm2.hold_state = FEEDHOLD_SYNC;
-    }
-}
-*/
 
 /*
  * _enter_p2()  - enter p2 planner with proper state transfer from p1
@@ -805,14 +788,8 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
 {
     // if entered while OFF start a feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {
-        if (mp_runtime_is_idle()) {  // if motion has already stopped declare that you are in a feedhold
-            _check_motion_stopped();
-            cm1.hold_state = FEEDHOLD_HOLD;
-            cm1.hold_type = FEEDHOLD_TYPE_HOLD; // no actions will be performed, don't try to undo them
-        } else {
-            cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
-            return (STAT_EAGAIN);
-        }
+        cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
+        return (STAT_EAGAIN);
     }
 
     // Code to run once motion has stopped
