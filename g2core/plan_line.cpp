@@ -196,24 +196,32 @@ stat_t mp_aline(GCodeState_t* _gm)
     target_rotated[AXIS_B] = _gm->target[AXIS_B];
     target_rotated[AXIS_C] = _gm->target[AXIS_C];
 
-////##* Rob & Kyle, This is where we convert locations to true step target locations (and
-////      ... then put them back in the original units){note that the float might be a little imprecise, but this won't effect anything and does not accumulate}
+//// ==========================================================================================
+////##* Rob & Kyle, This is where we convert locations to true step target locations
+////    First note: 10/11/22
+////       - Then put them back in the original units){note that the final float might be a little imprecise, but this won't effect anything and does not accumulate}
 ////       - There is probably a better c++ way to do this math (is 'long int' right ?)
-////       - Even then, this is very inefficient! (the whole thing should be done with steps!; but we are stuck with g2's method for setting accelerations)
+////       - This approach is very inefficient because of going back and forth between var types! (the whole thing should be done with steps!; but we are stuck with g2's method for setting accelerations)
 ////       - Also, note that in handling of steps_per_unit, I have confounded motor#s with axis#s
-////          ... but since g2 does that in kinematics_cartesian anyway, I don't feel to bad;
-////          ..... just noting that there may be a cleaner way to handle it.
-////       - The following work could be put in the subsequent loop, but I put it here for the moment so you could
-////          ... see what is going on.
-////##Have repaired the rounding to full steps for the case of negative locations
-////       - Steps are a little special because we want to honor the best step estimate of distance from 0;
+////          ... but since g2 does that in kinematics_cartesian anyway, I don't feel too bad.
+////## Also I have repaired the rounding to full steps for the case of negative locations (a bug caught later)
+////       - Steps are special for rounding because we want to honor the best step estimate of distance from 0;
 ////          ... so negative locations are the done with absolute values to mirror positive locations in steps from zero for the same value.
+////    Second note: 1/17/23
+////        - Kyle's testing turned up an issue with (too) small arcs not being flagged right. That issue is additionally resolved here.
+////        - The changes and issues are described in the PR.
+////        - As above, the solution is not efficient. It would be helpful if the following two for-loops could run in a single loop,
+////           .... but I have not been able to get it to work without messing up the location tracking.
+//// ========================================================================================= Setting Locations to Exact Step Locations Here
+////                                                                                           By converting back and forth    
     long int temp_toSteps;
     for (uint8_t axis = 0; axis < AXES; axis++) {
         int temp_sign = 1;
-        if (target_rotated[axis] < 0 ) temp_sign = -1;
-        temp_toSteps = ((std::abs(target_rotated[axis]) * st_cfg.mot[axis].steps_per_unit) + .5);   // round interger of full steps 
-        target_rotated[axis] = (temp_toSteps * temp_sign) / st_cfg.mot[axis].steps_per_unit;        // convert back to float of true target location and asign sign
+        if ((flags[axis] = fp_NOT_ZERO(axis_length[axis]))) {  // yes, this supposed to be = not ==
+            if (target_rotated[axis] < 0 ) temp_sign = -1;
+            temp_toSteps = ((std::abs(target_rotated[axis]) * st_cfg.mot[axis].steps_per_unit) + .5);   // round interger of full steps 
+            target_rotated[axis] = (temp_toSteps * temp_sign) / st_cfg.mot[axis].steps_per_unit;        // convert back to float of true target location and asign sign
+        }
     }
 
     for (uint8_t axis = 0; axis < AXES; axis++) {
