@@ -196,40 +196,50 @@ stat_t mp_aline(GCodeState_t* _gm)
     target_rotated[AXIS_B] = _gm->target[AXIS_B];
     target_rotated[AXIS_C] = _gm->target[AXIS_C];
 
-////##* Rob & Kyle, This is where we convert locations to true step target locations (and
-////      ... then put them back in the original units){note that the float might be a little imprecise, but this won't effect anything and does not accumulate}
+//// ==========================================================================================
+////##* Rob & Kyle, This is where we convert locations to true step target locations
+////    First note: 10/11/22
+////       - Then put them back in the original units){note that the final float might be a little imprecise, but this won't effect anything and does not accumulate}
 ////       - There is probably a better c++ way to do this math (is 'long int' right ?)
-////       - Even then, this is very inefficient! (the whole thing should be done with steps!; but we are stuck with g2's method for setting accelerations)
+////       - This approach is very inefficient because of going back and forth between var types! (the whole thing should be done with steps!; but we are stuck with g2's method for setting accelerations)
 ////       - Also, note that in handling of steps_per_unit, I have confounded motor#s with axis#s
-////          ... but since g2 does that in kinematics_cartesian anyway, I don't feel to bad;
-////          ..... just noting that there may be a cleaner way to handle it.
-////       - The following work could be put in the subsequent loop, but I put it here for the moment so you could
-////          ... see what is going on.
-////##Have repaired the rounding to full steps for the case of negative locations
-////       - Steps are a little special because we want to honor the best step estimate of distance from 0;
+////          ... but since g2 does that in kinematics_cartesian anyway, I don't feel too bad.
+////## Also I have repaired the rounding to full steps for the case of negative locations (a bug caught later)
+////       - Steps are special for rounding because we want to honor the best step estimate of distance from 0;
 ////          ... so negative locations are the done with absolute values to mirror positive locations in steps from zero for the same value.
-    long int temp_toSteps;
+////    Second note: 1/17/23
+////        - Kyle's testing turned up an issue with (too) small arcs not being flagged right. That issue is additionally resolved here.
+//// ========================================================================================= Setting Locations to Exact Step Locations Here
+////                                                                                           By converting back and forth    
+    
     for (uint8_t axis = 0; axis < AXES; axis++) {
-        int temp_sign = 1;
-        if (target_rotated[axis] < 0 ) temp_sign = -1;
-        temp_toSteps = ((std::abs(target_rotated[axis]) * st_cfg.mot[axis].steps_per_unit) + .5);   // round interger of full steps 
-        target_rotated[axis] = (temp_toSteps * temp_sign) / st_cfg.mot[axis].steps_per_unit;        // convert back to float of true target location and asign sign
-    }
 
-    for (uint8_t axis = 0; axis < AXES; axis++) {
+        // make targets exact step locations
+        long int temp_toSteps;
+        int temp_sign = 1;
+        if (isnan(target_rotated[axis])) {
+                    // ignore NaN from arcs that are too small
+        } else {    // process good values    
+            if (target_rotated[axis] < 0 ) temp_sign = -1;                                              // see note on negative step rounding
+            temp_toSteps = ((std::abs(target_rotated[axis]) * st_cfg.mot[axis].steps_per_unit) + .5);   // round integer of full steps
+            target_rotated[axis] = (temp_toSteps * temp_sign) / st_cfg.mot[axis].steps_per_unit;        // convert back to float of true target location and asign sign
+        }        
+
+        // clean up final values
         axis_length[axis] = target_rotated[axis] - mp->position[axis];
-        if ((flags[axis] = fp_NOT_ZERO(axis_length[axis]))) {  // yes, this supposed to be = not ==
+        flags[axis] = fp_NOT_ZERO(axis_length[axis]);
+        if ( flags[axis] ) {                                                                              
             axis_square[axis] = square(axis_length[axis]);
             length_square += axis_square[axis];
         } else {
             axis_length[axis] = 0;  // make it truly zero if it was tiny
-            axis_square[axis] = 0;  // Fix bug that can kill feedholds by corrupting block_time in _calculate_times
+            axis_square[axis] = 0;  // Fix bug that can kill feed-holds by corrupting block_time in _calculate_times
         }
     }
+
     length = sqrt(length_square);
 
     // exit if the move has zero movement. At all.
-//    if (length < 0.00002) {  // this value is 2x EPSILON and prevents trap failures in _plan_aline()
     if (length < 0.0001) {      // this value is 0.1 microns. Prevents planner trap failures
         sr_request_status_report(SR_REQUEST_TIMED_FULL);  // Was SR_REQUEST_IMMEDIATE_FULL
         return (STAT_MINIMUM_LENGTH_MOVE);                // STAT_MINIMUM_LENGTH_MOVE needed to end cycle
