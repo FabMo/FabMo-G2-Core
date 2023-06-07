@@ -66,7 +66,6 @@ gpioDigitalInputPin<IRQPin<Motate::kInput7_PinNumber>>  din7  {DI7_ENABLED,  DI7
 gpioDigitalInputPin<IRQPin<Motate::kInput8_PinNumber>>  din8  {DI8_ENABLED,  DI8_POLARITY,  8, DI8_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 gpioDigitalInputPin<IRQPin<Motate::kInput9_PinNumber>>  din9  {DI9_ENABLED,  DI9_POLARITY,  9, DI9_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10 {DI10_ENABLED, DI10_POLARITY, 10, DI10_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
-////## enabled 10 & 11
 gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11 {DI11_ENABLED, DI11_POLARITY, 11, DI11_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12 {DI12_ENABLED, DI12_POLARITY, 12, DI12_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 
@@ -86,7 +85,7 @@ gpioDigitalOutputPin<OutputType<OUTPUT13_PWM, Motate::kOutput13_PinNumber>> dout
 
 /**** Setup Arrays - these are extern and MUST match the board_gpio.h ****/
 
-gpioDigitalInput*  const d_in[] = {&din1, &din2, &din3, &din4, &din5, &din6, &din7, &din8, &din9, &din10};
+gpioDigitalInput*  const d_in[] = {&din1, &din2, &din3, &din4, &din5, &din6, &din7, &din8, &din9, &din10, &din11, &din12};
 gpioDigitalOutput* const d_out[] = {&dout1, &dout2, &dout3, &dout4, &dout5, &dout6, &dout7, &dout8, &dout9, &dout10, &dout11, &dout12, &dout13};
 // not yet used
 gpioAnalogInput*    a_in[] = {};
