@@ -81,7 +81,6 @@ extern gpioDigitalInputPin<IRQPin<Motate::kInput7_PinNumber>>  din7;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput8_PinNumber>>  din8;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput9_PinNumber>>  din9;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10;
-////## re-enabled 11 & 12
 extern gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12;
 

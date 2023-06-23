@@ -1128,6 +1128,9 @@ stat_t st_set_su(nvObj_t *nv)
     // You could scale any one of the other values, but TR makes the most sense
     st_cfg.mot[m].travel_rev = (360.0 * st_cfg.mot[m].microsteps) /
                                (st_cfg.mot[m].steps_per_unit * st_cfg.mot[m].step_angle);
+
+    kn_config_changed();
+
     return(STAT_OK);
 }
 
