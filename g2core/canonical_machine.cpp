@@ -401,7 +401,13 @@ cmCombinedState cm_get_combined_state(cmMachine_t *_cm)
 					case CYCLE_NONE:      { break; } // CYCLE_NONE cannot ever get here
 					case CYCLE_MACHINING: { return (_cm->hold_state == FEEDHOLD_OFF ? COMBINED_RUN : COMBINED_HOLD); }
 					case CYCLE_HOMING:    { return (COMBINED_HOMING); }
-					case CYCLE_PROBE:     { return (COMBINED_PROBE); }
+					case CYCLE_PROBE:   {
+                        if(_cm->hold_state == FEEDHOLD_HOLD){  // Allows picking up feedhold in a probe cycle
+                            return COMBINED_HOLD;
+                        } else {
+                            return (COMBINED_PROBE);
+                        }
+                    }
 					case CYCLE_JOG:       { return (COMBINED_JOG); }
 				}
 			}
