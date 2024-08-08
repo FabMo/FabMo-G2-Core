@@ -2007,16 +2007,19 @@ static void _convert(nvObj_t *nv, float conversion_factor)
 {
     if (nv->valuetype != TYPE_FLOAT) { return; } // can be called non-destructively for any value type
     if (isnan((double)nv->value_flt) || isinf((double)nv->value_flt)) { return; } // trap illegal float values
-    ///+++ transform these checks into NaN or INF strings with an error return?
 
+    ////#A revised for special case ABC linear for FabMo
     if (cm_get_units_mode(MODEL) == INCHES) {
-        cmAxisType axis_type = cm_get_axis_type(nv);        // linear, rotary, global or error
-        if ((axis_type == AXIS_TYPE_LINEAR) || (axis_type == AXIS_TYPE_SYSTEM)) {
-            if (cfgArray[nv->index].flags & F_CONVERT) {    // standard units conversion
+        cmAxisType axis_type = cm_get_axis_type(nv);
+        int8_t axis_index = _axis(nv);
+        if (axis_index <= AXES) { 
+            cmAxisMode axis_mode = cm->a[axis_index].axis_mode; 
+            if ((axis_type == AXIS_TYPE_LINEAR) || (axis_type == AXIS_TYPE_SYSTEM) || (axis_mode == AXIS_INHIBITED)) {
+                if (cfgArray[nv->index].flags & F_CONVERT) { // standard units conversion
                     nv->value_flt *= conversion_factor;
-            } else
-            if (cfgArray[nv->index].flags & F_ICONVERT) {   // inverse units conversion
-                nv->value_flt /= conversion_factor;
+                } else if (cfgArray[nv->index].flags & F_ICONVERT) { // inverse units conversion
+                    nv->value_flt /= conversion_factor;
+                }
             }
         }
     }

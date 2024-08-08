@@ -62,7 +62,7 @@
 #define MOTORS 6                    // number of motors supported the hardware
 #endif
 #define PWMS 2                      // number of PWM channels supported the hardware
-#define AXES 6                      // axes to support -- must be 6 or 9
+#define AXES 6                      // axes to support -- must be 6 ////#A 6 for FabMo
 
 /*************************
  * Global System Defines *

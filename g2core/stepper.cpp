@@ -1116,7 +1116,8 @@ stat_t st_set_su(nvObj_t *nv)
 
     // Do unit conversion here because it's a reciprocal value (rather than process_incoming_float())
     if (cm_get_units_mode(MODEL) == INCHES) {
-        if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR) {
+        ////#A Handle ABC special case linear for FabMo; AXIS_INHIBITED is used to flag ABC as linear
+        if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR || cm_get_axis_mode(nv) == AXIS_INHIBITED) {
             nv->value_flt *= INCHES_PER_MM;
         }
     }

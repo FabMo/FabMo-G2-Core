@@ -125,7 +125,7 @@ cmToolTable_t tt;           // global tool table
  **** GENERIC STATIC FUNCTIONS AND VARIABLES ********************************************
  ****************************************************************************************/
 
-static int8_t _axis(const nvObj_t *nv);     // return axis number from token/group in nv
+//static int8_t _axis(const nvObj_t *nv);     // return axis number from token/group in nv
 
 /*
  * _hold_input_handler - a gpioDigitalInputHandler to capture pin change events
@@ -594,7 +594,8 @@ float cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axi
     } else {
         position = mp_get_runtime_display_position(axis);
     }
-    if (axis <= LAST_LINEAR_AXIS) {   // linears
+////#A looking for special ABC flag for linears
+    if ((axis <= AXIS_Z) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {   // linears
         if (gcode_state->units_mode == INCHES) {
             position /= MM_PER_INCH;
         }
@@ -826,9 +827,12 @@ stat_t cm_get_nxln(nvObj_t *nv)
 //        registers we moved this block into its own function so that we get a fresh stack push
 // ALDEN: This shows up in avr-gcc 4.7.0 and avr-libc 1.8.0
 
+////##A AXIS_INHIBITED axes that are ABC are to be treated as AXIS_TYPE_LINEAR, AXIS_STANDARD axes
+////     ... for setting targets.  This is a change from the original code
+
 static float _calc_ABC(const uint8_t axis, const float target[])
 {
-    if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+    if (cm->a[axis].axis_mode == AXIS_STANDARD) { ////#A we've already processed "INHIBITED"~LINEAR below
         return(target[axis]);    // no mm conversion - it's in degrees
     }
     // radius mode
@@ -843,26 +847,34 @@ void cm_set_model_target(const float target[], const bool flags[])
     // copy position to target so it always starts correctly
     copy_vector(cm->gm.target, cm->gmx.position);
 
-    // process linear axes (XYZUVW) first
+    // process regular linear axes (XYZ) first
     for (axis = AXIS_X; axis <= LAST_LINEAR_AXIS; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
-        } else if ((cm->a[axis].axis_mode == AXIS_STANDARD) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+        } else if (cm->a[axis].axis_mode == AXIS_STANDARD) {
             if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
                 cm->gm.target[axis] = cm_get_combined_offset(axis) + target[axis];
-                } else {
+            } else {
                 cm->gm.target[axis] += target[axis];
             }
             cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
         }
     }
-    // FYI: The ABC loop below relies on the XYZUVW loop having been run first
+
+    // then process for ABC loop the special casesst
     for (axis = AXIS_A; axis <= AXIS_C; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
+        } else if (cm->a[axis].axis_mode == AXIS_INHIBITED) {    ////#A special case axis_inhibited = flag means linear in ABC
+            if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+                cm->gm.target[axis] = cm_get_combined_offset(axis) + target[axis];
+            } else {
+                cm->gm.target[axis] += target[axis];
+            }
+            cm->return_flags[axis] = true;  // used to make a synthetic G28/G30 intermediate move
         } else {
             tmp = _calc_ABC(axis, target);
-        }
+
 
 #if MARLIN_COMPAT_ENABLED == true
         // If we are in absolute mode (generally), but the extruder is relative,
@@ -875,20 +887,21 @@ void cm_set_model_target(const float target[], const bool flags[])
                 cm->gm.target[axis] = tmp + cm_get_combined_offset(axis);
             }
             // TODO - volumetric filament conversion
-//            else {
-//                cm->gm.target[axis] += tmp * cm.gmx.volume_to_filament_length[axis-3];
-//            }
+            //  else {
+            //      cm->gm.target[axis] += tmp * cm.gmx.volume_to_filament_length[axis-3];
+            //  }
         }
         else
 #endif // MARLIN_COMPAT_ENABLED
 
-        if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
-            cm->gm.target[axis] = tmp + cm_get_combined_offset(axis); // sacidu93's fix to Issue #22
-        }
-        else {
-            cm->gm.target[axis] += tmp;
-        }
-        cm->return_flags[axis] = true;
+            if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
+                cm->gm.target[axis] = tmp + cm_get_combined_offset(axis); // sacidu93's fix to Issue #22
+            }
+            else {
+                cm->gm.target[axis] += tmp;
+            }
+            cm->return_flags[axis] = true;
+        }    
     }
 }
 
@@ -1241,7 +1254,7 @@ void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *fla
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;                                                   // skip axis if not flagged for update or its disabled
-        } else if (axis > LAST_LINEAR_AXIS) {
+        } else if ((axis > AXIS_Z) && (cm->a[axis].axis_mode == AXIS_STANDARD)) { ////#A
             target_mm[axis] = target_global[axis];                      // pass through rotary axes (no unit conversion required)
         } else {
             target_mm[axis] = _to_millimeters(target_global[axis]);     // convert linear axes
@@ -1293,7 +1306,7 @@ stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmM
 }
 
 /****************************************************************************************
- * cm_goto_g28_position()         - G28
+ * cm_goto_g28_position()         - G28          ////#A  System only applies to XYZ and not ABC when linear axes
  * cm_set_g28_position()          - G28.1
  * cm_goto_g30_position_global()  - G30, global (Gcode) units - for external use
  * cm_goto_g30_position_mm()      - G30, mm units - for internal use
@@ -1948,7 +1961,8 @@ stat_t cm_run_jog(nvObj_t *nv)
 /***** AXIS HELPERS **********************************************************************
  * _coord()           - return coordinate system number (53=0...59=6) or -1 if error
  * _axis()            - return axis # or -1 if not an axis (works for mapped motors as well)
- * cm_get_axis_type() - return linear axis (0), rotary axis (1) or error (-1)
+ * cm_get_axis_type() - return system (-2), undefined (-1) linear axis (0), rotary axis (1)
+ * cm_get_axis_mode() - return axis mode (0=DISABLED, 1=STANDARD(linear or rotary), 2=INHIBITED, 3=RADIAL) ////#A
  * cm_get_axis_char() - return ASCII char for internal axis number provided
  */
 
@@ -1975,7 +1989,7 @@ static int8_t _coord(nvObj_t *nv)   // extract coordinate system from 3rd charac
  *  such as 'coph' But it should not be called in these cases in any event.
  */
 
-static int8_t _axis(const nvObj_t *nv)
+int8_t _axis(const nvObj_t *nv)
 {
     auto &cfgTmp = cfgArray[nv->index];
 
@@ -2015,13 +2029,23 @@ static int8_t _axis(const nvObj_t *nv)
     return (ptr - axes);
 }
 
+////#A
+cmAxisMode cm_get_axis_mode(const nvObj_t *nv)
+{  // return axis mode (0=DISABLED, 1=STANDARD(linear or rotary), 2=INHIBITED, 3=RADIAL) ////#A
+    int8_t axis = _axis(nv);
+    if (axis <= AXIS_DISABLED) {
+        return ((cmAxisMode)axis);
+    }
+    return ((cmAxisMode)cm->a[axis].axis_mode);
+}
+
 cmAxisType cm_get_axis_type(const nvObj_t *nv)
-{
+{  // return axis type (-2=SYSTEM, -1=UNDEFINED, 0=STANDARD, 3=ROTARY)
     int8_t axis = _axis(nv);
     if (axis <= AXIS_TYPE_UNDEFINED) {
         return ((cmAxisType)axis);
     }
-    if (axis >= AXIS_A) {
+    if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
         return (AXIS_TYPE_ROTARY);
     }
     return (AXIS_TYPE_LINEAR);
@@ -2540,15 +2564,24 @@ stat_t cm_set_gpl(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_s
 
 stat_t cm_get_gun(nvObj_t *nv) { return(get_integer(nv, cm->default_units_mode)); }
 ////##stat_t cm_set_gun(nvObj_t *nv) { return(set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS)); }
+// stat_t cm_set_gun(nvObj_t *nv) {
+//     stat_t status;
+//     status = set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS);
+//     return status == STAT_OK ? cm_set_units_mode(cm->default_units_mode) : status;
+// }
 
-
-////##
+////#A attempt to get an updated SR, but no evidence this does anything
 stat_t cm_set_gun(nvObj_t *nv) {
     stat_t status;
     status = set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS);
-    return status == STAT_OK ? cm_set_units_mode(cm->default_units_mode) : status;
+    if (status == STAT_OK) {
+        cm_set_units_mode(cm->default_units_mode);
+        cm_reset_position_to_absolute_position(cm);
+        cm_set_display_offsets(MODEL);
+        sr_request_status_report(SR_REQUEST_IMMEDIATE);
+    }
+    return status;
 }
-////##
 
 
 stat_t cm_get_gco(nvObj_t *nv) { return(get_integer(nv, cm->default_coord_system)); }

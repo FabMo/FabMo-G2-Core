@@ -193,6 +193,8 @@ typedef struct cmAxis {
 
     // axis settings
     cmAxisMode axis_mode;                   // see cmAxisMode above
+    //cmAxisType axis_type;                   // see cmAxisType above  ////#A added helper
+
     float velocity_max;                     // max velocity in mm/min or deg/min
     float feedrate_max;                     // max velocity in mm/min or deg/min
     float jerk_max;                         // max jerk (Jm) in mm/min^3 divided by 1 million
@@ -385,6 +387,8 @@ void cm_set_soft_limits(bool enable);
 
 stat_t cm_test_soft_limits(const float target[]);
 
+int8_t _axis(const nvObj_t *nv);     // return axis number from token/group in nv
+
 /*--- Canonical machining functions (loosely) defined by NIST [organized by NIST Gcode doc] ---*/
 
 // Initialization and termination (4.3.2)
@@ -539,6 +543,7 @@ void cm_request_job_kill(void);                                 // control-D han
 
 char cm_get_axis_char(const int8_t axis);
 cmAxisType cm_get_axis_type(const nvObj_t *nv);
+cmAxisMode cm_get_axis_mode(const nvObj_t *nv);  ////#A
 
 const configSubtable *const getCmConfig_1();
 const configSubtable *const getMpoConfig_1();
