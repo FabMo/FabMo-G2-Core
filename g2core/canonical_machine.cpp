@@ -1582,7 +1582,7 @@ void cm_message(const char *message)
 /****************************************************************************************
  **** Overrides *************************************************************************
  ****************************************************************************************/
-'////##fro' related to implementing FEED-RATE OVERRIDE based on synthetos preliminary implementation
+////## FEED-RATE OVERRIDE work: '////##fro' related to implementing  based on synthetos preliminary implementation
 /****************************************************************************************
  * cm_reset_overrides() - reset manual feedrate and spindle overrides to initial conditions
  */
