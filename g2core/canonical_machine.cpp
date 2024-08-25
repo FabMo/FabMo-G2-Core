@@ -594,7 +594,7 @@ float cm_get_display_position(const GCodeState_t *gcode_state, const uint8_t axi
     } else {
         position = mp_get_runtime_display_position(axis);
     }
-////#A looking for special ABC flag for linears
+////##A looking for special ABC flag for linears
     if ((axis <= AXIS_Z) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {   // linears
         if (gcode_state->units_mode == INCHES) {
             position /= MM_PER_INCH;
@@ -828,11 +828,11 @@ stat_t cm_get_nxln(nvObj_t *nv)
 // ALDEN: This shows up in avr-gcc 4.7.0 and avr-libc 1.8.0
 
 ////##A AXIS_INHIBITED axes that are ABC are to be treated as AXIS_TYPE_LINEAR, AXIS_STANDARD axes
-////     ... for setting targets.  This is a change from the original code
+////     ... for setting targets.  This is a change from the original code to match legacy ShopBot
 
 static float _calc_ABC(const uint8_t axis, const float target[])
 {
-    if (cm->a[axis].axis_mode == AXIS_STANDARD) { ////#A we've already processed "INHIBITED"~LINEAR below
+    if (cm->a[axis].axis_mode == AXIS_STANDARD) { ////##A we've already processed "INHIBITED"~LINEAR below
         return(target[axis]);    // no mm conversion - it's in degrees
     }
     // radius mode
@@ -865,7 +865,7 @@ void cm_set_model_target(const float target[], const bool flags[])
     for (axis = AXIS_A; axis <= AXIS_C; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
-        } else if (cm->a[axis].axis_mode == AXIS_INHIBITED) {    ////#A special case axis_inhibited = flag means linear in ABC
+        } else if (cm->a[axis].axis_mode == AXIS_INHIBITED) {    ////##A special case axis_inhibited = flag means linear in ABC
             if (cm->gm.distance_mode == ABSOLUTE_DISTANCE_MODE) {
                 cm->gm.target[axis] = cm_get_combined_offset(axis) + target[axis];
             } else {
@@ -1254,7 +1254,7 @@ void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *fla
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;                                                   // skip axis if not flagged for update or its disabled
-        } else if ((axis > AXIS_Z) && (cm->a[axis].axis_mode == AXIS_STANDARD)) { ////#A
+        } else if ((axis > AXIS_Z) && (cm->a[axis].axis_mode == AXIS_STANDARD)) { ////##A
             target_mm[axis] = target_global[axis];                      // pass through rotary axes (no unit conversion required)
         } else {
             target_mm[axis] = _to_millimeters(target_global[axis]);     // convert linear axes
@@ -1306,7 +1306,7 @@ stat_t cm_straight_traverse_mm(const float *target, const bool *flags, const cmM
 }
 
 /****************************************************************************************
- * cm_goto_g28_position()         - G28          ////#A  System only applies to XYZ and not ABC when linear axes
+ * cm_goto_g28_position()         - G28          ////##A  System only applies to XYZ and not ABC when linear axes
  * cm_set_g28_position()          - G28.1
  * cm_goto_g30_position_global()  - G30, global (Gcode) units - for external use
  * cm_goto_g30_position_mm()      - G30, mm units - for internal use
@@ -1582,7 +1582,7 @@ void cm_message(const char *message)
 /****************************************************************************************
  **** Overrides *************************************************************************
  ****************************************************************************************/
-////## ... starting to explore FEED RATE OVERRIDE; '////##fro' indicates uncommented lines for commit ...
+'////##fro' related to implementing FEED-RATE OVERRIDE based on synthetos preliminary implementation
 /****************************************************************************************
  * cm_reset_overrides() - reset manual feedrate and spindle overrides to initial conditions
  */
@@ -1962,7 +1962,7 @@ stat_t cm_run_jog(nvObj_t *nv)
  * _coord()           - return coordinate system number (53=0...59=6) or -1 if error
  * _axis()            - return axis # or -1 if not an axis (works for mapped motors as well)
  * cm_get_axis_type() - return system (-2), undefined (-1) linear axis (0), rotary axis (1)
- * cm_get_axis_mode() - return axis mode (0=DISABLED, 1=STANDARD(linear or rotary), 2=INHIBITED, 3=RADIAL) ////#A
+ * cm_get_axis_mode() - return axis mode (0=DISABLED, 1=STANDARD(linear or rotary), 2=INHIBITED, 3=RADIAL)
  * cm_get_axis_char() - return ASCII char for internal axis number provided
  */
 
@@ -2029,9 +2029,8 @@ int8_t _axis(const nvObj_t *nv)
     return (ptr - axes);
 }
 
-////#A
 cmAxisMode cm_get_axis_mode(const nvObj_t *nv)
-{  // return axis mode (0=DISABLED, 1=STANDARD(linear or rotary), 2=INHIBITED, 3=RADIAL) ////#A
+{  // return axis mode (0=DISABLED, 1=STANDARD(linear or rotary), 2=INHIBITED, 3=RADIAL) ////##A
     int8_t axis = _axis(nv);
     if (axis <= AXIS_DISABLED) {
         return ((cmAxisMode)axis);
@@ -2570,7 +2569,8 @@ stat_t cm_get_gun(nvObj_t *nv) { return(get_integer(nv, cm->default_units_mode))
 //     return status == STAT_OK ? cm_set_units_mode(cm->default_units_mode) : status;
 // }
 
-////#A attempt to get an updated SR, but no evidence this does anything
+////##A attempt here to get an updated SR, but no evidence this does anything and does not trigger update; MODEL?
+//// TODO - for moment this is just kludged in FabMo
 stat_t cm_set_gun(nvObj_t *nv) {
     stat_t status;
     status = set_integer(nv, (uint8_t &)cm->default_units_mode, INCHES, MILLIMETERS);

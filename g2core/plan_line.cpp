@@ -875,7 +875,7 @@ static void _calculate_junction_vmax(mpBuf_t* bf)
                 continue;
             }
 #else
-            if (axis == AXIS_Z) { 
+            if (axis == AXIS_Z) {        ////## for FabMo may need to consider how to handle a "linear A axis"
                 continue;
             }
 #endif
