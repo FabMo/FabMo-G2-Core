@@ -193,7 +193,6 @@ typedef struct cmAxis {
 
     // axis settings
     cmAxisMode axis_mode;                   // see cmAxisMode above
-    //cmAxisType axis_type;                   // see cmAxisType above  ////#A added helper
 
     float velocity_max;                     // max velocity in mm/min or deg/min
     float feedrate_max;                     // max velocity in mm/min or deg/min
@@ -543,7 +542,7 @@ void cm_request_job_kill(void);                                 // control-D han
 
 char cm_get_axis_char(const int8_t axis);
 cmAxisType cm_get_axis_type(const nvObj_t *nv);
-cmAxisMode cm_get_axis_mode(const nvObj_t *nv);  ////#A
+cmAxisMode cm_get_axis_mode(const nvObj_t *nv);  ////##A
 
 const configSubtable *const getCmConfig_1();
 const configSubtable *const getMpoConfig_1();

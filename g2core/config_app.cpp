@@ -2008,7 +2008,7 @@ static void _convert(nvObj_t *nv, float conversion_factor)
     if (nv->valuetype != TYPE_FLOAT) { return; } // can be called non-destructively for any value type
     if (isnan((double)nv->value_flt) || isinf((double)nv->value_flt)) { return; } // trap illegal float values
 
-    ////#A revised for special case ABC linear for FabMo
+    ////##A revised for special case ABC linear for FabMo
     if (cm_get_units_mode(MODEL) == INCHES) {
         cmAxisType axis_type = cm_get_axis_type(nv);
         int8_t axis_index = _axis(nv);

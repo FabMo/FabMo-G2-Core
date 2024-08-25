@@ -115,7 +115,7 @@ void json_parse_for_exec(char *str, bool execute)
     sr_request_status_report(SR_REQUEST_TIMED);     // generate incremental status report to show any changes
 }
 
-////## see below
+////## see reversion below
 static stat_t _json_parser_execute(nvObj_t *nv) {
 
     do {

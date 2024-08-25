@@ -403,7 +403,7 @@ void kn_config_changed() {
             __asm__("BKPT");  // about to send non-Setup message
         }
 #endif
-        ////#A Handle ABC special case linear for FabMo; AXIS_INHIBITED is used to flag ABC as linear
+        ////##A Handle ABC special case linear for FabMo; AXIS_INHIBITED is used to flag ABC as linear
         // ... and thus can't be used in INHIBITED mode
         if ((axis <= AXIS_Z) && cm->a[axis].axis_mode == AXIS_INHIBITED) {
             motor_map[motor] = -1;

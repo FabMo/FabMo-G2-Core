@@ -66,7 +66,7 @@ typedef uint16_t magic_t;		        // magic number size
 // #error AXES must be undefined (defaulting to 9) or defined as 6 or 9
 // #endif
 
-////#A FabMo has 6 axes, defined in hardware.h
+////##A FabMo has 6 axes, defined in hardware.h
 
 #define HOMING_AXES 4   // number of axes that can be homed (assumes Zxyabc sequence)
 #define COORDS 6        // number of supported coordinate systems (index starts at 1)
