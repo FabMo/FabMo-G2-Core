@@ -62,7 +62,7 @@
 #define MOTORS 6                    // number of motors supported the hardware
 #endif
 #define PWMS 2                      // number of PWM channels supported the hardware
-#define AXES 6                      // axes to support -- must be 6 or 9
+#define AXES 6                      // axes to support -- must be 6 ////##A 6 for FabMo
 
 /*************************
  * Global System Defines *
@@ -120,7 +120,7 @@ using Motate::OutputPin;
 
 #define FREQUENCY_DDA		150000UL		// Hz step frequency. Interrupts actually fire at 2x (300 KHz) ////**Used in previous FabMo
 //#define FREQUENCY_DDA     100000UL        // Hz step frequency. Interrupts actually fire at 2x (200 KHz) *Speed of many other boards! 
-////##th We used FREQUENCY_DDA of 100000 in early E-P work because of stutters going any faster; this is fixed by reversion to single precision
+////## We used FREQUENCY_DDA of 100000 in early E-P work because of stutters going any faster; this is fixed by reversion to single precision
 ////## Make sure the secondary 'turn-off' of steps in stepper.cpp: _load_move is located appropriately for FREQUENCY_DDA selection
 
 #define FREQUENCY_DWELL		1000UL

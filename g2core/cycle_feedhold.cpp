@@ -407,7 +407,6 @@ void cm_request_cycle_start()
     } else {                                        // execute cycle start directly
         if (mp_has_runnable_buffer(&mp1)) {
 
-////##ted, cleanly starting a new block here ... ck this out
             cm_cycle_start();
 
 #ifdef INSTRUMENT_SEGMENTS_N_MOVES
@@ -942,7 +941,7 @@ stat_t _run_restart_cycle(void)
     }
     cm1.hold_state = FEEDHOLD_OFF;          // must precede st_request_exec_move()
 
-////##ted, second place where we are cleanly starting a new block ... Check!
+////##ted, second place where we are cleanly starting a new block ... 
     if (mp_has_runnable_buffer(&mp1)) {
 
         cm_cycle_start();

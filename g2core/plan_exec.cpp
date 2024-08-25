@@ -930,7 +930,7 @@ static stat_t _exec_aline_segment()
 
     // Convert target position to steps
     ////## As far as I can tell, this is the only point real steps are swapped in to the
-    ////    ... original g2 method; this means that previously, all speeds and times were
+    ////    ... original g2 method; this means that previously, all speeds and times 
     ////    ... were based on conceptual distance, not real distances between steps.
     ////   Now corrected by converting locations to nearest true step location in plan_line.cpp
     kn->inverse_kinematics(mr->gm, mr->gm.target, mr->position, mr->segment_velocity, mr->target_velocity, mr->segment_time, exec_target_steps);

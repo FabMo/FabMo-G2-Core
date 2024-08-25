@@ -47,7 +47,7 @@
 #define INPUT_LOCKOUT_MS    10          // milliseconds to go dead after input firing
 
 // Setup spindle and coolant pin assignments
-#define SPINDLE_ENABLE_OUTPUT_NUMBER 1 ////## first try at enabling
+#define SPINDLE_ENABLE_OUTPUT_NUMBER 1
 #define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
 #define SPINDLE_PWM_NUMBER 0
 #define MIST_ENABLE_OUTPUT_NUMBER 0

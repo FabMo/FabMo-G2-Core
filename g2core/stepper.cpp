@@ -684,24 +684,6 @@ static void _load_move()
         ACCUMULATE_ENCODER(MOTOR_6);
 #endif
 
-////## Secondary step-pin turn-off here to clean up large pulse (~20uS) when pulse coincident with segment load
-//    * POSITION HERE for FREQUENCY_DDA = 100000
-//    # There is still a rare ~16-20uS and 16uS pulse unrelated to segment or anything else obvious
-//    motor_1.stepEnd();
-//    motor_2.stepEnd();
-// #if MOTORS > 2
-//    motor_3.stepEnd();
-// #endif
-// #if MOTORS > 3
-//    motor_4.stepEnd();
-// #endif
-// #if MOTORS > 4
-//    motor_5.stepEnd();
-// #endif
-// #if MOTORS > 5
-//    motor_6.stepEnd();
-// #endif
-
         //**** do this last ****
         st_run.dda_ticks_downcount = st_pre.dda_ticks;
 
@@ -1116,7 +1098,8 @@ stat_t st_set_su(nvObj_t *nv)
 
     // Do unit conversion here because it's a reciprocal value (rather than process_incoming_float())
     if (cm_get_units_mode(MODEL) == INCHES) {
-        if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR) {
+        ////##A Handle ABC special case linear for FabMo; AXIS_INHIBITED is used to flag ABC as linear
+        if (cm_get_axis_type(nv) == AXIS_TYPE_LINEAR || cm_get_axis_mode(nv) == AXIS_INHIBITED) {
             nv->value_flt *= INCHES_PER_MM;
         }
     }

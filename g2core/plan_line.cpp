@@ -705,7 +705,7 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
     bf->cruise_vmax   = bf->absolute_vmax;                  // starting value for cruise vmax to absolute highest
 }
 
-////## I removed this from FabMo-G2 in order to get e-p to compile and run correctly 2 years ago, it may work fine ...
+////## I removed this from FabMo-G2 in order to get e-p to compile and run correctly, it may work fine ...
 ////## Test Reversion to 101.03 for junction
 // /****************************************************************************************
 //  * _calculate_junction_vmax() - Giseburt's Algorithm ;-)
@@ -875,7 +875,7 @@ static void _calculate_junction_vmax(mpBuf_t* bf)
                 continue;
             }
 #else
-            if (axis == AXIS_Z) { 
+            if (axis == AXIS_Z) {        ////## for FabMo may need to consider how to handle a "linear A axis"
                 continue;
             }
 #endif
