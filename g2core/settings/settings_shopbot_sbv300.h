@@ -31,6 +31,7 @@
 /*
  * NOTES:
  *  - This profile supports the ShopBot sbv30x board
+ *  - as of 6/15/25 we are on commit 20a2e13d to MOTATE (there are newer, but some confuwion about which to use) 
  */
 
 // ***> NOTE: The init message must be a single line with no CRs or LFs
