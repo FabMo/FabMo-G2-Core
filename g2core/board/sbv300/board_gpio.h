@@ -40,16 +40,17 @@
 //--- change as required for board and switch hardware ---//
 
 #define D_IN_CHANNELS      12         ////## re-enabled all 12
-#define D_OUT_CHANNELS     13         // number of digital outputs supported
+//#### changed for Laser & PWM
+#define D_OUT_CHANNELS     16         // number of digital outputs supported
 #define A_IN_CHANNELS	    0           // number of analog inputs supported
 #define A_OUT_CHANNELS	    0           // number of analog outputs supported
 
 #define INPUT_LOCKOUT_MS    10          // milliseconds to go dead after input firing
 
 // Setup spindle and coolant pin assignments
-#define SPINDLE_ENABLE_OUTPUT_NUMBER 1
-#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
-#define SPINDLE_PWM_NUMBER 0
+//#### already def #define SPINDLE_ENABLE_OUTPUT_NUMBER 11
+//#### #define SPINDLE_DIRECTION_OUTPUT_NUMBER 12
+#define SPINDLE_PWM_NUMBER 16
 #define MIST_ENABLE_OUTPUT_NUMBER 0
 
 #define FLOOD_ENABLE_OUTPUT_NUMBER 0
@@ -97,6 +98,9 @@ extern gpioDigitalOutputPin<OutputType<OUTPUT10_PWM, Motate::kOutput10_PinNumber
 extern gpioDigitalOutputPin<OutputType<OUTPUT11_PWM, Motate::kOutput11_PinNumber>> dout11;
 extern gpioDigitalOutputPin<OutputType<OUTPUT12_PWM, Motate::kOutput12_PinNumber>> dout12;
 extern gpioDigitalOutputPin<OutputType<OUTPUT13_PWM, Motate::kOutput13_PinNumber>> dout13;
+extern gpioDigitalOutputPin<OutputType<OUTPUT14_PWM, Motate::kOutput14_PinNumber>> dout14;
+extern gpioDigitalOutputPin<OutputType<OUTPUT15_PWM, Motate::kOutput15_PinNumber>> dout15;
+extern gpioDigitalOutputPin<OutputType<OUTPUT16_PWM, Motate::kOutput16_PinNumber>> dout16;
 
 
 #endif // End of include guard: BOARD_GPIO_H_ONCE

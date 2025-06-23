@@ -44,20 +44,21 @@
 #define G2CORE_HARDWARE_PLATFORM    "sbv300"
 #define G2CORE_HARDWARE_VERSION     "na"
 
-#define  HAS_HOBBY_SERVO_MOTOR 0  // kludge to fix build warnings in sbv300 on linux.  rmackie
-#ifndef HAS_LASER
-#if HAS_HOBBY_SERVO_MOTOR
-#error Can NOT have a laser and a hobby servo at the same time, sorry
-#endif
-#define HAS_LASER 0
-#endif
+#define  HAS_HOBBY_SERVO_MOTOR 0     // kludge to fix build warnings in sbv300 on linux.  rmackie
+//#### revised for laser
+//#ifndef HAS_LASER
+//#if HAS_HOBBY_SERVO_MOTOR
+//#error Can NOT have a laser and a hobby servo at the same time, sorry
+//#endif
+//#### #define HAS_LASER 0
+//#endif
 
 /***** Motors & PWM channels supported by this hardware *****/
 // These must be defines (not enums) so expressions like this:
 //  #if (MOTORS >= 6)  will work
 
 #if HAS_LASER
-#define MOTORS 7                    // number of motors + one "laser" motor (used for pulsing the laser in sync)
+#define MOTORS 6                    // number of motors + one "laser" motor (used for pulsing the laser in sync)
 #else
 #define MOTORS 6                    // number of motors supported the hardware
 #endif

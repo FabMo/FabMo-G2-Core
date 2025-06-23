@@ -44,6 +44,8 @@
 
 #include "spindle.h"
 
+#include "board_stepper.h"
+
 /**** Debugging output with semihosting ****/
 
 #include "MotateDebug.h"

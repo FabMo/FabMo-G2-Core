@@ -1575,6 +1575,36 @@
 #define DO13_EXTERNAL_NUMBER         13
 #endif
 
+#ifndef DO14_ENABLED
+#define DO14_ENABLED                IO_ENABLED
+#endif
+#ifndef DO14_POLARITY
+#define DO14_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO14_EXTERNAL_NUMBER
+#define DO14_EXTERNAL_NUMBER         14
+#endif
+
+#ifndef DO15_ENABLED
+#define DO15_ENABLED                IO_ENABLED
+#endif
+#ifndef DO15_POLARITY
+#define DO15_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO15_EXTERNAL_NUMBER
+#define DO15_EXTERNAL_NUMBER         15
+#endif
+
+#ifndef DO16_ENABLED
+#define DO16_ENABLED                IO_ENABLED
+#endif
+#ifndef DO16_POLARITY
+#define DO16_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO16_EXTERNAL_NUMBER
+#define DO16_EXTERNAL_NUMBER         16
+#endif
+
 // foind in gpio.h:
 // #ifndef AI1_TYPE
 // #define AI1_TYPE                    AIN_TYPE_DISABLED

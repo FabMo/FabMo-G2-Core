@@ -55,6 +55,7 @@
 #include "MotateTimers.h"
 
 /**** Setup Actual Objects ****/
+//#### added more outputs for PWM & LASER
 
 gpioDigitalInputPin<IRQPin<Motate::kInput1_PinNumber>>  din1  {DI1_ENABLED,  DI1_POLARITY,  1, DI1_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
 gpioDigitalInputPin<IRQPin<Motate::kInput2_PinNumber>>  din2  {DI2_ENABLED,  DI2_POLARITY,  2, DI2_EXTERNAL_NUMBER, Motate::kPinInterruptOnChange|Motate::kPinInterruptPriorityHigh};
@@ -82,11 +83,14 @@ gpioDigitalOutputPin<OutputType<OUTPUT10_PWM, Motate::kOutput10_PinNumber>> dout
 gpioDigitalOutputPin<OutputType<OUTPUT11_PWM, Motate::kOutput11_PinNumber>> dout11 { DO11_ENABLED, DO11_POLARITY, DO11_EXTERNAL_NUMBER, (uint32_t)200000 };
 gpioDigitalOutputPin<OutputType<OUTPUT12_PWM, Motate::kOutput12_PinNumber>> dout12 { DO12_ENABLED, DO12_POLARITY, DO12_EXTERNAL_NUMBER, (uint32_t)200000 };
 gpioDigitalOutputPin<OutputType<OUTPUT13_PWM, Motate::kOutput13_PinNumber>> dout13 { DO13_ENABLED, DO13_POLARITY, DO13_EXTERNAL_NUMBER, (uint32_t)200000 };
+gpioDigitalOutputPin<OutputType<OUTPUT14_PWM, Motate::kOutput14_PinNumber>> dout14 { DO14_ENABLED, DO14_POLARITY, DO14_EXTERNAL_NUMBER, (uint32_t)200000 };
+gpioDigitalOutputPin<OutputType<OUTPUT15_PWM, Motate::kOutput15_PinNumber>> dout15 { DO15_ENABLED, DO15_POLARITY, DO15_EXTERNAL_NUMBER, (uint32_t)200000 };
+gpioDigitalOutputPin<OutputType<OUTPUT16_PWM, Motate::kOutput16_PinNumber>> dout16 { DO16_ENABLED, DO16_POLARITY, DO16_EXTERNAL_NUMBER, (uint32_t)200000 };
 
 /**** Setup Arrays - these are extern and MUST match the board_gpio.h ****/
 
 gpioDigitalInput*  const d_in[] = {&din1, &din2, &din3, &din4, &din5, &din6, &din7, &din8, &din9, &din10, &din11, &din12};
-gpioDigitalOutput* const d_out[] = {&dout1, &dout2, &dout3, &dout4, &dout5, &dout6, &dout7, &dout8, &dout9, &dout10, &dout11, &dout12, &dout13};
+gpioDigitalOutput* const d_out[] = {&dout1, &dout2, &dout3, &dout4, &dout5, &dout6, &dout7, &dout8, &dout9, &dout10, &dout11, &dout12, &dout13, &dout14, &dout15, &dout16};
 // not yet used
 gpioAnalogInput*    a_in[] = {};
 // gpioAnalogOutput*   a_out[A_OUT_CHANNELS];

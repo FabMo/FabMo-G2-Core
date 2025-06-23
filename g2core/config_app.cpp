@@ -673,6 +673,16 @@ constexpr cfgItem_t do_config_items_1[] = {
     { "do14", "do14po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout14, DO14_POLARITY },
     { "do14", "do14out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout14, DO14_EXTERNAL_NUMBER },
 #endif
+#if (D_OUT_CHANNELS >= 15)
+    { "do15", "do15en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout15, DO15_ENABLED },
+    { "do15", "do15po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout15, DO15_POLARITY },
+    { "do15", "do15out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout15, DO15_EXTERNAL_NUMBER },
+#endif
+#if (D_OUT_CHANNELS >= 16)
+    { "do16", "do16en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout16, DO16_ENABLED },
+    { "do16", "do16po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout16, DO16_POLARITY },
+    { "do16", "do16out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout16, DO16_EXTERNAL_NUMBER },
+#endif
 };
 constexpr cfgSubtableFromStaticArray do_config_1 {do_config_items_1};
 constexpr const configSubtable * const getDOConfig_1() { return &do_config_1; }
@@ -1739,7 +1749,7 @@ constexpr cfgItem_t groups_config_items_1[] = {
     { "","di12", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 #endif
 
-#define DIGITAL_OUT_GROUPS 14
+#define DIGITAL_OUT_GROUPS 16
     { "","out", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output state
     { "","do1", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output configs
     { "","do2", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
@@ -1754,6 +1764,9 @@ constexpr cfgItem_t groups_config_items_1[] = {
     { "","do11", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
     { "","do12", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
     { "","do13", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do14", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do15", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do16", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 
 #define ANALOG_IN_GROUPS 12
     { "","ai1", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr,0 },   // analog input configs

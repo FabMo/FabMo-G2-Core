@@ -42,7 +42,55 @@
 #define JUNCTION_INTEGRATION_TIME   1.5     // cornering - between 0.10 and 2.00 (higher is faster)
 #define CHORDAL_TOLERANCE           0.01    // chordal accuracy for arc drawing (in mm) 
 
-#define HAS_LASER                   0       // We don't have a laser ... yet
+#define HAS_LASER                   1       // LASER support enabled (0=off, 1=on); HERE !!!
+#ifndef HAS_LASER
+#define HAS_LASER 0
+#endif
+
+#ifndef LASER_ENABLE_OUTPUT_NUMBER
+#define LASER_ENABLE_OUTPUT_NUMBER 8
+#endif
+#ifndef LASER_FIRE_PIN_NUMBER
+#define LASER_FIRE_PIN_NUMBER  Motate::kOutput15_PinNumber // note this is a MOTATE pin number, NOT a GPIO pin number   
+#endif
+
+#ifndef LASER_TOOL
+#define LASER_TOOL 6
+#endif
+
+#ifndef LASER_PULSE_DURATION
+#define LASER_PULSE_DURATION 100        // microseconds
+#endif
+
+#ifndef LASER_MIN_S
+#define LASER_MIN_S 0                   // minimum S value
+#endif
+
+#ifndef LASER_MAX_S
+#define LASER_MAX_S 1000                // maximum S value
+#endif
+
+#ifndef LASER_MIN_PPM
+#define LASER_MIN_PPM 0                 // minimum pulses per mm
+#endif
+
+#ifndef LASER_MAX_PPM
+#define LASER_MAX_PPM 1000              // maximum pulses per mm
+#endif
+
+#if HAS_LASER
+#define KINEMATICS                  KINE_OTHER 
+//#### This line causing template parsing issues
+//#define BASE_KINEMATICS             CartesianKinematics<AXES, MOTORS>
+//#define BASE_KINEMATICS             CartesianKinematics<AXES, MOTORS, 6> // 6 axes for laser
+#else
+//#define KINEMATICS                  KINE_CARTESIAN
+//#define BASE_KINEMATICS             CartesianKinematics<AXES, MOTORS> // 5 axes for mill    
+#endif
+
+// #ifndef MOTOR_6
+// #define MOTOR_6 5
+// #endif
 
 #define SOFT_LIMIT_ENABLE           0       // 0=off, 1=on
 #define HARD_LIMIT_ENABLE           1       // 0=off, 1=on    ////## should be on by default???
@@ -62,9 +110,9 @@
 #define MIST_ENABLE_OUTPUT_NUMBER   0
 #define FLOOD_ENABLE_OUTPUT_NUMBER  0
 
-#define SPINDLE_ENABLE_OUTPUT_NUMBER    1   ////## this is also defined in board_gpio ... probably a mistake
-#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0
-#define SPINDLE_PWM_NUMBER              0
+#define SPINDLE_ENABLE_OUTPUT_NUMBER    9   //#### defined for laser/PWM //#### was 13 problem
+#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0     //#### set to 14 if needed
+#define SPINDLE_PWM_NUMBER          16
 
 #define FEEDHOLD_Z_LIFT             12.7
 
@@ -95,7 +143,6 @@
 // Gcode startup defaults
 #define GCODE_DEFAULT_UNITS         MILLIMETERS              // MILLIMETERS or INCHES   ////** note not consistent with distance values ??? all reset???
 #define GCODE_DEFAULT_PLANE         CANON_PLANE_XY      // CANON_PLANE_XY, CANON_PLANE_XZ, or CANON_PLANE_YZ
-// #define GCODE_DEFAULT_COORD_SYSTEM  G55                 // G54, G55, G56, G57, G58 or G59
 #define GCODE_DEFAULT_COORD_SYSTEM  G54                 // G54, G55, G56, G57, G58 or G59
 #define GCODE_DEFAULT_PATH_CONTROL  PATH_CONTINUOUS
 #define GCODE_DEFAULT_DISTANCE_MODE ABSOLUTE_DISTANCE_MODE
@@ -459,7 +506,7 @@
 #define DO4_POLARITY IO_ACTIVE_HIGH
 
 #define DO5_ENABLED IO_ENABLED
-#define DO5_POLARITY IO_ACTIVE_LOW   ////** Changed for Colored-LED System; maybe do per tool?
+#define DO5_POLARITY IO_ACTIVE_HIGH   //#### changed back !! ////** Changed for Colored-LED System; maybe do per tool?
 
 #define DO6_ENABLED IO_ENABLED
 #define DO6_POLARITY IO_ACTIVE_HIGH
@@ -482,17 +529,33 @@
 #define DO12_ENABLED IO_ENABLED
 #define DO12_POLARITY IO_ACTIVE_HIGH
 
+#define DO13_ENABLED IO_ENABLED
+#define DO13_POLARITY IO_ACTIVE_HIGH
 
-/*** Handle optional modules that may not be in every machine ***/
+#define DO14_ENABLED IO_ENABLED
+#define DO14_POLARITY IO_ACTIVE_HIGH
 
-#define P1_PWM_FREQUENCY        100  // in Hz
-#define P1_CW_SPEED_LO          7900   // in RPM (arbitrary units)
-#define P1_CW_SPEED_HI          12800
-#define P1_CW_PHASE_LO          0.13  // phase [0..1]
-#define P1_CW_PHASE_HI          0.17
-#define P1_CCW_SPEED_LO         0
-#define P1_CCW_SPEED_HI         0
-#define P1_CCW_PHASE_LO         0.1
-#define P1_CCW_PHASE_HI         0.1
-#define P1_PWM_PHASE_OFF        0.1
+#define DO15_ENABLED IO_ENABLED
+#define DO15_POLARITY IO_ACTIVE_HIGH
 
+#define DO16_ENABLED IO_ENABLED
+#define DO16_POLARITY IO_ACTIVE_HIGH
+
+
+/*** PWM ***/
+//#### revised for laser
+
+#define P1_PWM_FREQUENCY        10000  // in Hz
+#define P1_CW_SPEED_LO          0   // in RPM (arbitrary units)
+#define P1_CW_SPEED_HI          1000
+#define P1_CW_PHASE_LO          0.0  // phase [0..1]
+#define P1_CW_PHASE_HI          1.0
+#define P1_PWM_PHASE_OFF        0.0
+//#define LASER_FIRE_PIN_NUMBER Motate::kSocket6_StepPinNumber
+//??#define LASER_FIRE_PIN_NUMBER Motate::kOutput15_PinNumber
+
+/*
+M100 ({th2pd:150})    ; laser on period
+M100 ({th2mnp:100})   ; laser min pulses per mm
+M100 ({th2mxp:1500}) ; laser max pulses per mm
+*/

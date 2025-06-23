@@ -45,7 +45,7 @@
  *
  *  To use, assign Motate pin numbers to the first value in the _MAKE_MOTATE_PIN() macro.
  *  ALL PINS MUST BE ASSIGNED A NUMBER, even if they are not used. There will NOT be a
- *  code-size or speed penalty for unused pins, but the WILL be a compiler-failure for
+ *  code-size or speed penalty for unused pins, but there WILL be a compiler-failure for
  *  unassigned pins. This new restriction allows for simplification of linkages deep in
  *  Motate.
  */
@@ -102,19 +102,28 @@
 #define OUTPUT7_PWM 0
 #define OUTPUT8_PWM 0
 #define OUTPUT9_PWM 0
-#define OUTPUT10_PWM 0
-#define OUTPUT11_PWM 1
-#define OUTPUT12_PWM 1
+
+// #define OUTPUT10_PWM 0
+// #define OUTPUT11_PWM 1
+// #define OUTPUT12_PWM 1
+// #define OUTPUT13_PWM 0
+
+#define OUTPUT10_PWM 0   // #### redefined for laser
+#define OUTPUT11_PWM 0
+#define OUTPUT12_PWM 0
 #define OUTPUT13_PWM 0
+#define OUTPUT14_PWM 0
+#define OUTPUT15_PWM 1
+#define OUTPUT16_PWM 1
 
 namespace Motate {
 
     _MAKE_MOTATE_PIN(kOutput1_PinNumber         , 'A',  0);
-    _MAKE_MOTATE_PIN(kUnassigned1               , 'A',  1);
+//    _MAKE_MOTATE_PIN(kUnassigned1               , 'A',  1);
     _MAKE_MOTATE_PIN(kUnassigned2               , 'A',  2);
     _MAKE_MOTATE_PIN(kUnassigned3               , 'A',  3);
     _MAKE_MOTATE_PIN(kUnassigned4               , 'A',  4);
-    _MAKE_MOTATE_PIN(kUnassigned80        		, 'A',  5);
+//    _MAKE_MOTATE_PIN(kUnassigned80        		, 'A',  5);
     _MAKE_MOTATE_PIN(kUnassigned6               , 'A',  6);
     _MAKE_MOTATE_PIN(kOutput10_PinNumber        , 'A',  7);
     _MAKE_MOTATE_PIN(kUnassigned81        		, 'A',  8);
@@ -122,11 +131,18 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kUnassigned10              , 'A', 10);
     _MAKE_MOTATE_PIN(kUnassigned11              , 'A', 11);
 
-    _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 12);
-    _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A', 13);
+    // _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 12);
+    // _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A', 13);
+    _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 5);  // #### repairing for laser
+    _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A', 1);
+    _MAKE_MOTATE_PIN(kOutput13_PinNumber        , 'A', 15);
+    _MAKE_MOTATE_PIN(kOutput14_PinNumber        , 'A', 14);
+    _MAKE_MOTATE_PIN(kOutput15_PinNumber        , 'A', 12);
+    _MAKE_MOTATE_PIN(kOutput16_PinNumber        , 'A', 13);
 
-    _MAKE_MOTATE_PIN(kInput14_PinNumber         , 'A', 14);
-    _MAKE_MOTATE_PIN(kInput13_PinNumber         , 'A', 15);
+
+//    _MAKE_MOTATE_PIN(kInput14_PinNumber         , 'A', 14);
+//    _MAKE_MOTATE_PIN(kInput13_PinNumber         , 'A', 15);
     _MAKE_MOTATE_PIN(kUnassigned16              , 'A', 16);
     _MAKE_MOTATE_PIN(kInput12_PinNumber         , 'A', 17);
     _MAKE_MOTATE_PIN(kLED_USBRXPinNumber        , 'A', 18);

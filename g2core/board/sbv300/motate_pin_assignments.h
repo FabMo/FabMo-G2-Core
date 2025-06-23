@@ -187,10 +187,15 @@ pin_number kOutput10_PinNumber = 133;
 
 pin_number kOutput11_PinNumber = 134;
 pin_number kOutput12_PinNumber = 135;
-pin_number kOutput13_PinNumber = -1; 
-pin_number kOutput14_PinNumber = -1;
-pin_number kOutput15_PinNumber = -1;
-pin_number kOutput16_PinNumber = -1;
+//pin_number kOutput13_PinNumber = -1; 
+//pin_number kOutput14_PinNumber = -1;
+//pin_number kOutput15_PinNumber = -1;
+//pin_number kOutput16_PinNumber = -1;
+
+pin_number kOutput13_PinNumber = 136;  // #### repairing for laser 
+pin_number kOutput14_PinNumber = 137;
+pin_number kOutput15_PinNumber = 138;
+pin_number kOutput16_PinNumber = 139;
 
 pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC //?150
 pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC //?151
