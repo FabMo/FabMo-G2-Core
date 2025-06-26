@@ -102,19 +102,13 @@
 #define OUTPUT7_PWM 0
 #define OUTPUT8_PWM 0
 #define OUTPUT9_PWM 0
-
-// #define OUTPUT10_PWM 0
-// #define OUTPUT11_PWM 1
-// #define OUTPUT12_PWM 1
-// #define OUTPUT13_PWM 0
-
-#define OUTPUT10_PWM 0   // #### redefined for laser
+#define OUTPUT10_PWM 0 
 #define OUTPUT11_PWM 0
 #define OUTPUT12_PWM 0
 #define OUTPUT13_PWM 0
 #define OUTPUT14_PWM 0
-#define OUTPUT15_PWM 1
-#define OUTPUT16_PWM 1
+#define OUTPUT15_PWM 1  // PWM & LASER
+#define OUTPUT16_PWM 1  // PWM & LASER
 
 namespace Motate {
 
@@ -131,9 +125,7 @@ namespace Motate {
     _MAKE_MOTATE_PIN(kUnassigned10              , 'A', 10);
     _MAKE_MOTATE_PIN(kUnassigned11              , 'A', 11);
 
-    // _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 12);
-    // _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A', 13);
-    _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 5);  // #### repairing for laser
+    _MAKE_MOTATE_PIN(kOutput11_PinNumber        , 'A', 5);
     _MAKE_MOTATE_PIN(kOutput12_PinNumber        , 'A', 1);
     _MAKE_MOTATE_PIN(kOutput13_PinNumber        , 'A', 15);
     _MAKE_MOTATE_PIN(kOutput14_PinNumber        , 'A', 14);

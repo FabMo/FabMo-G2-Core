@@ -45,22 +45,13 @@
 #define G2CORE_HARDWARE_VERSION     "na"
 
 #define  HAS_HOBBY_SERVO_MOTOR 0     // kludge to fix build warnings in sbv300 on linux.  rmackie
-//#### revised for laser
-//#ifndef HAS_LASER
-//#if HAS_HOBBY_SERVO_MOTOR
-//#error Can NOT have a laser and a hobby servo at the same time, sorry
-//#endif
-//#### #define HAS_LASER 0
-//#endif
 
 /***** Motors & PWM channels supported by this hardware *****/
-// These must be defines (not enums) so expressions like this:
-//  #if (MOTORS >= 6)  will work
 
 #if HAS_LASER
-#define MOTORS 6                    // number of motors + one "laser" motor (used for pulsing the laser in sync)
+#define MOTORS 6                    // number of motors incl one "laser" motor (used for motion sync)
 #else
-#define MOTORS 6                    // number of motors supported the hardware
+#define MOTORS 6                    // number of motors regular tool
 #endif
 #define PWMS 2                      // number of PWM channels supported the hardware
 #define AXES 6                      // axes to support -- must be 6 ////##A 6 for FabMo
@@ -151,12 +142,6 @@ static Pin<Motate::kSPI0_SCKPinNumber>  spi_sck_pin(Motate::kInput);
 
 /**** Motate Global Pin Allocations ****/
 
-//static OutputPin<kSocket1_SPISlaveSelectPinNumber> spi_ss1_pin;
-//static OutputPin<kSocket2_SPISlaveSelectPinNumber> spi_ss2_pin;
-//static OutputPin<kSocket3_SPISlaveSelectPinNumber> spi_ss3_pin;
-//static OutputPin<kSocket4_SPISlaveSelectPinNumber> spi_ss4_pin;
-//static OutputPin<kSocket5_SPISlaveSelectPinNumber> spi_ss5_pin;
-//static OutputPin<kSocket6_SPISlaveSelectPinNumber> spi_ss6_pin;
 static OutputPin<Motate::kKinen_SyncPinNumber> kinen_sync_pin;
 
 static OutputPin<Motate::kGRBL_ResetPinNumber> grbl_reset_pin;
@@ -164,14 +149,6 @@ static OutputPin<Motate::kGRBL_FeedHoldPinNumber> grbl_feedhold_pin;
 static OutputPin<Motate::kGRBL_CycleStartPinNumber> grbl_cycle_start_pin;
 
 static OutputPin<Motate::kGRBL_CommonEnablePinNumber> motor_common_enable_pin;     //tTODO  figure out how to hook this up
-
-// NOTE: In the v9 these not mapped this way, now covered by board_gpio.h ???
-////## static OutputPin<Motate::kSpindle_EnablePinNumber> spindle_enable_pin;
-////## static OutputPin<Motate::kSpindle_DirPinNumber> spindle_dir_pin;
-////## static OutputPin<kCoolant_EnablePinNumber> coolant_enable_pin;
-////## static OutputPin<Motate::kCoolant_EnablePinNumber> flood_enable_pin;
-////## static OutputPin<Motate::kCoolant_EnablePinNumber> mist_enable_pin;
-
 static OutputPin<Motate::kUnassigned74> resolution_multiplier_pin;                 //tTODO figure out how to hook this up
 
 // Input pins are defined in gpio.cpp

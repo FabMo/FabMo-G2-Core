@@ -31,8 +31,6 @@
 
 #include "hardware.h"  // for MOTORS
 #include "step_dir_driver.h"
-//#### moved to laser only below per arduino due
-//#include "kinematics_cartesian.h"  // that did not work ???
 
 extern StepDirStepper<Motate::kSocket1_StepPinNumber,
                       Motate::kSocket1_DirPinNumber,
@@ -79,29 +77,17 @@ extern StepDirStepper<Motate::kSocket5_StepPinNumber,
                       Motate::kSocket5_VrefPinNumber>
     motor_5;
 
-// Define the typedef outside the conditional so it's always available
-////## not used in DUE ... needed to compile?
-//typedef CartesianKinematics<AXES, MOTORS> BASE_KINEMATICS_TYPE;
 
 #if HAS_LASER
+
+#include "laser_toolhead.h"     //#### reversed order of these two
 #include "kinematics_cartesian.h" 
-#include "laser_toolhead.h"
 // Define the laser tool type with proper template parameters
-// Use the actual pin number, not the macro
-//typedef LaserTool<BASE_KINEMATICS_TYPE, Motate::kSocket6_StepPinNumber> LaserTool_used_t;
+typedef LaserTool<CartesianKinematics<AXES, MOTORS>, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
 
-//####typedef LaserTool<CartesianKinematics<AXES, MOTORS>, Motate::kSocket6_StepPinNumber> LaserTool_used_t;
-typedef LaserTool<CartesianKinematics<AXES, MOTORS>,LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
-
-// Define the kinematics type locally
-//typedef CartesianKinematics<AXES, MOTORS> BASE_KINEMATICS_TYPE;
-
-// Define the laser tool type with proper template parameters
-//typedef LaserTool<BASE_KINEMATICS, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
-
-
+////typedef LaserTool<CartesianKinematics<AXES, MOTORS>,LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
 // For laser mode, motor_6 is a laser tool, not a stepper
-extern LaserTool_used_t motor_6;
+extern LaserTool_used_t &motor_6;     //####added & to make it a reference
 #else
 // For non-laser mode, motor_6 is a regular stepper
 extern StepDirStepper<Motate::kSocket6_StepPinNumber,

@@ -147,15 +147,6 @@ pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
 
-////## per notes in v9, these now covered in board_gpio.h ... but not clear to me
-//pin_number kSpindle_EnablePinNumber = -1;  
-//pin_number kSpindle_DirPinNumber    = -1;
-//pin_number kCoolant_EnablePinNumber = -1;
-//pin_number kSpindle_PwmPinNumber  = -1;
-//pin_number kSpindle_Pwm2PinNumber = -1;
-//pin_number kSD_CardDetect = -1;
-//pin_number kInterlock_In  = -1;
-
 pin_number kLED_USBRXPinNumber     = 12;
 pin_number kLED_USBTXPinNumber     = 13;
 pin_number kSD_CardDetectPinNumber = 119;
@@ -187,15 +178,10 @@ pin_number kOutput10_PinNumber = 133;
 
 pin_number kOutput11_PinNumber = 134;
 pin_number kOutput12_PinNumber = 135;
-//pin_number kOutput13_PinNumber = -1; 
-//pin_number kOutput14_PinNumber = -1;
-//pin_number kOutput15_PinNumber = -1;
-//pin_number kOutput16_PinNumber = -1;
-
-pin_number kOutput13_PinNumber = 136;  // #### repairing for laser 
+pin_number kOutput13_PinNumber = 136;   
 pin_number kOutput14_PinNumber = 137;
-pin_number kOutput15_PinNumber = 138;
-pin_number kOutput16_PinNumber = 139;
+pin_number kOutput15_PinNumber = 138;  // Laser & PWM output
+pin_number kOutput16_PinNumber = 139;  // Laser & PWM output
 
 pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC //?150
 pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC //?151

@@ -31,7 +31,6 @@
 // this file is included from the bottom of gpio.h, but we do this for completeness
 // .. don't know about these two paths, inconsistent in others
 #include "gpio.h"
-////## why? #include "../../gpio.h"
 #include "hardware.h"
 
 /*
@@ -39,20 +38,16 @@
  */
 //--- change as required for board and switch hardware ---//
 
-#define D_IN_CHANNELS      12         ////## re-enabled all 12
-//#### changed for Laser & PWM
-#define D_OUT_CHANNELS     16         // number of digital outputs supported
+#define D_IN_CHANNELS      12           // number of digital inputs supported
+#define D_OUT_CHANNELS     16           // number of digital outputs supported
 #define A_IN_CHANNELS	    0           // number of analog inputs supported
 #define A_OUT_CHANNELS	    0           // number of analog outputs supported
 
 #define INPUT_LOCKOUT_MS    10          // milliseconds to go dead after input firing
 
 // Setup spindle and coolant pin assignments
-//#### already def #define SPINDLE_ENABLE_OUTPUT_NUMBER 11
-//#### #define SPINDLE_DIRECTION_OUTPUT_NUMBER 12
-#define SPINDLE_PWM_NUMBER 16
+#define SPINDLE_PWM_NUMBER 16            
 #define MIST_ENABLE_OUTPUT_NUMBER 0
-
 #define FLOOD_ENABLE_OUTPUT_NUMBER 0
 #define SECONDARY_PWM_OUTPUT_NUMBER 0
 
