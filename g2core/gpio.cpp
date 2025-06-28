@@ -150,8 +150,10 @@ gpioDigitalInputReader in13;
 gpioDigitalInputReader in14;
 gpioDigitalInputReader in15;
 gpioDigitalInputReader in16;
+gpioDigitalInputReader in17;
+gpioDigitalInputReader in18;
 
-gpioDigitalInputReader* const in_r[16] = {&in1, &in2, &in3, &in4, &in5, &in6, &in7, &in8, &in9, &in10, &in11, &in12, &in13, &in14, &in15, &in16};
+gpioDigitalInputReader* const in_r[18] = {&in1, &in2, &in3, &in4, &in5, &in6, &in7, &in8, &in9, &in10, &in11, &in12, &in13, &in14, &in15, &in16, &in17, &in18};
 
 gpioDigitalOutputWriter out1;
 gpioDigitalOutputWriter out2;
@@ -169,8 +171,10 @@ gpioDigitalOutputWriter out13;
 gpioDigitalOutputWriter out14;
 gpioDigitalOutputWriter out15;
 gpioDigitalOutputWriter out16;
+gpioDigitalOutputWriter out17;
+gpioDigitalOutputWriter out18;
 
-gpioDigitalOutputWriter* const out_w[16] = {&out1, &out2, &out3, &out4, &out5, &out6, &out7, &out8, &out9, &out10, &out11, &out12, &out13, &out14, &out15, &out16};
+gpioDigitalOutputWriter* const out_w[18] = {&out1, &out2, &out3, &out4, &out5, &out6, &out7, &out8, &out9, &out10, &out11, &out12, &out13, &out14, &out15, &out16, &out17, &out18};
 
 // lists for the various inputAction events
 gpioDigitalInputHandlerList din_handlers[INPUT_ACTION_ACTUAL_MAX+1];

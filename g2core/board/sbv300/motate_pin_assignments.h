@@ -146,6 +146,10 @@ pin_number kInput11_PinNumber = 110;
 pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
+pin_number kInput15_PinNumber = 114;  // ALARM1 (alphaStep-any) on J1
+pin_number kInput16_PinNumber = 115;  // ALARM2 (unused) on J1
+pin_number kInput17_PinNumber = 116;  // example pin(#1) on J5 (limits) [otherwise bank unused]
+pin_number kInput18_PinNumber = 117;  // example pin(#2) on J5 (limits) [otherwise bank unused]
 
 pin_number kLED_USBRXPinNumber     = 12;
 pin_number kLED_USBTXPinNumber     = 13;
@@ -182,6 +186,8 @@ pin_number kOutput13_PinNumber = 136;
 pin_number kOutput14_PinNumber = 137;
 pin_number kOutput15_PinNumber = 138;  // Laser & PWM output
 pin_number kOutput16_PinNumber = 139;  // Laser & PWM output
+pin_number kOutput17_PinNumber = 140;  // Speed multiplier output
+pin_number kOutput18_PinNumber = 141;  // (ENABLE-GLOBAL) When set, all motors are disabled
 
 pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC //?150
 pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC //?151

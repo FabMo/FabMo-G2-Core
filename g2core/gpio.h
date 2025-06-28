@@ -99,7 +99,7 @@ enum inputEdgeFlag {
 
 // forward declare
 struct gpioDigitalInputReader;
-extern gpioDigitalInputReader* const in_r[16];
+extern gpioDigitalInputReader* const in_r[18];
 
 /*
  * gpioDigitalInputHandler - superclass of objects that wish to be informed of
@@ -372,6 +372,8 @@ extern gpioDigitalInputReader in13;
 extern gpioDigitalInputReader in14;
 extern gpioDigitalInputReader in15;
 extern gpioDigitalInputReader in16;
+extern gpioDigitalInputReader in17;
+extern gpioDigitalInputReader in18;
 
 
 /*
@@ -534,7 +536,7 @@ struct gpioDigitalInputPin final : gpioDigitalInput {
 
 // forward declare
 struct gpioDigitalOutputWriter;
-extern gpioDigitalOutputWriter* const out_w[16];
+extern gpioDigitalOutputWriter* const out_w[18];
 
 /*
  * gpioDigitalOutput - digital/PWM output base class
@@ -709,6 +711,8 @@ extern gpioDigitalOutputWriter out13;
 extern gpioDigitalOutputWriter out14;
 extern gpioDigitalOutputWriter out15;
 extern gpioDigitalOutputWriter out16;
+extern gpioDigitalOutputWriter out17;
+extern gpioDigitalOutputWriter out18;
 
 
 /*

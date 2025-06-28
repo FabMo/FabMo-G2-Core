@@ -576,6 +576,48 @@ constexpr cfgItem_t di_config_items_1[] = {
     { "di12","di12in",_iip,   0, din_print_in, din_get_in, din_set_in, &din12,  DI12_EXTERNAL_NUMBER },
 #endif
 
+#if (D_IN_CHANNELS >= 13)
+    { "di13","di13en",_bip,   0, din_print_en, din_get_en, din_set_en, &din13,  DI13_ENABLED },
+    { "di13","di13po",_iip,   0, din_print_po, din_get_po, din_set_po, &din13,  DI13_POLARITY },
+    { "di13","di13ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din13,  DI13_ACTION },
+    { "di13","di13in",_iip,   0, din_print_in, din_get_in, din_set_in, &din13,  DI13_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 14)
+    { "di14","di14en",_bip,   0, din_print_en, din_get_en, din_set_en, &din14,  DI14_ENABLED },
+    { "di14","di14po",_iip,   0, din_print_po, din_get_po, din_set_po, &din14,  DI14_POLARITY },
+    { "di14","di14ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din14,  DI14_ACTION },
+    { "di14","di14in",_iip,   0, din_print_in, din_get_in, din_set_in, &din14,  DI14_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 15)
+    { "di15","di15en",_bip,   0, din_print_en, din_get_en, din_set_en, &din15,  DI15_ENABLED },
+    { "di15","di15po",_iip,   0, din_print_po, din_get_po, din_set_po, &din15,  DI15_POLARITY },
+    { "di15","di15ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din15,  DI15_ACTION },
+    { "di15","di15in",_iip,   0, din_print_in, din_get_in, din_set_in, &din15,  DI15_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 16)
+    { "di16","di16en",_bip,   0, din_print_en, din_get_en, din_set_en, &din16,  DI16_ENABLED },
+    { "di16","di16po",_iip,   0, din_print_po, din_get_po, din_set_po, &din16,  DI16_POLARITY },
+    { "di16","di16ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din16,  DI16_ACTION },
+    { "di16","di16in",_iip,   0, din_print_in, din_get_in, din_set_in, &din16,  DI16_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 17)
+    { "di17","di17en",_bip,   0, din_print_en, din_get_en, din_set_en, &din17,  DI17_ENABLED },
+    { "di17","di17po",_iip,   0, din_print_po, din_get_po, din_set_po, &din17,  DI17_POLARITY },
+    { "di17","di17ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din17,  DI17_ACTION },
+    { "di17","di17in",_iip,   0, din_print_in, din_get_in, din_set_in, &din17,  DI17_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 18)
+    { "di18","di18en",_bip,   0, din_print_en, din_get_en, din_set_en, &din18,  DI18_ENABLED },
+    { "di18","di18po",_iip,   0, din_print_po, din_get_po, din_set_po, &din18,  DI18_POLARITY },
+    { "di18","di18ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din18,  DI18_ACTION },
+    { "di18","di18in",_iip,   0, din_print_in, din_get_in, din_set_in, &din18,  DI18_EXTERNAL_NUMBER },
+#endif
+
     // END generated with ${PROJECT_ROOT}/Resources/generate_dins_cfgArray.js
 };
 constexpr cfgSubtableFromStaticArray di_config_1 {di_config_items_1};
@@ -599,6 +641,8 @@ constexpr cfgItem_t in_config_items_1[] = {
     { "in","in14", _i0, 0, din_print_state, din_get_input, set_ro,  &in14, 0 },
     { "in","in15", _i0, 0, din_print_state, din_get_input, set_ro,  &in15, 0 },
     { "in","in16", _i0, 0, din_print_state, din_get_input, set_ro,  &in16, 0 },
+    { "in","in17", _i0, 0, din_print_state, din_get_input, set_ro,  &in17, 0 },
+    { "in","in18", _i0, 0, din_print_state, din_get_input, set_ro,  &in18, 0 },
 };
 constexpr cfgSubtableFromStaticArray in_config_1 {in_config_items_1};
 constexpr const configSubtable * const getINConfig_1() { return &in_config_1; }
@@ -683,6 +727,16 @@ constexpr cfgItem_t do_config_items_1[] = {
     { "do16", "do16po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout16, DO16_POLARITY },
     { "do16", "do16out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout16, DO16_EXTERNAL_NUMBER },
 #endif
+#if (D_OUT_CHANNELS >= 17)
+    { "do17", "do17en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout17, DO17_ENABLED },
+    { "do17", "do17po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout17, DO17_POLARITY },
+    { "do17", "do17out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout17, DO17_EXTERNAL_NUMBER },
+#endif
+#if (D_OUT_CHANNELS >= 18)
+    { "do18", "do18en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout18, DO18_ENABLED },
+    { "do18", "do18po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout18, DO18_POLARITY },
+    { "do18", "do18out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout18, DO18_EXTERNAL_NUMBER },
+#endif
 };
 constexpr cfgSubtableFromStaticArray do_config_1 {do_config_items_1};
 constexpr const configSubtable * const getDOConfig_1() { return &do_config_1; }
@@ -705,6 +759,8 @@ constexpr cfgItem_t out_config_items_1[] = {
     { "out","out14", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out14, 0 },
     { "out","out15", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out15, 0 },
     { "out","out16", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out16, 0 },
+    { "out","out17", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out17, 0 },
+    { "out","out18", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out18, 0 },
 };
 constexpr cfgSubtableFromStaticArray out_config_1 {out_config_items_1};
 constexpr const configSubtable * const getOUTConfig_1() { return &out_config_1; }
@@ -1748,8 +1804,27 @@ constexpr cfgItem_t groups_config_items_1[] = {
 #if (D_IN_CHANNELS >= 12)
     { "","di12", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 #endif
+#if (D_IN_CHANNELS >= 13)
+    { "","di13", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 14)
+    { "","di14", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 15)
+    { "","di15", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 16)
+    { "","di16", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 17)
+    { "","di17", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 18)
+    { "","di18", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
 
-#define DIGITAL_OUT_GROUPS 16
+
+#define DIGITAL_OUT_GROUPS 18
     { "","out", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output state
     { "","do1", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output configs
     { "","do2", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
@@ -1767,6 +1842,8 @@ constexpr cfgItem_t groups_config_items_1[] = {
     { "","do14", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
     { "","do15", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
     { "","do16", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do17", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do18", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 
 #define ANALOG_IN_GROUPS 12
     { "","ai1", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr,0 },   // analog input configs

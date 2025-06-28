@@ -38,8 +38,8 @@
  */
 //--- change as required for board and switch hardware ---//
 
-#define D_IN_CHANNELS      12           // number of digital inputs supported
-#define D_OUT_CHANNELS     16           // number of digital outputs supported
+#define D_IN_CHANNELS      18           // number of digital inputs supported
+#define D_OUT_CHANNELS     18           // number of digital outputs supported
 #define A_IN_CHANNELS	    0           // number of analog inputs supported
 #define A_OUT_CHANNELS	    0           // number of analog outputs supported
 
@@ -79,6 +79,12 @@ extern gpioDigitalInputPin<IRQPin<Motate::kInput9_PinNumber>>  din9;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput10_PinNumber>> din10;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput11_PinNumber>> din11;
 extern gpioDigitalInputPin<IRQPin<Motate::kInput12_PinNumber>> din12;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput13_PinNumber>> din13;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput14_PinNumber>> din14;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput15_PinNumber>> din15;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput16_PinNumber>> din16;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput17_PinNumber>> din17;
+extern gpioDigitalInputPin<IRQPin<Motate::kInput18_PinNumber>> din18;
 
 extern gpioDigitalOutputPin<OutputType<OUTPUT1_PWM,  Motate::kOutput1_PinNumber>>  dout1;
 extern gpioDigitalOutputPin<OutputType<OUTPUT2_PWM,  Motate::kOutput2_PinNumber>>  dout2;
@@ -96,6 +102,8 @@ extern gpioDigitalOutputPin<OutputType<OUTPUT13_PWM, Motate::kOutput13_PinNumber
 extern gpioDigitalOutputPin<OutputType<OUTPUT14_PWM, Motate::kOutput14_PinNumber>> dout14;
 extern gpioDigitalOutputPin<OutputType<OUTPUT15_PWM, Motate::kOutput15_PinNumber>> dout15;
 extern gpioDigitalOutputPin<OutputType<OUTPUT16_PWM, Motate::kOutput16_PinNumber>> dout16;
+extern gpioDigitalOutputPin<OutputType<OUTPUT17_PWM, Motate::kOutput17_PinNumber>> dout17;
+extern gpioDigitalOutputPin<OutputType<OUTPUT18_PWM, Motate::kOutput18_PinNumber>> dout18;
 
 
 #endif // End of include guard: BOARD_GPIO_H_ONCE
