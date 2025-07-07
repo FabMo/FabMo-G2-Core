@@ -1174,7 +1174,8 @@ public:
             proxy_pin_number = 0;
         } else {
             pin.setInterrupts(Motate::kPinInterruptOnChange|Motate::kInterruptPriorityLow);
-            pin.setVoltageRange(3.29, 0.0, 3.29, 100.0);
+//            pin.setVoltageRange(3.29, 0.0, 3.29, 100.0);
+            pin.setVoltageRange(3.3, 0.0, 3.3, 100.0);
             setExternalNumber(_proxy_pin_number);
         }
     };

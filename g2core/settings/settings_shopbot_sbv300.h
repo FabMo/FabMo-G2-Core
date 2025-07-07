@@ -55,7 +55,7 @@
 #endif
 
 #ifndef LASER_TOOL
-#define LASER_TOOL 5                //#### was 6 with 32 possible tools, but now 5 with 5 possible tools???
+#define LASER_TOOL 5                     //#### was 6 with 32 possible tools, but now 5 with 5 possible tools???
 #endif
 
 #ifndef LASER_PULSE_DURATION
@@ -81,8 +81,8 @@
 #if HAS_LASER
 #define KINEMATICS                  KINE_OTHER 
 #else
-//#define KINEMATICS                  KINE_CARTESIAN
-//#define BASE_KINEMATICS             CartesianKinematics<AXES, MOTORS> // 5 axes for mill    
+#define KINEMATICS                  KINE_CARTESIAN
+#define BASE_KINEMATICS             CartesianKinematics<AXES, MOTORS>  
 #endif
 
 #define SOFT_LIMIT_ENABLE           0       // 0=off, 1=on
@@ -93,8 +93,8 @@
 #define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active high, 1=active low
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_SPINUP_DELAY        2.0
-#define SPINDLE_SPEED_CHANGE_PER_MS 7.0
+#define SPINDLE_SPINUP_DELAY        0.1 //2.0
+#define SPINDLE_SPEED_CHANGE_PER_MS 10000 //100//7.0
 
 #define COOLANT_MIST_POLARITY       1       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1       // 0=active low, 1=active high
@@ -103,9 +103,9 @@
 #define MIST_ENABLE_OUTPUT_NUMBER   0
 #define FLOOD_ENABLE_OUTPUT_NUMBER  0
 
-#define SPINDLE_ENABLE_OUTPUT_NUMBER    9   //#### defined for laser/PWM 
-#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0     //#### set to 14 if needed
-#define SPINDLE_PWM_NUMBER          16
+#define SPINDLE_ENABLE_OUTPUT_NUMBER    1   // =1 for normal FabMo operation; PWM1 always spindle toolhead PWM and others
+#define SPINDLE_DIRECTION_OUTPUT_NUMBER 0   
+#define SPINDLE_PWM_NUMBER          16      // always 16 for FabMo; this pin always eanbled for PWM1 and with action for spindle speed control
 
 #define FEEDHOLD_Z_LIFT             12.7
 
@@ -421,20 +421,66 @@
 #define DO18_POLARITY IO_ACTIVE_HIGH
 
 
+// Enable ADC pins
+#define AI1_ENABLED                 IO_ENABLED
+#define AI1_EXTERNAL_NUMBER         1
+#define AI1_TYPE                    AIN_TYPE_INTERNAL
+#define AI1_CIRCUIT                 AIN_CIRCUIT_DISABLED  // Start simple
+
+#define AI2_ENABLED                 IO_ENABLED
+#define AI2_EXTERNAL_NUMBER         2
+#define AI2_TYPE                    AIN_TYPE_INTERNAL
+#define AI2_CIRCUIT                 AIN_CIRCUIT_DISABLED  // Start simple
+
+#define AI3_ENABLED                 IO_ENABLED
+#define AI3_EXTERNAL_NUMBER         3
+#define AI3_TYPE                    AIN_TYPE_INTERNAL
+#define AI3_CIRCUIT                 AIN_CIRCUIT_DISABLED  // Start simple
+
+#define AI4_ENABLED                 IO_ENABLED
+#define AI4_EXTERNAL_NUMBER         4
+#define AI4_TYPE                    AIN_TYPE_INTERNAL
+#define AI4_CIRCUIT                 AIN_CIRCUIT_DISABLED  // Start simple
+
+// // Enable ADC pins
+// #define AI1_ENABLED                 IO_ENABLED
+// #define AI1_EXTERNAL_NUMBER         1
+// #define AI1_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
+// #define AI1_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
+
+// #define AI2_ENABLED                 IO_ENABLED
+// #define AI2_EXTERNAL_NUMBER         2
+// #define AI2_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
+// #define AI2_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
+
+// #define AI3_ENABLED                 IO_ENABLED
+// #define AI3_EXTERNAL_NUMBER         3
+// #define AI3_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
+// #define AI3_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
+
+// #define AI4_ENABLED                 IO_ENABLED
+// #define AI4_EXTERNAL_NUMBER         4
+// #define AI4_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
+// #define AI4_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
+
+
+
 /*** PWM ***/
-//#### revised for laser
+// Revised for laser and spindle control 
 
 #define P1_PWM_FREQUENCY        10000  // in Hz
 #define P1_CW_SPEED_LO          0   // in RPM (arbitrary units)
 #define P1_CW_SPEED_HI          1000
 #define P1_CW_PHASE_LO          0.0  // phase [0..1]
 #define P1_CW_PHASE_HI          1.0
+#define P1_CCW_SPEED_LO         0   // in RPM (arbitrary units)
+#define P1_CCW_SPEED_HI         1000
+#define P1_CCW_PHASE_LO         0.0  // phase [0..1]
+#define P1_CCW_PHASE_HI         1.0
 #define P1_PWM_PHASE_OFF        0.0
-//#define LASER_FIRE_PIN_NUMBER Motate::kSocket6_StepPinNumber
-//??#define LASER_FIRE_PIN_NUMBER Motate::kOutput15_PinNumber
 
-/*
+/* Sample Commands for Laser
 M100 ({th2pd:150})    ; laser on period
 M100 ({th2mnp:100})   ; laser min pulses per mm
-M100 ({th2mxp:1500}) ; laser max pulses per mm
+M100 ({th2mxp:1500})  ; laser max pulses per mm
 */

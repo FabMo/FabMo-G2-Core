@@ -189,10 +189,10 @@ pin_number kOutput16_PinNumber = 139;  // Laser & PWM output
 pin_number kOutput17_PinNumber = 140;  // Speed multiplier output
 pin_number kOutput18_PinNumber = 141;  // (ENABLE-GLOBAL) When set, all motors are disabled
 
-pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC //?150
-pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC //?151
-pin_number kADC3_PinNumber  = -1;  // Extruder2_ADC //?152
-pin_number kADC4_PinNumber  = -1;  // 153;
+pin_number kADC1_PinNumber  = 150;  // ain1
+pin_number kADC2_PinNumber  = 151;  // ain2
+pin_number kADC3_PinNumber  = 152;  // MON-5v (x2)
+pin_number kADC4_PinNumber  = 153;  // MON-3.3v;
 pin_number kADC5_PinNumber  = -1;  // 154;
 pin_number kADC6_PinNumber  = -1;  // 155;
 pin_number kADC7_PinNumber  = -1;  // 156;

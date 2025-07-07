@@ -63,14 +63,14 @@
 SafetyManager sm{};
 SafetyManager *safety_manager = &sm;
 
-/////constexpr cfgSubtableFromStaticArray sys_config_3{};
-/////const configSubtable * const getSysConfig_3() { return &sys_config_3; }
+////constexpr cfgSubtableFromStaticArray sys_config_3{};
+////const configSubtable * const getSysConfig_3() { return &sys_config_3; }
 
 #include "esc_spindle.h"
 ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDLE_DIRECTION_OUTPUT_NUMBER, SPINDLE_SPEED_CHANGE_PER_MS, SPINDLE_SPINUP_DELAY};
 
 // Include laser kinematics for the kn pointer
-#include "kinematics_cartesian.h"
+#include "kinematics_cartesian.h" 
 
 // Always create a fallback - this is missing in your current code
 /////CartesianKinematics<AXES, MOTORS> cartesian_kinematics;
@@ -85,7 +85,7 @@ ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDL
 
 // Test with very safe/minimal parameters
 //####typedef LaserTool<CartesianKinematics<AXES, MOTORS>, 15> LaserTool_used_t;
-LaserTool_used_t motor_6{static_cast<uint8_t>(8), static_cast<uint8_t>(5)};  // Pin 1, Motor 0
+LaserTool_used_t motor_6{static_cast<uint8_t>(6), static_cast<uint8_t>(5)};  // Pin 1, Motor 0
 KinematicsBase<AXES, MOTORS> *kn = &motor_6;
 
 
@@ -94,8 +94,8 @@ KinematicsBase<AXES, MOTORS> *kn = &motor_6;
 
 #else
 // For non-laser mode, create standard cartesian kinematics
-CartesianKinematics<AXES, MOTORS> cartesian_kinematics;
-KinematicsBase<AXES, MOTORS> *kn = &cartesian_kinematics;
+////CartesianKinematics<AXES, MOTORS> cartesian_kinematics;
+////KinematicsBase<AXES, MOTORS> *kn = &cartesian_kinematics;
 #endif
 
 ToolHead *toolhead_for_tool(uint8_t tool) {

@@ -40,7 +40,7 @@
 
 #define D_IN_CHANNELS      18           // number of digital inputs supported
 #define D_OUT_CHANNELS     18           // number of digital outputs supported
-#define A_IN_CHANNELS	    0           // number of analog inputs supported
+#define A_IN_CHANNELS	    4           // number of analog inputs supported
 #define A_OUT_CHANNELS	    0           // number of analog outputs supported
 
 #define INPUT_LOCKOUT_MS    10          // milliseconds to go dead after input firing
@@ -57,14 +57,17 @@
 
 extern gpioDigitalInput*   const d_in[D_IN_CHANNELS];
 extern gpioDigitalOutput*  const d_out[D_OUT_CHANNELS];
-// extern gpioAnalogInput*    a_in[A_IN_CHANNELS];
+extern gpioAnalogInput* const a_in[A_IN_CHANNELS];
+
+//extern gpioAnalogInput*    a_in[A_IN_CHANNELS];
 // extern gpioAnalogOutput*   a_out[A_OUT_CHANNELS];
 
 // prepare the objects as externs (for config_app to not bloat)
 using Motate::IRQPin;
 using Motate::PWMOutputPin;
 using Motate::PWMLikeOutputPin;
-template<bool can_pwm, pin_number... V>
+using Motate::ADCPin;
+template<bool can_pwm, Motate::pin_number... V>
 using OutputType = typename std::conditional<can_pwm, PWMOutputPin<V...>, PWMLikeOutputPin<V...>>::type;
 
 extern gpioDigitalInputPin<IRQPin<Motate::kInput1_PinNumber>>  din1;
@@ -105,5 +108,12 @@ extern gpioDigitalOutputPin<OutputType<OUTPUT16_PWM, Motate::kOutput16_PinNumber
 extern gpioDigitalOutputPin<OutputType<OUTPUT17_PWM, Motate::kOutput17_PinNumber>> dout17;
 extern gpioDigitalOutputPin<OutputType<OUTPUT18_PWM, Motate::kOutput18_PinNumber>> dout18;
 
+// Clean ADC declarations:
+extern gpioAnalogInputPin<ADCPin<Motate::kADC1_PinNumber>> ai1;
+extern gpioAnalogInputPin<ADCPin<Motate::kADC2_PinNumber>> ai2;
+extern gpioAnalogInputPin<ADCPin<Motate::kADC3_PinNumber>> ai3;
+extern gpioAnalogInputPin<ADCPin<Motate::kADC4_PinNumber>> ai4;
+
+// extern gpioAnalogInput* const a_in[A_IN_CHANNELS];
 
 #endif // End of include guard: BOARD_GPIO_H_ONCE

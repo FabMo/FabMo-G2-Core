@@ -95,27 +95,47 @@ gpioDigitalOutputPin<OutputType<OUTPUT16_PWM, Motate::kOutput16_PinNumber>> dout
 gpioDigitalOutputPin<OutputType<OUTPUT17_PWM, Motate::kOutput17_PinNumber>> dout17 { DO17_ENABLED, DO17_POLARITY, DO17_EXTERNAL_NUMBER, (uint32_t)200000 };
 gpioDigitalOutputPin<OutputType<OUTPUT18_PWM, Motate::kOutput18_PinNumber>> dout18 { DO18_ENABLED, DO18_POLARITY, DO18_EXTERNAL_NUMBER, (uint32_t)200000 };
 
+// Simple ADC object creation (following gQuintic pattern):
+gpioAnalogInputPin<ADCPin<Motate::kADC1_PinNumber>> ai1 {AI1_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 1, AI1_EXTERNAL_NUMBER};
+gpioAnalogInputPin<ADCPin<Motate::kADC2_PinNumber>> ai2 {AI2_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 2, AI2_EXTERNAL_NUMBER};
+gpioAnalogInputPin<ADCPin<Motate::kADC3_PinNumber>> ai3 {AI3_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 3, AI3_EXTERNAL_NUMBER};
+gpioAnalogInputPin<ADCPin<Motate::kADC4_PinNumber>> ai4 {AI4_ENABLED, gpioAnalogInput::AIN_TYPE_INTERNAL, 4, AI4_EXTERNAL_NUMBER};
 
 /**** Setup Arrays - these are extern and MUST match the board_gpio.h ****/
 
 gpioDigitalInput*  const d_in[] = {&din1, &din2, &din3, &din4, &din5, &din6, &din7, &din8, &din9, &din10, &din11, &din12,&din13, &din14, &din15, &din16, &din17, &din18};
 gpioDigitalOutput* const d_out[] = {&dout1, &dout2, &dout3, &dout4, &dout5, &dout6, &dout7, &dout8, &dout9, &dout10, &dout11, &dout12, &dout13, &dout14, &dout15, &dout16, &dout17, &dout18};
-// not yet used
-gpioAnalogInput*    a_in[] = {};
-// gpioAnalogOutput*   a_out[A_OUT_CHANNELS];
+
+gpioAnalogInput* const a_in[] = {&ai1, &ai2, &ai3, &ai4};
 
 /************************************************************************************
  **** CODE **************************************************************************
  ************************************************************************************/
+// Register a SysTick event to call start_sampling every ain_sample_freq ms
+const int16_t ain_sample_freq = 200;  // Sample every 200ms
+int16_t ain_sample_counter = ain_sample_freq;
+Motate::SysTickEvent ain_tick_event{
+    [] {
+        if (!--ain_sample_counter) {
+            ai1.startSampling();
+            ai2.startSampling();
+            ai3.startSampling();
+            ai4.startSampling();
+            
+            ain_sample_counter = ain_sample_freq;
+        }
+    },
+    nullptr
+};
+
 /*
  * gpio_reset() - reset inputs and outputs (no initialization)
  */
-
 
 void outputs_reset(void) {
     // nothing to do
 }
 
 void inputs_reset(void) {
-    // nothing to do
+    SysTickTimer.registerEvent(&ain_tick_event);
 }
