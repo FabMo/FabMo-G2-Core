@@ -108,7 +108,7 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
 
     // the result of an S word
     // override this to return false - "don't add a command to the buffer"
-    // bool set_speed(float) override;
+    bool set_speed(float) override;
     float get_speed() override;
 
     // set the override value for spindle speed
@@ -135,9 +135,9 @@ class LaserTool : public ToolHead, public Stepper, public KinematicsParent {
     bool set_enable_output(const uint8_t enable_pin_number) override;
 
 
-    uint8_t get_enable_output() override;                              // ← Add this
-    bool set_enable_polarity(const ioPolarity new_polarity) override;  // ← Add this  
-    ioPolarity get_enable_polarity() override;                         // ← Add this
+    uint8_t get_enable_output() override;  
+    bool set_enable_polarity(const ioPolarity new_polarity) override;
+    ioPolarity get_enable_polarity() override;
 
 
     void set_frequency(float new_frequency) override;
@@ -261,12 +261,29 @@ float LaserTool<KinematicsParent,fire_num>::get_speed() { return speed; }
 
 // In set_speed() - only fire immediately for M3, not M4:
 
+template <typename KinematicsParent, Motate::pin_number fire_num>
+bool LaserTool<KinematicsParent,fire_num>::set_speed(float new_speed) {
+    speed = new_speed;
+    return false;  // Don't queue; handle in engage()
+}
+
 // template <typename KinematicsParent, Motate::pin_number fire_num>
 // bool LaserTool<KinematicsParent,fire_num>::set_speed(float new_speed) {
 //     speed = new_speed;
-//     return true;  // Buffer the command
+    
+//     // Calculate PWM value
+//     float override_factor = speed_override_enable ? speed_override_factor : 1.0;
+//     float s = std::min(1.0f, std::max(0.0f, (((speed * override_factor) - min_s) / (max_s - min_s))));
+//     uint32_t top_value = fire.getTopValue();
+//     raw_fire_duty_cycle = std::floor(s * (float)top_value);
+    
+//     // ONLY fire immediately for M3 (static mode)
+//     if (direction == SPINDLE_CW && current_mode == LASER_MODE_STATIC) {
+//         fire.writeRaw(raw_fire_duty_cycle);  // ← Immediate PWM update!
+//     }
+    
+//     return true;  // Buffer the command for proper sequencing
 // }
-
 
 // template <typename KinematicsParent, Motate::pin_number fire_num>
 // bool LaserTool<KinematicsParent,fire_num>::set_speed(float new_speed) {
@@ -353,46 +370,53 @@ void LaserTool<KinematicsParent,fire_num>::stop() {
     this->complete_change();
 }
 
-// called from a command that was queued when the default set_speed and set_direction returned true
-// ALSO called from the loader right before a move
-// we are handed the gcode model to use
+
 template <typename KinematicsParent, Motate::pin_number fire_num>
 void LaserTool<KinematicsParent,fire_num>::engage(const GCodeState_t &gm) {
-    if ((direction == gm.spindle_direction) && fp_EQ(speed, gm.spindle_speed)) {
-        return; // nothing changed
-    }
+    // Early exit if nothing changed
+////    if ((direction == gm.spindle_direction) && fp_EQ(speed, gm.spindle_speed)) {
+////        return; // nothing changed
+////    }
 
-    // Update state from G-code model
+    // Update state from G-code model - this gets S values from motion planner
     speed = gm.spindle_speed;
     direction = gm.spindle_direction;
 
     // Execute laser logic based on direction
     if (direction == SPINDLE_CW) {
-        // M3 - Static PWM mode
+        // M3 - Static PWM mode - fire immediately at current position
         current_mode = LASER_MODE_STATIC;
+        
+        // Calculate PWM value with override support
         float override_factor = speed_override_enable ? speed_override_factor : 1.0;
         float s = std::min(1.0f, std::max(0.0f, (((speed * override_factor) - min_s) / (max_s - min_s))));
         uint32_t top_value = fire.getTopValue();
         raw_fire_duty_cycle = std::floor(s * (float)top_value);
+        
+        // Fire immediately - this is position-synchronized PWM change!
         fire.writeRaw(raw_fire_duty_cycle);
         
     } else if (direction == SPINDLE_CCW) {
-        // M4 - Motion-synchronized mode  
+        // M4 - Motion-synchronized mode - prepare PWM but don't fire yet
         current_mode = LASER_MODE_MOTION;
+        
+        // Calculate PWM value but don't fire - wait for motion/pulses
         float override_factor = speed_override_enable ? speed_override_factor : 1.0;
         float s = std::min(1.0f, std::max(0.0f, (((speed * override_factor) - min_s) / (max_s - min_s))));
         uint32_t top_value = fire.getTopValue();
         raw_fire_duty_cycle = std::floor(s * (float)top_value);
-        // Don't fire yet - wait for motion
+        
+        // Don't fire here - stepStart() will handle firing during motion
         
     } else if (direction == SPINDLE_OFF) {
-        // M5 - Turn off
+        // M5 - Turn off laser completely
         current_mode = LASER_MODE_STATIC;
+        raw_fire_duty_cycle = 0;
         fire.clear();
         fire.writeRaw(0);
     }
 
-    // Update enable pin
+    // Update enable pin and handle state changes
     this->complete_change();
 }
 
