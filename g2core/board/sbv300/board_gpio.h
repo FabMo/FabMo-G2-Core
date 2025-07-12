@@ -46,7 +46,6 @@
 #define INPUT_LOCKOUT_MS    10          // milliseconds to go dead after input firing
 
 // Setup spindle and coolant pin assignments
-#define SPINDLE_PWM_NUMBER 16            
 #define MIST_ENABLE_OUTPUT_NUMBER 0
 #define FLOOD_ENABLE_OUTPUT_NUMBER 0
 #define SECONDARY_PWM_OUTPUT_NUMBER 0

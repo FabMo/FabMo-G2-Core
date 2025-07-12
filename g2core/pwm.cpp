@@ -44,12 +44,6 @@ pwmControl_t pwm;
 gpioDigitalOutput *spindle_pwm_output = nullptr;
 gpioDigitalOutput *secondary_pwm_output = nullptr;
 
-#ifndef SPINDLE_PWM_NUMBER
-#warning SPINDLE_PWM_NUMBER is defaulted to 6!
-#warning SPINDLE_PWM_NUMBER should be defined in settings or a board file!
-#define SPINDLE_PWM_NUMBER 6
-#endif
-
 #ifndef SECONDARY_PWM_OUTPUT_NUMBER
 #warning SECONDARY_PWM_OUTPUT_NUMBER is defaulted to 0 (off)!
 #warning SECONDARY_PWM_OUTPUT_NUMBER should be defined in settings or a board file!

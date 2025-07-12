@@ -30,8 +30,24 @@
 /***********************************************************************/
 /*
  * NOTES:
- *  - This profile supports the ShopBot sbv30x board
- *  - as of 6/15/25 we are on commit 20a2e13d to MOTATE (there are newer, but some confuwion about which to use) 
+ *  - This profile supports the ShopBot sbv304 board
+ *  - as of 6/15/25 we are on commit 20a2e13d to MOTATE (there are newer, but some confusion about which to use) 
+ */
+
+/* 07/10/25 Is the end of extensive work on I-O, PWM, LASER controls, etc.. ver 101.57.49 commit 8, just before 101.57.50
+ *  Not all features are a functional as we might have liked, but working for the moment.
+ *  Note:
+ *   - All regular Outputs and Inputs should be working
+ *   - Several new Outputs and Inputs are now included, though at the moment they are accessed through g2 and gcode
+ *   - The laser toolhead is configured as tool 5
+ *   - Generic PWM are available on Outputs 15 and 16; assuming 15 is not being used for laser or 16 for spindle
+ *   - The laser toolhead is configured as tool 5
+ *   - Generic PWM are available on Outputs 15 and 16; assuming 15 is not being used for laser or 16 for spindle
+ *   - The laser toolhead is configured as tool 5 and pin 15 is the PWM output
+ *   - Generally speaking it should be used with an M4 for both vector synced motion and raster engraving
+ *   - High resolution raster engraving at 0.01 x 0.01 inch pixels is limited to about 1 inch per second
+ *   - A SEPARATE COMPILE is currently required to change from LASER capabilities to 6axis capabilities as the laser uses the 6th axis.
+ *   - A SEPARATE COMPILE is required to turn off the "spindle" usage of Output16 to make it standard PWM or digital IO, it is spindle PWM by default.
  */
 
 // ***> NOTE: The init message must be a single line with no CRs or LFs
@@ -42,24 +58,24 @@
 #define JUNCTION_INTEGRATION_TIME   1.5     // cornering - between 0.10 and 2.00 (higher is faster)
 #define CHORDAL_TOLERANCE           0.01    // chordal accuracy for arc drawing (in mm) 
 
-#define HAS_LASER                   1       // LASER support enabled (0=off, 1=on); HERE !!!
+#define HAS_LASER                   1       // LASER support enabled (0=off, 1=on); ##### COMPLILE CHOICE HERE !!!
 #ifndef HAS_LASER
 #define HAS_LASER 0
 #endif
 
 #ifndef LASER_ENABLE_OUTPUT_NUMBER
-#define LASER_ENABLE_OUTPUT_NUMBER 6
+#define LASER_ENABLE_OUTPUT_NUMBER 6     // Enable line active as a laser enable output
 #endif
 #ifndef LASER_FIRE_PIN_NUMBER
 #define LASER_FIRE_PIN_NUMBER  Motate::kOutput15_PinNumber // note this is a MOTATE pin number, NOT a GPIO pin number   
 #endif
 
 #ifndef LASER_TOOL
-#define LASER_TOOL 5                     //#### was 6 with 32 possible tools, but now 5 with 5 possible tools???
+#define LASER_TOOL 5                     // #5, with 5 possible tools, 0-4 being "spindle toolhead" ???
 #endif
 
 #ifndef LASER_PULSE_DURATION
-#define LASER_PULSE_DURATION 100        // microseconds
+#define LASER_PULSE_DURATION 25         // microseconds;
 #endif
 
 #ifndef LASER_MIN_S
@@ -70,7 +86,7 @@
 #define LASER_MAX_S 1000                // maximum S value
 #endif
 
-#ifndef LASER_MIN_PPM
+#ifndef LASER_MIN_PPM                   // pulses per mm = density 
 #define LASER_MIN_PPM 0                 // minimum pulses per mm
 #endif
 
@@ -89,12 +105,12 @@
 #define HARD_LIMIT_ENABLE           1       // 0=off, 1=on    ////## should be on by default???
 #define SAFETY_INTERLOCK_ENABLE     1       // 0=off, 1=on
 
-////## #define SPINDLE_ENABLE_POLARITY     1       // {spep: 0=active low, 1=active high
+#define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active low, 1=active high
 #define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active high, 1=active low
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
-#define SPINDLE_SPINUP_DELAY        0.1 //2.0
-#define SPINDLE_SPEED_CHANGE_PER_MS 10000 //100//7.0
+#define SPINDLE_SPINUP_DELAY        2.0
+#define SPINDLE_SPEED_CHANGE_PER_MS 5.0     // perhaps higher for other uses of spindle speed control
 
 #define COOLANT_MIST_POLARITY       1       // 0=active low, 1=active high
 #define COOLANT_FLOOD_POLARITY      1       // 0=active low, 1=active high
@@ -103,9 +119,10 @@
 #define MIST_ENABLE_OUTPUT_NUMBER   0
 #define FLOOD_ENABLE_OUTPUT_NUMBER  0
 
-#define SPINDLE_ENABLE_OUTPUT_NUMBER    1   // =1 for normal FabMo operation; PWM1 always spindle toolhead PWM and others
+#define SPINDLE_ENABLE_OUTPUT_NUMBER    1   // =1 for normal FabMo operation; PWM1 always spindle toolhead with #1 always on with Spindle signal
 #define SPINDLE_DIRECTION_OUTPUT_NUMBER 0   
-#define SPINDLE_PWM_NUMBER          16      // always 16 for FabMo; this pin always eanbled for PWM1 and with action for spindle speed control
+#define SPINDLE_PWM_NUMBER          16      // Default 16 for FabMo; pin always eanbled for PWM1 acting for spindle speed control
+                                            // To use pin 16 as standard PWM, set SPINDLE_PWM_NUMBER to 0;  ##### COMPLILE CHOICE HERE !!!
 
 #define FEEDHOLD_Z_LIFT             12.7
 
@@ -286,8 +303,6 @@
 #define C_ZERO_BACKOFF              50
 
 
-
-
 //*** Input / output settings ***
 
 // Inputs
@@ -364,6 +379,7 @@
 #define DI18_POLARITY IO_ACTIVE_LOW
 #define DI18_ACTION INPUT_ACTION_NONE
 
+
 //Outputs
 
 #define DO1_ENABLED IO_ENABLED
@@ -379,7 +395,7 @@
 #define DO4_POLARITY IO_ACTIVE_HIGH
 
 #define DO5_ENABLED IO_ENABLED
-#define DO5_POLARITY IO_ACTIVE_HIGH   //#### changed back !! ////** Changed for Colored-LED System; maybe do per tool?
+#define DO5_POLARITY IO_ACTIVE_HIGH   //#### changed back !! ////** Changed for Handibot Colored-LED System; maybe do per tool?
 
 #define DO6_ENABLED IO_ENABLED
 #define DO6_POLARITY IO_ACTIVE_HIGH
@@ -442,27 +458,11 @@
 #define AI4_TYPE                    AIN_TYPE_INTERNAL
 #define AI4_CIRCUIT                 AIN_CIRCUIT_DISABLED  // Start simple
 
-// // Enable ADC pins
+// // Enable ADC pins ?? alternate
 // #define AI1_ENABLED                 IO_ENABLED
 // #define AI1_EXTERNAL_NUMBER         1
 // #define AI1_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
 // #define AI1_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
-
-// #define AI2_ENABLED                 IO_ENABLED
-// #define AI2_EXTERNAL_NUMBER         2
-// #define AI2_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
-// #define AI2_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
-
-// #define AI3_ENABLED                 IO_ENABLED
-// #define AI3_EXTERNAL_NUMBER         3
-// #define AI3_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
-// #define AI3_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
-
-// #define AI4_ENABLED                 IO_ENABLED
-// #define AI4_EXTERNAL_NUMBER         4
-// #define AI4_TYPE                    gpioAnalogInput::AIN_TYPE_INTERNAL
-// #define AI4_CIRCUIT                 gpioAnalogInput::AIN_CIRCUIT_DISABLED  // Start simple
-
 
 
 /*** PWM ***/
@@ -480,7 +480,9 @@
 #define P1_PWM_PHASE_OFF        0.0
 
 /* Sample Commands for Laser
-M100 ({th2pd:150})    ; laser on period
-M100 ({th2mnp:100})   ; laser min pulses per mm
-M100 ({th2mxp:1500})  ; laser max pulses per mm
+M100 ({th2pd:25})    ; laser on period
+M100 ({th2mnp:0})   ; laser min pulses per mm (use to control density)
+M100 ({th2mxp:1000})  ; laser max pulses per mm
+M100 ({th2mns:0})   ; laser min speed (use to control window)
+M100 ({th2mxs:1000})  ; laser max speed
 */

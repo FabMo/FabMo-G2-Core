@@ -75,14 +75,6 @@ StepDirStepper<Motate::kSocket5_StepPinNumber,
                Motate::kSocket5_VrefPinNumber>
     motor_5 {M5_STEP_POLARITY, M5_ENABLE_POLARITY};
 
-// StepDirStepper<Motate::kSocket6_StepPinNumber,
-//                Motate::kSocket6_DirPinNumber,
-//                Motate::kSocket6_EnablePinNumber,
-//                Motate::kSocket6_Microstep_0PinNumber,
-//                Motate::kSocket6_Microstep_1PinNumber,
-//                Motate::kSocket6_Microstep_2PinNumber,
-//                Motate::kSocket6_VrefPinNumber>
-//     motor_6 {M6_STEP_POLARITY, M6_ENABLE_POLARITY};
 
 #if HAS_LASER
 // For laser mode, motor_6 is defined as a laser tool in hardware.cpp

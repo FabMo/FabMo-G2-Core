@@ -85,7 +85,6 @@ extern StepDirStepper<Motate::kSocket5_StepPinNumber,
 // Define the laser tool type with proper template parameters
 typedef LaserTool<CartesianKinematics<AXES, MOTORS>, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
 
-////typedef LaserTool<CartesianKinematics<AXES, MOTORS>,LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
 // For laser mode, motor_6 is a laser tool, not a stepper
 extern LaserTool_used_t motor_6;     //####add & to make it a reference;; see 0_hardware.cpp
 #else
