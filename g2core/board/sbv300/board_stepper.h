@@ -77,6 +77,18 @@ extern StepDirStepper<Motate::kSocket5_StepPinNumber,
                       Motate::kSocket5_VrefPinNumber>
     motor_5;
 
+
+#if HAS_LASER
+
+#include "laser_toolhead.h"     //#### reversed order of these two
+#include "kinematics_cartesian.h" 
+// Define the laser tool type with proper template parameters
+typedef LaserTool<CartesianKinematics<AXES, MOTORS>, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
+
+// For laser mode, motor_6 is a laser tool, not a stepper
+extern LaserTool_used_t motor_6;     //####add & to make it a reference;; see 0_hardware.cpp
+#else
+// For non-laser mode, motor_6 is a regular stepper
 extern StepDirStepper<Motate::kSocket6_StepPinNumber,
                       Motate::kSocket6_DirPinNumber,
                       Motate::kSocket6_EnablePinNumber,
@@ -85,18 +97,10 @@ extern StepDirStepper<Motate::kSocket6_StepPinNumber,
                       Motate::kSocket6_Microstep_2PinNumber,
                       Motate::kSocket6_VrefPinNumber>
     motor_6;
+#endif
 
-//#if HAS_LASER
-//#include "laser_toolhead.h"
-//#include "kinematics_cartesian.h"
-//typedef LaserTool<BASE_KINEMATICS, LASER_FIRE_PIN_NUMBER> LaserTool_used_t;
-//extern LaserTool_used_t &motor_6;
-//#endif
+extern Stepper* const Motors[MOTORS];
 
-extern Stepper* Motors[MOTORS];
-
-extern ExternalEncoder* const ExternalEncoders[0];
-
-void board_stepper_init();
+extern void board_stepper_init();
 
 #endif  // BOARD_STEPPER_H_ONCE

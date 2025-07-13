@@ -71,7 +71,7 @@ typedef uint16_t magic_t;		        // magic number size
 #define HOMING_AXES 4   // number of axes that can be homed (assumes Zxyabc sequence)
 #define COORDS 6        // number of supported coordinate systems (index starts at 1)
 #ifndef TOOLS
-    #define TOOLS 32        // number of entries in tool table (index starts at 1)
+    #define TOOLS 5        // number of entries in tool table (index starts at 1); was 32; not really used
 #endif
 
 typedef enum {

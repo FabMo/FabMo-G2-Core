@@ -86,8 +86,7 @@
 #endif
 
 #ifndef SPINDLE_ENABLE_POLARITY
-////## #define SPINDLE_ENABLE_POLARITY     1       // {spep: 0=active low, 1=active high
-#define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active high, 1=active low
+#define SPINDLE_ENABLE_POLARITY     1       // {spep: 0=active low, 1=active high
 #endif
 
 #ifndef SPINDLE_DIR_POLARITY
@@ -1430,11 +1429,127 @@
 #ifndef DI12_EXTERNAL_NUMBER
 #define DI12_EXTERNAL_NUMBER         12
 #endif
-
-
-#ifndef PROBING_INPUT
-#define PROBING_INPUT                Z_HOMING_INPUT // default to the z homing input
+#ifdef DI13_MODE
+#error DI13_MODE is no longer used, please update your settings file
+#error Use DI13_ENABLED and DI13_POLARITY instead
 #endif
+#ifndef DI13_ENABLED
+#define DI13_ENABLED                 IO_ENABLED
+#endif
+#ifndef DI13_POLARITY
+#define DI13_POLARITY                IO_ACTIVE_LOW     // Normally open
+#endif
+#ifndef DI13_ACTION
+#define DI13_ACTION                  INPUT_ACTION_NONE
+#endif
+#ifdef DI13_FUNCTION
+#error DI13_FUNCTION is no longer used, please update your settings file
+#error Use DI13_ACTION instead
+#endif
+#ifndef DI13_EXTERNAL_NUMBER
+#define DI13_EXTERNAL_NUMBER         13
+#endif
+#ifdef DI14_MODE
+#error DI14_MODE is no longer used, please update your settings file
+#error Use DI14_ENABLED and DI14_POLARITY instead
+#endif
+#ifndef DI14_ENABLED
+#define DI14_ENABLED                 IO_ENABLED
+#endif
+#ifndef DI14_POLARITY
+#define DI14_POLARITY                IO_ACTIVE_LOW     // Normally open
+#endif
+#ifndef DI14_ACTION
+#define DI14_ACTION                  INPUT_ACTION_NONE
+#endif
+#ifdef DI14_FUNCTION
+#error DI14_FUNCTION is no longer used, please update your settings file
+#error Use DI14_ACTION instead
+#endif
+#ifndef DI14_EXTERNAL_NUMBER
+#define DI14_EXTERNAL_NUMBER         14
+#endif
+#ifdef DI15_MODE
+#error DI15_MODE is no longer used, please update your settings file
+#error Use DI15_ENABLED and DI15_POLARITY instead
+#endif
+#ifndef DI15_ENABLED
+#define DI15_ENABLED                 IO_ENABLED
+#endif
+#ifndef DI15_POLARITY
+#define DI15_POLARITY                IO_ACTIVE_LOW     // Normally open
+#endif
+#ifndef DI15_ACTION
+#define DI15_ACTION                  INPUT_ACTION_NONE
+#endif
+#ifdef DI15_FUNCTION
+#error DI15_FUNCTION is no longer used, please update your settings file
+#error Use DI15_ACTION instead
+#endif
+#ifndef DI15_EXTERNAL_NUMBER
+#define DI15_EXTERNAL_NUMBER         15
+#endif
+#ifdef DI16_MODE
+#error DI16_MODE is no longer used, please update your settings file
+#error Use DI16_ENABLED and DI16_POLARITY instead
+#endif
+#ifndef DI16_ENABLED
+#define DI16_ENABLED                 IO_ENABLED
+#endif
+#ifndef DI16_POLARITY
+#define DI16_POLARITY                IO_ACTIVE_LOW     // Normally open
+#endif
+#ifndef DI16_ACTION
+#define DI16_ACTION                  INPUT_ACTION_NONE
+#endif
+#ifdef DI16_FUNCTION
+#error DI16_FUNCTION is no longer used, please update your settings file
+#error Use DI16_ACTION instead
+#endif
+#ifndef DI16_EXTERNAL_NUMBER
+#define DI16_EXTERNAL_NUMBER         16
+#endif
+#ifdef DI17_MODE
+#error DI17_MODE is no longer used, please update your settings file
+#error Use DI17_ENABLED and DI17_POLARITY instead
+#endif
+#ifndef DI17_ENABLED
+#define DI17_ENABLED                 IO_ENABLED
+#endif
+#ifndef DI17_POLARITY
+#define DI17_POLARITY                IO_ACTIVE_LOW     // Normally open
+#endif
+#ifndef DI17_ACTION
+#define DI17_ACTION                  INPUT_ACTION_NONE
+#endif
+#ifdef DI17_FUNCTION
+#error DI17_FUNCTION is no longer used, please update your settings file
+#error Use DI17_ACTION instead
+#endif
+#ifndef DI17_EXTERNAL_NUMBER
+#define DI17_EXTERNAL_NUMBER         17
+#endif
+#ifdef DI18_MODE
+#error DI18_MODE is no longer used, please update your settings file
+#error Use DI18_ENABLED and DI18_POLARITY instead
+#endif
+#ifndef DI18_ENABLED
+#define DI18_ENABLED                 IO_ENABLED
+#endif
+#ifndef DI18_POLARITY
+#define DI18_POLARITY                IO_ACTIVE_LOW     // Normally open
+#endif
+#ifndef DI18_ACTION
+#define DI18_ACTION                  INPUT_ACTION_NONE
+#endif
+#ifdef DI18_FUNCTION
+#error DI18_FUNCTION is no longer used, please update your settings file
+#error Use DI18_ACTION instead
+#endif
+#ifndef DI18_EXTERNAL_NUMBER
+#define DI18_EXTERNAL_NUMBER         18
+#endif
+
 
 // DIGITAL OUTPUTS - Currently these are hard-wired to extruders
 
@@ -1575,95 +1690,57 @@
 #define DO13_EXTERNAL_NUMBER         13
 #endif
 
-// foind in gpio.h:
-// #ifndef AI1_TYPE
-// #define AI1_TYPE                    AIN_TYPE_DISABLED
-// #endif
-// #ifndef AI1_CIRCUIT
-// #define AI1_CIRCUIT                 AIN_CIRCUIT_DISABLED
-// #endif
-// #ifndef AI1_P1
-// #define AI1_P1                      0.0
-// #endif
-// #ifndef AI1_P2
-// #define AI1_P2                      0.0
-// #endif
-// #ifndef AI1_P3
-// #define AI1_P3                      0.0
-// #endif
-// #ifndef AI1_P4
-// #define AI1_P4                      0.0
-// #endif
-// #ifndef AI1_P5
-// #define AI1_P5                      0.0
-// #endif
-//
-//
-// #ifndef AI2_TYPE
-// #define AI2_TYPE                    AIN_TYPE_DISABLED
-// #endif
-// #ifndef AI2_CIRCUIT
-// #define AI2_CIRCUIT                 AIN_CIRCUIT_DISABLED
-// #endif
-// #ifndef AI2_P1
-// #define AI2_P1                      0.0
-// #endif
-// #ifndef AI2_P2
-// #define AI2_P2                      0.0
-// #endif
-// #ifndef AI2_P3
-// #define AI2_P3                      0.0
-// #endif
-// #ifndef AI2_P4
-// #define AI2_P4                      0.0
-// #endif
-// #ifndef AI2_P5
-// #define AI2_P5                      0.0
-// #endif
-//
-// #ifndef AI3_TYPE
-// #define AI3_TYPE                    AIN_TYPE_DISABLED
-// #endif
-// #ifndef AI3_CIRCUIT
-// #define AI3_CIRCUIT                 AIN_CIRCUIT_DISABLED
-// #endif
-// #ifndef AI3_P1
-// #define AI3_P1                      0.0
-// #endif
-// #ifndef AI3_P2
-// #define AI3_P2                      0.0
-// #endif
-// #ifndef AI3_P3
-// #define AI3_P3                      0.0
-// #endif
-// #ifndef AI3_P4
-// #define AI3_P4                      0.0
-// #endif
-// #ifndef AI3_P5
-// #define AI3_P5                      0.0
-// #endif
-//
-// #ifndef AI4_TYPE
-// #define AI4_TYPE                    AIN_TYPE_DISABLED
-// #endif
-// #ifndef AI4_CIRCUIT
-// #define AI4_CIRCUIT                 AIN_CIRCUIT_DISABLED
-// #endif
-// #ifndef AI4_P1
-// #define AI4_P1                      0.0
-// #endif
-// #ifndef AI4_P2
-// #define AI4_P2                      0.0
-// #endif
-// #ifndef AI4_P3
-// #define AI4_P3                      0.0
-// #endif
-// #ifndef AI4_P4
-// #define AI4_P4                      0.0
-// #endif
-// #ifndef AI4_P5
-// #define AI4_P5                      0.0
-// #endif
+#ifndef DO14_ENABLED
+#define DO14_ENABLED                IO_ENABLED
+#endif
+#ifndef DO14_POLARITY
+#define DO14_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO14_EXTERNAL_NUMBER
+#define DO14_EXTERNAL_NUMBER         14
+#endif
+
+#ifndef DO15_ENABLED
+#define DO15_ENABLED                IO_ENABLED
+#endif
+#ifndef DO15_POLARITY
+#define DO15_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO15_EXTERNAL_NUMBER
+#define DO15_EXTERNAL_NUMBER         15
+#endif
+
+#ifndef DO16_ENABLED
+#define DO16_ENABLED                IO_ENABLED
+#endif
+#ifndef DO16_POLARITY
+#define DO16_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO16_EXTERNAL_NUMBER
+#define DO16_EXTERNAL_NUMBER         16
+#endif
+
+#ifndef DO17_ENABLED
+#define DO17_ENABLED                IO_ENABLED
+#endif
+#ifndef DO17_POLARITY
+#define DO17_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO17_EXTERNAL_NUMBER
+#define DO17_EXTERNAL_NUMBER         17
+#endif
+
+#ifndef DO18_ENABLED
+#define DO18_ENABLED                IO_ENABLED
+#endif
+#ifndef DO18_POLARITY
+#define DO18_POLARITY               IO_ACTIVE_HIGH
+#endif
+#ifndef DO18_EXTERNAL_NUMBER
+#define DO18_EXTERNAL_NUMBER         18
+#endif
+
+
 
 // *** PWM Settings *** //
 

@@ -98,7 +98,7 @@ class ESCSpindle : public ToolHead {
 
     Motate::SysTickEvent spindle_systick_event = {[&] { this->_handle_systick(); }, nullptr};
 
-    void set_pwm_value(); // using all of the settings, set the value fo the pwm pin
+    void set_pwm_value();   // using all of the settings, set the value for the pwm pin
     void complete_change(); // after an engage or resume, handle the rest
 
     float _get_target_speed() {
@@ -159,8 +159,8 @@ class ESCSpindle : public ToolHead {
     // ToolHead overrides
     void init() override;
 
-    void pause() override;          // soft-stop the toolhead (usually for a feedhold) - retain all state for resume
-    void resume() override;         // resume from the pause - return STAT_EAGAIN if it's not yet ready
+    void pause() override;            // soft-stop the toolhead (usually for a feedhold) - retain all state for resume
+    void resume() override;           // resume from the pause - return STAT_EAGAIN if it's not yet ready
     bool ready_to_resume() override;  // return true if paused and resume would not result in an error
     bool busy() override;             // return true if motion should continue waiting for this toolhead
 

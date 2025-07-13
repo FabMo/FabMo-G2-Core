@@ -576,6 +576,48 @@ constexpr cfgItem_t di_config_items_1[] = {
     { "di12","di12in",_iip,   0, din_print_in, din_get_in, din_set_in, &din12,  DI12_EXTERNAL_NUMBER },
 #endif
 
+#if (D_IN_CHANNELS >= 13)
+    { "di13","di13en",_bip,   0, din_print_en, din_get_en, din_set_en, &din13,  DI13_ENABLED },
+    { "di13","di13po",_iip,   0, din_print_po, din_get_po, din_set_po, &din13,  DI13_POLARITY },
+    { "di13","di13ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din13,  DI13_ACTION },
+    { "di13","di13in",_iip,   0, din_print_in, din_get_in, din_set_in, &din13,  DI13_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 14)
+    { "di14","di14en",_bip,   0, din_print_en, din_get_en, din_set_en, &din14,  DI14_ENABLED },
+    { "di14","di14po",_iip,   0, din_print_po, din_get_po, din_set_po, &din14,  DI14_POLARITY },
+    { "di14","di14ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din14,  DI14_ACTION },
+    { "di14","di14in",_iip,   0, din_print_in, din_get_in, din_set_in, &din14,  DI14_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 15)
+    { "di15","di15en",_bip,   0, din_print_en, din_get_en, din_set_en, &din15,  DI15_ENABLED },
+    { "di15","di15po",_iip,   0, din_print_po, din_get_po, din_set_po, &din15,  DI15_POLARITY },
+    { "di15","di15ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din15,  DI15_ACTION },
+    { "di15","di15in",_iip,   0, din_print_in, din_get_in, din_set_in, &din15,  DI15_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 16)
+    { "di16","di16en",_bip,   0, din_print_en, din_get_en, din_set_en, &din16,  DI16_ENABLED },
+    { "di16","di16po",_iip,   0, din_print_po, din_get_po, din_set_po, &din16,  DI16_POLARITY },
+    { "di16","di16ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din16,  DI16_ACTION },
+    { "di16","di16in",_iip,   0, din_print_in, din_get_in, din_set_in, &din16,  DI16_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 17)
+    { "di17","di17en",_bip,   0, din_print_en, din_get_en, din_set_en, &din17,  DI17_ENABLED },
+    { "di17","di17po",_iip,   0, din_print_po, din_get_po, din_set_po, &din17,  DI17_POLARITY },
+    { "di17","di17ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din17,  DI17_ACTION },
+    { "di17","di17in",_iip,   0, din_print_in, din_get_in, din_set_in, &din17,  DI17_EXTERNAL_NUMBER },
+#endif
+
+#if (D_IN_CHANNELS >= 18)
+    { "di18","di18en",_bip,   0, din_print_en, din_get_en, din_set_en, &din18,  DI18_ENABLED },
+    { "di18","di18po",_iip,   0, din_print_po, din_get_po, din_set_po, &din18,  DI18_POLARITY },
+    { "di18","di18ac",_iip,   0, din_print_ac, din_get_ac, din_set_ac, &din18,  DI18_ACTION },
+    { "di18","di18in",_iip,   0, din_print_in, din_get_in, din_set_in, &din18,  DI18_EXTERNAL_NUMBER },
+#endif
+
     // END generated with ${PROJECT_ROOT}/Resources/generate_dins_cfgArray.js
 };
 constexpr cfgSubtableFromStaticArray di_config_1 {di_config_items_1};
@@ -599,6 +641,8 @@ constexpr cfgItem_t in_config_items_1[] = {
     { "in","in14", _i0, 0, din_print_state, din_get_input, set_ro,  &in14, 0 },
     { "in","in15", _i0, 0, din_print_state, din_get_input, set_ro,  &in15, 0 },
     { "in","in16", _i0, 0, din_print_state, din_get_input, set_ro,  &in16, 0 },
+    { "in","in17", _i0, 0, din_print_state, din_get_input, set_ro,  &in17, 0 },
+    { "in","in18", _i0, 0, din_print_state, din_get_input, set_ro,  &in18, 0 },
 };
 constexpr cfgSubtableFromStaticArray in_config_1 {in_config_items_1};
 constexpr const configSubtable * const getINConfig_1() { return &in_config_1; }
@@ -673,6 +717,26 @@ constexpr cfgItem_t do_config_items_1[] = {
     { "do14", "do14po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout14, DO14_POLARITY },
     { "do14", "do14out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout14, DO14_EXTERNAL_NUMBER },
 #endif
+#if (D_OUT_CHANNELS >= 15)
+    { "do15", "do15en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout15, DO15_ENABLED },
+    { "do15", "do15po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout15, DO15_POLARITY },
+    { "do15", "do15out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout15, DO15_EXTERNAL_NUMBER },
+#endif
+#if (D_OUT_CHANNELS >= 16)
+    { "do16", "do16en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout16, DO16_ENABLED },
+    { "do16", "do16po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout16, DO16_POLARITY },
+    { "do16", "do16out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout16, DO16_EXTERNAL_NUMBER },
+#endif
+#if (D_OUT_CHANNELS >= 17)
+    { "do17", "do17en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout17, DO17_ENABLED },
+    { "do17", "do17po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout17, DO17_POLARITY },
+    { "do17", "do17out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout17, DO17_EXTERNAL_NUMBER },
+#endif
+#if (D_OUT_CHANNELS >= 18)
+    { "do18", "do18en", _iip, 0, dout_print_en,  dout_get_en,  dout_set_en,  &dout18, DO18_ENABLED },
+    { "do18", "do18po", _iip, 0, dout_print_po,  dout_get_po,  dout_set_po,  &dout18, DO18_POLARITY },
+    { "do18", "do18out",_iip, 0, dout_print_out, dout_get_out, dout_set_out, &dout18, DO18_EXTERNAL_NUMBER },
+#endif
 };
 constexpr cfgSubtableFromStaticArray do_config_1 {do_config_items_1};
 constexpr const configSubtable * const getDOConfig_1() { return &do_config_1; }
@@ -695,57 +759,41 @@ constexpr cfgItem_t out_config_items_1[] = {
     { "out","out14", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out14, 0 },
     { "out","out15", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out15, 0 },
     { "out","out16", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out16, 0 },
+    { "out","out17", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out17, 0 },
+    { "out","out18", _f0, 2, dout_print_out, dout_get_output, dout_set_output, &out18, 0 },
 };
 constexpr cfgSubtableFromStaticArray out_config_1 {out_config_items_1};
 constexpr const configSubtable * const getOUTConfig_1() { return &out_config_1; }
 
 constexpr cfgItem_t ai_config_items_1[] = {
-    // Analog input configs
-#if (A_IN_CHANNELS >= 1)
-    { "ai1","ai1en",_iip, 0, ai_print_en,         ai_get_en,         ai_set_en,      &ai1,  AI1_ENABLED },
-    { "ai1","ai1ain",_iip,0, ai_print_ain,        ai_get_ain,        ai_set_ain,     &ai1,  AI1_EXTERNAL_NUMBER },
-    { "ai1","ai1ty",_iip, 0, ai_print_type,       ai_get_type,       ai_set_type,    &ai1,  AI1_TYPE },
-    { "ai1","ai1ct",_iip, 0, ai_print_circuit,    ai_get_circuit,    ai_set_circuit, &ai1,  AI1_CIRCUIT },
-    { "ai1","ai1p1",_fip, 4, ai_print_p,          ai_get_p1,         ai_set_p1,      &ai1,  AI1_P1 },
-    { "ai1","ai1p2",_fip, 4, ai_print_p,          ai_get_p2,         ai_set_p2,      &ai1,  AI1_P2 },
-    { "ai1","ai1p3",_fip, 4, ai_print_p,          ai_get_p3,         ai_set_p3,      &ai1,  AI1_P3 },
-    { "ai1","ai1p4",_fip, 4, ai_print_p,          ai_get_p4,         ai_set_p4,      &ai1,  AI1_P4 },
-    { "ai1","ai1p5",_fip, 4, ai_print_p,          ai_get_p5,         ai_set_p5,      &ai1,  AI1_P5 },
-#endif
-#if (A_IN_CHANNELS >= 2)
-    { "ai2","ai2en",_iip, 0, ai_print_en,         ai_get_en,         ai_set_en,      &ai2,  AI2_ENABLED },
-    { "ai2","ai2ain",_iip,0, ai_print_ain,        ai_get_ain,        ai_set_ain,     &ai2,  AI2_EXTERNAL_NUMBER },
-    { "ai2","ai2ty",_iip, 0, ai_print_type,       ai_get_type,       ai_set_type,    &ai2,  AI2_TYPE },
-    { "ai2","ai2ct",_iip, 0, ai_print_circuit,    ai_get_circuit,    ai_set_circuit, &ai2,  AI2_CIRCUIT },
-    { "ai2","ai2p1",_fip, 4, ai_print_p,          ai_get_p1,         ai_set_p1,      &ai2,  AI2_P1 },
-    { "ai2","ai2p2",_fip, 4, ai_print_p,          ai_get_p2,         ai_set_p2,      &ai2,  AI2_P2 },
-    { "ai2","ai2p3",_fip, 4, ai_print_p,          ai_get_p3,         ai_set_p3,      &ai2,  AI2_P3 },
-    { "ai2","ai2p4",_fip, 4, ai_print_p,          ai_get_p4,         ai_set_p4,      &ai2,  AI2_P4 },
-    { "ai2","ai2p5",_fip, 4, ai_print_p,          ai_get_p5,         ai_set_p5,      &ai2,  AI2_P5 },
-#endif
-#if (A_IN_CHANNELS >= 3)
-    { "ai3","ai3en",_iip, 0, ai_print_en,         ai_get_en,         ai_set_en,      &ai3,  AI3_ENABLED },
-    { "ai3","ai3ain",_iip,0, ai_print_ain,        ai_get_ain,        ai_set_ain,     &ai3,  AI3_EXTERNAL_NUMBER },
-    { "ai3","ai3ty",_iip, 0, ai_print_type,       ai_get_type,       ai_set_type,    &ai3,  AI3_TYPE },
-    { "ai3","ai3ct",_iip, 0, ai_print_circuit,    ai_get_circuit,    ai_set_circuit, &ai3,  AI3_CIRCUIT },
-    { "ai3","ai3p1",_fip, 4, ai_print_p,          ai_get_p1,         ai_set_p1,      &ai3,  AI3_P1 },
-    { "ai3","ai3p2",_fip, 4, ai_print_p,          ai_get_p2,         ai_set_p2,      &ai3,  AI3_P2 },
-    { "ai3","ai3p3",_fip, 4, ai_print_p,          ai_get_p3,         ai_set_p3,      &ai3,  AI3_P3 },
-    { "ai3","ai3p4",_fip, 4, ai_print_p,          ai_get_p4,         ai_set_p4,      &ai3,  AI3_P4 },
-    { "ai3","ai3p5",_fip, 4, ai_print_p,          ai_get_p5,         ai_set_p5,      &ai3,  AI3_P5 },
-#endif
-#if (A_IN_CHANNELS >= 4)
-    { "ai4","ai4en",_iip, 0, ai_print_en,         ai_get_en,         ai_set_en,      &ai4,  AI4_ENABLED },
-    { "ai4","ai4ain",_iip,0, ai_print_ain,        ai_get_ain,        ai_set_ain,     &ai4,  AI4_EXTERNAL_NUMBER },
-    { "ai4","ai4ty",_iip, 0, ai_print_type,       ai_get_type,       ai_set_type,    &ai4,  AI4_TYPE },
-    { "ai4","ai4ct",_iip, 0, ai_print_circuit,    ai_get_circuit,    ai_set_circuit, &ai4,  AI4_CIRCUIT },
-    { "ai4","ai4p1",_fip, 4, ai_print_p,          ai_get_p1,         ai_set_p1,      &ai4,  AI4_P1 },
-    { "ai4","ai4p2",_fip, 4, ai_print_p,          ai_get_p2,         ai_set_p2,      &ai4,  AI4_P2 },
-    { "ai4","ai4p3",_fip, 4, ai_print_p,          ai_get_p3,         ai_set_p3,      &ai4,  AI4_P3 },
-    { "ai4","ai4p4",_fip, 4, ai_print_p,          ai_get_p4,         ai_set_p4,      &ai4,  AI4_P4 },
-    { "ai4","ai4p5",_fip, 4, ai_print_p,          ai_get_p5,         ai_set_p5,      &ai4,  AI4_P5 },
-#endif
+    // Analog input configuration items only (no read-only values)
+    { "ai1","ai1en",_f0,  0, ai_print_en,        ai_get_en,          ai_set_en,          &ai1,   0 },
+    { "ai1","ai1ain",_f0, 0, ai_print_ain,       ai_get_ain,         ai_set_ain,         &ai1,   0 },
+    { "ai1","ai1ty",_f0,  0, ai_print_type,      ai_get_type,        ai_set_type,        &ai1,   0 },
+    { "ai1","ai1ci",_f0,  0, ai_print_circuit,   ai_get_circuit,     ai_set_circuit,     &ai1,   0 },
+    { "ai1","ai1p1",_f0,  4, ai_print_p,         ai_get_p1,          ai_set_p1,          &ai1,   0 },
+    
+    { "ai2","ai2en",_f0,  0, ai_print_en,        ai_get_en,          ai_set_en,          &ai2,   0 },
+    { "ai2","ai2ain",_f0, 0, ai_print_ain,       ai_get_ain,         ai_set_ain,         &ai2,   0 },
+    { "ai2","ai2ty",_f0,  0, ai_print_type,      ai_get_type,        ai_set_type,        &ai2,   0 },
+    { "ai2","ai2ci",_f0,  0, ai_print_circuit,   ai_get_circuit,     ai_set_circuit,     &ai2,   0 },
+    { "ai2","ai2p1",_f0,  4, ai_print_p,         ai_get_p1,          ai_set_p1,          &ai2,   0 },
+    
+    { "ai3","ai3en",_f0,  0, ai_print_en,        ai_get_en,          ai_set_en,          &ai3,   0 },
+    { "ai3","ai3ain",_f0, 0, ai_print_ain,       ai_get_ain,         ai_set_ain,         &ai3,   0 },
+    { "ai3","ai3ty",_f0,  0, ai_print_type,      ai_get_type,        ai_set_type,        &ai3,   0 },
+    { "ai3","ai3ci",_f0,  0, ai_print_circuit,   ai_get_circuit,     ai_set_circuit,     &ai3,   0 },
+    { "ai3","ai3p1",_f0,  4, ai_print_p,         ai_get_p1,          ai_set_p1,          &ai3,   0 },
+    
+    { "ai4","ai4en",_f0,  0, ai_print_en,        ai_get_en,          ai_set_en,          &ai4,   0 },
+    { "ai4","ai4ain",_f0, 0, ai_print_ain,       ai_get_ain,         ai_set_ain,         &ai4,   0 },
+    { "ai4","ai4ty",_f0,  0, ai_print_type,      ai_get_type,        ai_set_type,        &ai4,   0 },
+    { "ai4","ai4ci",_f0,  0, ai_print_circuit,   ai_get_circuit,     ai_set_circuit,     &ai4,   0 },
+    { "ai4","ai4p1",_f0,  4, ai_print_p,         ai_get_p1,          ai_set_p1,          &ai4,   0 },
 };
+
+constexpr cfgSubtableFromStaticArray ai_config_1 {ai_config_items_1};
+constexpr const configSubtable * const getAIConfig_1() { return &ai_config_1; }
 
 constexpr cfgItem_t ain_config_items_1[] = {
     { "ain1","ain1vv",_f0,  4, ain_print_value,      ain_get_value,      set_ro,         &ain1,  0 },
@@ -1738,8 +1786,27 @@ constexpr cfgItem_t groups_config_items_1[] = {
 #if (D_IN_CHANNELS >= 12)
     { "","di12", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 #endif
+#if (D_IN_CHANNELS >= 13)
+    { "","di13", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 14)
+    { "","di14", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 15)
+    { "","di15", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 16)
+    { "","di16", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 17)
+    { "","di17", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
+#if (D_IN_CHANNELS >= 18)
+    { "","di18", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+#endif
 
-#define DIGITAL_OUT_GROUPS 14
+
+#define DIGITAL_OUT_GROUPS 18
     { "","out", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output state
     { "","do1", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },   // output configs
     { "","do2", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
@@ -1754,6 +1821,11 @@ constexpr cfgItem_t groups_config_items_1[] = {
     { "","do11", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
     { "","do12", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
     { "","do13", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do14", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do15", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do16", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do17", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
+    { "","do18", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr, 0 },
 
 #define ANALOG_IN_GROUPS 12
     { "","ai1", _f0, 0, tx_print_nul, get_grp, set_grp, nullptr,0 },   // analog input configs
@@ -1885,7 +1957,7 @@ constexpr const configSubtable * const getUberGroupsConfig_1() { return &uber_gr
 auto nodes = makeSubtableNodes(
     0, getSysConfig_1(), getCmConfig_1(), getMpoConfig_1(), getPosConfig_1(), getOfsConfig_1(), getHomConfig_1(),
     getPrbConfig_1(), getJogConfig_1(), getPwrConfig_1(), getMotorConfig_1(), getAxisConfig_1(), getDIConfig_1(),
-    getINConfig_1(), getDOConfig_1(), getOUTConfig_1(), getAINConfig_1(), getP1Config_1(), getPIDConfig_1(),
+    getINConfig_1(), getDOConfig_1(), getOUTConfig_1(), getAIConfig_1(), getAINConfig_1(), getP1Config_1(), getPIDConfig_1(),
     getHEConfig_1(), getCoorConfig_1(), getJobIDConfig_1(), getFixturingConfig_1(), getSpindleConfig_1(),
     getCoolantConfig_1(), getSysConfig_2(), getSysConfig_3(), getUserDataConfig_1(), getToolConfig_1(), getDiagnosticConfig_1(),
     getMotorDiagnosticConfig_1(), getSrPersistenceConfig_1(), getGroupsConfig_1(), getUberGroupsConfig_1());

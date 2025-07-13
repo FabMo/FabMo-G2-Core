@@ -146,15 +146,10 @@ pin_number kInput11_PinNumber = 110;
 pin_number kInput12_PinNumber = 111;
 pin_number kInput13_PinNumber = 112;
 pin_number kInput14_PinNumber = 113;
-
-////## per notes in v9, these now covered in board_gpio.h ... but not clear to me
-//pin_number kSpindle_EnablePinNumber = -1;  
-//pin_number kSpindle_DirPinNumber    = -1;
-//pin_number kCoolant_EnablePinNumber = -1;
-//pin_number kSpindle_PwmPinNumber  = -1;
-//pin_number kSpindle_Pwm2PinNumber = -1;
-//pin_number kSD_CardDetect = -1;
-//pin_number kInterlock_In  = -1;
+pin_number kInput15_PinNumber = 114;  // ALARM1 (alphaStep-any) on J1
+pin_number kInput16_PinNumber = 115;  // ALARM2 (unused) on J1
+pin_number kInput17_PinNumber = 116;  // example pin(#1) on J5 (limits) [otherwise bank unused]
+pin_number kInput18_PinNumber = 117;  // example pin(#2) on J5 (limits) [otherwise bank unused]
 
 pin_number kLED_USBRXPinNumber     = 12;
 pin_number kLED_USBTXPinNumber     = 13;
@@ -187,15 +182,17 @@ pin_number kOutput10_PinNumber = 133;
 
 pin_number kOutput11_PinNumber = 134;
 pin_number kOutput12_PinNumber = 135;
-pin_number kOutput13_PinNumber = -1; 
-pin_number kOutput14_PinNumber = -1;
-pin_number kOutput15_PinNumber = -1;
-pin_number kOutput16_PinNumber = -1;
+pin_number kOutput13_PinNumber = 136;   
+pin_number kOutput14_PinNumber = 137;
+pin_number kOutput15_PinNumber = 138;  // Laser & PWM output
+pin_number kOutput16_PinNumber = 139;  // Laser & PWM output
+pin_number kOutput17_PinNumber = 140;  // Speed multiplier output
+pin_number kOutput18_PinNumber = 141;  // (ENABLE-GLOBAL) When set, all motors are disabled
 
-pin_number kADC1_PinNumber  = -1;  // Heated bed thermistor ADC //?150
-pin_number kADC2_PinNumber  = -1;  // Extruder1_ADC //?151
-pin_number kADC3_PinNumber  = -1;  // Extruder2_ADC //?152
-pin_number kADC4_PinNumber  = -1;  // 153;
+pin_number kADC1_PinNumber  = 150;  // ain1
+pin_number kADC2_PinNumber  = 151;  // ain2
+pin_number kADC3_PinNumber  = 152;  // MON-5v (x2)
+pin_number kADC4_PinNumber  = 153;  // MON-3.3v;
 pin_number kADC5_PinNumber  = -1;  // 154;
 pin_number kADC6_PinNumber  = -1;  // 155;
 pin_number kADC7_PinNumber  = -1;  // 156;

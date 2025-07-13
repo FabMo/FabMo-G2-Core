@@ -85,7 +85,7 @@ ESCSpindle esc_spindle {SPINDLE_PWM_NUMBER, SPINDLE_ENABLE_OUTPUT_NUMBER, SPINDL
 #endif
 
 #include "laser_toolhead.h"
-LaserTool_used_t laser_tool {LASER_ENABLE_OUTPUT_NUMBER, MOTOR_5};
+LaserTool_used_t laser_tool {LASER_ENABLE_OUTPUT_NUMBER, MOTOR_5}; //#### does this translate right
 
 // CartesianKinematics<AXES, MOTORS> cartesian_kinematics;
 KinematicsBase<AXES, MOTORS> *kn = &laser_tool;
