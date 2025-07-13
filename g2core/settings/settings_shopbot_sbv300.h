@@ -105,8 +105,7 @@
 #define HARD_LIMIT_ENABLE           1       // 0=off, 1=on    ////## should be on by default???
 #define SAFETY_INTERLOCK_ENABLE     1       // 0=off, 1=on
 
-#define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active low, 1=active high
-#define SPINDLE_ENABLE_POLARITY     0       // {spep: 0=active high, 1=active low
+#define SPINDLE_ENABLE_POLARITY     1       // {spep: 0=active low, 1=active high
 #define SPINDLE_DIR_POLARITY        0       // 0=clockwise is low, 1=clockwise is high
 #define SPINDLE_PAUSE_ON_HOLD       true
 #define SPINDLE_SPINUP_DELAY        2.0

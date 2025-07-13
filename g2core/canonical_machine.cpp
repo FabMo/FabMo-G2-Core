@@ -1535,6 +1535,10 @@ stat_t cm_straight_feed_mm(const float *target, const bool *flags, const cmMotio
  *
  * Note: These functions don't actually do anything for now, and there's a bug
  *       where T and M in different blocks don't work correctly
+ * 
+ * NOTE 7/12/2025: We've worked on these so that swapping in out out laser and spindle toolheads
+ *       works correctly. The toolhead is set to the toolhead for the selected tool.
+ *       SEE notes in ted's oneNote for more details.
  */
 static void _exec_select_tool(float *value, bool *flag)
 {
@@ -1562,6 +1566,14 @@ static void _exec_change_tool(float *value, bool *flag)
 stat_t cm_change_tool(const uint8_t tool_change)
 {
     mp_queue_command(_exec_change_tool, nullptr, nullptr);
+
+    // CRITICAL FIX: Tool change completion synchronization
+    // M6 tool changes must complete before subsequent commands execute
+    // or toolhead commands (M3/M4/S) get sent to wrong toolhead.
+    // JSON queue flush forces synchronous completion of tool change.
+    char flush_command[] = "{%}";
+    mp_json_command(flush_command);
+
     return (STAT_OK);
 }
 
