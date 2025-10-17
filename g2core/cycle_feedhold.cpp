@@ -62,6 +62,8 @@ stat_t _run_interlock_started(void);
 stat_t _run_interlock_ended(void);
 stat_t _run_reset_position(void);
 
+extern stat_t sr_run_unfiltered_status_report(void);  // declare the wrapper
+
 /****************************************************************************************
  * OPERATIONS AND ACTIONS
  *
@@ -525,7 +527,13 @@ stat_t _run_queue_flush()            // typically runs from cm1 planner
  *  (6)  job kill from INTERLOCK                perform PROGRAM_END
  */
 
-void cm_request_job_kill()
+
+void mp_end_dwell(void) {
+    st_end_dwell();  // Force-kill the SysTick dwell event
+}
+
+
+ void cm_request_job_kill()
 {
     cm1.job_kill_state = JOB_KILL_REQUESTED;
 }
@@ -630,18 +638,18 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 			return;
 		}
 
-		// Look for feedhols while exiting feedhold
-
-		if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
-			// re-load a hold
-			cm1.hold_type = type;
-			switch (cm1.hold_type) {
-				case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions, true); break; }
-				case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions, true); break; }
-				case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip, true); break; }
-				default: {}
-			}
-		}
+        // Look for feedholds while exiting feedhold
+        if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
+            // Request a nested hold in P2 to stop any in-progress Z move or spindle ramp
+            if (cm2.hold_state == FEEDHOLD_OFF) {
+                cm2.hold_type = FEEDHOLD_TYPE_SKIP;  // Skip remaining exit actions
+                cm2.hold_state = FEEDHOLD_SYNC;      // Request P2 to sync and stop
+            }
+            
+            // Force any active dwell to complete
+            mp_end_dwell();
+            
+        }
 	}
 }
 
@@ -779,8 +787,16 @@ stat_t _feedhold_no_actions()
 
 void _feedhold_actions_done_callback(float* vect, bool* flag)
 {
-    cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_COMPLETE; // penultimate state before transitioning to FEEDHOLD_HOLD
-    sr_request_status_report(SR_REQUEST_IMMEDIATE);
+    // Pause spindle and coolant AFTER Z move completes
+    coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);
+    spindle_pause();
+    
+    // **CHANGED: Don't change state or request report—already done**
+    // cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_COMPLETE;  // ← REMOVED
+    // sr_request_status_report(SR_REQUEST_IMMEDIATE);   // ← REMOVED
+    
+    // Just mark that actions are complete so the handler knows to clean up
+    cm1.hold_state = FEEDHOLD_HOLD;  // Confirm we're in stable HOLD
 }
 
 stat_t _feedhold_with_actions()          // Execute Case (5)
@@ -880,21 +896,49 @@ stat_t _feedhold_restart_no_actions()
 stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
 {
     if (cm1.hold_state == FEEDHOLD_OFF) {
-        return (STAT_OK);                       // was called erroneously. Can happen for !%~
+        return (STAT_OK);
     }
 
-    // Check to run first-time code
+    // First-time entry from HOLD: check if we're already in a nested hold before queuing moves
     if (cm1.hold_state == FEEDHOLD_HOLD) {
+        // Check if a nested hold was requested while we were in HOLD
+        // (this can happen if user pressed feedhold again before Resume was complete)
+        if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
+            // Already in a nested hold: wait for P2 to become idle, then report and stay in HOLD
+            if (!mp_runtime_is_idle()) {
+                return (STAT_EAGAIN);
+            }
+
+            // Clear P2, flush any moves, transition back to HOLD
+            cm2.hold_state = FEEDHOLD_OFF;
+            _run_queue_flush();
+
+            cm_set_motion_state(MOTION_STOP);
+            cm1.machine_state = MACHINE_PROGRAM_STOP;
+            cm1.hold_state = FEEDHOLD_HOLD;  // Stay in HOLD
+
+            // Force immediate status report
+            sr_run_unfiltered_status_report();
+
+            // Clear the status report request so the normal callback doesn't fire
+            sr.status_report_request = SR_OFF;
+            sr.status_report_systick.clear();
+
+            // Handled the nested hold, abort the operation
+            op.reset();
+
+            return (STAT_EAGAIN);  // ← CRITICAL FIX: Stay in EAGAIN, don't complete
+        }
+
+        // No nested hold: proceed with normal exit actions
         if (!coolant_ready() || (is_spindle_on_or_paused() && !is_spindle_ready_to_resume())) {
             return (STAT_EAGAIN);
         }
 
-        // perform end-hold actions --- while still in secondary machine
-        coolant_control_sync(COOLANT_RESUME, COOLANT_BOTH); // resume coolant if paused
-        spindle_resume();                                   // resume spindle if paused
+        // Start exit actions
+        coolant_control_sync(COOLANT_RESUME, COOLANT_BOTH);
+        spindle_resume();
 
-////##ted, last stop before continuing after feedhold
-        // do return move though an intermediate point; queue a wait
         cm2.return_flags[AXIS_Z] = false;
         cm_goto_g30_position_mm(cm2.gmx.g30_position, cm2.return_flags);
         mp_queue_command(_feedhold_restart_actions_done_callback, nullptr, nullptr);
@@ -904,25 +948,85 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         return (STAT_EAGAIN);
     }
 
-    // wait for exit actions to complete
-    if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
 
-        if (cm2.hold_state == FEEDHOLD_MOTION_STOPPED) {
-            if (!mp_runtime_is_idle()) {  // if there's still motion, wait
+    // Handle nested hold that arrived DURING exit actions (after Z move was queued)
+    if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
+        if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
+            if (!mp_runtime_is_idle()) {
                 return (STAT_EAGAIN);
             }
 
-            cm2.hold_state = FEEDHOLD_OFF;            // "inner" feedhold is now done, clear it as off
-            cm1.hold_state = FEEDHOLD_MOTION_STOPPED; // pass back the state as motion has stopped for clean re-entry
+            // Nested hold detected: abort exit actions
+            cm2.hold_state = FEEDHOLD_OFF;
+            _run_queue_flush();  // Flush any queued exit moves
 
-            // flush the queue of moves and commands for the exit, return cm2 to STOPPED
+            // Transition back to stable HOLD state
+            cm_set_motion_state(MOTION_STOP);
+            //cm1.machine_state = MACHINE_PROGRAM_STOP;
+
+            // **CHANGED: Set machine state to CYCLE so it can complete normally**
+            if (cm1.machine_state != MACHINE_CYCLE) {
+                cm1.machine_state = MACHINE_CYCLE;
+            }
+
+            cm1.hold_state = FEEDHOLD_HOLD;  // Back to stable HOLD
+
+
+            // Queue Z pull-up if configured
+            if (fp_NOT_ZERO(cm->feedhold_z_lift)) {
+                bool flags[] = { 0,0,1,0,0,0 };
+                float target[] = { 0,0,0,0,0,0 };
+                bool skip_move = false;
+
+                if (cm->feedhold_z_lift < 0) {
+                    if (cmHomingState::HOMING_HOMED == cm->homed[AXIS_Z]) {
+                        cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
+                        cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
+                        target[AXIS_Z] = cm->a[AXIS_Z].travel_max;
+                    } else {
+                        skip_move = true;
+                    }
+                } else {
+                    cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
+                    if (cm->gmx.position[AXIS_Z] - cm_get_combined_offset(AXIS_Z) < cm->feedhold_z_lift && is_spindle_on_or_paused()) {
+                        target[AXIS_Z] = cm->feedhold_z_lift;
+                    } else {
+                        skip_move = true;
+                    }
+                }
+
+                if (!skip_move) {
+                    cm_straight_traverse_mm(target, flags, PROFILE_NORMAL);
+                    cm_set_distance_mode(cm1.gm.distance_mode);
+                }
+            }
+
+            // Queue callback to pause spindle AFTER Z completes
+            mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
+
+            // Set flag to trigger STAT 6 report
+            cm1.send_nested_hold_report = true;
+
+            return (STAT_OK);  // Operation complete - we're back in stable HOLD
+        }
+
+        // Normal case: exit actions in progress, no nested hold
+        if (cm2.hold_state == FEEDHOLD_MOTION_STOPPED) {
+            if (!mp_runtime_is_idle()) {
+                return (STAT_EAGAIN);
+            }
+
+            cm2.hold_state = FEEDHOLD_OFF;
+            cm1.hold_state = FEEDHOLD_MOTION_STOPPED;
+            
             _run_queue_flush();
-
-            // now done with exiting
             return (STAT_OK);
         }
+
         return (STAT_EAGAIN);
     }
+
+
 
     // finalize feedhold exit
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_COMPLETE) {

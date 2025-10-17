@@ -915,6 +915,15 @@ void st_prep_dwell(float milliseconds)
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_LOADER;    // signal that prep buffer is ready
 }
 
+
+void st_end_dwell(void) {
+    if (st_run.dwell_ticks_downcount > 0) {
+        st_run.dwell_ticks_downcount = 0;
+        SysTickTimer.unregisterEvent(&dwell_systick_event);
+    }
+}
+
+
 /*
  * st_prep_out_of_band_dwell()
  *

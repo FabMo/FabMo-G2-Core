@@ -54,7 +54,8 @@
         "cortex_handlers.c": "cpp",
         "*.def": "cpp",
         "__locale": "cpp",
-        "rope": "cpp"
+        "rope": "cpp",
+        "future": "cpp"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 120 }",
     "C_Cpp.default.cppStandard": "c++17",
