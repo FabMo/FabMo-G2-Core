@@ -62,7 +62,7 @@ struct status_report_item { // structure to hold the cached status report items,
     char group[GROUP_LEN + 1];
     char token[TOKEN_LEN + 1];
     index_t index;
-    // uint8_t flags;                      // operations flags - see defines below
+    // uint8_t flags;                   // operations flags - see defines below
     int8_t precision;                   // decimal precision for display (JSON)
     double value;
     fptrCmd get;                        // GET binding aka uint8_t (*get)(nvObj_t *nv)
@@ -72,6 +72,8 @@ typedef struct srSingleton {
     /*** config values (PUBLIC) ***/
     srVerbosity status_report_verbosity;
     int32_t status_report_interval;                     // in milliseconds
+    volatile bool runtime_command_report_pending;       // Interrupt-safe flag
+    uint8_t nested_hold_report_count;                   // Track nested-hold report sequence
 
     /*** runtime values (PRIVATE) ***/
     srVerbosity status_report_request;                  // flag that SR has been requested, and what type

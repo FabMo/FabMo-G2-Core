@@ -155,6 +155,8 @@ void stepper_init()
     exec_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityHigh);
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_EXEC;
 
+    st_cfg.load_move_requested = false;
+
     // setup software interrupt forward plan timer & initial condition
     fwd_plan_timer.setInterrupts(kInterruptOnSoftwareTrigger | kInterruptPriorityMedium);
 
@@ -182,6 +184,7 @@ void stepper_reset()
     st_run.dda_ticks_downcount = 0;                     // signal the runtime is not busy
     st_run.dwell_ticks_downcount = 0;
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_EXEC;    // set to EXEC or it won't restart
+    st_pre.bf = nullptr;  // Clear buffer pointer on reset
 
     for (uint8_t motor=0; motor<MOTORS; motor++) {
         st_pre.mot[motor].prev_direction = STEP_INITIAL_DIRECTION;
@@ -452,11 +455,30 @@ namespace Motate {    // Define timer inside Motate namespace
 
 void st_request_load_move()
 {
-    if (st_runtime_isbusy()) {                                      // don't request a load if the runtime is busy
-        return;
-    }
-    if (st_pre.buffer_state == PREP_BUFFER_OWNED_BY_LOADER) {       // bother interrupting
-       _load_move();
+    st_cfg.load_move_requested = true;
+}
+
+
+void st_check_load_move()
+{
+    // Check the flag and load move if requested
+    // This runs in the main loop, so it's safe to call _load_move()
+    if (st_cfg.load_move_requested) {
+        st_cfg.load_move_requested = false;
+        
+        // **NEW: Add the safety checks from the original st_request_load_move()**
+        if (st_runtime_isbusy()) {                                      // don't load if the runtime is busy
+            // Re-set the flag since we couldn't process it
+            st_cfg.load_move_requested = true;
+            return;
+        }
+        if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {       // don't load if prep isn't ready
+            // Re-set the flag since we couldn't process it
+            st_cfg.load_move_requested = true;
+            return;
+        }
+        
+        _load_move();
     }
 }
 
@@ -698,12 +720,20 @@ static void _load_move()
 
     // handle synchronous commands
     } else if (st_pre.block_type == BLOCK_TYPE_COMMAND) {
-        mp_runtime_command(st_pre.bf);
-
+        // Grab pointer and clear it BEFORE execution
+        mpBuf_t *cmd_bf = st_pre.bf;
+        st_pre.bf = nullptr;  // Clear immediately to prevent any reuse
+        
+        // Execute command if pointer is valid
+        if (cmd_bf != nullptr && cmd_bf->buffer_state >= MP_BUFFER_BACK_PLANNED) {
+            mp_runtime_command(cmd_bf);
+        }
+    
     } // else null - which is okay in many cases
 
     // all other cases drop to here (e.g. Null moves after Mcodes skip to here)
     st_pre.block_type = BLOCK_TYPE_NULL;
+    st_pre.bf = nullptr;  // ALWAYS clear the buffer pointer
     st_pre.buffer_state = PREP_BUFFER_OWNED_BY_EXEC;    // we are done with the prep buffer - flip the flag back
     st_request_exec_move();                             // exec and prep next move
 }

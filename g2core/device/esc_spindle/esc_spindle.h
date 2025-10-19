@@ -142,13 +142,16 @@ class ESCSpindle : public ToolHead {
             done = true;
         }
         set_pwm_value();
+
         if (done) {
             spinup_count_ms = 0;
             SysTickTimer.unregisterEvent(&spindle_systick_event);
-            if (this_change_holds_motion) {
-                st_request_load_move();  // request to load the next move
-                this_change_holds_motion = false;
-            }
+
+            // Clear the flag - the loader will proceed naturally
+            this_change_holds_motion = false;
+            
+            // Normal case: request the load
+            st_request_load_move();
         }
     }
 

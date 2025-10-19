@@ -176,6 +176,9 @@ static void _controller_HSM()
     DISPATCH(_test_system_assertions());        // system integrity assertions
     DISPATCH(_dispatch_control());              // read any control messages prior to executing cycles
 
+    // Check for pending load_move request from spindle systick
+    st_check_load_move();
+
 //----- planner hierarchy for gcode and cycles ---------------------------------------//
 
     DISPATCH(st_motor_power_callback());        // stepper motor power sequencing

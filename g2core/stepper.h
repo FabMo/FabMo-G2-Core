@@ -345,6 +345,7 @@ typedef struct cfgMotor {                   // per-motor configs
 typedef struct stConfig {                   // stepper configs
     float motor_power_timeout;              // seconds before setting motors to idle current (currently this is OFF)
     cfgMotor_t mot[MOTORS];                 // settings for motors 1-N
+    volatile bool load_move_requested;      // Flag set by interrupt, checked by main loop
 } stConfig_t;
 
 // Motor runtime structure. Used exclusively by step generation ISR (HI)
@@ -538,6 +539,7 @@ stat_t st_motor_power_callback(void);
 void st_request_forward_plan(void) HOT_FUNC;
 void st_request_exec_move(void) HOT_FUNC;
 void st_request_load_move(void) HOT_FUNC;
+void st_check_load_move();
 void st_prep_null(void);
 void st_prep_command(void *bf);        // use a void pointer since we don't know about mpBuf_t yet)
 void st_prep_dwell(float milliseconds);
