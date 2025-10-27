@@ -300,7 +300,7 @@ stat_t cm_operation_runner_callback()
     if (cm1.job_kill_state == JOB_KILL_REQUESTED) {         // job kill must wait for any active hold to complete
         _start_job_kill();
     }
-//    if (cm1.hold_state == FEEDHOLD_REQUESTED) {             // look for a queued p2 feedhold
+//    if (cm1.hold_state == FEEDHOLD_REQUESTED) {           // ?? look for a queued p2 feedhold  ?? keypad issue?
 //        _start_feedhold();
 //    }
     if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {   // look for a queued flush request
@@ -661,7 +661,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
  */
 
 
-////##ted, note this is entry into P2 !!!
+
 void _enter_p2()
 {
     // Copy the primary canonical machine to the secondary. Here it's OK to co a memcpy.
@@ -691,7 +691,6 @@ void _enter_p2()
     copy_vector(mp2.position, mr1.position);
     copy_vector(mr2.position, mr1.position);
 
-////##ted, probably don't need this stuff ... unless there is some restart consequence ???
     // Copy MR position and encoder terms - needed for following error correction state
     copy_vector(mr2.target_steps, mr1.target_steps);
     copy_vector(mr2.position_steps, mr1.position_steps);
@@ -790,10 +789,6 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
     // Pause spindle and coolant AFTER Z move completes
     coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);
     spindle_pause();
-    
-    // **CHANGED: Don't change state or request report—already done**
-    // cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_COMPLETE;  // ← REMOVED
-    // sr_request_status_report(SR_REQUEST_IMMEDIATE);   // ← REMOVED
     
     // Just mark that actions are complete so the handler knows to clean up
     cm1.hold_state = FEEDHOLD_HOLD;  // Confirm we're in stable HOLD
