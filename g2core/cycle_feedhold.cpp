@@ -64,6 +64,18 @@ stat_t _run_reset_position(void);
 
 extern stat_t sr_run_unfiltered_status_report(void);  // declare the wrapper
 
+// DEBUG ONLY
+static bool debug_sync_printed = false;
+static bool debug_motion_stopped_printed = false;
+static bool debug_p2_entered_printed = false;
+static bool debug_zlift_printed = false;
+static bool debug_callback_queued_printed = false;
+static bool debug_waiting_pending_printed = false;
+static bool debug_hold_reached_printed = false;
+static bool debug_callback_fired_printed = false;
+static bool debug_done_reached_printed = false;
+
+
 /****************************************************************************************
  * OPERATIONS AND ACTIONS
  *
@@ -786,12 +798,49 @@ stat_t _feedhold_no_actions()
 
 void _feedhold_actions_done_callback(float* vect, bool* flag)
 {
+    if (!debug_callback_fired_printed) {
+        printf("DEBUG: Callback FIRED!\n");
+        debug_callback_fired_printed = true;
+
+        debug_sync_printed = false;
+    }
     // Pause spindle and coolant AFTER Z move completes
     coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);
     spindle_pause();
     
-    // Just mark that actions are complete so the handler knows to clean up
-    cm1.hold_state = FEEDHOLD_HOLD;  // Confirm we're in stable HOLD
+
+        // Stable HOLD in P1; clear P2 to avoid nested-hold mis-detection on Resume
+    cm1.hold_state = FEEDHOLD_HOLD;
+    cm2.hold_state = FEEDHOLD_OFF;
+
+    // Emit a minimal SR so FabMo can enable Resume/Quit without triggering long SR side-effects.
+    // Keep it tiny: only the hold flag (optionally include stat:6 if you prefer).
+    char sr_buf[48];
+    // If you want stat as well, use: snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"stat\":6,\"hold\":10}}\n");
+    snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
+    xio_writeline(sr_buf);
+
+    // Do NOT call sr_run_unfiltered_status_report() here (causes Keypad instability)
+    // Do NOT force a filtered SR; the tiny SR above is enough for FabMo to gate UI.
+
+
+
+//     // P1 is now in stable HOLD
+//     cm1.hold_state = FEEDHOLD_HOLD;
+
+//     // P2 is done with entry actions; mark OFF so resume logic doesn't see a nested hold
+//     cm2.hold_state = FEEDHOLD_OFF;
+
+//     // Force a status report from P1 so FabMo sees hold:10 immediately
+//     cmMachine_t* saved_cm = cm;
+//     cm = &cm1;
+
+// //    sr_request_status_report(SR_REQUEST_IMMEDIATE);
+//     sr_run_unfiltered_status_report();
+
+//     sr.status_report_request = SR_OFF;
+//     sr.status_report_systick.clear();
+//     cm = saved_cm;
 }
 
 stat_t _feedhold_with_actions()          // Execute Case (5)
@@ -799,18 +848,42 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
     // if entered while OFF start a feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {
         cm1.hold_state = FEEDHOLD_SYNC;     // ... STOP can be overridden by setting hold_exit after this function
+        if (!debug_sync_printed) {
+            printf("DEBUG: Feedhold started, state=SYNC\n");
+
+            debug_motion_stopped_printed = false;
+            debug_p2_entered_printed = false;
+            debug_zlift_printed = false;
+            debug_callback_queued_printed = false;
+            debug_waiting_pending_printed = false;
+            debug_hold_reached_printed = false;
+            debug_callback_fired_printed = false;
+            debug_done_reached_printed = false;
+
+            debug_sync_printed = true;
+        }
         return (STAT_EAGAIN);
     }
 
     // Code to run once motion has stopped
     if (cm1.hold_state == FEEDHOLD_MOTION_STOPPED) {
+        if (!debug_motion_stopped_printed) {
+            printf("DEBUG: Motion stopped, entering HOLD_ACTIONS_PENDING\n");
+            debug_motion_stopped_printed = true;
+        }
         cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;         // next state
 
         // check for re-entry into feedhold from a cancelled resume
         if (cm != &cm2) {
             _enter_p2();                                        // enter p2 correctly
             cm_set_g30_position();                              // set position to return to on exit
+            if (!debug_p2_entered_printed) {
+                printf("DEBUG: Entered P2\n");
+                debug_p2_entered_printed = true;
+            }
         }
+
+        bool moves_queued = false;
 
         // execute feedhold actions
         if (fp_NOT_ZERO(cm->feedhold_z_lift)) { // Optional Z lift
@@ -842,21 +915,41 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
             if (!skip_move) {
                 cm_straight_traverse_mm(target, flags, PROFILE_NORMAL);
                 cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting
+                moves_queued = true;
+                if (!debug_zlift_printed) {
+                    printf("DEBUG: Z-lift queued\n");
+                    debug_zlift_printed = true;
+                }
+            } else {
+                printf("DEBUG: Z-lift skipped\n");
             }
         }
         coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);  // optional coolant pause
         mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
+        if (!debug_callback_queued_printed) {
+            printf("DEBUG: Callback queued, moves_queued=%d\n", moves_queued);
+            debug_callback_queued_printed = true;
+        }
+
         return (STAT_EAGAIN);
     }
 
     // wait for hold actions to complete
     if (cm1.hold_state == FEEDHOLD_HOLD_ACTIONS_PENDING) {
+        if (!debug_waiting_pending_printed) {
+            printf("DEBUG: Waiting in HOLD_ACTIONS_PENDING\n");
+            debug_waiting_pending_printed = true;
+        }
         return (STAT_EAGAIN);
     }
 
     // finalize feedhold entry after callback OR skipping actions (this is needed so we can return STAT_OK)
     if ((cm1.hold_state == FEEDHOLD_HOLD_ACTIONS_COMPLETE) || (cm1.hold_state == FEEDHOLD_HOLD)) {
         cm1.hold_state = FEEDHOLD_HOLD;
+        if (!debug_hold_reached_printed) {
+            printf("DEBUG: Reached HOLD, finalizing\n");
+            debug_hold_reached_printed = true;
+        }
         spindle_pause();                    // optional spindle pause
         
         return (STAT_OK);
@@ -872,6 +965,12 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
 
 void _feedhold_restart_actions_done_callback(float* vect, bool* flag)
 {
+    if (!debug_done_reached_printed) {
+        printf("DEBUG: Reached DONE, site of issue\n");
+        debug_done_reached_printed = true;
+    }
+
+
     cm1.hold_state = FEEDHOLD_EXIT_ACTIONS_COMPLETE;    // penultimate state before transitioning to FEEDHOLD_OFF
     sr_request_status_report(SR_REQUEST_IMMEDIATE);
 }
