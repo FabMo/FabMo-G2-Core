@@ -857,10 +857,10 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
         op.add_action(_run_program_stop, /*allow_add_from_operation=*/true);
     }
 
-    // // Minimal SR so FabMo can enable Resume/Quit immediately.
-    // char sr_buf[48];
-    // snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
-    // xio_writeline(sr_buf);
+    // Minimal SR so FabMo can enable Resume/Quit immediately
+    char sr_buf[48];
+    snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
+    xio_writeline(sr_buf);
 
     // // Emit a minimal SR so FabMo can enable Resume/Quit without triggering long SR side-effects.
     // // Keep it tiny: only the hold flag (optionally include stat:6 if you prefer).
