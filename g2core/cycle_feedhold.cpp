@@ -650,19 +650,53 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 			return;
 		}
 
+		// Look for feedholds while exiting feedhold
+		// if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
+		// 	// re-load a hold
+		// 	cm1.hold_type = type;
+		// 	switch (cm1.hold_type) {
+		// 		case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions, true); break; }
+		// 		case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions, true); break; }
+		// 		case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip, true); break; }
+		// 		default: {}
+		// 	}
+
+
+        // Look for feedholds while exiting feedhold
+        // if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
+        //     // Request a nested hold in P2 to stop any in-progress Z move or spindle ramp
+        //     if (cm2.hold_state == FEEDHOLD_OFF) {
+        //         cm2.hold_type = FEEDHOLD_TYPE_SKIP;  // Skip remaining exit actions
+        //         cm2.hold_state = FEEDHOLD_SYNC;      // Request P2 to sync and stop
+        //     }
+            
+        //     // Force any active dwell to complete
+        //     mp_end_dwell();
+            
+        // }
+
         // Look for feedholds while exiting feedhold
         if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
-            // Request a nested hold in P2 to stop any in-progress Z move or spindle ramp
+            // Keypad path: if a queue flush is already requested, ignore extra holds here.
+            // This preserves the ! % cadence and prevents the “run-on”/lock when the mouse slides off the key.
+            if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {
+                // No-op: let exit actions finish, then the queued flush will run as usual.
+                return;
+            }
+
+            // Resume-in-flight path (no queue flush pending): request a nested hold in P2
+            // to stop any in-progress Z move or spindle ramp cleanly.
             if (cm2.hold_state == FEEDHOLD_OFF) {
                 cm2.hold_type = FEEDHOLD_TYPE_SKIP;  // Skip remaining exit actions
                 cm2.hold_state = FEEDHOLD_SYNC;      // Request P2 to sync and stop
             }
-            
-            // Force any active dwell to complete
+
+            // Force any active dwell to complete (e.g., spindle ramp dwell)
             mp_end_dwell();
-            
+
+            return;
         }
-	}
+    }
 }
 
 /*
@@ -801,7 +835,6 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
     if (!debug_callback_fired_printed) {
         printf("DEBUG: Callback FIRED!\n");
         debug_callback_fired_printed = true;
-
         debug_sync_printed = false;
     }
     // Pause spindle and coolant AFTER Z move completes
@@ -809,19 +842,35 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
     spindle_pause();
     
 
-        // Stable HOLD in P1; clear P2 to avoid nested-hold mis-detection on Resume
+    // Stable HOLD in P1; clear P2 to avoid nested-hold mis-detection on Resume
     cm1.hold_state = FEEDHOLD_HOLD;
     cm2.hold_state = FEEDHOLD_OFF;
 
-    // Emit a minimal SR so FabMo can enable Resume/Quit without triggering long SR side-effects.
-    // Keep it tiny: only the hold flag (optionally include stat:6 if you prefer).
-    char sr_buf[48];
-    // If you want stat as well, use: snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"stat\":6,\"hold\":10}}\n");
-    snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
-    xio_writeline(sr_buf);
+        // If a queue flush was requested (Keypad !%), enqueue the exit chain NOW to avoid the race.
+    if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {
+        if (cm1.hold_type == FEEDHOLD_TYPE_ACTIONS) {
+            op.add_action(_feedhold_restart_with_actions, /*allow_add_from_operation=*/true);
+        } else {
+            op.add_action(_feedhold_restart_no_actions, /*allow_add_from_operation=*/true);
+        }
+        op.add_action(_run_queue_flush, /*allow_add_from_operation=*/true);
+        op.add_action(_run_program_stop, /*allow_add_from_operation=*/true);
+    }
 
-    // Do NOT call sr_run_unfiltered_status_report() here (causes Keypad instability)
-    // Do NOT force a filtered SR; the tiny SR above is enough for FabMo to gate UI.
+    // // Minimal SR so FabMo can enable Resume/Quit immediately.
+    // char sr_buf[48];
+    // snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
+    // xio_writeline(sr_buf);
+
+    // // Emit a minimal SR so FabMo can enable Resume/Quit without triggering long SR side-effects.
+    // // Keep it tiny: only the hold flag (optionally include stat:6 if you prefer).
+    // char sr_buf[48];
+    // // If you want stat as well, use: snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"stat\":6,\"hold\":10}}\n");
+    // snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
+    // xio_writeline(sr_buf);
+
+    // // Do NOT call sr_run_unfiltered_status_report() here (causes Keypad instability)
+    // // Do NOT force a filtered SR; the tiny SR above is enough for FabMo to gate UI.
 
 
 
