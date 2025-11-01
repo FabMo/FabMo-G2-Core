@@ -312,9 +312,6 @@ stat_t cm_operation_runner_callback()
     if (cm1.job_kill_state == JOB_KILL_REQUESTED) {         // job kill must wait for any active hold to complete
         _start_job_kill();
     }
-//    if (cm1.hold_state == FEEDHOLD_REQUESTED) {           // ?? look for a queued p2 feedhold  ?? keypad issue?
-//        _start_feedhold();
-//    }
     if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {   // look for a queued flush request
         _start_queue_flush();
     }
@@ -404,6 +401,41 @@ stat_t _run_interlock_ended() {
     safety_manager->end_interlock_after_feedhold();
     return (_run_restart_cycle());
 }
+
+// Flush a specific machine's planner without disturbing the other (for nex)
+static stat_t _run_queue_flush_on(cmMachine_t* target)
+{
+    // Save active contexts
+    cmMachine_t* saved_cm = cm;
+    mpPlanner_t* saved_mp = mp;
+    mpPlannerRuntime_t* saved_mr = mr;
+
+    // Switch to target machine
+    cm = target;
+    mp = (mpPlanner_t*)target->mp;
+    mr = mp->mr;
+
+    // Reset only target planner and its state
+    planner_reset(mp);
+    cm_reset_position_to_absolute_position(target);
+    cm_abort_arc(target);       // stop arc generator for target only
+    cm_abort_homing(target);    // clean up target-only cycles
+    cm_abort_probing(target);
+
+    // Only clear the global queue-flush flag and request QR when flushing P1
+    if (target == &cm1) {
+        cm1.queue_flush_state = QUEUE_FLUSH_OFF;
+        qr_request_queue_report(0);
+    }
+
+    // Restore active contexts
+    cm = saved_cm;
+    mp = saved_mp;
+    mr = saved_mr;
+
+    return (STAT_OK);
+}
+
 
 /****************************************************************************************
  * cm_request_cycle_start() - set request enum only
@@ -597,7 +629,6 @@ void _start_job_kill()
         case MACHINE_CYCLE: {                           // Case 2's
             if (cm1.hold_state == FEEDHOLD_OFF) {       // Case 2a - in cycle and not in a hold
                 op.add_action(_feedhold_no_actions);
-//                op.add_action(_run_job_kill);
             }
             if (cm1.hold_state == FEEDHOLD_HOLD) {      // Case 2c - in a finished hold
                 _run_job_kill();
@@ -650,31 +681,6 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 			return;
 		}
 
-		// Look for feedholds while exiting feedhold
-		// if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
-		// 	// re-load a hold
-		// 	cm1.hold_type = type;
-		// 	switch (cm1.hold_type) {
-		// 		case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions, true); break; }
-		// 		case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions, true); break; }
-		// 		case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip, true); break; }
-		// 		default: {}
-		// 	}
-
-
-        // Look for feedholds while exiting feedhold
-        // if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
-        //     // Request a nested hold in P2 to stop any in-progress Z move or spindle ramp
-        //     if (cm2.hold_state == FEEDHOLD_OFF) {
-        //         cm2.hold_type = FEEDHOLD_TYPE_SKIP;  // Skip remaining exit actions
-        //         cm2.hold_state = FEEDHOLD_SYNC;      // Request P2 to sync and stop
-        //     }
-            
-        //     // Force any active dwell to complete
-        //     mp_end_dwell();
-            
-        // }
-
         // Look for feedholds while exiting feedhold
         if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
             // Keypad path: if a queue flush is already requested, ignore extra holds here.
@@ -705,8 +711,6 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
  *
  * Encapsulate entering and exiting p2, as this is tricky and must be done exactly right
  */
-
-
 
 void _enter_p2()
 {
@@ -768,7 +772,7 @@ void _check_motion_stopped()
         if ((cm->hold_type == FEEDHOLD_TYPE_SKIP) || (bf->buffer_state == MP_BUFFER_EMPTY)) {
             copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
             if (mp_get_run_buffer()) {
-                mp_free_run_buffer();                       // advance to next block, discarding the rest of the move
+                mp_free_run_buffer();                   // advance to next block, discarding the rest of the move
             }
         } else { // Otherwise setup the block to complete motion (regardless of how hold will ultimately be exited)
             bf->length = get_axis_vector_length(mr->position, mr->target); // update bf w/remaining length in move
@@ -808,7 +812,6 @@ stat_t _feedhold_no_actions()
     // initiate the feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {       // start a feedhold
         cm1.hold_type = FEEDHOLD_TYPE_HOLD;
-//      cm1.hold_exit = FEEDHOLD_EXIT_STOP;     // default exit for NO_ACTIONS is STOP...
 
         if (cm1.motion_state == MOTION_STOP) {  // if motion has already stopped declare that you are in a feedhold
             _check_motion_stopped();
@@ -862,37 +865,9 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
     snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
     xio_writeline(sr_buf);
 
-    // // Emit a minimal SR so FabMo can enable Resume/Quit without triggering long SR side-effects.
-    // // Keep it tiny: only the hold flag (optionally include stat:6 if you prefer).
-    // char sr_buf[48];
-    // // If you want stat as well, use: snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"stat\":6,\"hold\":10}}\n");
-    // snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
-    // xio_writeline(sr_buf);
-
-    // // Do NOT call sr_run_unfiltered_status_report() here (causes Keypad instability)
-    // // Do NOT force a filtered SR; the tiny SR above is enough for FabMo to gate UI.
-
-
-
-//     // P1 is now in stable HOLD
-//     cm1.hold_state = FEEDHOLD_HOLD;
-
-//     // P2 is done with entry actions; mark OFF so resume logic doesn't see a nested hold
-//     cm2.hold_state = FEEDHOLD_OFF;
-
-//     // Force a status report from P1 so FabMo sees hold:10 immediately
-//     cmMachine_t* saved_cm = cm;
-//     cm = &cm1;
-
-// //    sr_request_status_report(SR_REQUEST_IMMEDIATE);
-//     sr_run_unfiltered_status_report();
-
-//     sr.status_report_request = SR_OFF;
-//     sr.status_report_systick.clear();
-//     cm = saved_cm;
 }
 
-stat_t _feedhold_with_actions()          // Execute Case (5)
+stat_t _feedhold_with_actions()             // Execute Case (5)
 {
     // if entered while OFF start a feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {
@@ -948,11 +923,6 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
                     skip_move = true;
                 }
             } else {
-                // cm_set_distance_mode(INCREMENTAL_DISTANCE_MODE);
-                ////##ted, note that this is from earlier work, not recent step counting
-                ////## for this standard pull up on FeedHold
-                ////## Need Z to pull to fixed location; 
-                ////##  and, BETTER pull to fixed location if not above
                 cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
                 if (cm->gmx.position[AXIS_Z] - cm_get_combined_offset(AXIS_Z) < cm->feedhold_z_lift && is_spindle_on_or_paused()) {
                     target[AXIS_Z] = cm->feedhold_z_lift;
@@ -963,7 +933,7 @@ stat_t _feedhold_with_actions()          // Execute Case (5)
 
             if (!skip_move) {
                 cm_straight_traverse_mm(target, flags, PROFILE_NORMAL);
-                cm_set_distance_mode(cm1.gm.distance_mode);         // restore distance mode to p1 setting
+                cm_set_distance_mode(cm1.gm.distance_mode);               // restore distance mode to p1 setting
                 moves_queued = true;
                 if (!debug_zlift_printed) {
                     printf("DEBUG: Z-lift queued\n");
@@ -1024,7 +994,6 @@ void _feedhold_restart_actions_done_callback(float* vect, bool* flag)
     sr_request_status_report(SR_REQUEST_IMMEDIATE);
 }
 
-//+++++ Make this more robust so it handles being called before reaching HOLD state
 stat_t _feedhold_restart_no_actions()
 {
     if (cm1.hold_state == FEEDHOLD_OFF) {
@@ -1070,7 +1039,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             // Handled the nested hold, abort the operation
             op.reset();
 
-            return (STAT_EAGAIN);  // ← CRITICAL FIX: Stay in EAGAIN, don't complete
+            return (STAT_EAGAIN);  // Stay in EAGAIN, don't complete
         }
 
         // No nested hold: proceed with normal exit actions
@@ -1107,7 +1076,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             cm_set_motion_state(MOTION_STOP);
             //cm1.machine_state = MACHINE_PROGRAM_STOP;
 
-            // **CHANGED: Set machine state to CYCLE so it can complete normally**
+            // Set machine state to CYCLE so it can complete normally**
             if (cm1.machine_state != MACHINE_CYCLE) {
                 cm1.machine_state = MACHINE_CYCLE;
             }
@@ -1169,8 +1138,6 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         return (STAT_EAGAIN);
     }
 
-
-
     // finalize feedhold exit
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_COMPLETE) {
         _exit_p2();                         // re-enter p1 correctly
@@ -1188,7 +1155,7 @@ stat_t _run_restart_cycle(void)
     }
     cm1.hold_state = FEEDHOLD_OFF;          // must precede st_request_exec_move()
 
-////##ted, second place where we are cleanly starting a new block ... 
+    // ... second place where we are cleanly starting a new block ... 
     if (mp_has_runnable_buffer(&mp1)) {
 
         cm_cycle_start();
@@ -1202,7 +1169,7 @@ stat_t _run_restart_cycle(void)
         motor_5.stepStart();
 #endif
 
-        ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors?
+        ////##* SET UP TO START_NEW_BLOCK ... 
         for (uint8_t motor=0; motor<MOTORS; motor++) { 
             st_pre.mot[motor].start_new_block = true;
         }          
