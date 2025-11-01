@@ -402,41 +402,6 @@ stat_t _run_interlock_ended() {
     return (_run_restart_cycle());
 }
 
-// Flush a specific machine's planner without disturbing the other (for nex)
-static stat_t _run_queue_flush_on(cmMachine_t* target)
-{
-    // Save active contexts
-    cmMachine_t* saved_cm = cm;
-    mpPlanner_t* saved_mp = mp;
-    mpPlannerRuntime_t* saved_mr = mr;
-
-    // Switch to target machine
-    cm = target;
-    mp = (mpPlanner_t*)target->mp;
-    mr = mp->mr;
-
-    // Reset only target planner and its state
-    planner_reset(mp);
-    cm_reset_position_to_absolute_position(target);
-    cm_abort_arc(target);       // stop arc generator for target only
-    cm_abort_homing(target);    // clean up target-only cycles
-    cm_abort_probing(target);
-
-    // Only clear the global queue-flush flag and request QR when flushing P1
-    if (target == &cm1) {
-        cm1.queue_flush_state = QUEUE_FLUSH_OFF;
-        qr_request_queue_report(0);
-    }
-
-    // Restore active contexts
-    cm = saved_cm;
-    mp = saved_mp;
-    mr = saved_mr;
-
-    return (STAT_OK);
-}
-
-
 /****************************************************************************************
  * cm_request_cycle_start() - set request enum only
  * _start_cycle_start()  - run the cycle start
