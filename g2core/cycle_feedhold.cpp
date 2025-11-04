@@ -696,6 +696,10 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
             // Force any active dwell to complete
             mp_end_dwell();
 
+            // NEW: tell SR to emit the nested-hold sequence (STAT 6 with hold:10)
+            cm1.send_nested_hold_report = true;                 // g2core/canonical_machine.h
+            sr_request_status_report(SR_REQUEST_IMMEDIATE_FULL); // g2core/report.cpp
+
             return;
         }
     }
@@ -982,22 +986,21 @@ stat_t _feedhold_restart_no_actions()
     return (STAT_OK);
 }
 
-// Replace _feedhold_restart_with_actions (lines 974-1110) - add nested-hold detection diagnostics:
 stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
 {
     if (cm1.hold_state == FEEDHOLD_OFF) {
         return (STAT_OK);
     }
 
-    // First-time entry from HOLD: check if we're already in a nested hold before queuing moves
+    // First-time entry from HOLD: only proceed if a cycle_start is actually pending
     if (cm1.hold_state == FEEDHOLD_HOLD) {
-        // Check if a nested hold was requested while we were in HOLD
+
+        // If a nested hold was requested while we were in HOLD, handle and abort this restart op
         if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
             if (!debug_flags.nested_hold_detected_printed) {
                 printf("DEBUG_RST: Nested hold detected in HOLD! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
                 debug_flags.nested_hold_detected_printed = true;
             }
-            
             if (!mp_runtime_is_idle()) {
                 return (STAT_EAGAIN);
             }
@@ -1009,11 +1012,20 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             cm_set_motion_state(MOTION_STOP);
             cm1.hold_state = FEEDHOLD_HOLD;
 
-            debug_flags.nested_hold_detected_printed = false;  // Reset for next nested hold
-            return (STAT_EAGAIN);
+            // CRITICAL: cancel any pending restart and abort this operation
+            cm1.cycle_start_state = CYCLE_START_OFF;
+            printf("DEBUG_RST: Cancelled pending cycle_start; aborting restart op\n");
+            debug_flags.nested_hold_detected_printed = false;
+            return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
         }
 
-        // No nested hold: proceed with normal exit actions
+        // // Guard: do not start exit unless a cycle_start is actually pending
+        // if (cm1.cycle_start_state != CYCLE_START_REQUESTED) {
+        //     printf("DEBUG_RST: Restart op invoked with no pending cycle_start; ending\n");
+        //     return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
+        // }
+
+        // No nested hold and resume is pending: proceed with normal exit actions
         if (!coolant_ready() || (is_spindle_on_or_paused() && !is_spindle_ready_to_resume())) {
             return (STAT_EAGAIN);
         }
@@ -1027,8 +1039,8 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         mp_queue_command(_feedhold_restart_actions_done_callback, nullptr, nullptr);
         cm1.hold_state = FEEDHOLD_EXIT_ACTIONS_PENDING;
         sr_request_status_report(SR_REQUEST_IMMEDIATE);
-        
-        debug_flags.nested_hold_during_exit_printed = false;  // Reset for detection during exit
+
+        debug_flags.nested_hold_during_exit_printed = false;
         return (STAT_EAGAIN);
     }
 
@@ -1036,7 +1048,6 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
         if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
             printf("DEBUG_RST: Nested hold DURING exit detected! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
-            
             if (!mp_runtime_is_idle()) {
                 return (STAT_EAGAIN);
             }
@@ -1048,12 +1059,11 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             cm_set_motion_state(MOTION_STOP);
             cm1.hold_state = FEEDHOLD_HOLD;
 
-            // Re-queue Z pull-up
+            // Optional nested Z pull-up (unchanged)
             if (fp_NOT_ZERO(cm->feedhold_z_lift)) {
                 bool flags[] = { 0,0,1,0,0,0 };
                 float target[] = { 0,0,0,0,0,0 };
                 bool skip_move = false;
-
                 if (cm->feedhold_z_lift < 0) {
                     if (cmHomingState::HOMING_HOMED == cm->homed[AXIS_Z]) {
                         cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_ON_DISPLAY_WITH_OFFSETS);
@@ -1070,7 +1080,6 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
                         skip_move = true;
                     }
                 }
-
                 if (!skip_move) {
                     cm_straight_traverse_mm(target, flags, PROFILE_NORMAL);
                     cm_set_distance_mode(cm1.gm.distance_mode);
@@ -1079,21 +1088,24 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             }
 
             mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
-            printf("DEBUG_RST: Nested callback queued, returning STAT_OK to stay in HOLD\n");
+            printf("DEBUG_RST: Nested callback queued; setting HOLD_ACTIONS_PENDING and cancelling restart\n");
 
-            return (STAT_OK);
+            cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;
+            cm1.cycle_start_state = CYCLE_START_OFF;    // cancel pending resume
+            debug_flags.callback_fired_printed = false;
+
+            // Abort this restart operation so we remain in HOLD until a new ~
+            return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
         }
 
-        // Normal exit: wait for completion
+        // Normal exit completion (unchanged)
         if (cm2.hold_state == FEEDHOLD_MOTION_STOPPED) {
             if (!mp_runtime_is_idle()) {
                 return (STAT_EAGAIN);
             }
-
             printf("DEBUG_RST: Exit actions complete, flushing P2\n");
             cm2.hold_state = FEEDHOLD_OFF;
             cm1.hold_state = FEEDHOLD_MOTION_STOPPED;
-            
             _run_queue_flush();
             return (STAT_OK);
         }
