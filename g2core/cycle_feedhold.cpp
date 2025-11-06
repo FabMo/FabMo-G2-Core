@@ -567,7 +567,6 @@ void mp_end_dwell(void) {
     st_end_dwell();  // Force-kill the SysTick dwell event
 }
 
-
  void cm_request_job_kill()
 {
     cm1.job_kill_state = JOB_KILL_REQUESTED;
@@ -648,9 +647,21 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
     if ((cm1.machine_state != MACHINE_CYCLE) && (cm1.machine_state != MACHINE_PROGRAM_STOP)) {
         cm->hold_state = FEEDHOLD_OFF;
     }
+
     else{
         // Can only initiate a feedhold if not already in a feedhold
         if ((cm1.hold_state == FEEDHOLD_OFF)) {
+
+            // If we’re in ESC spin-up, abort it immediately so feedhold doesn’t wait on toolhead-busy
+            if (is_a_toolhead_busy()) {                 // ESCSpindle::busy() via is_a_toolhead_busy()
+                mp_end_dwell();                         // kill any planner dwell (harmless if none)
+                spindle_pause();                        // immediate ESC pause (drops out1 if spph=true)
+                coolant_control_immediate(COOLANT_PAUSE, COOLANT_BOTH);
+                st_request_load_move();                 // ensure any command-only blocks run now
+                st_request_forward_plan();
+                sr_request_status_report(SR_REQUEST_IMMEDIATE);
+            }
+
             cm1.hold_type = type;
             cm1.hold_exit = exit;
 
@@ -679,27 +690,29 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
                        cm1.hold_state, cm2.hold_state, cm1.queue_flush_state, cm1.cycle_start_state);
                 debug_flags.nested_hold_during_exit_printed = true;
             }
-            
-            // Keypad path: if a queue flush is already requested, ignore extra holds here.
-            if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {
-                printf("DEBUG_NESTED: Queue flush already pending, ignoring nested hold\n");
-                return;
-            }
 
-            // Resume-in-flight path: request a nested hold in P2
+            // End any planner dwell that might be active (harmless if none)
+            mp_end_dwell();
+
+            // Abort ESC spin-up immediately so toolhead-busy clears now
+            spindle_pause();                    // g2core/spindle.cpp → ESCSpindle::pause()
+
+            // Optional: pause coolant now as well (keeps behavior consistent with callback)
+            coolant_control_immediate(COOLANT_PAUSE, COOLANT_BOTH);
+
+            // Ensure any queued command-only block executes right away (bypass STARTUP timeout)
+            st_request_load_move();             // g2core/stepper.h
+            st_request_forward_plan();          // g2core/stepper.h
+
+            // Maintain the nested-hold SR sequence so the host shows HOLD
+            cm1.send_nested_hold_report = true;
+            sr_request_status_report(SR_REQUEST_IMMEDIATE_FULL);
+
+            // If P2 isn’t in a hold yet, start a SYNC hold
             if (cm2.hold_state == FEEDHOLD_OFF) {
                 cm2.hold_type = FEEDHOLD_TYPE_SKIP;
                 cm2.hold_state = FEEDHOLD_SYNC;
-                printf("DEBUG_NESTED: Set cm2.hold_state=SYNC, calling mp_end_dwell()\n");
             }
-
-            // Force any active dwell to complete
-            mp_end_dwell();
-
-            // NEW: tell SR to emit the nested-hold sequence (STAT 6 with hold:10)
-            cm1.send_nested_hold_report = true;                 // g2core/canonical_machine.h
-            sr_request_status_report(SR_REQUEST_IMMEDIATE_FULL); // g2core/report.cpp
-
             return;
         }
     }
@@ -1018,12 +1031,6 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             debug_flags.nested_hold_detected_printed = false;
             return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
         }
-
-        // // Guard: do not start exit unless a cycle_start is actually pending
-        // if (cm1.cycle_start_state != CYCLE_START_REQUESTED) {
-        //     printf("DEBUG_RST: Restart op invoked with no pending cycle_start; ending\n");
-        //     return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
-        // }
 
         // No nested hold and resume is pending: proceed with normal exit actions
         if (!coolant_ready() || (is_spindle_on_or_paused() && !is_spindle_ready_to_resume())) {
