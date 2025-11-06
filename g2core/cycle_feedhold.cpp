@@ -694,15 +694,18 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
             // End any planner dwell that might be active (harmless if none)
             mp_end_dwell();
 
-            // Abort ESC spin-up immediately so toolhead-busy clears now
-            spindle_pause();                    // g2core/spindle.cpp → ESCSpindle::pause()
-
-            // Optional: pause coolant now as well (keeps behavior consistent with callback)
-            coolant_control_immediate(COOLANT_PAUSE, COOLANT_BOTH);
-
-            // Ensure any queued command-only block executes right away (bypass STARTUP timeout)
-            st_request_load_move();             // g2core/stepper.h
-            st_request_forward_plan();          // g2core/stepper.h
+            // IMPORTANT:
+            // Only pause the spindle immediately if the toolhead is still "busy" (ESC spin-up dwell).
+            // If we are already in the Z re-insertion plunge (not busy), DO NOT pause here;
+            // defer the spindle_pause() to _feedhold_actions_done_callback() so the Z pull-up
+            // completes with the spindle still running (avoids stalling in material).
+            if (is_a_toolhead_busy()) { // ESCSpindle::busy()
+                spindle_pause();                                        // immediate drop out1
+                coolant_control_immediate(COOLANT_PAUSE, COOLANT_BOTH); // keep behavior consistent
+                st_request_load_move();
+                st_request_forward_plan();
+                sr_request_status_report(SR_REQUEST_IMMEDIATE);
+            }
 
             // Maintain the nested-hold SR sequence so the host shows HOLD
             cm1.send_nested_hold_report = true;
