@@ -65,21 +65,23 @@ stat_t _run_reset_position(void);
 extern stat_t sr_run_unfiltered_status_report(void);  // declare the wrapper
 
 // DEBUG ONLY
+// Extensive debug system, both guarded an manually commented; retain for a bit in case useful 11/5/25 th
+// - to utilize: uncomment manual and comment out "true"s here
+// - *NOTE: engine.js in FabMo needs to be set to allow non-JSON !
+// - also, a system for looking at timing using step output lines is stubbed in
 static struct {
     // Flags for normal feedhold
-    bool sync_printed;
-    bool motion_stopped_printed;
-    bool p2_entered_printed;
-    bool zlift_printed;
-    bool callback_queued_printed;
-    bool waiting_pending_printed;
-    bool hold_reached_printed;
-    bool callback_fired_printed;
-    bool done_reached_printed;
-    
-    // NEW: Flags for nested hold detection
-    bool nested_hold_detected_printed;
-    bool nested_hold_during_exit_printed;
+    bool sync_printed = true;
+    bool motion_stopped_printed = true;
+    bool p2_entered_printed = true;
+    bool zlift_printed = true;
+    bool callback_queued_printed = true;
+    bool waiting_pending_printed = true;
+    bool hold_reached_printed = true;
+    bool callback_fired_printed = true;
+    bool done_reached_printed = true;
+    bool nested_hold_detected_printed = true;
+    bool nested_hold_during_exit_printed = true;
     
     void reset() {
         sync_printed = false;
@@ -95,7 +97,7 @@ static struct {
         nested_hold_during_exit_printed = false;
     }
 } debug_flags;
-
+// run reset to enable debugging
 
 /****************************************************************************************
  * OPERATIONS AND ACTIONS
@@ -231,6 +233,7 @@ void cm_operation_init()
     op.reset();
 }
 
+// See above regarding debugs
 void cm_feedhold_debug_reset() {
     debug_flags.reset();
     printf("DEBUG: All flags reset\n");
@@ -868,7 +871,7 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
 
     // If a queue flush was requested (Keypad !%), enqueue the exit chain NOW to avoid the race.
     if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {
-        printf("DEBUG_CB: Queue flush path taken\n");
+        //printf("DEBUG_CB: Queue flush path taken\n");
         if (cm1.hold_type == FEEDHOLD_TYPE_ACTIONS) {
             op.add_action(_feedhold_restart_with_actions, /*allow_add_from_operation=*/true);
         } else {
@@ -878,7 +881,7 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
         op.add_action(_run_program_stop, /*allow_add_from_operation=*/true);
     }
 
-    // Minimal SR so FabMo can enable Resume/Quit immediately
+    // Minimal SR to flag FabMo that Resume/Quit can be enabled
     char sr_buf[48];
     snprintf(sr_buf, sizeof(sr_buf), "{\"sr\":{\"hold\":10}}\n");
     xio_writeline(sr_buf);
@@ -1021,7 +1024,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
                 return (STAT_EAGAIN);
             }
 
-            printf("DEBUG_RST: Nested hold in HOLD complete, flushing P2\n");
+            //printf("DEBUG_RST: Nested hold in HOLD complete, flushing P2\n");
             cm2.hold_state = FEEDHOLD_OFF;
             _run_queue_flush();
 
@@ -1030,8 +1033,8 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
 
             // CRITICAL: cancel any pending restart and abort this operation
             cm1.cycle_start_state = CYCLE_START_OFF;
-            printf("DEBUG_RST: Cancelled pending cycle_start; aborting restart op\n");
-            debug_flags.nested_hold_detected_printed = false;
+            //printf("DEBUG_RST: Cancelled pending cycle_start; aborting restart op\n");
+            //debug_flags.nested_hold_detected_printed = false;
             return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
         }
 
@@ -1040,29 +1043,35 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             return (STAT_EAGAIN);
         }
 
-        printf("DEBUG_RST: Starting exit actions (spindle resume + Z plunge)\n");
+        //printf("DEBUG_RST: Starting exit actions (spindle resume + Z plunge)\n");
         coolant_control_sync(COOLANT_RESUME, COOLANT_BOTH);
         spindle_resume();
 
-        cm2.return_flags[AXIS_Z] = false;
+        // Sync P2 model position to actual runtime position before G30 move
+        copy_vector(cm2.gmx.position, mr2.position);
+
+        // Clear all return flags—we only want the final Z reinsert, no intermediate moves
+        memset(cm2.return_flags, 0, sizeof(cm2.return_flags));
+        //cm2.return_flags[AXIS_Z] = false;
+
         cm_goto_g30_position_mm(cm2.gmx.g30_position, cm2.return_flags);
         mp_queue_command(_feedhold_restart_actions_done_callback, nullptr, nullptr);
         cm1.hold_state = FEEDHOLD_EXIT_ACTIONS_PENDING;
         sr_request_status_report(SR_REQUEST_IMMEDIATE);
 
-        debug_flags.nested_hold_during_exit_printed = false;
+        //debug_flags.nested_hold_during_exit_printed = false;
         return (STAT_EAGAIN);
     }
 
     // Handle nested hold that arrived DURING exit actions
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
         if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
-            printf("DEBUG_RST: Nested hold DURING exit detected! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
+            //printf("DEBUG_RST: Nested hold DURING exit detected! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
             if (!mp_runtime_is_idle()) {
                 return (STAT_EAGAIN);
             }
 
-            printf("DEBUG_RST: Aborting exit actions, flushing P2, re-queuing Z pull-up\n");
+            //printf("DEBUG_RST: Aborting exit actions, flushing P2, re-queuing Z pull-up\n");
             cm2.hold_state = FEEDHOLD_OFF;
             _run_queue_flush();
 
@@ -1093,16 +1102,16 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
                 if (!skip_move) {
                     cm_straight_traverse_mm(target, flags, PROFILE_NORMAL);
                     cm_set_distance_mode(cm1.gm.distance_mode);
-                    printf("DEBUG_RST: Nested Z pull-up queued\n");
+                    //printf("DEBUG_RST: Nested Z pull-up queued\n");
                 }
             }
 
             mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
-            printf("DEBUG_RST: Nested callback queued; setting HOLD_ACTIONS_PENDING and cancelling restart\n");
+            //printf("DEBUG_RST: Nested callback queued; setting HOLD_ACTIONS_PENDING and cancelling restart\n");
 
             cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;
             cm1.cycle_start_state = CYCLE_START_OFF;    // cancel pending resume
-            debug_flags.callback_fired_printed = false;
+            //debug_flags.callback_fired_printed = false;
 
             // Abort this restart operation so we remain in HOLD until a new ~
             return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
@@ -1113,7 +1122,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             if (!mp_runtime_is_idle()) {
                 return (STAT_EAGAIN);
             }
-            printf("DEBUG_RST: Exit actions complete, flushing P2\n");
+            //printf("DEBUG_RST: Exit actions complete, flushing P2\n");
             cm2.hold_state = FEEDHOLD_OFF;
             cm1.hold_state = FEEDHOLD_MOTION_STOPPED;
             _run_queue_flush();
@@ -1125,7 +1134,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
 
     // finalize feedhold exit
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_COMPLETE) {
-        printf("DEBUG_RST: Exit complete, returning to P1\n");
+        //printf("DEBUG_RST: Exit complete, returning to P1\n");
         _exit_p2();
         return (STAT_OK);
     }
