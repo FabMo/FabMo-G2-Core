@@ -394,6 +394,9 @@ static stat_t _exec_command(mpBuf_t *bf)
 
 stat_t mp_runtime_command(mpBuf_t *bf) {
     bf->cm_func(bf->unit, bf->axis_flags);          // 2 vectors used by callbacks
+
+    sr.runtime_command_report_pending = true;
+
     if (mp_free_run_buffer()) {
         if (cm_is_in_program_end_state()) { cm_cycle_end(true); } // Checking for an M2/M30 at EOF
         else { cm_cycle_end(); }

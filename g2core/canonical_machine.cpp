@@ -861,7 +861,7 @@ void cm_set_model_target(const float target[], const bool flags[])
         }
     }
 
-    // then process for ABC loop the special casesst
+    // then process for ABC loop the special cases
     for (axis = AXIS_A; axis <= AXIS_C; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;        // skip axis if not flagged for update or its disabled
@@ -1015,37 +1015,59 @@ stat_t cm_set_g10_data(const uint8_t P_word, const bool P_flag,
     if ((L_word == 2) || (L_word == 20)) {
         // coordinate system offset command
         if ((P_word < G54) || (P_word > COORD_SYSTEM_MAX)) {
-            return (STAT_P_WORD_IS_INVALID);                // you can't set G53
+            return (STAT_P_WORD_IS_INVALID);
         }
         for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
             if (flag[axis]) {
                 if (L_word == 2) {
-                    cm->coord_offset[P_word][axis] = _to_millimeters(offset[axis]);
-                } else {
+                    // For rotary axes in rotary mode: use value as-is (degrees)
+                    if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                        cm->coord_offset[P_word][axis] = offset[axis];  // degrees, no conversion
+                    } else {
+                        cm->coord_offset[P_word][axis] = _to_millimeters(offset[axis]);
+                    }
+                } else {  // L20
                     // Should L20 take into account G92 offsets?
-                    cm->coord_offset[P_word][axis] = cm->gmx.position[axis] -
-                        _to_millimeters(offset[axis]) -
-                        cm->tool_offset[axis];
+                    if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                        // For rotary axes: subtract the offset (in degrees) from current position
+                        cm->coord_offset[P_word][axis] = cm->gmx.position[axis] - offset[axis];
+                    } else {
+                        cm->coord_offset[P_word][axis] = cm->gmx.position[axis] -
+                            _to_millimeters(offset[axis]) -
+                            cm->tool_offset[axis];
+                    }
                 }
-                cm->deferred_write_flag = true;         // persist offsets once machining cycle is over
+                cm->deferred_write_flag = true;
             }
         }
     }
     else if ((L_word == 1) || (L_word == 10)) {
-        if ((P_word < 1) || (P_word > TOOLS)) {         // tool table offset command. L11 not supported atm.
+        if ((P_word < 1) || (P_word > TOOLS)) {
             return (STAT_P_WORD_IS_INVALID);
         }
         for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
             if (flag[axis]) {
                 if (L_word == 1) {
-                    tt.tt_offset[P_word][axis] = _to_millimeters(offset[axis]);
-                } else {                                // L10 should also take into account G92 offset
-                    tt.tt_offset[P_word][axis] =
-                        cm->gmx.position[axis] - _to_millimeters(offset[axis]) -
-                        cm->coord_offset[cm->gm.coord_system][axis] -
-                        (cm->gmx.g92_offset[axis] * cm->gmx.g92_offset_enable);
+                    // Tool table offsets: same rotary-axis logic
+                    if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                        tt.tt_offset[P_word][axis] = offset[axis];  // degrees
+                    } else {
+                        tt.tt_offset[P_word][axis] = _to_millimeters(offset[axis]);
+                    }
+                } else {  // L10
+                    if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                        tt.tt_offset[P_word][axis] =
+                            cm->gmx.position[axis] - offset[axis] -
+                            cm->coord_offset[cm->gm.coord_system][axis] -
+                            (cm->gmx.g92_offset[axis] * cm->gmx.g92_offset_enable);
+                    } else {
+                        tt.tt_offset[P_word][axis] =
+                            cm->gmx.position[axis] - _to_millimeters(offset[axis]) -
+                            cm->coord_offset[cm->gm.coord_system][axis] -
+                            (cm->gmx.g92_offset[axis] * cm->gmx.g92_offset_enable);
+                    }
                 }
-                cm->deferred_write_flag = true;         // persist offsets once machining cycle is over
+                cm->deferred_write_flag = true;
             }
         }
     }
@@ -1177,12 +1199,17 @@ stat_t cm_set_absolute_origin(const float origin[], bool flag[])
 
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (flag[axis]) {
-// REMOVED  value[axis] = cm->offset[cm->gm.coord_system][axis] + _to_millimeters(origin[axis]);    // G2 Issue #26
-            value[axis] = _to_millimeters(origin[axis]);    // replaced the above
+            // For rotary axes in rotary mode: use commanded value as-is (degrees, no conversion)
+            if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                value[axis] = origin[axis];  // degrees, no conversion
+            } else {
+                // For linear axes or inhibited ABC: convert to mm
+                value[axis] = _to_millimeters(origin[axis]);
+            }
             cm->gmx.position[axis] = value[axis];           // set model position
             cm->gm.target[axis] = value[axis];              // reset model target
             mp_set_planner_position(axis, value[axis]);     // set mm position
-        }
+         }
     }
     mp_queue_command(_exec_absolute_origin, value, flag);
     return (STAT_OK);
@@ -2272,7 +2299,10 @@ stat_t cm_get_macs(nvObj_t *nv) { return(_get_msg_helper(nv, msg_macs, cm_get_ma
 stat_t cm_get_cycs(nvObj_t *nv) { return(_get_msg_helper(nv, msg_cycs, cm_get_cycle_type()));}
 stat_t cm_get_mots(nvObj_t *nv) { return(_get_msg_helper(nv, msg_mots, cm_get_motion_state()));}
 stat_t cm_get_hold(nvObj_t *nv) { return(_get_msg_helper(nv, msg_hold, cm_get_hold_state()));}
-
+// stat_t cm_get_hold(nvObj_t *nv) {
+//     // Always report P1's hold state, even when in P2
+//     return(get_integer(nv, cm1.hold_state));  // ← Changed from cm->hold_state
+// }
 stat_t cm_get_unit(nvObj_t *nv) { return(_get_msg_helper(nv, msg_unit, cm_get_units_mode(ACTIVE_MODEL)));}
 stat_t cm_get_coor(nvObj_t *nv) { return(_get_msg_helper(nv, msg_coor, cm_get_coord_system(ACTIVE_MODEL)));}
 stat_t cm_get_momo(nvObj_t *nv) { return(_get_msg_helper(nv, msg_momo, cm_get_motion_mode(ACTIVE_MODEL)));}
