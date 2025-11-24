@@ -710,8 +710,18 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
                 sr_request_status_report(SR_REQUEST_IMMEDIATE);
             }
 
+            // NEW: Do NOT request the nested-hold SR sequence here.
+            // The nested-hold callback will fire and report hold:10 naturally once the Z pull-up is queued.
             // Maintain the nested-hold SR sequence so the host shows HOLD
-            cm1.send_nested_hold_report = true;
+            // cm1.send_nested_hold_report = true;
+
+            // This ensures FabMo sees STAT 6 even if machine_state didn't change
+            for (uint8_t i = 0; i < NV_STATUS_REPORT_LEN; i++) {
+                if (sr.status_report_list[i].index == sr.stat_index) {
+                    sr.status_report_list[i].value = -1;  // force a report on next SR
+                    break;
+                }
+            }
             sr_request_status_report(SR_REQUEST_IMMEDIATE_FULL);
 
             // If P2 isn’t in a hold yet, start a SYNC hold
@@ -1112,6 +1122,9 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
             cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;
             cm1.cycle_start_state = CYCLE_START_OFF;    // cancel pending resume
             //debug_flags.callback_fired_printed = false;
+
+            // NEW: Request a single hold:10 report now (after spindle pause + Z pull-up queued)
+            sr_request_status_report(SR_REQUEST_IMMEDIATE_FULL);
 
             // Abort this restart operation so we remain in HOLD until a new ~
             return (STAT_COMMAND_NOT_ACCEPTED); // forces op reset
