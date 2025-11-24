@@ -46,8 +46,8 @@
  *   - The laser toolhead is configured as tool 5 and pin 15 is the PWM output
  *   - Generally speaking it should be used with an M4 for both vector synced motion and raster engraving
  *   - High resolution raster engraving at 0.01 x 0.01 inch pixels is limited to about 1 inch per second
- *   - A SEPARATE COMPILE is currently required to change from LASER capabilities to 6axis capabilities as the laser uses the 6th axis.
- *   - A SEPARATE COMPILE is required to turn off the "spindle" usage of Output16 to make it standard PWM or digital IO, it is spindle PWM by default.
+ *   - A SEPARATE COMPILE is currently required to change from LASER capabilities to 6axis capabilities as the laser uses the 6th axis. see ## COMPILE CHOICE
+ *   - A SEPARATE COMPILE is required to turn off the "spindle" usage of Output16 to make it standard PWM or digital IO, it is spindle PWM by default. see ## COMPILE CHOICE
  */
 
 // ***> NOTE: The init message must be a single line with no CRs or LFs
