@@ -58,7 +58,7 @@
 #define JUNCTION_INTEGRATION_TIME   1.5     // cornering - between 0.10 and 2.00 (higher is faster)
 #define CHORDAL_TOLERANCE           0.01    // chordal accuracy for arc drawing (in mm) 
 
-#define HAS_LASER                   1       // LASER support enabled (0=off, 1=on); ##### COMPLILE CHOICE HERE !!!
+#define HAS_LASER                   1       // LASER support enabled (0=off, 1=on); ##### COMPILE CHOICE HERE !!!
 #ifndef HAS_LASER
 #define HAS_LASER 0
 #endif
@@ -122,7 +122,7 @@
 #define SPINDLE_ENABLE_OUTPUT_NUMBER    1   // =1 for normal FabMo operation; PWM1 always spindle toolhead with #1 always on with Spindle signal
 #define SPINDLE_DIRECTION_OUTPUT_NUMBER 0   
 #define SPINDLE_PWM_NUMBER          16      // Default 16 for FabMo; pin always eanbled for PWM1 acting for spindle speed control
-                                            // To use pin 16 as standard PWM, set SPINDLE_PWM_NUMBER to 0;  ##### COMPLILE CHOICE HERE !!!
+                                            // To use pin 16 as standard PWM, set SPINDLE_PWM_NUMBER to 0;  ##### COMPILE CHOICE HERE !!!
 
 #define FEEDHOLD_Z_LIFT             12.7
 
