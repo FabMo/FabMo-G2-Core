@@ -1079,7 +1079,13 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
     if ((cm->hold_state == FEEDHOLD_SYNC) ||
         ((cm->hold_state == FEEDHOLD_DECEL_CONTINUE) && (mr->block_state == BLOCK_INITIAL_ACTION))) {
 
-        if (mp_should_recalculate_jerk_for_feedhold(bf)) {
+        // Force high jerk profile for SCRAM (fast stop) type feedholds
+        // This MUST happen before the recalculate check, and we force recalculation for SCRAM
+        if (cm->hold_type == FEEDHOLD_TYPE_SCRAM) {
+            bf->gm.motion_profile = PROFILE_FAST_STOP;
+            mp_recalculate_jerk_for_feedhold(bf);  // Force recalculation for high jerk
+        }
+        else if (mp_should_recalculate_jerk_for_feedhold(bf)) {
             // We need to recalculate jerk, will ALWAYS start a tail from here
             // There may be a jerk discrepancy
             mp_recalculate_jerk_for_feedhold(bf);

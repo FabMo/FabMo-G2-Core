@@ -131,25 +131,48 @@ cmToolTable_t tt;           // global tool table
  * _hold_input_handler - a gpioDigitalInputHandler to capture pin change events
  *   Will be registered at init
  */
+
 gpioDigitalInputHandler _hold_input_handler {
     [](const bool state, const inputEdgeFlag edge, const uint8_t triggering_pin_number) {
         if (edge != INPUT_EDGE_LEADING) { return false; }
 
-        // any action = d_in[triggering_pin_number]->getAction();
-        // if (action == INPUT_ACTION_STOP) {
-        //     cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
-        // }
-        // if (action == INPUT_ACTION_FAST_STOP) {
-        //     cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
-        // }
+        // Get the action that triggered this
+        // NOTE: in_r is 0-indexed, but triggering_pin_number is 1-based (di1-di18)
+        inputAction action = in_r[triggering_pin_number - 1]->pin->getAction();
+        
+        if (action == INPUT_ACTION_FAST_STOP) {
+            // Use SCRAM type for high-jerk fast stop (no actions, just stop fast)
+            cm_request_feedhold(FEEDHOLD_TYPE_SCRAM, FEEDHOLD_EXIT_CYCLE);
+        } else {
+            // INPUT_ACTION_STOP - normal feedhold with actions
+            cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_CYCLE);
+        }
 
-        cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_CYCLE);
-
-        return false; // allow others to see this notice
+        return false;
     },
-    5,    // priority
-    nullptr // next - nullptr to start with
+    5,
+    nullptr
 };
+
+// gpioDigitalInputHandler _hold_input_handler {
+//     [](const bool state, const inputEdgeFlag edge, const uint8_t triggering_pin_number) {
+//         if (edge != INPUT_EDGE_LEADING) { return false; }
+
+//         // any action = d_in[triggering_pin_number]->getAction();
+//         // if (action == INPUT_ACTION_STOP) {
+//         //     cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
+//         // }
+//         // if (action == INPUT_ACTION_FAST_STOP) {
+//         //     cm_request_feedhold(FEEDHOLD_TYPE_HOLD, FEEDHOLD_EXIT_STOP);
+//         // }
+
+//         cm_request_feedhold(FEEDHOLD_TYPE_ACTIONS, FEEDHOLD_EXIT_CYCLE);
+
+//         return false; // allow others to see this notice
+//     },
+//     5,    // priority
+//     nullptr // next - nullptr to start with
+// };
 
 /*
  * _halt_input_handler - a gpioDigitalInputHandler to capture pin change events

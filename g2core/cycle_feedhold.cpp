@@ -477,6 +477,7 @@ void _start_cycle_restart()
         switch (cm1.hold_type) {
             case FEEDHOLD_TYPE_HOLD:    { op.add_action(_feedhold_restart_no_actions); break; }
             case FEEDHOLD_TYPE_ACTIONS: { op.add_action(_feedhold_restart_with_actions); break; }
+            case FEEDHOLD_TYPE_SCRAM:   { op.add_action(_feedhold_restart_no_actions); break; }  // ADD THIS LINE
             default: {}
         }
         switch (cm1.hold_exit) {
@@ -672,6 +673,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
                 case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions); break; }
                 case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions); break; }
                 case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip); break; }
+                case FEEDHOLD_TYPE_SCRAM:    { op.add_action(_feedhold_no_actions); break; }
                 default: {}
             }
             switch (cm1.hold_exit) {
@@ -840,7 +842,10 @@ stat_t _feedhold_no_actions()
 {
     // initiate the feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {       // start a feedhold
-        cm1.hold_type = FEEDHOLD_TYPE_HOLD;
+        // Only set to HOLD if not already set to something more specific (like SCRAM)
+        if (cm1.hold_type != FEEDHOLD_TYPE_SCRAM) {
+            cm1.hold_type = FEEDHOLD_TYPE_HOLD;
+        }
 
         if (cm1.motion_state == MOTION_STOP) {  // if motion has already stopped declare that you are in a feedhold
             _check_motion_stopped();
