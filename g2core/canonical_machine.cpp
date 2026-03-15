@@ -182,7 +182,13 @@ gpioDigitalInputHandler _halt_input_handler {
     [](const bool state, const inputEdgeFlag edge, const uint8_t triggering_pin_number) {
         if (edge != INPUT_EDGE_LEADING) { return false; }
 
-        cm_halt();                              // hard stop, including spindle, coolant and heaters
+        // Use feedhold state machine for consistency with STOP/FAST_STOP
+        cm_request_feedhold(FEEDHOLD_TYPE_SCRAM, FEEDHOLD_EXIT_STOP);
+        
+        // Still stop spindle, coolant and heaters immediately as HALT should
+        spindle_stop();
+        coolant_control_immediate(COOLANT_OFF, COOLANT_BOTH);
+        temperature_init();
 
         return false; // allow others to see this notice
     },
