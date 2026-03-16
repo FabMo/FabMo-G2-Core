@@ -141,7 +141,7 @@ gpioDigitalInputHandler _hold_input_handler {
         inputAction action = in_r[triggering_pin_number - 1]->pin->getAction();
         
         if (action == INPUT_ACTION_FAST_STOP) {
-            // Use SCRAM type for high-jerk fast stop (no actions, just stop fast)
+            // Use SCRAM type for high-jerk fast stop (like probe, no actions)
             cm_request_feedhold(FEEDHOLD_TYPE_SCRAM, FEEDHOLD_EXIT_CYCLE);
         } else {
             // INPUT_ACTION_STOP - normal feedhold with actions
@@ -182,13 +182,14 @@ gpioDigitalInputHandler _halt_input_handler {
     [](const bool state, const inputEdgeFlag edge, const uint8_t triggering_pin_number) {
         if (edge != INPUT_EDGE_LEADING) { return false; }
 
-        // Use feedhold state machine for consistency with STOP/FAST_STOP
-        cm_request_feedhold(FEEDHOLD_TYPE_SCRAM, FEEDHOLD_EXIT_STOP);
-        
-        // Still stop spindle, coolant and heaters immediately as HALT should
-        spindle_stop();
-        coolant_control_immediate(COOLANT_OFF, COOLANT_BOTH);
-        temperature_init();
+        // Use HALT type for instant stop through feedhold state machine
+        cm_request_feedhold(FEEDHOLD_TYPE_HALT, FEEDHOLD_EXIT_CYCLE);
+
+        // // Still stop spindle, coolant and heaters immediately as HALT should
+        // spindle_stop();
+        // coolant_control_immediate(COOLANT_OFF, COOLANT_BOTH);
+        // temperature_init();
+
 
         return false; // allow others to see this notice
     },

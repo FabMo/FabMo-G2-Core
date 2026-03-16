@@ -1036,8 +1036,8 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
 
             // Motion has stopped, so we can rely on positions and other values to be stable
 
-            // If hold was SKIP type, discard the remainder of the block and position to the next block
-            if (cm->hold_type == FEEDHOLD_TYPE_SKIP) {
+            // If hold was SKIP or HALT type, discard the remainder of the block and position to the next block
+            if ((cm->hold_type == FEEDHOLD_TYPE_SKIP) || (cm->hold_type == FEEDHOLD_TYPE_HALT)) {
                 copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
                 mp_free_run_buffer();                       // advance to next block, discarding the rest of the move
             }
@@ -1079,11 +1079,20 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
     if ((cm->hold_state == FEEDHOLD_SYNC) ||
         ((cm->hold_state == FEEDHOLD_DECEL_CONTINUE) && (mr->block_state == BLOCK_INITIAL_ACTION))) {
 
-        // Force high jerk profile for SCRAM (fast stop) type feedholds
-        // This MUST happen before the recalculate check, and we force recalculation for SCRAM
+        // Force high jerk profile for SCRAM (fast stop) or instant stop for HALT
+        // This MUST happen before the recalculate check, and we force recalculation
         if (cm->hold_type == FEEDHOLD_TYPE_SCRAM) {
             bf->gm.motion_profile = PROFILE_FAST_STOP;
             mp_recalculate_jerk_for_feedhold(bf);  // Force recalculation for high jerk
+        }
+        else if (cm->hold_type == FEEDHOLD_TYPE_HALT) {
+            // Instant halt: skip deceleration entirely. Jump to DECEL_COMPLETE so Case(3')
+            // and Case(4) handle cleanup naturally. The current DDA segment drains on its
+            // own (< 1 segment duration). Case(4) discards the run buffer for HALT type.
+            // Do NOT call mp_halt_runtime() here - it resets the planner from within the
+            // exec ISR chain, corrupting the stepper state and causing lockup after quit.
+            cm->hold_state = FEEDHOLD_DECEL_COMPLETE;
+            return (STAT_OK);
         }
         else if (mp_should_recalculate_jerk_for_feedhold(bf)) {
             // We need to recalculate jerk, will ALWAYS start a tail from here
