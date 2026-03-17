@@ -800,9 +800,10 @@ void _check_motion_stopped()
         mpBuf_t *bf = mp_get_r();
 
         // Motion has stopped, so we can rely on positions and other values to be stable
-        // If SKIP or HALT type, discard the remainder of the block and position to the next block
-        // OR if the buffer is empty then there's nothing to discard, don't modify the buffer either
-        if ((cm->hold_type == FEEDHOLD_TYPE_SKIP) || (cm->hold_type == FEEDHOLD_TYPE_HALT) || (bf->buffer_state == MP_BUFFER_EMPTY)) {
+        // If SKIP type, discard the remainder of the block and position to the next block.
+        // HALT keeps the block (like SCRAM) so Resume can continue from the stopped position.
+        // If the buffer is already empty there's nothing to discard.
+        if ((cm->hold_type == FEEDHOLD_TYPE_SKIP) || (bf->buffer_state == MP_BUFFER_EMPTY)) {
             copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
             if (mp_get_run_buffer()) {
                 mp_free_run_buffer();                   // advance to next block, discarding the rest of the move

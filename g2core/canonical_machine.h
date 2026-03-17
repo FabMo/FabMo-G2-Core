@@ -283,9 +283,10 @@ typedef struct cmMachine {                  // struct to manage canonical machin
     cmCycleType     cycle_type;             // cycs
     cmMotionState   motion_state;           // mots
 
-    cmFeedholdType  hold_type;              // hold: type of feedhold requested
-    cmFeedholdExit  hold_exit;              // hold: final state of hold on exit
-    cmFeedholdState hold_state;             // hold: feedhold state machine
+    cmFeedholdType    hold_type;                      // hold: type of feedhold requested
+    cmFeedholdExit    hold_exit;                      // hold: final state of hold on exit
+    cmFeedholdState   hold_state;                     // hold: feedhold state machine
+    cmMotionProfile   hold_saved_motion_profile;      // hold: original profile saved before SCRAM override
 
     cmFlushState    queue_flush_state;      // queue flush state machine
     cmCycleState    cycle_start_state;      // used to manage cycle starts and restarts
