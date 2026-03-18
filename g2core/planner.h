@@ -651,6 +651,7 @@ stat_t mp_aline(GCodeState_t *_gm);                   // line planning...
 void mp_plan_block_list(void);
 void mp_plan_block_forward(mpBuf_t *bf);
 void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf);
+void mp_restore_jerk_for_feedhold(mpBuf_t *bf, cmMotionProfile saved_profile);
 bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf);
 
 //**** plan_zoid.c functions

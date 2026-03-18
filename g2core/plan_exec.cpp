@@ -1036,7 +1036,8 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
 
             // Motion has stopped, so we can rely on positions and other values to be stable
 
-            // If hold was SKIP type, discard the remainder of the block and position to the next block
+            // If hold was SKIP type, discard the remainder of the block and position to the next block.
+            // HALT keeps the block (like SCRAM) so Resume can continue from the stopped position.
             if (cm->hold_type == FEEDHOLD_TYPE_SKIP) {
                 copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
                 mp_free_run_buffer();                       // advance to next block, discarding the rest of the move
@@ -1051,6 +1052,11 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
                     copy_vector(mp->position, mr->position);// update planner position to the final runtime position
                     mp_free_run_buffer();                   // advance to next block, discarding the zero-length move
                 } else {
+                    // Restore the original motion profile and recompute cached jerk values for
+                    // SCRAM so the resumed block accelerates at normal jerk, not fast-stop jerk.
+                    if (cm->hold_type == FEEDHOLD_TYPE_SCRAM) {
+                        mp_restore_jerk_for_feedhold(bf, cm->hold_saved_motion_profile);
+                    }
                     bf->block_state = BLOCK_INITIAL_ACTION;   // tell _exec to re-use the bf buffer
                     while (bf->buffer_state > MP_BUFFER_BACK_PLANNED) {
                         bf->buffer_state = MP_BUFFER_BACK_PLANNED;// revert from RUNNING so it can be forward planned again
@@ -1079,11 +1085,19 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
     if ((cm->hold_state == FEEDHOLD_SYNC) ||
         ((cm->hold_state == FEEDHOLD_DECEL_CONTINUE) && (mr->block_state == BLOCK_INITIAL_ACTION))) {
 
-        // Force high jerk profile for SCRAM (fast stop) type feedholds
-        // This MUST happen before the recalculate check, and we force recalculation for SCRAM
+        // Force high jerk profile for SCRAM (fast stop) or instant stop for HALT
+        // This MUST happen before the recalculate check, and we force recalculation
         if (cm->hold_type == FEEDHOLD_TYPE_SCRAM) {
+            cm->hold_saved_motion_profile = bf->gm.motion_profile;  // save for restore when block is re-queued on resume
             bf->gm.motion_profile = PROFILE_FAST_STOP;
             mp_recalculate_jerk_for_feedhold(bf);  // Force recalculation for high jerk
+        }
+        else if (cm->hold_type == FEEDHOLD_TYPE_HALT) {
+            // Instant halt: skip deceleration entirely. Jump to DECEL_COMPLETE so Case(3')
+            // and Case(4) handle cleanup naturally. The current DDA segment drains on its
+            // own (< 1 segment duration). The remaining block is kept for resume, like SCRAM.
+            cm->hold_state = FEEDHOLD_DECEL_COMPLETE;
+            return (STAT_OK);
         }
         else if (mp_should_recalculate_jerk_for_feedhold(bf)) {
             // We need to recalculate jerk, will ALWAYS start a tail from here

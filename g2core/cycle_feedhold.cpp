@@ -477,7 +477,8 @@ void _start_cycle_restart()
         switch (cm1.hold_type) {
             case FEEDHOLD_TYPE_HOLD:    { op.add_action(_feedhold_restart_no_actions); break; }
             case FEEDHOLD_TYPE_ACTIONS: { op.add_action(_feedhold_restart_with_actions); break; }
-            case FEEDHOLD_TYPE_SCRAM:   { op.add_action(_feedhold_restart_no_actions); break; }  // ADD THIS LINE
+            case FEEDHOLD_TYPE_SCRAM:   { op.add_action(_feedhold_restart_no_actions); break; }
+            case FEEDHOLD_TYPE_HALT:    { op.add_action(_feedhold_restart_no_actions); break; }
             default: {}
         }
         switch (cm1.hold_exit) {
@@ -674,6 +675,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
                 case FEEDHOLD_TYPE_ACTIONS:  { op.add_action(_feedhold_with_actions); break; }
                 case FEEDHOLD_TYPE_SKIP:     { op.add_action(_feedhold_skip); break; }
                 case FEEDHOLD_TYPE_SCRAM:    { op.add_action(_feedhold_no_actions); break; }
+                case FEEDHOLD_TYPE_HALT:     { op.add_action(_feedhold_no_actions); break; }
                 default: {}
             }
             switch (cm1.hold_exit) {
@@ -798,8 +800,9 @@ void _check_motion_stopped()
         mpBuf_t *bf = mp_get_r();
 
         // Motion has stopped, so we can rely on positions and other values to be stable
-        // If SKIP type, discard the remainder of the block and position to the next block
-        // OR if the buffer is empty then there's nothing to discard, don't modify the buffer either
+        // If SKIP type, discard the remainder of the block and position to the next block.
+        // HALT keeps the block (like SCRAM) so Resume can continue from the stopped position.
+        // If the buffer is already empty there's nothing to discard.
         if ((cm->hold_type == FEEDHOLD_TYPE_SKIP) || (bf->buffer_state == MP_BUFFER_EMPTY)) {
             copy_vector(mp->position, mr->position);    // update planner position to the final runtime position
             if (mp_get_run_buffer()) {
@@ -842,8 +845,8 @@ stat_t _feedhold_no_actions()
 {
     // initiate the feedhold
     if (cm1.hold_state == FEEDHOLD_OFF) {       // start a feedhold
-        // Only set to HOLD if not already set to something more specific (like SCRAM)
-        if (cm1.hold_type != FEEDHOLD_TYPE_SCRAM) {
+        // Only set to HOLD if not already set to something more specific (like SCRAM or HALT)
+        if ((cm1.hold_type != FEEDHOLD_TYPE_SCRAM) && (cm1.hold_type != FEEDHOLD_TYPE_HALT)) {
             cm1.hold_type = FEEDHOLD_TYPE_HOLD;
         }
 

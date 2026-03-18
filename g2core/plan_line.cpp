@@ -539,6 +539,13 @@ void mp_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
     }
 }
 
+// Restore the motion profile (and recompute the cached jerk values) after a feedhold.
+// Must be called before the block is re-planned so the planner sees normal jerk.
+void mp_restore_jerk_for_feedhold(mpBuf_t *bf, cmMotionProfile saved_profile) {
+    bf->gm.motion_profile = saved_profile;
+    _calculate_jerk(bf);
+}
+
 bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
     if (PROFILE_FAST_STOP == bf->gm.motion_profile) {
         return true;
