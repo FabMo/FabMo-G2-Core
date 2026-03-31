@@ -455,31 +455,29 @@ namespace Motate {    // Define timer inside Motate namespace
 
 void st_request_load_move()
 {
+    if (st_runtime_isbusy()) {                                      // don't request a load if the runtime is busy
+        return;
+    }
+    if (st_pre.buffer_state == PREP_BUFFER_OWNED_BY_LOADER) {       // bother interrupting
+        _load_move();
+    }
+}
+
+// st_request_load_move_deferred() - for use from non-ISR contexts (e.g. ESC spindle
+// systick) where _load_move() cannot safely be called at the current interrupt level.
+// The flag is serviced by st_check_load_move() in the main controller loop.
+void st_request_load_move_deferred()
+{
     st_cfg.load_move_requested = true;
 }
 
-
 void st_check_load_move()
 {
-    // Check the flag and load move if requested
-    // This runs in the main loop, so it's safe to call _load_move()
-    if (st_cfg.load_move_requested) {
-        st_cfg.load_move_requested = false;
-        
-        // **NEW: Add the safety checks from the original st_request_load_move()**
-        if (st_runtime_isbusy()) {                                      // don't load if the runtime is busy
-            // Re-set the flag since we couldn't process it
-            st_cfg.load_move_requested = true;
-            return;
-        }
-        if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {       // don't load if prep isn't ready
-            // Re-set the flag since we couldn't process it
-            st_cfg.load_move_requested = true;
-            return;
-        }
-        
-        _load_move();
-    }
+    if (!st_cfg.load_move_requested) { return; }
+    if (st_runtime_isbusy()) { return; }                            // wait until the DDA is idle
+    if (st_pre.buffer_state != PREP_BUFFER_OWNED_BY_LOADER) { return; }
+    st_cfg.load_move_requested = false;
+    _load_move();
 }
 
 /****************************************************************************************

@@ -28,6 +28,7 @@
 
 #include "g2core.h"     // #1
 #include "config.h"     // #2
+#include "diagnostic_toggles.h"
 #include "gcode.h"      // #3
 #include "canonical_machine.h"
 #include "safety_manager.h"
@@ -63,6 +64,12 @@ stat_t _run_interlock_ended(void);
 stat_t _run_reset_position(void);
 
 extern stat_t sr_run_unfiltered_status_report(void);  // declare the wrapper
+
+#if G2_DIAG_ENABLE_FEEDHOLD_DEBUG_PRINTS
+#define FH_DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else
+#define FH_DEBUG_PRINTF(...) do { } while (0)
+#endif
 
 // DEBUG ONLY
 // Extensive debug system, both guarded an manually commented; retain for a bit in case useful 11/5/25 th
@@ -236,7 +243,7 @@ void cm_operation_init()
 // See above regarding debugs
 void cm_feedhold_debug_reset() {
     debug_flags.reset();
-    printf("DEBUG: All flags reset\n");
+    FH_DEBUG_PRINTF("DEBUG: All flags reset\n");
 }
 
 /****************************************************************************************
@@ -693,7 +700,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
         // Look for feedholds while exiting feedhold
         if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
             if (!debug_flags.nested_hold_during_exit_printed) {
-                printf("DEBUG_NESTED: ! during EXIT_ACTIONS, cm1.hold=%d cm2.hold=%d queue_flush=%d cycle_start=%d\n",
+                FH_DEBUG_PRINTF("DEBUG_NESTED: ! during EXIT_ACTIONS, cm1.hold=%d cm2.hold=%d queue_flush=%d cycle_start=%d\n",
                        cm1.hold_state, cm2.hold_state, cm1.queue_flush_state, cm1.cycle_start_state);
                 debug_flags.nested_hold_during_exit_printed = true;
             }
@@ -873,7 +880,7 @@ stat_t _feedhold_no_actions()
 void _feedhold_actions_done_callback(float* vect, bool* flag)
 {
     if (!debug_flags.callback_fired_printed) {
-        printf("DEBUG_CB: FIRED! cm1.hold=%d cm1.cycle_start=%d cm2.hold=%d\n",
+        FH_DEBUG_PRINTF("DEBUG_CB: FIRED! cm1.hold=%d cm1.cycle_start=%d cm2.hold=%d\n",
                cm1.hold_state, cm1.cycle_start_state, cm2.hold_state);
         debug_flags.callback_fired_printed = true;
         debug_flags.sync_printed = false;  // Allow next feedhold to print
@@ -912,7 +919,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
     if (cm1.hold_state == FEEDHOLD_OFF) {
         cm1.hold_state = FEEDHOLD_SYNC;
         if (!debug_flags.sync_printed) {
-            printf("DEBUG_FH: Started SYNC\n");
+            FH_DEBUG_PRINTF("DEBUG_FH: Started SYNC\n");
             debug_flags.sync_printed = true;
         }
         return (STAT_EAGAIN);
@@ -921,7 +928,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
     // Code to run once motion has stopped
     if (cm1.hold_state == FEEDHOLD_MOTION_STOPPED) {
         if (!debug_flags.motion_stopped_printed) {
-            printf("DEBUG_FH: Motion stopped → HOLD_ACTIONS_PENDING\n");
+            FH_DEBUG_PRINTF("DEBUG_FH: Motion stopped -> HOLD_ACTIONS_PENDING\n");
             debug_flags.motion_stopped_printed = true;
         }
         cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;
@@ -931,7 +938,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
             _enter_p2();
             cm_set_g30_position();
             if (!debug_flags.p2_entered_printed) {
-                printf("DEBUG_FH: Entered P2\n");
+                FH_DEBUG_PRINTF("DEBUG_FH: Entered P2\n");
                 debug_flags.p2_entered_printed = true;
             }
         }
@@ -969,7 +976,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
         coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);
         mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
         if (!debug_flags.callback_queued_printed) {
-            printf("DEBUG_FH: Callback queued, moves=%d\n", moves_queued);
+            FH_DEBUG_PRINTF("DEBUG_FH: Callback queued, moves=%d\n", moves_queued);
             debug_flags.callback_queued_printed = true;
         }
 
@@ -985,7 +992,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
     if ((cm1.hold_state == FEEDHOLD_HOLD_ACTIONS_COMPLETE) || (cm1.hold_state == FEEDHOLD_HOLD)) {
         cm1.hold_state = FEEDHOLD_HOLD;
         if (!debug_flags.hold_reached_printed) {
-            printf("DEBUG_FH: Reached stable HOLD\n");
+            FH_DEBUG_PRINTF("DEBUG_FH: Reached stable HOLD\n");
             debug_flags.hold_reached_printed = true;
         }
         spindle_pause();
@@ -1003,7 +1010,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
 void _feedhold_restart_actions_done_callback(float* vect, bool* flag)
 {
     if (!debug_flags.done_reached_printed) {
-        printf("DEBUG: Reached DONE, site of issue\n");
+        FH_DEBUG_PRINTF("DEBUG: Reached DONE, site of issue\n");
         debug_flags.done_reached_printed = true;
     }
 
@@ -1035,7 +1042,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         // If a nested hold was requested while we were in HOLD, handle and abort this restart op
         if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
             if (!debug_flags.nested_hold_detected_printed) {
-                printf("DEBUG_RST: Nested hold detected in HOLD! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
+                FH_DEBUG_PRINTF("DEBUG_RST: Nested hold detected in HOLD! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
                 debug_flags.nested_hold_detected_printed = true;
             }
             if (!mp_runtime_is_idle()) {
