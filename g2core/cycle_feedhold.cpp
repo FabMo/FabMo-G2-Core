@@ -1176,6 +1176,16 @@ stat_t _run_restart_cycle(void)
         // the restart was cancelled, move along, nothing to see here...
         return (STAT_OK);
     }
+    // Arc resumes are special: the planner queue may be empty at the moment Resume is
+    // requested even though the suspended arc generator still has work to emit in cm1.
+    // Give the arc callback a chance to repopulate p1 before deciding the cycle is over.
+    if (!mp_has_runnable_buffer(&mp1) && (cm1.arc.run_state != BLOCK_INACTIVE)) {
+        stat_t arc_status = cm_arc_callback(&cm1);
+        if (!mp_has_runnable_buffer(&mp1)) {
+            return ((arc_status == STAT_OK) ? STAT_EAGAIN : arc_status);
+        }
+    }
+
     cm1.hold_state = FEEDHOLD_OFF;          // must precede st_request_exec_move()
 
     // ... second place where we are cleanly starting a new block ... 
