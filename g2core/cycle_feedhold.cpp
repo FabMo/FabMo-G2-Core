@@ -28,7 +28,6 @@
 
 #include "g2core.h"     // #1
 #include "config.h"     // #2
-#include "diagnostic_toggles.h"
 #include "gcode.h"      // #3
 #include "canonical_machine.h"
 #include "safety_manager.h"
@@ -64,12 +63,6 @@ stat_t _run_interlock_ended(void);
 stat_t _run_reset_position(void);
 
 extern stat_t sr_run_unfiltered_status_report(void);  // declare the wrapper
-
-#if G2_DIAG_ENABLE_FEEDHOLD_DEBUG_PRINTS
-#define FH_DEBUG_PRINTF(...) printf(__VA_ARGS__)
-#else
-#define FH_DEBUG_PRINTF(...) do { } while (0)
-#endif
 
 // DEBUG ONLY
 // Extensive debug system, both guarded an manually commented; retain for a bit in case useful 11/5/25 th
@@ -243,7 +236,7 @@ void cm_operation_init()
 // See above regarding debugs
 void cm_feedhold_debug_reset() {
     debug_flags.reset();
-    FH_DEBUG_PRINTF("DEBUG: All flags reset\n");
+    printf("DEBUG: All flags reset\n");
 }
 
 /****************************************************************************************
@@ -700,7 +693,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
         // Look for feedholds while exiting feedhold
         if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_PENDING) {
             if (!debug_flags.nested_hold_during_exit_printed) {
-                FH_DEBUG_PRINTF("DEBUG_NESTED: ! during EXIT_ACTIONS, cm1.hold=%d cm2.hold=%d queue_flush=%d cycle_start=%d\n",
+                printf("DEBUG_NESTED: ! during EXIT_ACTIONS, cm1.hold=%d cm2.hold=%d queue_flush=%d cycle_start=%d\n",
                        cm1.hold_state, cm2.hold_state, cm1.queue_flush_state, cm1.cycle_start_state);
                 debug_flags.nested_hold_during_exit_printed = true;
             }
@@ -880,7 +873,7 @@ stat_t _feedhold_no_actions()
 void _feedhold_actions_done_callback(float* vect, bool* flag)
 {
     if (!debug_flags.callback_fired_printed) {
-        FH_DEBUG_PRINTF("DEBUG_CB: FIRED! cm1.hold=%d cm1.cycle_start=%d cm2.hold=%d\n",
+        printf("DEBUG_CB: FIRED! cm1.hold=%d cm1.cycle_start=%d cm2.hold=%d\n",
                cm1.hold_state, cm1.cycle_start_state, cm2.hold_state);
         debug_flags.callback_fired_printed = true;
         debug_flags.sync_printed = false;  // Allow next feedhold to print
@@ -919,7 +912,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
     if (cm1.hold_state == FEEDHOLD_OFF) {
         cm1.hold_state = FEEDHOLD_SYNC;
         if (!debug_flags.sync_printed) {
-            FH_DEBUG_PRINTF("DEBUG_FH: Started SYNC\n");
+            printf("DEBUG_FH: Started SYNC\n");
             debug_flags.sync_printed = true;
         }
         return (STAT_EAGAIN);
@@ -928,7 +921,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
     // Code to run once motion has stopped
     if (cm1.hold_state == FEEDHOLD_MOTION_STOPPED) {
         if (!debug_flags.motion_stopped_printed) {
-            FH_DEBUG_PRINTF("DEBUG_FH: Motion stopped -> HOLD_ACTIONS_PENDING\n");
+            printf("DEBUG_FH: Motion stopped -> HOLD_ACTIONS_PENDING\n");
             debug_flags.motion_stopped_printed = true;
         }
         cm1.hold_state = FEEDHOLD_HOLD_ACTIONS_PENDING;
@@ -938,7 +931,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
             _enter_p2();
             cm_set_g30_position();
             if (!debug_flags.p2_entered_printed) {
-                FH_DEBUG_PRINTF("DEBUG_FH: Entered P2\n");
+                printf("DEBUG_FH: Entered P2\n");
                 debug_flags.p2_entered_printed = true;
             }
         }
@@ -976,7 +969,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
         coolant_control_sync(COOLANT_PAUSE, COOLANT_BOTH);
         mp_queue_command(_feedhold_actions_done_callback, nullptr, nullptr);
         if (!debug_flags.callback_queued_printed) {
-            FH_DEBUG_PRINTF("DEBUG_FH: Callback queued, moves=%d\n", moves_queued);
+            printf("DEBUG_FH: Callback queued, moves=%d\n", moves_queued);
             debug_flags.callback_queued_printed = true;
         }
 
@@ -992,7 +985,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
     if ((cm1.hold_state == FEEDHOLD_HOLD_ACTIONS_COMPLETE) || (cm1.hold_state == FEEDHOLD_HOLD)) {
         cm1.hold_state = FEEDHOLD_HOLD;
         if (!debug_flags.hold_reached_printed) {
-            FH_DEBUG_PRINTF("DEBUG_FH: Reached stable HOLD\n");
+            printf("DEBUG_FH: Reached stable HOLD\n");
             debug_flags.hold_reached_printed = true;
         }
         spindle_pause();
@@ -1010,7 +1003,7 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
 void _feedhold_restart_actions_done_callback(float* vect, bool* flag)
 {
     if (!debug_flags.done_reached_printed) {
-        FH_DEBUG_PRINTF("DEBUG: Reached DONE, site of issue\n");
+        printf("DEBUG: Reached DONE, site of issue\n");
         debug_flags.done_reached_printed = true;
     }
 
@@ -1042,7 +1035,7 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
         // If a nested hold was requested while we were in HOLD, handle and abort this restart op
         if (cm2.hold_state >= FEEDHOLD_SYNC && cm2.hold_state != FEEDHOLD_OFF) {
             if (!debug_flags.nested_hold_detected_printed) {
-                FH_DEBUG_PRINTF("DEBUG_RST: Nested hold detected in HOLD! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
+                printf("DEBUG_RST: Nested hold detected in HOLD! cm2.hold=%d, waiting for idle\n", cm2.hold_state);
                 debug_flags.nested_hold_detected_printed = true;
             }
             if (!mp_runtime_is_idle()) {
@@ -1162,7 +1155,6 @@ stat_t _feedhold_restart_with_actions()   // Execute Cases (6) and (7)
 
     // finalize feedhold exit
     if (cm1.hold_state == FEEDHOLD_EXIT_ACTIONS_COMPLETE) {
-        //printf("DEBUG_RST: Exit complete, returning to P1\n");
         _exit_p2();
         return (STAT_OK);
     }
@@ -1176,13 +1168,15 @@ stat_t _run_restart_cycle(void)
         // the restart was cancelled, move along, nothing to see here...
         return (STAT_OK);
     }
-    // Arc resumes are special: the planner queue may be empty at the moment Resume is
-    // requested even though the suspended arc generator still has work to emit in cm1.
-    // Give the arc callback a chance to repopulate p1 before deciding the cycle is over.
-    if (!mp_has_runnable_buffer(&mp1) && (cm1.arc.run_state != BLOCK_INACTIVE)) {
-        stat_t arc_status = cm_arc_callback(&cm1);
+
+    // Arc/segmented-stream resumes: the planner queue may be empty even though
+    // the suspended arc generator still has work to emit. Prime a few blocks.
+    if (cm1.arc.run_state != BLOCK_INACTIVE) {
         if (!mp_has_runnable_buffer(&mp1)) {
-            return ((arc_status == STAT_OK) ? STAT_EAGAIN : arc_status);
+            stat_t arc_status = cm_arc_callback(&cm1);
+            if (!mp_has_runnable_buffer(&mp1)) {
+                return ((arc_status == STAT_OK) ? STAT_EAGAIN : arc_status);
+            }
         }
     }
 

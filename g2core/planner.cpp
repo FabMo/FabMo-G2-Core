@@ -53,7 +53,6 @@
  */
 #include "g2core.h"
 #include "config.h"
-#include "diagnostic_toggles.h"
 #include "canonical_machine.h"
 #include "plan_arc.h"
 #include "planner.h"
@@ -396,9 +395,7 @@ static stat_t _exec_command(mpBuf_t *bf)
 stat_t mp_runtime_command(mpBuf_t *bf) {
     bf->cm_func(bf->unit, bf->axis_flags);          // 2 vectors used by callbacks
 
-#if G2_DIAG_ENABLE_RUNTIME_COMMAND_SR
     sr.runtime_command_report_pending = true;
-#endif
 
     if (mp_free_run_buffer()) {
         if (cm_is_in_program_end_state()) { cm_cycle_end(true); } // Checking for an M2/M30 at EOF
