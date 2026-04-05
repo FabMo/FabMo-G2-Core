@@ -516,13 +516,10 @@ void _start_queue_flush()
     devflags_t flags = DEV_IS_DATA;
 
     // Don't initiate the queue until in HOLD state (this also means that runtime is idle)
+    // Use _no_actions to skip spindle resume + G30 Z-plunge — flush means stop, not resume.
     if ((cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) && (cm1.hold_state == FEEDHOLD_HOLD)) {
         xio_flush_device(flags);
-        if (cm1.hold_type == FEEDHOLD_TYPE_ACTIONS) {
-            op.add_action(_feedhold_restart_with_actions);
-        } else {
-            op.add_action(_feedhold_restart_no_actions);
-        }
+        op.add_action(_feedhold_restart_no_actions);
         op.add_action(_run_queue_flush);
         op.add_action(_run_program_stop);
     }
@@ -669,6 +666,7 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
 
             cm1.hold_type = type;
             cm1.hold_exit = exit;
+            cm1.hold_state = FEEDHOLD_SYNC;  // mark immediately so % sees pending hold
 
             switch (cm1.hold_type) {
                 case FEEDHOLD_TYPE_HOLD:     { op.add_action(_feedhold_no_actions); break; }
@@ -888,13 +886,10 @@ void _feedhold_actions_done_callback(float* vect, bool* flag)
     cm2.hold_state = FEEDHOLD_OFF;
 
     // If a queue flush was requested (Keypad !%), enqueue the exit chain NOW to avoid the race.
+    // Use _no_actions to skip spindle resume + G30 Z-plunge — flush means stop, not resume.
     if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {
         //printf("DEBUG_CB: Queue flush path taken\n");
-        if (cm1.hold_type == FEEDHOLD_TYPE_ACTIONS) {
-            op.add_action(_feedhold_restart_with_actions, /*allow_add_from_operation=*/true);
-        } else {
-            op.add_action(_feedhold_restart_no_actions, /*allow_add_from_operation=*/true);
-        }
+        op.add_action(_feedhold_restart_no_actions, /*allow_add_from_operation=*/true);
         op.add_action(_run_queue_flush, /*allow_add_from_operation=*/true);
         op.add_action(_run_program_stop, /*allow_add_from_operation=*/true);
     }
@@ -989,6 +984,18 @@ stat_t _feedhold_with_actions()             // Execute Case (5)
             debug_flags.hold_reached_printed = true;
         }
         spindle_pause();
+
+        // Defense: if queue flush was requested but callback didn't add exit chain,
+        // add it now.  Handles race between callback and run_operation() reset.
+        if (cm1.queue_flush_state == QUEUE_FLUSH_REQUESTED) {
+            cmAction *next = op.run ? op.run->nx : nullptr;
+            if (!next || next->func == nullptr) {
+                op.add_action(_feedhold_restart_no_actions, /*allow_add_from_operation=*/true);
+                op.add_action(_run_queue_flush, /*allow_add_from_operation=*/true);
+                op.add_action(_run_program_stop, /*allow_add_from_operation=*/true);
+            }
+        }
+
         return (STAT_OK);
     }
     return (STAT_EAGAIN);
@@ -1180,7 +1187,11 @@ stat_t _run_restart_cycle(void)
         }
     }
 
-    cm1.hold_state = FEEDHOLD_OFF;          // must precede st_request_exec_move()
+    // Only clear the hold if a new feedhold hasn't been requested between
+    // _dispatch_control() and here (race: ! sets SYNC, then this overwrites it).
+    if (cm1.hold_state != FEEDHOLD_SYNC) {
+        cm1.hold_state = FEEDHOLD_OFF;      // must precede st_request_exec_move()
+    }
 
     // ... second place where we are cleanly starting a new block ... 
     if (mp_has_runnable_buffer(&mp1)) {
