@@ -539,7 +539,8 @@ stat_t st_motor_power_callback(void);
 void st_request_forward_plan(void) HOT_FUNC;
 void st_request_exec_move(void) HOT_FUNC;
 void st_request_load_move(void) HOT_FUNC;
-void st_check_load_move();
+void st_request_load_move_deferred(void);
+void st_check_load_move(void);
 void st_prep_null(void);
 void st_prep_command(void *bf);        // use a void pointer since we don't know about mpBuf_t yet)
 void st_prep_dwell(float milliseconds);

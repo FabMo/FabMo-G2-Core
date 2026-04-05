@@ -150,8 +150,9 @@ class ESCSpindle : public ToolHead {
             // Clear the flag - the loader will proceed naturally
             this_change_holds_motion = false;
             
-            // Normal case: request the load
-            st_request_load_move();
+            // Deferred request: systick runs below DDA interrupt level, so
+            // _load_move() cannot be called directly here.
+            st_request_load_move_deferred();
         }
     }
 

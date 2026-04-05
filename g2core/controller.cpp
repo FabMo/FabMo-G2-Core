@@ -176,7 +176,7 @@ static void _controller_HSM()
     DISPATCH(_test_system_assertions());        // system integrity assertions
     DISPATCH(_dispatch_control());              // read any control messages prior to executing cycles
 
-    // Check for pending load_move request from spindle systick
+    // Drain any deferred load_move requests (e.g. from ESC spindle systick).
     st_check_load_move();
 
 //----- planner hierarchy for gcode and cycles ---------------------------------------//

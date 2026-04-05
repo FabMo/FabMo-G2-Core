@@ -2328,11 +2328,12 @@ stat_t cm_get_stat2(nvObj_t *nv){ return(_get_msg_helper(nv, msg_stat, cm_get_co
 stat_t cm_get_macs(nvObj_t *nv) { return(_get_msg_helper(nv, msg_macs, cm_get_machine_state()));}
 stat_t cm_get_cycs(nvObj_t *nv) { return(_get_msg_helper(nv, msg_cycs, cm_get_cycle_type()));}
 stat_t cm_get_mots(nvObj_t *nv) { return(_get_msg_helper(nv, msg_mots, cm_get_motion_state()));}
-stat_t cm_get_hold(nvObj_t *nv) { return(_get_msg_helper(nv, msg_hold, cm_get_hold_state()));}
-// stat_t cm_get_hold(nvObj_t *nv) {
-//     // Always report P1's hold state, even when in P2
-//     return(get_integer(nv, cm1.hold_state));  // ← Changed from cm->hold_state
-// }
+stat_t cm_get_hold(nvObj_t *nv) {
+    // Always report P1's hold state, even when in P2.
+    // cm_get_hold_state() reads cm->hold_state, which points to cm2 after
+    // _enter_p2(), incorrectly reporting hold:0 instead of cm1's actual state.
+    return(_get_msg_helper(nv, msg_hold, cm1.hold_state));
+}
 stat_t cm_get_unit(nvObj_t *nv) { return(_get_msg_helper(nv, msg_unit, cm_get_units_mode(ACTIVE_MODEL)));}
 stat_t cm_get_coor(nvObj_t *nv) { return(_get_msg_helper(nv, msg_coor, cm_get_coord_system(ACTIVE_MODEL)));}
 stat_t cm_get_momo(nvObj_t *nv) { return(_get_msg_helper(nv, msg_momo, cm_get_motion_mode(ACTIVE_MODEL)));}
