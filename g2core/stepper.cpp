@@ -237,12 +237,18 @@ bool st_runtime_isbusy()
 }
 
 /*
- * st_clc() - clear counters
+ * st_clc() - clear diagnostic step counters only
+ *
+ *  Clears the net/up/down step pulse counters for all motors.
+ *  Does NOT reset the DDA timer, pipeline state, or encoder positions.
+ *  Safe to call while idle without disrupting subsequent motion.
  */
 
-stat_t st_clc(nvObj_t *nv)    // clear diagnostic counters, reset stepper prep
+stat_t st_clc(nvObj_t *nv)
 {
-    stepper_reset();
+    for (uint8_t motor = 0; motor < MOTORS; motor++) {
+        Motors[motor]->resetStepCounts();
+    }
     return(STAT_OK);
 }
 
