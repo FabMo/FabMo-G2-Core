@@ -487,7 +487,7 @@ static mpBuf_t* _plan_block(mpBuf_t* bf)
 
 static float _get_axis_jerk(mpBuf_t* bf, uint8_t axis)
 {
-    if (bf->gm.motion_profile == PROFILE_FAST) {
+    if (bf->gm.motion_profile == PROFILE_FAST || bf->gm.motion_profile == PROFILE_FAST_STOP) {
         return cm->a[axis].jerk_high;
     }
     return cm->a[axis].jerk_max;
