@@ -1092,6 +1092,12 @@ static stat_t _exec_aline_feedhold(mpBuf_t *bf)
             bf->gm.motion_profile = PROFILE_FAST_STOP;
             mp_recalculate_jerk_for_feedhold(bf);  // Force recalculation for high jerk
         }
+        else if (cm->hold_type == FEEDHOLD_TYPE_SKIP) {
+            // SKIP also uses high jerk to stop as fast as possible (probe/homing contact).
+            // No need to save motion_profile since SKIP discards the buffer after stopping.
+            bf->gm.motion_profile = PROFILE_FAST_STOP;
+            mp_recalculate_jerk_for_feedhold(bf);
+        }
         else if (cm->hold_type == FEEDHOLD_TYPE_HALT) {
             // Instant halt: skip deceleration entirely. Jump to DECEL_COMPLETE so Case(3')
             // and Case(4) handle cleanup naturally. The current DDA segment drains on its
