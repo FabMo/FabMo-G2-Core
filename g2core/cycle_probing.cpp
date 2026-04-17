@@ -264,6 +264,19 @@ uint8_t cm_probing_cycle_callback(void)
             cm_abort_probing(cm);
             return (STAT_OK);
         }
+
+        // Feedhold stopped motion before _motion_end_callback could fire.
+        // Abort the probe cleanly but preserve the hold so the host sees
+        // a stable FEEDHOLD_HOLD state (stat:6 hold:10) and can decide
+        // whether to resume (~) or flush (%).
+        if (cm->hold_state >= FEEDHOLD_HOLD) {
+            pb.alarm_flag = false;              // feedhold is not a probe error
+            cmFeedholdState saved_hold = cm->hold_state;
+            cm_abort_probing(cm);
+            cm->hold_state = saved_hold;        // restore hold cleared by cm_canned_cycle_end
+            return (STAT_NOOP);                 // NOOP so dispatch continues
+        }
+
        return (STAT_EAGAIN);
     }
     return (pb.func());                     // execute the current probing move
