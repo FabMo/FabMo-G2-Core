@@ -607,8 +607,13 @@ stat_t mp_planner_callback()
     // Test if the planner has transitioned to an IDLE state
     if (mp_get_planner_buffers(mp) == mp->q.queue_size) {
 
-        // Edgge case: If there's no runnable buffer, FEEDHOLD_SYNC will never exit
-        if (cm->hold_state == FEEDHOLD_SYNC) {
+        // Edge case: If there's no runnable buffer, feedhold decel states will never
+        // exit because there are no ALINE blocks left to drive the decel state machine.
+        // This can happen when a feedhold arrives near the end of the last move (e.g.
+        // probe contact at the move endpoint) and DECEL_CONTINUE spans past the last block.
+        if (cm->hold_state == FEEDHOLD_SYNC ||
+            cm->hold_state == FEEDHOLD_DECEL_CONTINUE ||
+            cm->hold_state == FEEDHOLD_DECEL_TO_ZERO) {
             cm->hold_state = FEEDHOLD_MOTION_STOPPED;
         }
 

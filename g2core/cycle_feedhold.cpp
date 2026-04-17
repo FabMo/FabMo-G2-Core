@@ -664,6 +664,15 @@ void cm_request_feedhold(cmFeedholdType type, cmFeedholdExit exit)
                 sr_request_status_report(SR_REQUEST_IMMEDIATE);
             }
 
+            // Probe cycle override: ACTIONS feedhold is not safe for probe
+            // cycles because P2 entry copies CYCLE_PROBE into cm2, and the
+            // queue flush teardown damages probe infrastructure. Use HOLD
+            // instead: normal-jerk decel, no P2 entry, and the probe move can
+            // be resumed with ~ or flushed with %.
+            if (cm1.cycle_type == CYCLE_PROBE && type == FEEDHOLD_TYPE_ACTIONS) {
+                type = FEEDHOLD_TYPE_HOLD;
+            }
+
             cm1.hold_type = type;
             cm1.hold_exit = exit;
             cm1.hold_state = FEEDHOLD_SYNC;  // mark immediately so % sees pending hold
