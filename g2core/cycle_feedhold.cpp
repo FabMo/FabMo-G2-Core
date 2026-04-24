@@ -781,6 +781,11 @@ void _enter_p2()
     copy_vector(mp2.position, mr1.position);
     copy_vector(mr2.position, mr1.position);
 
+    // Keep P2 runtime reporting consistent with P1 immediately on entry.
+    // Without this, hold:8 status reports can use zero/incorrect display
+    // offsets from mr2.gm and briefly report machine coordinates.
+    mr2.gm = cm2.gm;
+
     // Copy MR position and encoder terms - needed for following error correction state
     copy_vector(mr2.target_steps, mr1.target_steps);
     copy_vector(mr2.position_steps, mr1.position_steps);
