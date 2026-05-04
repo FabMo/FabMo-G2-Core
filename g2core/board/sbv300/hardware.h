@@ -119,8 +119,8 @@ using Motate::OutputPin;
 #define MIN_SEGMENT_MS ((float)1.0)
 //#define MIN_SEGMENT_MS ((float)0.75)
 
-#define PLANNER_QUEUE_SIZE (48)
-#define SECONDARY_QUEUE_SIZE (10)
+#define PLANNER_QUEUE_SIZE (64)
+#define SECONDARY_QUEUE_SIZE (12)
 
 /**** Motate Definitions ****/
 

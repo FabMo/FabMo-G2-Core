@@ -236,7 +236,7 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #ifndef SECONDARY_QUEUE_SIZE
 #define SECONDARY_QUEUE_SIZE        ((uint8_t)12)       // Secondary planner queue for feedhold operations
 #endif
-#define PLANNER_BUFFER_HEADROOM     ((uint8_t)4)        // Buffers to reserve in planner before processing new input line
+#define PLANNER_BUFFER_HEADROOM     ((uint8_t)2)        // Buffers to reserve in planner before processing new input line
 #define JERK_MULTIPLIER             ((float)1000000)    // DO NOT CHANGE - must always be 1 million
 
 #define JUNCTION_INTEGRATION_MIN    (0.05)              // JT minimum allowable setting
