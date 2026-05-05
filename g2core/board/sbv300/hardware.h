@@ -116,8 +116,8 @@ using Motate::OutputPin;
 ////## Make sure the secondary 'turn-off' of steps in stepper.cpp: _load_move is located appropriately for FREQUENCY_DDA selection
 
 #define FREQUENCY_DWELL		1000UL
-#define MIN_SEGMENT_MS ((float)1.0)
-//#define MIN_SEGMENT_MS ((float)0.75)
+//#define MIN_SEGMENT_MS ((float)1.0)  // was causing velocity ceiling on small blocks
+#define MIN_SEGMENT_MS ((float)0.75)   // enables faster execution of short blocks
 
 #define PLANNER_QUEUE_SIZE (64)
 #define SECONDARY_QUEUE_SIZE (12)
