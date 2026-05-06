@@ -236,7 +236,7 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #ifndef SECONDARY_QUEUE_SIZE
 #define SECONDARY_QUEUE_SIZE        ((uint8_t)12)       // Secondary planner queue for feedhold operations
 #endif
-#define PLANNER_BUFFER_HEADROOM     ((uint8_t)2)        // Buffers to reserve in planner before processing new input line
+#define PLANNER_BUFFER_HEADROOM     ((uint8_t)3)        // Buffers to reserve in planner before processing new input line
 #define JERK_MULTIPLIER             ((float)1000000)    // DO NOT CHANGE - must always be 1 million
 
 #define JUNCTION_INTEGRATION_MIN    (0.05)              // JT minimum allowable setting
@@ -246,7 +246,7 @@ typedef enum {                      // code blocks for planning and trapezoid ge
 #define MIN_SEGMENT_MS              ((float)0.75)       // minimum segment milliseconds
 #endif
 #define NOM_SEGMENT_MS              ((float)MIN_SEGMENT_MS*2.0)        // nominal segment ms (at LEAST MIN_SEGMENT_MS * 2)
-#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS*1.0)        // minimum block (whole move) milliseconds - REDUCED to allow faster short blocks
+#define MIN_BLOCK_MS                ((float)MIN_SEGMENT_MS*2.0)        // minimum block (whole move) milliseconds
 #define BLOCK_TIMEOUT_MS            ((float)30.0)       // MS before deciding there are no new blocks arriving
 #define PHAT_CITY_MS                ((float)100.0)      // if you have at least this much time in the planner
 
