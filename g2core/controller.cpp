@@ -193,6 +193,7 @@ static void _controller_HSM()
     DISPATCH(cm_homing_cycle_callback());       // homing cycle operation (G28.2)
     DISPATCH(cm_probing_cycle_callback());      // probing cycle operation (G38.2)
     DISPATCH(cm_jogging_cycle_callback());      // jog cycle operation
+    DISPATCH(cm_jgv_callback());                // velocity-mode jog cycle ({"jgv":...})
     DISPATCH(cm_deferred_write_callback());     // persist G10 changes when not in machining cycle
 
     DISPATCH(cm_feedhold_command_blocker());    // blocks new Gcode from arriving while in feedhold
