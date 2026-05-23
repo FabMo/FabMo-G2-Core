@@ -199,7 +199,22 @@ void cm_jgv_abort(void)
  */
 stat_t cm_jgv_callback(void)
 {
-    if (!jgv.active || cm->cycle_type != CYCLE_JGV) {
+    if (!jgv.active) {
+        return (STAT_NOOP);
+    }
+    // Self-heal: if our cycle_type was clobbered by another path (a homing or
+    // probing cycle starting, cm_canned_cycle_end being called from somewhere
+    // we didn't anticipate, an alarm reset, etc.) we'd otherwise spin in this
+    // callback forever as a no-op — jgv.active stays true but the new entry
+    // gate (`!jgv.active && ...` in cm_set_jgv) prevents fresh commands from
+    // restarting the cycle. Detect the desync and reset state so the next
+    // {"jgvx":...} can re-enter cleanly.
+    if (cm->cycle_type != CYCLE_JGV) {
+        jgv.active = false;
+        for (uint8_t a = 0; a < AXES; a++) {
+            jgv.v_target[a]  = 0;
+            jgv.v_current[a] = 0;
+        }
         return (STAT_NOOP);
     }
 
