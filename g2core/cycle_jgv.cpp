@@ -44,7 +44,7 @@
 #include <math.h>
 
 // Tuning knobs. These are conservative starting points — revisit after field testing.
-#define JGV_SEGMENT_TIME_MS    50.0f     // per-segment duration in ms (50ms gives planner enough work to chew on; larger = more lag, smaller = planner can stall)
+#define JGV_SEGMENT_TIME_MS    25.0f     // per-segment duration in ms. Total lookahead = SEGMENT_TIME × TARGET_QUEUE_DEPTH; that's also the max direction-change lag. The planner needs a fixed *count* of segments to plan smooth cruise through junctions (~8), so shrinking SEGMENT_TIME shrinks the wall-clock lag proportionally.
 #define JGV_RAMP_TIME_S        0.25f     // 0→velocity_max ramp time, sets accel_max per axis
 #define JGV_WATCHDOG_DEFAULT   500       // ms of host silence before auto-stop
 #define JGV_STOP_EPSILON       0.01f     // mm/min — below this we treat velocity as zero (slower than this isn't useful jogging)
@@ -66,6 +66,7 @@ struct jgvSingleton {
     // the cycle forces them to absolute mm/min while running.
     uint8_t   saved_distance_mode;
     uint8_t   saved_feed_rate_mode;
+    uint8_t   saved_path_control;
     float     saved_feed_rate;
 };
 static struct jgvSingleton jgv = {
@@ -80,6 +81,7 @@ static struct jgvSingleton jgv = {
     .hard_stop_requested = false,
     .saved_distance_mode = 0,
     .saved_feed_rate_mode = 0,
+    .saved_path_control = 0,
     .saved_feed_rate = 0,
 };
 
@@ -257,15 +259,31 @@ stat_t cm_jgv_callback(void)
         return (STAT_EAGAIN);
     }
 
-    // Pace our commits to roughly one per segment-time. Without this gate the
-    // main loop would call us at >>1 kHz and we'd reset the planner's internal
-    // BLOCK_TIMEOUT_MS (30 ms) on every commit, preventing it from ever
-    // transitioning out of PLANNER_STARTUP — so the runtime never actually
-    // begins executing the queued moves. By committing slower than that
-    // timeout, the planner naturally fires its "no more blocks coming, start
-    // running" transition between our commits, and motion proceeds.
-    if (SysTickTimer.getValue() < jgv.next_commit_time) {
-        return (STAT_EAGAIN);
+    // Two-mode throttling. While the planner is still in PLANNER_STARTUP we
+    // need spacing > BLOCK_TIMEOUT_MS (30 ms) between commits so the
+    // planner's block-timeout can fire and transition it out of STARTUP into
+    // PRIMING/RUNNING. Use a fixed pace tied to BLOCK_TIMEOUT_MS (not
+    // SEGMENT_TIME) so that small SEGMENT_TIME values (e.g. 25 ms) don't
+    // re-create the "STARTUP forever" lock by committing faster than the
+    // block timer can fire.
+    //
+    // Once the planner is running we switch to queue-depth gating: commit
+    // whenever the planner has < TARGET_QUEUE_DEPTH segments waiting. This
+    // keeps a small lookahead buffer that absorbs USB / stepper-ISR /
+    // planner-prep jitter on real hardware — and gives the planner enough
+    // collinear-move lookahead to plan continuous cruise through junctions
+    // instead of decelerating at each one (visible as "bop" stutter).
+    #define JGV_TARGET_QUEUE_DEPTH 8     // × JGV_SEGMENT_TIME_MS = total lookahead, also max direction-change lag
+    #define JGV_STARTUP_PACE_MS    35    // > planner's BLOCK_TIMEOUT_MS=30 with margin
+    if (mp->planner_state == PLANNER_STARTUP || mp->planner_state == PLANNER_IDLE) {
+        if (SysTickTimer.getValue() < jgv.next_commit_time) {
+            return (STAT_EAGAIN);
+        }
+    } else {
+        uint8_t queued = (uint8_t)(mp->q.queue_size - mp_get_planner_buffers(mp));
+        if (queued >= JGV_TARGET_QUEUE_DEPTH) {
+            return (STAT_EAGAIN);
+        }
     }
 
     // Compute the next segment's per-axis end-of-segment velocity (jerk-
@@ -348,11 +366,9 @@ stat_t cm_jgv_callback(void)
         jgv.v_current[a]  = v_end[a];
         jgv.planned_pos[a] = target_pos[a];
     }
-    // Hold off the next commit. Anything shorter than ~30 ms would defeat the
-    // planner's block timeout; we choose JGV_SEGMENT_TIME_MS so the next
-    // commit lands just as the previous segment is consumed (queue stays
-    // ~1 segment deep).
-    jgv.next_commit_time = SysTickTimer.getValue() + (uint32_t)JGV_SEGMENT_TIME_MS;
+    // Set the STARTUP-mode pace. Once the planner moves past STARTUP the
+    // depth-based gate takes over and this timestamp is ignored.
+    jgv.next_commit_time = SysTickTimer.getValue() + JGV_STARTUP_PACE_MS;
 
     return (STAT_EAGAIN);               // stay in the cycle
 }
@@ -367,10 +383,18 @@ static void _jgv_enter_cycle(void)
     // restore it. Mirrors cm_jogging_cycle_start exactly.
     jgv.saved_distance_mode  = cm_get_distance_mode(ACTIVE_MODEL);
     jgv.saved_feed_rate_mode = cm_get_feed_rate_mode(ACTIVE_MODEL);
+    jgv.saved_path_control   = cm_get_path_control(ACTIVE_MODEL);
     jgv.saved_feed_rate      = (ACTIVE_MODEL)->feed_rate;
 
     cm_set_distance_mode(ABSOLUTE_DISTANCE_MODE);
     cm_set_feed_rate_mode(UNITS_PER_MINUTE_MODE);
+    // Tell the planner to blend junctions aggressively (G64). The default
+    // PATH_EXACT_PATH treats every junction geometrically, which when applied
+    // to our streamed micro-segments produces a deceleration ramp at every
+    // segment boundary — visible as a "bop" stutter on real hardware. We're
+    // queueing collinear continuation moves, not user-authored geometry, so
+    // path tolerance doesn't matter; speed continuity does.
+    cm_set_path_control(MODEL, PATH_CONTINUOUS);
     // Disable coord-system/tool/g92 offset addition for our segment targets.
     // cm_set_model_target() would otherwise compute target = offset + supplied,
     // which means our small per-segment positions would land at huge absolute
@@ -405,6 +429,7 @@ static void _jgv_finalize_exit(void)
 {
     cm_set_absolute_override(MODEL, ABSOLUTE_OVERRIDE_OFF);
     cm_set_distance_mode(jgv.saved_distance_mode);
+    cm_set_path_control(MODEL, jgv.saved_path_control);
     cm_set_feed_rate_mode(jgv.saved_feed_rate_mode);
     (MODEL)->feed_rate = jgv.saved_feed_rate;
     cm_set_motion_mode(MODEL, MOTION_MODE_CANCEL_MOTION_MODE);
