@@ -514,15 +514,13 @@ static void _calculate_jerk(mpBuf_t* bf)
     bf->jerk_sq    = bf->jerk * bf->jerk;  // pre-compute terms used multiple times during planning
     bf->recip_jerk = 1 / bf->jerk;
 
-    const float q        = 2.40281141413;  // (sqrt(10)/(3^(1/4)))
-    const float sqrt_j   = sqrt(bf->jerk);
+    const float q        = 2.40281141413f;  // (sqrt(10)/(3^(1/4)))
+    const float sqrt_j   = sqrtf(bf->jerk);
     bf->sqrt_j           = sqrt_j;
-    bf->q_recip_2_sqrt_j = q / (2.0 * sqrt_j);
+    bf->q_recip_2_sqrt_j = q / (2.0f * sqrt_j);
 }
 
-/****************************************************************************************
- * mp_recalculate_jerk_for_feedhold() - Updates the motion_profile and jerk.
- * 
+/*
  * This changes the motion_profile and jerk speed so that a rapid deceleration can be used in a feedhold
  * while retaining a slow ramp up speed at the start of movement. Designed for probing. 
  *
@@ -660,23 +658,23 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
           if (cm->gmx.planning_mode == PLAN_3D) {
           
 #if (AXES == 9)
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+            feed_time = sqrtf(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / bf->gm.feed_rate;
 #else
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / bf->gm.feed_rate;
+            feed_time = sqrtf(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / bf->gm.feed_rate;
 #endif
           }
             // in 2D mode the XY/UV plane is used to set feed rate
             // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
           else { // 2D planning mode
 #if (AXES == 9)
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / bf->gm.feed_rate;
+                feed_time = sqrtf(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / bf->gm.feed_rate;
                 if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+                    feed_time = sqrtf(axis_square[AXIS_Z] + axis_square[AXIS_W]) / bf->gm.feed_rate;
                 }                    
 #else
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / bf->gm.feed_rate;
+                feed_time = sqrtf(axis_square[AXIS_X] + axis_square[AXIS_Y]) / bf->gm.feed_rate;
                 if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z]) / bf->gm.feed_rate;
+                    feed_time = sqrtf(axis_square[AXIS_Z]) / bf->gm.feed_rate;
                 }                    
 #endif                
           }
@@ -685,7 +683,7 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
             // if no linear axes, compute length of multi-axis rotary move in degrees.
             // Feed rate is provided as degrees/min
             if (fp_ZERO(feed_time)) {
-                feed_time = sqrt(axis_square[AXIS_A] + axis_square[AXIS_B] + axis_square[AXIS_C]) / bf->gm.feed_rate;
+                feed_time = sqrtf(axis_square[AXIS_A] + axis_square[AXIS_B] + axis_square[AXIS_C]) / bf->gm.feed_rate;
             }
         }
     }

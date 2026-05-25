@@ -228,7 +228,7 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
                 block->head_length = 0;
 
                 block->body_time = block->body_length / block->cruise_velocity;
-                block->tail_time = block->tail_length * 2 / (block->exit_velocity + block->cruise_velocity);
+            block->tail_time = block->tail_length * 2.0f / (block->exit_velocity + block->cruise_velocity);
                 bf->block_time   = block->body_time + block->tail_time;
                 return (_ramp_exit_logger(bf, "2d"));
             }
@@ -283,7 +283,7 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
                 debug_trap_if_true((block->body_length < 0), "invlaid negative body_length from MIXED_ACCELERATION");
 
                 block->tail_length = 0;  // we just set it, now we unset it
-                block->head_time   = (block->head_length * 2.0) / (entry_velocity + block->cruise_velocity);
+            block->head_time   = (block->head_length * 2.0f) / (entry_velocity + block->cruise_velocity);
                 block->body_time   = block->body_length / block->cruise_velocity;
                 bf->block_time     = block->head_time + block->body_time;
                 return (_ramp_exit_logger(bf, "2a"));
@@ -308,13 +308,13 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
     block->head_length = mp_get_target_length(entry_velocity, block->cruise_velocity, bf);
     block->tail_length = mp_get_target_length(block->exit_velocity, block->cruise_velocity, bf);
 
-    if ((bf->length - 0.0001) > (block->head_length + block->tail_length)) {
-        // 3 segment HBT move (2c) - either with a body or just a symmetric bump
-        block->body_length = bf->length - (block->head_length + block->tail_length);  // body guaranteed to be positive
+if ((bf->length - 0.0001f) > (block->head_length + block->tail_length)) {
+    // 3 segment HBT move (2c) - either with a body or just a symmetric bump
+    block->body_length = bf->length - (block->head_length + block->tail_length);  // body guaranteed to be positive
 
-        block->head_time = (block->head_length * 2.0) / (entry_velocity + block->cruise_velocity);
-        block->body_time = block->body_length / block->cruise_velocity;
-        block->tail_time = (block->tail_length * 2.0) / (block->exit_velocity + block->cruise_velocity);
+    block->head_time = (block->head_length * 2.0f) / (entry_velocity + block->cruise_velocity);
+    block->body_time = block->body_length / block->cruise_velocity;
+    block->tail_time = (block->tail_length * 2.0f) / (block->exit_velocity + block->cruise_velocity);
         bf->block_time   = block->head_time + block->body_time + block->tail_time;
 
         bf->hint = ASYMMETRIC_BUMP;
@@ -337,13 +337,13 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
 
     // save a few divides where we can
     if (fp_NOT_ZERO(block->head_length)) {
-        block->head_time = (block->head_length * 2.0) / (entry_velocity + block->cruise_velocity);
+        block->head_time = (block->head_length * 2.0f) / (entry_velocity + block->cruise_velocity);
     }
     if (fp_NOT_ZERO(block->body_length)) {
         block->body_time = block->body_length / block->cruise_velocity;
     }
     if (fp_NOT_ZERO(block->tail_length)) {
-        block->tail_time = (block->tail_length * 2.0) / (block->exit_velocity + block->cruise_velocity);
+        block->tail_time = (block->tail_length * 2.0f) / (block->exit_velocity + block->cruise_velocity);
     }
     bf->block_time = block->head_time + block->body_time + block->tail_time;
     return (_ramp_exit_logger(bf, "3c"));  // 550us worst case
@@ -373,7 +373,7 @@ stat_t mp_calculate_ramps(mpBlockRuntimeBuf_t* block, mpBuf_t* bf, const float e
 float mp_get_target_length(const float v_0, const float v_1, const mpBuf_t* bf)
 {
     const float q_recip_2_sqrt_j = bf->q_recip_2_sqrt_j;
-    return q_recip_2_sqrt_j * sqrt(std::abs(v_1 - v_0)) * (v_1 + v_0);
+    return q_recip_2_sqrt_j * sqrtf(std::abs(v_1 - v_0)) * (v_1 + v_0);
 }
 
 /*
@@ -393,26 +393,24 @@ float mp_get_target_velocity(const float v_0, const float L, const mpBuf_t* bf)
 
     const float j = bf->jerk;
 
-    const float a80 = 7.698003589195;       // 80 * a
-    const float a_2 = 0.00925925925926;     // a^2
+const float a80 = 7.698003589195f;       // 80 * a
+const float a_2 = 0.00925925925926f;     // a^2
 
-    const float v_0_2 = v_0 * v_0;          // v_0^2
-    const float v_0_3 = v_0_2 * v_0;        // v_0^3
+const float v_0_2 = v_0 * v_0;          // v_0^2
+const float v_0_3 = v_0_2 * v_0;        // v_0^3
 
-    const float L_2 = L * L;                // L^2
+const float L_2 = L * L;                // L^2
 
-    const float b_part1 = 9 * j * L_2;      // 9 j L^2
-    const float b_part2 = a80 * v_0_3;      // 80 a v_0^3
+const float b_part1 = 9 * j * L_2;      // 9 j L^2
+const float b_part2 = a80 * v_0_3;      // 80 a v_0^3
 
-    //              b^3 = a^2 (3 L sqrt(j (2 b_part2  +  b_part1))  +  b_part2  +  b_part1)
-    const float b_cubed = a_2 * (3 * L * sqrt(j * (2 * b_part2 + b_part1)) + b_part2 + b_part1);
-    const float b       = cbrtf(b_cubed);
+//              b^3 = a^2 (3 L sqrt(j (2 b_part2  +  b_part1))  +  b_part2  +  b_part1)
+const float b_cubed = a_2 * (3 * L * sqrtf(j * (2 * b_part2 + b_part1)) + b_part2 + b_part1);
+const float b       = cbrtf(b_cubed);
 
-    const float const1a = 0.8292422988276;    // 4 * 10^(1/3) * a
-    const float const2a = 4.823680612597;     // 1/(10^(1/3) * a)
-    const float const3  = 0.333333333333333;  // 1/3
-
-    //          v_1 =    1/3 ((const1a v_0^2)/b  +  b const2a  -  v_0)
+const float const1a = 0.8292422988276f;    // 4 * 10^(1/3) * a
+const float const2a = 4.823680612597f;     // 1/(10^(1/3) * a)
+const float const3  = 0.333333333333333f;  // 1/3
     const float v_1 = const3 * ((const1a * v_0_2) / b + b * const2a - v_0);
 
     return std::abs(v_1);
@@ -447,13 +445,13 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
     while (i++ < 20) {          // If it fails after 20 iterations something's wrong
 
         // l_t is the difference in length between the L provided and the current guessed deceleration length
-        const float sqrt_delta_v_0 = sqrt(v_0 - v_1);
-        const float l_t = q_recip_2_sqrt_j * (sqrt_delta_v_0 * (v_1 + v_0)) - L;
+    const float sqrt_delta_v_0 = sqrtf(v_0 - v_1);
+    const float l_t = q_recip_2_sqrt_j * (sqrt_delta_v_0 * (v_1 + v_0)) - L;
 
-        // The return condition allows a minor error in length (in mm).
-        // Note: This comparison does NOT affect actual lengths or steps, which would be bad.
-        //       The actual lengths traveled must be controlled by the caller.
-        if (std::abs(l_t) < 0.001) {
+    // The return condition allows a minor error in length (in mm).
+    // Note: This comparison does NOT affect actual lengths or steps, which would be bad.
+    //       The actual lengths traveled must be controlled by the caller.
+    if (std::abs(l_t) < 0.001f) {
             break;
         }
         // For the first pass we tested velocity 0. If velocity 0 yields a l_t > 0,
