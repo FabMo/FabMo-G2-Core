@@ -118,6 +118,9 @@ using Motate::OutputPin;
 #define FREQUENCY_DWELL		1000UL
 #define MIN_SEGMENT_MS ((float)1.0)
 //#define MIN_SEGMENT_MS ((float)0.75)
+//#### Considerable exploration of whether the improved math processing in this branch would support a faster FREQUENCY_DDA and lower MIN_SEGMENT_MS
+// ... which would allow improved small segment size; BUT each of these tweeks did not go much faster without stutters.
+// ... BOTTOM LINE is that the math may be a slight improvement and perhaps worth switching to, but not pressing ...
 
 #define PLANNER_QUEUE_SIZE (48)
 #define SECONDARY_QUEUE_SIZE (10)
