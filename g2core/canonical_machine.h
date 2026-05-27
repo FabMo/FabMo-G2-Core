@@ -111,7 +111,8 @@ typedef enum {
     CYCLE_MACHINING,                // in normal machining cycle
     CYCLE_HOMING,                   // in homing cycle
     CYCLE_PROBE,                    // in probe cycle
-    CYCLE_JOG                       // in jogging cycle
+    CYCLE_JOG,                      // in jogging cycle (position-target)
+    CYCLE_JGV                      // in velocity-mode jogging cycle ({"jgv":{...}})
 //  CYCLE_G81                       // illustration of canned cycles
 //  ...
 } cmCycleType;
@@ -526,6 +527,13 @@ stat_t cm_jogging_cycle_callback(void);                         // jogging cycle
 stat_t cm_jogging_cycle_start(uint8_t axis);                    // {"jogx":-100.3}
 float cm_get_jogging_dest(void);                                // get jogging destination
 
+// Velocity-mode jogging cycle (cycle_jogv.cpp)
+stat_t cm_jgv_callback(void);                                  // velocity-jog main loop
+stat_t cm_set_jgv(nvObj_t *nv);                                  // JSON setter for {"jgvx":N}, {"jgvy":N}, ...
+stat_t cm_get_jgvto(nvObj_t *nv);                                // watchdog timeout getter
+stat_t cm_set_jgvto(nvObj_t *nv);                                // watchdog timeout setter
+void cm_jgv_abort(void);                                       // external abort (called from feedhold/alarm paths)
+
 // Alarm management (alarm.cpp)
 stat_t cm_alrm(nvObj_t *nv);                                    // trigger alarm from command input
 stat_t cm_shutd(nvObj_t *nv);                                   // trigger shutdown from command input
@@ -554,6 +562,7 @@ const configSubtable *const getOfsConfig_1();
 const configSubtable * const getHomConfig_1();
 const configSubtable * const getPrbConfig_1();
 const configSubtable * const getJogConfig_1();
+const configSubtable * const getJgvConfig_1();
 const configSubtable *const getAxisConfig_1();
 
 // stat_t cm_get_mline(nvObj_t *nv);       // get model line number

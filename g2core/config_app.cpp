@@ -1053,6 +1053,7 @@ constexpr cfgItem_t sys_config_items_2[] = {
     { "sys","sl",  _bipn, 0, cm_print_sl,  cm_get_sl,  cm_set_sl,  nullptr, SOFT_LIMIT_ENABLE },
     { "sys","lim", _bipn, 0, cm_print_lim, cm_get_lim, cm_set_lim, nullptr, HARD_LIMIT_ENABLE },
     { "sys","saf", _bipn, 0, cm_print_saf, cm_get_saf, cm_set_saf, nullptr, SAFETY_INTERLOCK_ENABLE },
+    { "sys","jgvto", _iipn, 0, tx_print_int, cm_get_jgvto, cm_set_jgvto, nullptr, 500 },  // velocity-jog watchdog timeout (ms)
     { "sys","m48", _bin, 0, cm_print_m48,  cm_get_m48, cm_get_m48, nullptr, 1 },   // M48/M49 feedrate & spindle override enable
     { "sys","froe",_bin, 0, cm_print_froe, cm_get_froe,cm_get_froe,nullptr, FEED_OVERRIDE_ENABLE},
     { "sys","fro", _fin, 3, cm_print_fro,  cm_get_fro, cm_set_fro, nullptr, FEED_OVERRIDE_FACTOR},
@@ -1956,7 +1957,7 @@ constexpr const configSubtable * const getUberGroupsConfig_1() { return &uber_gr
 
 auto nodes = makeSubtableNodes(
     0, getSysConfig_1(), getCmConfig_1(), getMpoConfig_1(), getPosConfig_1(), getOfsConfig_1(), getHomConfig_1(),
-    getPrbConfig_1(), getJogConfig_1(), getPwrConfig_1(), getMotorConfig_1(), getAxisConfig_1(), getDIConfig_1(),
+    getPrbConfig_1(), getJogConfig_1(), getJgvConfig_1(), getPwrConfig_1(), getMotorConfig_1(), getAxisConfig_1(), getDIConfig_1(),
     getINConfig_1(), getDOConfig_1(), getOUTConfig_1(), getAIConfig_1(), getAINConfig_1(), getP1Config_1(), getPIDConfig_1(),
     getHEConfig_1(), getCoorConfig_1(), getJobIDConfig_1(), getFixturingConfig_1(), getSpindleConfig_1(),
     getCoolantConfig_1(), getSysConfig_2(), getSysConfig_3(), getUserDataConfig_1(), getToolConfig_1(), getDiagnosticConfig_1(),

@@ -439,6 +439,7 @@ cmCombinedState cm_get_combined_state(cmMachine_t *_cm)
                         }
                     }
 					case CYCLE_JOG:       { return (COMBINED_JOG); }
+					case CYCLE_JGV:       { return (_cm->hold_state == FEEDHOLD_OFF ? COMBINED_JOG : COMBINED_HOLD); }
 				}
 			}
 		}
@@ -2911,6 +2912,19 @@ const char * const jog_axis_keys[] = {"jogx", "jogy", "jogz", "joga", "jogb", "j
 #endif
 cfgSubtableFromTokenList jog_config_1{"jog", jog_axis_keys, _f0, 0, tx_print_nul, get_nul, cm_run_jog};  // job
 const configSubtable *const getJogConfig_1() { return &jog_config_1; }
+
+// Velocity-mode jog config: {"jgv":{"x":120,"y":-80,...}}. Values are signed
+// velocities in current units/min (in/min if G20, mm/min if G21). cm_set_jgv
+// handles unit conversion, clamping to vmax, and kicking the cycle if needed.
+// (Token prefix "jgv" rather than "jv" because "jv" is already taken by the
+// system-group JSON Verbosity setting.)
+#if (AXES == 9)
+const char * const jgv_axis_keys[] = {"jgvx", "jgvy", "jgvz", "jgvu", "jgvv", "jgvw", "jgva", "jgvb", "jgvc"};
+#else
+const char * const jgv_axis_keys[] = {"jgvx", "jgvy", "jgvz", "jgva", "jgvb", "jgvc"};
+#endif
+cfgSubtableFromTokenList jgv_config_1{"jgv", jgv_axis_keys, _f0, 2, tx_print_nul, get_flt, cm_set_jgv};
+const configSubtable *const getJgvConfig_1() { return &jgv_config_1; }
 
 constexpr cfgItem_t axis_config_items_1[] = {
     // Axis parameters
