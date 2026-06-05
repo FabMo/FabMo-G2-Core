@@ -665,7 +665,7 @@ static void _load_move()
             st_run.mot[MOTOR_4].substep_increment_increment = st_pre.mot[MOTOR_4].substep_increment_increment;
             if (st_pre.mot[MOTOR_4].start_new_block) {
                 st_pre.mot[MOTOR_4].prev_direction = st_pre.mot[MOTOR_4].direction;
-                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+                st_run.mot[MOTOR_4].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_4.setDirection(st_pre.mot[MOTOR_4].direction);
                 st_pre.mot[MOTOR_4].start_new_block = false;
             }
@@ -682,7 +682,7 @@ static void _load_move()
             st_run.mot[MOTOR_5].substep_increment_increment = st_pre.mot[MOTOR_5].substep_increment_increment;
             if (st_pre.mot[MOTOR_5].start_new_block) {
                 st_pre.mot[MOTOR_5].prev_direction = st_pre.mot[MOTOR_5].direction;
-                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+                st_run.mot[MOTOR_5].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_5.setDirection(st_pre.mot[MOTOR_5].direction);
                 st_pre.mot[MOTOR_5].start_new_block = false;
             }
@@ -699,7 +699,7 @@ static void _load_move()
             st_run.mot[MOTOR_6].substep_increment_increment = st_pre.mot[MOTOR_6].substep_increment_increment;
             if (st_pre.mot[MOTOR_6].start_new_block) {
                 st_pre.mot[MOTOR_6].prev_direction = st_pre.mot[MOTOR_6].direction;
-                st_run.mot[MOTOR_2].substep_accumulator = -(DDA_HALF_SUBSTEPS);
+                st_run.mot[MOTOR_6].substep_accumulator = -(DDA_HALF_SUBSTEPS);
                 motor_6.setDirection(st_pre.mot[MOTOR_6].direction);
                 st_pre.mot[MOTOR_6].start_new_block = false;
             }
