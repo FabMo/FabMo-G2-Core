@@ -116,36 +116,52 @@ stat_t cm_set_jgv(nvObj_t *nv)
         return (STAT_INPUT_VALUE_RANGE_ERROR);
     }
 
-    // Convert the user-supplied value from display units (in/min if G20,
-    // mm/min if G21) to canonical mm/min for internal storage.
+    // Convert the user-supplied value to canonical units for internal storage:
+    //   - Linear axes (X,Y,Z or A,B,C in AXIS_INHIBITED): mm/min (convert from in/min if G20)
+    //   - Rotary axes (A,B,C in AXIS_STANDARD/AXIS_RADIUS): degrees/min (no conversion)
     float v_user = (float)nv->value_flt;
-    float v_mm   = _to_millimeters(v_user);
+    float v_canonical;
+    
+    if ((axis <= AXIS_Z) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+        // Linear axis - convert inches to mm if needed
+        v_canonical = _to_millimeters(v_user);
+    } else {
+        // Rotary axis - already in degrees/min, no conversion
+        v_canonical = v_user;
+    }
 
     // Clamp to per-axis velocity_max (signed — preserve direction).
     float vmax = cm->a[axis].velocity_max;
-    if (v_mm >  vmax) v_mm =  vmax;
-    if (v_mm < -vmax) v_mm = -vmax;
+    if (v_canonical >  vmax) v_canonical =  vmax;
+    if (v_canonical < -vmax) v_canonical = -vmax;
 
-    jgv.v_target[axis] = v_mm;
+    jgv.v_target[axis] = v_canonical;
     jgv.last_msg_time  = SysTickTimer.getValue();
     jgv.watchdog_tripped = false;        // any new message clears the watchdog flag
 
-    // Reflect the applied value back to the host in their unit space — that
-    // way an echo of {"jgvx":0.5} reads as 0.5, not 12.7, when the host is
-    // in inches mode. Do NOT use set_float() here: it would re-read
-    // nv->value_flt and discard our converted value.
-    float v_echo = v_mm;
-    if (cm_get_units_mode(MODEL) == INCHES) {
-        v_echo = v_mm / MM_PER_INCH;
+    // Reflect the applied value back to the host in their unit space.
+    // For linear axes in G20 mode, convert mm back to inches.
+    // For rotary axes, echo degrees unchanged.
+    float v_echo;
+    if ((axis <= AXIS_Z) || (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+        // Linear axis
+        v_echo = v_canonical;
+        if (cm_get_units_mode(MODEL) == INCHES) {
+            v_echo = v_canonical / MM_PER_INCH;
+        }
+    } else {
+        // Rotary axis - echo in degrees
+        v_echo = v_canonical;
     }
+    
     nv->value_flt = v_echo;
     nv->valuetype = TYPE_FLOAT;
     nv->precision = GET_TABLE_WORD(precision);
 
     // Kick the cycle if a nonzero velocity is being commanded and we're idle.
-    // Compare against v_mm (canonical), not the display-units value, so the
+    // Compare against v_canonical, not the display-units value, so the
     // epsilon threshold means the same thing regardless of units mode.
-    if (!jgv.active && fabsf(v_mm) > JGV_STOP_EPSILON) {
+    if (!jgv.active && fabsf(v_canonical) > JGV_STOP_EPSILON) {
         if (cm->machine_state == MACHINE_ALARM ||
             cm->machine_state == MACHINE_SHUTDOWN ||
             cm->machine_state == MACHINE_PANIC) {

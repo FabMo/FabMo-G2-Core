@@ -2360,7 +2360,19 @@ stat_t cm_get_vel(nvObj_t *nv)
         nv->value_flt = 0;
     } else {
         nv->value_flt = mp_get_runtime_velocity();
-        if (cm_get_units_mode(RUNTIME) == INCHES) {
+        
+        // Only apply inch conversion if no rotary axes are moving
+        // Check if any rotary axis (A, B, C in non-INHIBITED mode) is participating
+        bool has_rotary = false;
+        for (uint8_t axis = AXIS_A; axis < AXES; axis++) {
+            if (mr->axis_flags[axis] && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                has_rotary = true;
+                break;
+            }
+        }
+        
+        // Only convert to inches if purely linear motion
+        if (!has_rotary && (cm_get_units_mode(RUNTIME) == INCHES)) {
             nv->value_flt *= INCHES_PER_MM;
         }
     }
