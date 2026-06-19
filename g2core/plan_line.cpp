@@ -485,6 +485,10 @@ static mpBuf_t* _plan_block(mpBuf_t* bf)
  * Cost about ~65 uSec
  */
 
+// NOTE: jerk_max and jerk_high are used directly without unit conversion.
+// For A, B, C axes: these values MUST be in the correct units for the axis mode:
+//   - Rotary mode (AXIS_STANDARD/AXIS_RADIUS): degrees/min^3
+//   - Linear mode (AXIS_INHIBITED): mm/min^3
 static float _get_axis_jerk(mpBuf_t* bf, uint8_t axis)
 {
     if (bf->gm.motion_profile == PROFILE_FAST) {
@@ -690,7 +694,11 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
         }
     }
 
-    // compute rate limits and absolute maximum limit
+    // Compute rate limits and absolute maximum limit
+    // NOTE: velocity_max and feedrate_max are used directly without unit conversion.
+    // For A, B, C axes: these values MUST be in the correct units for the axis mode:
+    //   - Rotary mode (AXIS_STANDARD/AXIS_RADIUS): degrees/min
+    //   - Linear mode (AXIS_INHIBITED): mm/min
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (bf->axis_flags[axis]) {
             if (bf->gm.motion_mode == MOTION_MODE_STRAIGHT_TRAVERSE) {

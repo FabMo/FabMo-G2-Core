@@ -451,9 +451,17 @@ static void _send_probe_report() {
         bufp += sprintf(bufp, "\"x\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_X]));
         bufp += sprintf(bufp, "\"y\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_Y]));
         bufp += sprintf(bufp, "\"z\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_Z]));
-        bufp += sprintf(bufp, "\"a\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_A]));
-        bufp += sprintf(bufp, "\"b\":%0.5f,", _to_inches(cm->probe_results[0][AXIS_B]));
-        bufp += sprintf(bufp, "\"c\":%0.5f", _to_inches(cm->probe_results[0][AXIS_C]));
+        // Only convert A, B, C to inches if they are in linear mode (AXIS_INHIBITED)
+        // Rotary axes stay in degrees
+        bufp += sprintf(bufp, "\"a\":%0.5f,", 
+                (cm->a[AXIS_A].axis_mode == AXIS_INHIBITED) ? 
+                _to_inches(cm->probe_results[0][AXIS_A]) : cm->probe_results[0][AXIS_A]);
+        bufp += sprintf(bufp, "\"b\":%0.5f,", 
+                (cm->a[AXIS_B].axis_mode == AXIS_INHIBITED) ? 
+                _to_inches(cm->probe_results[0][AXIS_B]) : cm->probe_results[0][AXIS_B]);
+        bufp += sprintf(bufp, "\"c\":%0.5f", 
+                (cm->a[AXIS_C].axis_mode == AXIS_INHIBITED) ? 
+                _to_inches(cm->probe_results[0][AXIS_C]) : cm->probe_results[0][AXIS_C]);
         bufp += sprintf(bufp, "}}\n");
         xio_writeline(buf);
     }
