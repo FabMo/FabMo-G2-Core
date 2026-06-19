@@ -658,36 +658,38 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
             feed_time = bf->gm.feed_rate;  // NB: feed rate was un-inverted to minutes by cm_set_feed_rate()
             bf->gm.feed_rate_mode = UNITS_PER_MINUTE_MODE;
         } else {
-          // compute length of linear move in millimeters. Feed rate is provided as mm/min
+          // Compute length of linear move. Feed rate needs unit conversion for linear axes.
+          // Convert feed_rate from inches to mm if in G20 mode (rotary moves handled separately below)
+          float linear_feed_rate = (bf->gm.units_mode == INCHES) ? (bf->gm.feed_rate * MM_PER_INCH) : bf->gm.feed_rate;
 
           //2dm ////## main action for 2d planning mode axis decoupling  
           if (cm->gmx.planning_mode == PLAN_3D) {
           
 #if (AXES == 9)
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / linear_feed_rate;
 #else
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / bf->gm.feed_rate;
+            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / linear_feed_rate;
 #endif
           }
             // in 2D mode the XY/UV plane is used to set feed rate
             // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
           else { // 2D planning mode
 #if (AXES == 9)
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / bf->gm.feed_rate;
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / linear_feed_rate;
                 if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / linear_feed_rate;
                 }                    
 #else
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / bf->gm.feed_rate;
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / linear_feed_rate;
                 if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z]) / bf->gm.feed_rate;
+                    feed_time = sqrt(axis_square[AXIS_Z]) / linear_feed_rate;
                 }                    
 #endif                
           }
           //2dm
 
             // if no linear axes, compute length of multi-axis rotary move in degrees.
-            // Feed rate is provided as degrees/min
+            // Feed rate is in degrees/min - NO unit conversion (degrees are degrees regardless of G20/G21)
             if (fp_ZERO(feed_time)) {
                 feed_time = sqrt(axis_square[AXIS_A] + axis_square[AXIS_B] + axis_square[AXIS_C]) / bf->gm.feed_rate;
             }

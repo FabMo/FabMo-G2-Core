@@ -1471,12 +1471,18 @@ stat_t cm_goto_g30_position_mm(const float target[], const bool flags[])
  * cm_set_feed_rate_global() - F parameter (affects MODEL only), global (Gcode) units - for external use
  * cm_set_feed_rate_mm()     - F parameter (affects MODEL only), mm units - for internal use
  *
- * Normalize feed rate to mm/min or to minutes if in inverse time mode
+ * NOTE: Feed rate is stored WITHOUT unit conversion. For mixed linear/rotary moves, the planner
+ * will interpret this value based on which axes are moving:
+ *   - Linear moves: mm/min (or in/min if G20), converted by planner
+ *   - Rotary moves: degrees/min (G20/G21 doesn't affect rotary axes)
+ * This allows F10800 to mean 10800 deg/min for B-axis moves regardless of G20/G21 mode.
  */
 
 stat_t cm_set_feed_rate_global(const float feed_rate)
 {
-    return (cm_set_feed_rate_mm(_to_millimeters(feed_rate)));
+    // Store feed rate as-is in current units mode (no conversion)
+    // Conversion will be handled during move planning based on axis types
+    return (cm_set_feed_rate_mm(feed_rate));
 }
 
 stat_t cm_set_feed_rate_mm(const float feed_rate)
