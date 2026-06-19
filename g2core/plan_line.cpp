@@ -716,8 +716,8 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
 
     block_time        = std::max(block_time, feed_time);    // further limited by requested feedrate
     bf->cruise_vset   = bf->length / block_time;            // target velocity requested
-    // bf->cruise_vmax   = bf->cruise_vset;                    // starting value for cruise vmax
-    bf->cruise_vmax   = bf->absolute_vmax;                  // starting value for cruise vmax to absolute highest
+    bf->cruise_vmax   = bf->cruise_vset;                    // starting value for cruise vmax - respect commanded feedrate
+    // bf->cruise_vmax   = bf->absolute_vmax;               // BUG: This ignores commanded feedrate and always uses velocity_max
 }
 
 ////## I removed this from FabMo-G2 in order to get e-p to compile and run correctly, it may work fine ...
