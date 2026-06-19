@@ -404,8 +404,8 @@ void kn_config_changed() {
         }
 #endif
         ////##A Handle ABC special case linear for FabMo; AXIS_INHIBITED is used to flag ABC as linear
-        // ... and thus can't be used in INHIBITED mode
-        if ((axis <= AXIS_Z) && cm->a[axis].axis_mode == AXIS_INHIBITED) {
+        // When ABC axes are in INHIBITED mode, they should not be mapped (treated as disabled for motor purposes)
+        if ((axis >= AXIS_A) && (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
             motor_map[motor] = -1;
             steps_per_unit[motor] = 1;  // this is the denominator above, avoid 0
         } else {

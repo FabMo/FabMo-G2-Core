@@ -485,6 +485,10 @@ static mpBuf_t* _plan_block(mpBuf_t* bf)
  * Cost about ~65 uSec
  */
 
+// NOTE: jerk_max and jerk_high are used directly without unit conversion.
+// For A, B, C axes: these values MUST be in the correct units for the axis mode:
+//   - Rotary mode (AXIS_STANDARD/AXIS_RADIUS): degrees/min^3
+//   - Linear mode (AXIS_INHIBITED): mm/min^3
 static float _get_axis_jerk(mpBuf_t* bf, uint8_t axis)
 {
     if (bf->gm.motion_profile == PROFILE_FAST) {
@@ -654,43 +658,49 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
             feed_time = bf->gm.feed_rate;  // NB: feed rate was un-inverted to minutes by cm_set_feed_rate()
             bf->gm.feed_rate_mode = UNITS_PER_MINUTE_MODE;
         } else {
-          // compute length of linear move in millimeters. Feed rate is provided as mm/min
+          // Compute length of linear move. Feed rate needs unit conversion for linear axes.
+          // Convert feed_rate from inches to mm if in G20 mode (rotary moves handled separately below)
+          float linear_feed_rate = (bf->gm.units_mode == INCHES) ? (bf->gm.feed_rate * MM_PER_INCH) : bf->gm.feed_rate;
 
           //2dm ////## main action for 2d planning mode axis decoupling  
           if (cm->gmx.planning_mode == PLAN_3D) {
           
 #if (AXES == 9)
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / linear_feed_rate;
 #else
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / bf->gm.feed_rate;
+            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / linear_feed_rate;
 #endif
           }
             // in 2D mode the XY/UV plane is used to set feed rate
             // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
           else { // 2D planning mode
 #if (AXES == 9)
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / bf->gm.feed_rate;
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / linear_feed_rate;
                 if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / bf->gm.feed_rate;
+                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / linear_feed_rate;
                 }                    
 #else
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / bf->gm.feed_rate;
+                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / linear_feed_rate;
                 if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z]) / bf->gm.feed_rate;
+                    feed_time = sqrt(axis_square[AXIS_Z]) / linear_feed_rate;
                 }                    
 #endif                
           }
           //2dm
 
             // if no linear axes, compute length of multi-axis rotary move in degrees.
-            // Feed rate is provided as degrees/min
+            // Feed rate is in degrees/min - NO unit conversion (degrees are degrees regardless of G20/G21)
             if (fp_ZERO(feed_time)) {
                 feed_time = sqrt(axis_square[AXIS_A] + axis_square[AXIS_B] + axis_square[AXIS_C]) / bf->gm.feed_rate;
             }
         }
     }
 
-    // compute rate limits and absolute maximum limit
+    // Compute rate limits and absolute maximum limit
+    // NOTE: velocity_max and feedrate_max are used directly without unit conversion.
+    // For A, B, C axes: these values MUST be in the correct units for the axis mode:
+    //   - Rotary mode (AXIS_STANDARD/AXIS_RADIUS): degrees/min
+    //   - Linear mode (AXIS_INHIBITED): mm/min
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (bf->axis_flags[axis]) {
             if (bf->gm.motion_mode == MOTION_MODE_STRAIGHT_TRAVERSE) {
@@ -708,8 +718,8 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
 
     block_time        = std::max(block_time, feed_time);    // further limited by requested feedrate
     bf->cruise_vset   = bf->length / block_time;            // target velocity requested
-    // bf->cruise_vmax   = bf->cruise_vset;                    // starting value for cruise vmax
-    bf->cruise_vmax   = bf->absolute_vmax;                  // starting value for cruise vmax to absolute highest
+    bf->cruise_vmax   = bf->cruise_vset;                    // starting value for cruise vmax - respect commanded feedrate
+    // bf->cruise_vmax   = bf->absolute_vmax;               // BUG: This ignores commanded feedrate and always uses velocity_max
 }
 
 ////## I removed this from FabMo-G2 in order to get e-p to compile and run correctly, it may work fine ...

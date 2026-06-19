@@ -1312,10 +1312,10 @@ void cm_axes_to_mm(const float *target_global, float *target_mm, const bool *fla
     for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
         if (!flags[axis] || cm->a[axis].axis_mode == AXIS_DISABLED) {
             continue;                                                   // skip axis if not flagged for update or its disabled
-        } else if ((axis > AXIS_Z) && (cm->a[axis].axis_mode == AXIS_STANDARD)) { ////##A
-            target_mm[axis] = target_global[axis];                      // pass through rotary axes (no unit conversion required)
+        } else if ((axis > AXIS_Z) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) { ////##A
+            target_mm[axis] = target_global[axis];                      // pass through rotary axes (AXIS_STANDARD or AXIS_RADIUS - no conversion)
         } else {
-            target_mm[axis] = _to_millimeters(target_global[axis]);     // convert linear axes
+            target_mm[axis] = _to_millimeters(target_global[axis]);     // convert linear axes (X, Y, Z or A, B, C in AXIS_INHIBITED mode)
         }
     }
 }
@@ -1386,8 +1386,14 @@ stat_t _goto_stored_position_global(const float stored_position[],     // always
     copy_vector(target, stored_position);
 
     if (cm->gm.units_mode == INCHES) {
-        for (uint8_t i=0; i<AXIS_A; i++) {                  // Only convert linears (not rotaries)
+        for (uint8_t i=0; i<AXIS_A; i++) {                  // Convert XYZ linear axes
             target[i] *= INCHES_PER_MM;
+        }
+        // Convert ABC axes if they are in linear mode (AXIS_INHIBITED)
+        for (uint8_t i=AXIS_A; i<AXES; i++) {
+            if (cm->a[i].axis_mode == AXIS_INHIBITED) {
+                target[i] *= INCHES_PER_MM;
+            }
         }
     }
 
@@ -1465,12 +1471,18 @@ stat_t cm_goto_g30_position_mm(const float target[], const bool flags[])
  * cm_set_feed_rate_global() - F parameter (affects MODEL only), global (Gcode) units - for external use
  * cm_set_feed_rate_mm()     - F parameter (affects MODEL only), mm units - for internal use
  *
- * Normalize feed rate to mm/min or to minutes if in inverse time mode
+ * NOTE: Feed rate is stored WITHOUT unit conversion. For mixed linear/rotary moves, the planner
+ * will interpret this value based on which axes are moving:
+ *   - Linear moves: mm/min (or in/min if G20), converted by planner
+ *   - Rotary moves: degrees/min (G20/G21 doesn't affect rotary axes)
+ * This allows F10800 to mean 10800 deg/min for B-axis moves regardless of G20/G21 mode.
  */
 
 stat_t cm_set_feed_rate_global(const float feed_rate)
 {
-    return (cm_set_feed_rate_mm(_to_millimeters(feed_rate)));
+    // Store feed rate as-is in current units mode (no conversion)
+    // Conversion will be handled during move planning based on axis types
+    return (cm_set_feed_rate_mm(feed_rate));
 }
 
 stat_t cm_set_feed_rate_mm(const float feed_rate)
@@ -2354,7 +2366,19 @@ stat_t cm_get_vel(nvObj_t *nv)
         nv->value_flt = 0;
     } else {
         nv->value_flt = mp_get_runtime_velocity();
-        if (cm_get_units_mode(RUNTIME) == INCHES) {
+        
+        // Only apply inch conversion if no rotary axes are moving
+        // Check if any rotary axis (A, B, C in non-INHIBITED mode) is participating
+        bool has_rotary = false;
+        for (uint8_t axis = AXIS_A; axis < AXES; axis++) {
+            if (mr->axis_flags[axis] && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
+                has_rotary = true;
+                break;
+            }
+        }
+        
+        // Only convert to inches if purely linear motion
+        if (!has_rotary && (cm_get_units_mode(RUNTIME) == INCHES)) {
             nv->value_flt *= INCHES_PER_MM;
         }
     }
@@ -2502,6 +2526,21 @@ void cm_set_axis_high_jerk(const uint8_t axis, const float jerk)
  * cm_get_jm() - get jerk max value     - called from dispatch table
  * cm_set_jm() - set jerk max value     - called from dispatch table
  * cm_get_jh() - get jerk homing value  - called from dispatch table
+ *
+ * CRITICAL NOTE FOR A, B, C AXES:
+ * ================================
+ * These values (velocity_max, feedrate_max, jerk_max) are stored per-axis and used
+ * directly by the motion planner. The UNITS of these values MUST match the axis mode:
+ *
+ *  - For ROTARY axes (AXIS_STANDARD or AXIS_RADIUS mode):
+ *    Values should be in degrees/min (velocity/feedrate) and degrees/min^3 (jerk)
+ *
+ *  - For LINEAR A, B, C axes (AXIS_INHIBITED mode):
+ *    Values MUST be in mm/min (velocity/feedrate) and mm/min^3 (jerk)
+ *
+ * When changing an axis from rotary to linear mode (or vice versa), you MUST also
+ * update the velocity_max, feedrate_max, and jerk_max values to match the new mode.
+ * The motion planner does not perform unit conversion - it uses these values directly.
  * cm_set_jh() - set jerk homing value  - called from dispatch table
  *
  *  Jerk values can be rather large, often in the billions. This makes for some pretty big
@@ -3274,7 +3313,10 @@ static void _print_pos(nvObj_t *nv, const char *format, uint8_t units)
 {
     char axes[] = {"XYZABC"};
     uint8_t axis = _axis(nv);
-    if (axis >= AXIS_A) { units = DEGREES;}
+    // Only use degrees for rotary axes (A, B, C in STANDARD or RADIUS mode)
+    if ((axis >= AXIS_A) && (cm->a[axis].axis_mode != AXIS_INHIBITED)) { 
+        units = DEGREES;
+    }
     sprintf(cs.out_buf, format, axes[axis], nv->value_flt, GET_TEXT_ITEM(msg_units, units));
     xio_writeline(cs.out_buf);
 }
