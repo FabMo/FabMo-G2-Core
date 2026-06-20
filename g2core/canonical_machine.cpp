@@ -2387,7 +2387,25 @@ stat_t cm_get_vel(nvObj_t *nv)
     return (STAT_OK);
 }
 
-stat_t cm_get_feed(nvObj_t *nv) { return (get_float(nv, cm_get_feed_rate(ACTIVE_MODEL))); }
+stat_t cm_get_feed(nvObj_t *nv) {
+    float feed_rate = cm_get_feed_rate(ACTIVE_MODEL);
+    
+    // Check if this is likely a linear feed rate (has any XYZ linear axes or ABC in AXIS_INHIBITED mode)
+    bool has_linear_axes = (cm->a[AXIS_X].axis_mode != AXIS_DISABLED) ||
+                           (cm->a[AXIS_Y].axis_mode != AXIS_DISABLED) ||
+                           (cm->a[AXIS_Z].axis_mode != AXIS_DISABLED) ||
+                           (cm->a[AXIS_A].axis_mode == AXIS_INHIBITED) ||
+                           (cm->a[AXIS_B].axis_mode == AXIS_INHIBITED) ||
+                           (cm->a[AXIS_C].axis_mode == AXIS_INHIBITED);
+    
+    // Convert to mm/min for reporting if in inch mode AND has linear axes
+    // Pure rotary moves (no linear axes) should be reported in degrees/min
+    if ((cm->gm.units_mode == INCHES) && has_linear_axes) {
+        feed_rate *= MM_PER_INCH;
+    }
+    
+    return (get_float(nv, feed_rate));
+}
 stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
 stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
 stat_t cm_get_ofs(nvObj_t *nv)  { return (get_float(nv, cm_get_display_offset(ACTIVE_MODEL, _axis(nv)))); }
