@@ -2367,18 +2367,22 @@ stat_t cm_get_vel(nvObj_t *nv)
     } else {
         nv->value_flt = mp_get_runtime_velocity();
         
-        // Only apply inch conversion if no rotary axes are moving
-        // Check if any rotary axis (A, B, C in non-INHIBITED mode) is participating
-        bool has_rotary = false;
-        for (uint8_t axis = AXIS_A; axis < AXES; axis++) {
-            if (mr->axis_flags[axis] && (cm->a[axis].axis_mode != AXIS_INHIBITED)) {
-                has_rotary = true;
-                break;
+        // segment_velocity is always in mm/min when any linear (XYZ or INHIBITED ABC) axis
+        // is participating. Convert to in/min if in inch mode and linear motion is present.
+        // Mixed linear+rotary moves still need the inch conversion on the linear component.
+        // Pure rotary moves report in degrees/min - no conversion needed.
+        bool has_linear = false;
+        for (uint8_t axis = AXIS_X; axis <= AXIS_Z; axis++) {
+            if (mr->axis_flags[axis]) { has_linear = true; break; }
+        }
+        if (!has_linear) {
+            for (uint8_t axis = AXIS_A; axis < AXES; axis++) {
+                if (mr->axis_flags[axis] && (cm->a[axis].axis_mode == AXIS_INHIBITED)) {
+                    has_linear = true; break;
+                }
             }
         }
-        
-        // Only convert to inches if purely linear motion
-        if (!has_rotary && (cm_get_units_mode(RUNTIME) == INCHES)) {
+        if (has_linear && (cm_get_units_mode(RUNTIME) == INCHES)) {
             nv->value_flt *= INCHES_PER_MM;
         }
     }
@@ -2388,23 +2392,10 @@ stat_t cm_get_vel(nvObj_t *nv)
 }
 
 stat_t cm_get_feed(nvObj_t *nv) {
-    float feed_rate = cm_get_feed_rate(ACTIVE_MODEL);
-    
-    // Check if this is likely a linear feed rate (has any XYZ linear axes or ABC in AXIS_INHIBITED mode)
-    bool has_linear_axes = (cm->a[AXIS_X].axis_mode != AXIS_DISABLED) ||
-                           (cm->a[AXIS_Y].axis_mode != AXIS_DISABLED) ||
-                           (cm->a[AXIS_Z].axis_mode != AXIS_DISABLED) ||
-                           (cm->a[AXIS_A].axis_mode == AXIS_INHIBITED) ||
-                           (cm->a[AXIS_B].axis_mode == AXIS_INHIBITED) ||
-                           (cm->a[AXIS_C].axis_mode == AXIS_INHIBITED);
-    
-    // Convert to mm/min for reporting if in inch mode AND has linear axes
-    // Pure rotary moves (no linear axes) should be reported in degrees/min
-    if ((cm->gm.units_mode == INCHES) && has_linear_axes) {
-        feed_rate *= MM_PER_INCH;
-    }
-    
-    return (get_float(nv, feed_rate));
+    // feed_rate is stored in user units (in/min for G20, mm/min for G21, deg/min for rotary).
+    // per cm_set_feed_rate_global: "Store feed rate as-is in current units mode (no conversion)"
+    // Return it directly - no unit conversion needed for reporting.
+    return (get_float(nv, cm_get_feed_rate(ACTIVE_MODEL)));
 }
 stat_t cm_get_pos(nvObj_t *nv)  { return (get_float(nv, cm_get_display_position(RUNTIME, _axis(nv)))); }
 stat_t cm_get_mpo(nvObj_t *nv)  { return (get_float(nv, cm_get_absolute_position(ACTIVE_MODEL, _axis(nv)))); }
