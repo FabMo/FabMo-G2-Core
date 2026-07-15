@@ -52,7 +52,7 @@ static mpBuf_t* _plan_block(mpBuf_t* bf);
 //#### static void _calculate_override(mpBuf_t* bf);
 
 static void _calculate_jerk(mpBuf_t* bf);
-static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[]);
+static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[], bool has_commanded_linear);
 static void _calculate_junction_vmax(mpBuf_t* bf);
 
 
@@ -196,6 +196,38 @@ stat_t mp_aline(GCodeState_t* _gm)
     target_rotated[AXIS_B] = _gm->target[AXIS_B];
     target_rotated[AXIS_C] = _gm->target[AXIS_C];
 
+    // Capture whether any linear axis has commanded motion BEFORE step rounding.
+    // This determines whether F is interpreted as linear (mm/min) or rotary (deg/min).
+    // We must check pre-rounding because a sub-step linear move (e.g. 0.0001") would
+    // round to 0 steps, clearing axis_flags, and incorrectly trigger the rotary fallback.
+    // When linear was commanded but rounds to 0 steps, feed_time = 0, so block_time falls
+    // to the per-axis feedrate_max ceiling, and rotary axes run at their maximum speed.
+    //
+    // IMPORTANT: compare _gm->target (resolved absolute target in mm, gcode coord system)
+    // against cm->gmx.position (un-rounded model position from the previous move).
+    // Do NOT use mp->position here -- it is step-rounded and does not advance for sub-step
+    // moves, so a return move (e.g. G1 X0 back from a sub-step X0.0001 position) would
+    // compute a delta of zero and incorrectly suppress has_commanded_linear.
+    bool has_commanded_linear =
+        fp_NOT_ZERO(_gm->target[AXIS_X] - cm->gmx.position[AXIS_X]) ||
+        fp_NOT_ZERO(_gm->target[AXIS_Y] - cm->gmx.position[AXIS_Y]) ||
+        fp_NOT_ZERO(_gm->target[AXIS_Z] - cm->gmx.position[AXIS_Z]);
+#if (AXES == 9)
+    has_commanded_linear = has_commanded_linear ||
+        fp_NOT_ZERO(_gm->target[AXIS_U] - cm->gmx.position[AXIS_U]) ||
+        fp_NOT_ZERO(_gm->target[AXIS_V] - cm->gmx.position[AXIS_V]) ||
+        fp_NOT_ZERO(_gm->target[AXIS_W] - cm->gmx.position[AXIS_W]);
+#endif
+    if (!has_commanded_linear) {    // also check INHIBITED (linear) ABC axes
+        for (uint8_t axis = AXIS_A; axis < AXES; axis++) {
+            if (cm->a[axis].axis_mode == AXIS_INHIBITED &&
+                fp_NOT_ZERO(_gm->target[axis] - cm->gmx.position[axis])) {
+                has_commanded_linear = true;
+                break;
+            }
+        }
+    }
+
 //// ==========================================================================================
 ////##* Rob & Kyle, This is where we convert locations to true step target locations
 ////    First note: 10/11/22
@@ -263,7 +295,7 @@ stat_t mp_aline(GCodeState_t* _gm)
         }
     }
     _calculate_jerk(bf);                                // compute bf->jerk values
-    _calculate_vmaxes(bf, axis_length, axis_square);    // compute cruise_vmax and absolute_vmax
+    _calculate_vmaxes(bf, axis_length, axis_square, has_commanded_linear);    // compute cruise_vmax and absolute_vmax
     _set_bf_diagnostics(bf);                            // DIAGNOSTIC
 
     // Note: these next lines must remain in exact order. Position must update before committing the buffer.
@@ -645,7 +677,7 @@ bool mp_should_recalculate_jerk_for_feedhold(mpBuf_t *bf) {
  */
 
 
-static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[])
+static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const float axis_square[], bool has_commanded_linear)
 {
     float feed_time = 0;        // one of: XYZ time, ABC time or inverse time. Mutually exclusive
     float max_time  = 0;        // time required for the rate-limiting axis
@@ -662,37 +694,42 @@ static void _calculate_vmaxes(mpBuf_t* bf, const float axis_length[], const floa
           // Convert feed_rate from inches to mm if in G20 mode (rotary moves handled separately below)
           float linear_feed_rate = (bf->gm.units_mode == INCHES) ? (bf->gm.feed_rate * MM_PER_INCH) : bf->gm.feed_rate;
 
-          //2dm ////## main action for 2d planning mode axis decoupling  
-          if (cm->gmx.planning_mode == PLAN_3D) {
-          
-#if (AXES == 9)
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / linear_feed_rate;
-#else
-            feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / linear_feed_rate;
-#endif
-          }
-            // in 2D mode the XY/UV plane is used to set feed rate
-            // Z/W is ignored unless it's a Z/W move, in which case that motion sets the feed rate
-          else { // 2D planning mode
-#if (AXES == 9)
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / linear_feed_rate;
-                if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / linear_feed_rate;
-                }                    
-#else
-                feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / linear_feed_rate;
-                if (fp_ZERO(feed_time)) {
-                    feed_time = sqrt(axis_square[AXIS_Z]) / linear_feed_rate;
-                }                    
-#endif                
-          }
-          //2dm
+          // Use has_commanded_linear (pre-step-round intent) for the outer linear/rotary decision.
+          // Use bf->axis_flags (step-rounded) only for the inner 2D-mode XY-vs-Z sub-decision.
+          // This ensures that a sub-step linear move (e.g. X=0.0001") keeps the linear F context:
+          //   feed_time = sqrt(0)/F = 0, block_time = per-axis max ceiling, rotary runs at feedrate_max.
 
-            // if no linear axes, compute length of multi-axis rotary move in degrees.
-            // Feed rate is in degrees/min - NO unit conversion (degrees are degrees regardless of G20/G21)
-            if (fp_ZERO(feed_time)) {
-                feed_time = sqrt(axis_square[AXIS_A] + axis_square[AXIS_B] + axis_square[AXIS_C]) / bf->gm.feed_rate;
+          //2dm ////## main action for 2d planning mode axis decoupling  
+          if (has_commanded_linear) {
+            if (cm->gmx.planning_mode == PLAN_3D) {
+#if (AXES == 9)
+              feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z] + axis_square[AXIS_U] + axis_square[AXIS_V] + axis_square[AXIS_W]) / linear_feed_rate;
+#else
+              feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_Z]) / linear_feed_rate;
+#endif
+            } else { // 2D planning mode: XY/UV plane sets feed rate; Z/W only if no XY/UV motion
+#if (AXES == 9)
+              bool has_xy = bf->axis_flags[AXIS_X] || bf->axis_flags[AXIS_Y] || bf->axis_flags[AXIS_U] || bf->axis_flags[AXIS_V];
+              if (has_xy) {
+                  feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y] + axis_square[AXIS_U] + axis_square[AXIS_V]) / linear_feed_rate;
+              } else {
+                  feed_time = sqrt(axis_square[AXIS_Z] + axis_square[AXIS_W]) / linear_feed_rate;
+              }
+#else
+              bool has_xy = bf->axis_flags[AXIS_X] || bf->axis_flags[AXIS_Y];
+              if (has_xy) {
+                  feed_time = sqrt(axis_square[AXIS_X] + axis_square[AXIS_Y]) / linear_feed_rate;
+              } else {
+                  feed_time = sqrt(axis_square[AXIS_Z]) / linear_feed_rate;
+              }
+#endif
             }
+          //2dm
+          } else {
+            // Pure rotary move (no linear axes have step-rounded movement).
+            // F is in degrees/min - no unit conversion (degrees are degrees regardless of G20/G21)
+            feed_time = sqrt(axis_square[AXIS_A] + axis_square[AXIS_B] + axis_square[AXIS_C]) / bf->gm.feed_rate;
+          }
         }
     }
 
