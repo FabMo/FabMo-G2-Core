@@ -1894,6 +1894,16 @@ static void _exec_program_stop_end(cmMachineState machine_state)
     // perform the following resets if it's a program END
     if (machine_state == MACHINE_PROGRAM_END) {
         flag = true;                                         //  M2/M30
+
+        // Stop the spindle and coolant NOW, synchronously. The queued
+        // _exec_program_finalize below also does this, but a queued command
+        // only executes when the planner runs — after a program starves to a
+        // stop it can sit unexecuted for seconds, and if a new cycle arrives
+        // first the stale "running" toolhead state survives and gets
+        // re-engaged, physically restarting the spindle with no M3 in sight.
+        // Program end must never leave a live spindle behind.
+        spindle_stop();
+        coolant_control_immediate(COOLANT_OFF, COOLANT_BOTH);
         cm_suspend_g92_offsets();                            //  G92.2 - as per NIST
         cm_set_coord_system(cm->default_coord_system);       //  reset to default coordinate system
         cm_select_plane(cm->default_select_plane);           //  reset to default arc plane
