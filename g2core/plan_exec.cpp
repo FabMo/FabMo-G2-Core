@@ -847,6 +847,16 @@ static stat_t _exec_aline_tail(mpBuf_t *bf)
 
         if (fp_ZERO(mr->r->tail_length)) { return(STAT_OK);}         // end the move
         mr->segments = ceil(uSec(mr->r->tail_time) / NOM_SEGMENT_USEC);// # of segments for the section
+
+        ////## FabMo: a feedhold tail that runs off the end of its block (DECEL_CONTINUE) is followed by a
+        ////    costly block entry that re-plans the hold. Round the segment count down here, not up, so
+        ////    these segments run NOM to 2x NOM instead of MIN to NOM, and exec has time to prep that entry.
+        if (cm->hold_state == FEEDHOLD_DECEL_CONTINUE) {
+            float hold_segments = floor(uSec(mr->r->tail_time) / NOM_SEGMENT_USEC);
+            if (hold_segments >= 1) {
+                mr->segments = hold_segments;
+            }
+        }
         mr->segment_count = (uint32_t)mr->segments;
         mr->segment_time = mr->r->tail_time / mr->segments;          // time to advance for each segment
 
