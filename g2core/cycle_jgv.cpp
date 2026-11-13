@@ -366,7 +366,16 @@ stat_t cm_jgv_callback(void)
         return (STAT_EAGAIN);
     }
 
-    cm_set_feed_rate_mm(toolpath_F);
+    // toolpath_F is in canonical mm/min, but since the feed-rate rework
+    // (d86c7106/d8c6ae30) gm.feed_rate holds *display* units for linear moves
+    // and the planner converts (plan_line.cpp: feed_rate * MM_PER_INCH when
+    // G20). Hand it display units, or inch-mode jogs run 25.4x fast, clamped
+    // only by velocity_max.
+    float display_F = toolpath_F;
+    if (cm->gm.units_mode == INCHES) {
+        display_F = toolpath_F / MM_PER_INCH;
+    }
+    cm_set_feed_rate_mm(display_F);
     stat_t status = cm_straight_feed_mm(target_pos, flags, PROFILE_FAST);
     if (status != STAT_OK) {
         // Most likely a soft-limit error escaped our per-axis pre-check (e.g.
