@@ -458,14 +458,25 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
         }
         // For the first pass we tested velocity 0. If velocity 0 yields a l_t > 0,
         // then we need to start searching at v_1 instead.
-        // (We can't start AT v_1, so we start at v_1 - 0.1)
+        // (We can't start AT v_1, so we start just below it)
+        ////## FabMo: start from the estimate L = q_recip_2_sqrt_j * sqrt(v_0 - v_1) * (2 * v_0) instead of
+        ////    v_0 - 0.1. It is always at or above the answer, so the search closes in from one side in
+        ////    3-5 passes instead of 7-9. This runs in the exec interrupt at a block entry during a
+        ////    feedhold, where a slow answer leaves the stepper without a segment (stutter in the stop).
         if (i==1 && (l_t > 0)) {
-            v_1 = v_0 - 0.1;
+            const float sqrt_delta_guess = L / (2 * q_recip_2_sqrt_j * v_0);
+            v_1 = v_0 - (sqrt_delta_guess * sqrt_delta_guess);
             continue;
         }
         const float v_1x3 = 3 * v_1;
         const float recip_l_t = (2 * sqrt_delta_v_0) / ((v_0 - v_1x3) * q_recip_2_sqrt_j);
+        const float v_1_prev = v_1;
         v_1 = v_1 - (l_t * recip_l_t);
+
+        ////## FabMo: no further change is possible at float resolution, so stop rather than run out the 20 passes
+        if (v_1 == v_1_prev) {
+            break;
+        }
 
         // In some extreme cases there is no solution because the length is too short
         if (v_1 > v_0) {
