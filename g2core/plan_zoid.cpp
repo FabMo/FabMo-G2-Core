@@ -474,7 +474,7 @@ float mp_get_decel_velocity(const float v_0, const float L, const mpBuf_t* bf)
         v_1 = v_1 - (l_t * recip_l_t);
 
         ////## FabMo: no further change is possible at float resolution, so stop rather than run out the 20 passes
-        if (v_1 == v_1_prev) {
+        if (!(v_1 < v_1_prev) && !(v_1 > v_1_prev)) {       // i.e. unchanged; written this way for -Wfloat-equal
             break;
         }
 
