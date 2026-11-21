@@ -45,6 +45,7 @@ static stat_t _exec_aline_tail(mpBuf_t *bf);
 static stat_t _exec_aline_segment(void);
 static void   _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b);
 static stat_t _exec_aline_feedhold(mpBuf_t *bf);
+static void   _exec_aline_feed_override(mpBuf_t *bf);
 
 static void _init_forward_diffs(float v_0, float v_1);
 
@@ -196,6 +197,29 @@ stat_t mp_forward_plan()
     }
     if (bf->buffer_state < MP_BUFFER_BACK_PLANNED) { // case 0b: nothing to do. get outta here.
         return (STAT_OK);
+    }
+
+    ////## FabMo: in-flight feed override. Never entered unless exec has started an override ramp.
+    if (mr->fro_state != FRO_OFF) {
+        if ((bf->buffer_state != MP_BUFFER_RUNNING) || (bf->block_type != BLOCK_TYPE_ALINE)) {
+            mr->fro_state = FRO_OFF;                // run buffer changed under us (hold, flush) - stand down
+        } else if (mr->fro_state == FRO_REMAINDER_PLANNED) {
+            return (STAT_NOOP);                     // mr->p holds the remainder of the running block. Leave it be
+        } else {
+            // Un-plan whatever was already forward planned past the running block; its plan lives
+            // in mr->p, which is about to be re-used, and was made with the old override factor.
+            for (mpBuf_t *b = bf->nx; (b != bf) && (b->buffer_state == MP_BUFFER_FULLY_PLANNED); b = b->nx) {
+                b->buffer_state = MP_BUFFER_BACK_PLANNED;
+            }
+            // Plan the rest of the running block as if it were a new block entered at the ramp's end velocity.
+            // exec has already set bf->length to the length left after the ramp.
+            bf->hint = NO_HINT;
+            mp_calculate_ramps(mr->p, bf, mr->r->exit_velocity);
+            if (mr->fro_state == FRO_REPLAN_REQUESTED) {
+                mr->fro_state = FRO_REMAINDER_PLANNED;
+            }
+            return (STAT_OK);
+        }
     }
 
     // Case 2: Running cases - move bf past run buffer so it acts like case 1
@@ -414,8 +438,20 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 
     stat_t status;
 
+    ////## FabMo: in-flight feed override. The override ramp has ended but the forward planner has not
+    ////    yet planned the remainder of this block. Wait for it rather than run a stale plan.
+    if ((mr->block_state == BLOCK_INACTIVE) && (mr->fro_state == FRO_REPLAN_REQUESTED)) {
+        st_prep_null();
+        st_request_forward_plan();
+        return (STAT_NOOP);
+    }
+
     // Initialize all new blocks, regardless of normal or feedhold operation
     if (mr->block_state == BLOCK_INACTIVE) {
+
+        ////## FabMo: true only when this "new block" is the remainder of a block split by a feed override
+        bool fro_continuation = (mr->fro_state == FRO_REMAINDER_PLANNED);
+        mr->fro_state = FRO_OFF;
 
         // ASSERTIONS
 
@@ -479,9 +515,13 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 #endif
 
         ////##* SET UP TO START_NEW_BLOCK ... right place? ... needed on all motors (maybe just a 'st_pre' flag)?
-        for (uint8_t motor=0; motor<MOTORS; motor++) { 
-            st_pre.mot[motor].start_new_block = true;
-        }          
+        ////## FabMo: the remainder of an override-split block continues the same line at speed, so the
+        ////    step phase must carry through exactly as it does between segments of one block.
+        if (!fro_continuation) {
+            for (uint8_t motor=0; motor<MOTORS; motor++) { 
+                st_pre.mot[motor].start_new_block = true;
+            }
+        }
 
         // generate the way points for position correction at section ends
         for (uint8_t axis=0; axis<AXES; axis++) {
@@ -509,6 +549,13 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 
     mr->block_state = BLOCK_ACTIVE;
 
+    ////## FabMo: in-flight feed override. One float compare per segment while cruising; does nothing
+    ////    unless the override factor differs from the one this block was planned with.
+    if ((mr->section == SECTION_BODY) && (mr->section_state == SECTION_RUNNING) &&
+        (cm->hold_state == FEEDHOLD_OFF) && (mr->fro_state == FRO_OFF)) {
+        _exec_aline_feed_override(bf);
+    }
+
     // NB: from this point on the contents of the bf buffer do not affect execution
 
     //**** main dispatcher to process segments ***
@@ -517,6 +564,19 @@ stat_t mp_exec_aline(mpBuf_t *bf)
     else if (mr->section == SECTION_BODY) { status = _exec_aline_body(bf); }
     else if (mr->section == SECTION_TAIL) { status = _exec_aline_tail(bf); }
     else    { return(cm_panic(STAT_INTERNAL_ERROR, "exec_aline()"));}    // never supposed to get here
+
+    ////## FabMo: in-flight feed override. The override ramp just finished part-way along the block.
+    ////    Run the same bf again for the rest of the line (same mechanism a feedhold uses).
+    if ((mr->fro_state != FRO_OFF) && (status == STAT_OK)) {
+        if (get_axis_vector_length(mr->target, mr->position) > EPSILON4) {
+            bf->block_state = BLOCK_INITIAL_ACTION;
+        } else {
+            mr->fro_state = FRO_OFF;                // a hold ran the block out to its end; nothing left to re-run
+        }
+        if (cm->hold_state != FEEDHOLD_OFF) {
+            mr->fro_state = FRO_OFF;                // a feedhold has taken over this block; it builds its own plan
+        }
+    }
 
     // Conditionally set the move to be unplannable. We can't use the if/else block above,
     // since the head may call a body or a tail, and a body call tail, so we wait till after.
@@ -1016,6 +1076,102 @@ static void _exec_aline_normalize_block(mpBlockRuntimeBuf_t *b)
             debug_trap("_exec_aline_normalize_block() - found a move that is too short");
         }
     }
+}
+
+/*********************************************************************************************
+ * _exec_aline_feed_override() - apply a changed feed override to the block that is running
+ *
+ *  ////## FabMo. Without this a new override factor is only picked up by blocks that have not
+ *  been forward planned yet, so on a long line nothing happens until the line (and the block
+ *  planned behind it) is finished.
+ *
+ *  Called once per segment, only while the block is cruising (body) and no hold is active.
+ *  It does nothing at all unless the override factor now differs from the factor the block
+ *  was planned with - which is never the case in a file where the override is left alone.
+ *
+ *  When the factor has changed it turns the rest of the body into a ramp from the current
+ *  velocity to the new one (run by the tail generator, which handles either direction), and
+ *  asks the forward planner to plan what is left of the line after the ramp as a new block.
+ *  The block's endpoint is untouched, so no position error is introduced.
+ *
+ *  If there is not room to ramp and still decelerate to the block's exit velocity the block
+ *  is left alone and the new factor takes effect on following blocks, as it always did.
+ */
+
+#define FRO_MIN_RAMP_TIME   ((float)(0.010 / 60.0))     // shortest override ramp, minutes (10 ms)
+#define FRO_MIN_REST_TIME   ((float)(0.020 / 60.0))     // least cruise time that must remain after it (20 ms)
+#define FRO_VELOCITY_TOLERANCE ((float)0.005)           // ignore changes under 0.5% of current velocity
+
+static void _exec_aline_feed_override(mpBuf_t *bf)
+{
+    // What factor should this block be running at? (must mirror mp_calculate_ramps())
+    if ((bf->gm.motion_mode != MOTION_MODE_STRAIGHT_FEED) &&
+        (bf->gm.motion_mode != MOTION_MODE_CW_ARC) &&
+        (bf->gm.motion_mode != MOTION_MODE_CCW_ARC)) {
+        return;
+    }
+    float factor = cm->gmx.mfo_enable ? cm->gmx.mfo_factor : BASE_STATE_MFO_FACTOR;
+
+    if (fp_EQ(factor, bf->override_factor)) {       // the normal case: nothing has changed
+        return;
+    }
+
+    // From here on an override change is pending for this block. Whatever is decided, note
+    // the factor so the decision is made once and not on every following segment.
+    bf->override_factor = factor;
+
+    if ((cm != &cm1) || (cm->cycle_type != CYCLE_MACHINING)) {  // not during homing, probing, jogging or hold actions
+        return;
+    }
+
+    float v_0 = mr->r->cruise_velocity;                                 // velocity now
+    float v_1 = std::min(bf->absolute_vmax, factor * bf->cruise_vset);  // velocity wanted
+    if ((v_0 < EPSILON2) || (v_1 < EPSILON2) || (std::abs(v_1 - v_0) < (v_0 * FRO_VELOCITY_TOLERANCE))) {
+        return;
+    }
+
+    // Ramp length from jerk, stretched if needed so the ramp is never shorter than FRO_MIN_RAMP_TIME
+    float v_mean = (v_0 + v_1) * 0.5;
+    float ramp_length = mp_get_target_length(std::min(v_0, v_1), std::max(v_0, v_1), bf);
+    ramp_length = std::max(ramp_length, v_mean * FRO_MIN_RAMP_TIME);
+
+    // After the ramp the block must still be able to decelerate to its exit velocity
+    float v_exit = std::min(mr->r->exit_velocity, bf->exit_velocity);
+    if ((bf->nx->block_type == BLOCK_TYPE_ALINE) && (bf->nx->buffer_state >= MP_BUFFER_BACK_PLANNED)) {
+        v_exit = std::min(v_exit, factor * bf->nx->cruise_vset);        // the limit the re-plan will apply
+    }
+    float decel_length = (v_exit < v_1) ? mp_get_target_length(v_exit, v_1, bf) : 0;
+
+    float available_length = get_axis_vector_length(mr->target, mr->position);
+    float rest_length = available_length - ramp_length - (decel_length * 1.05);
+    if (rest_length < (v_1 * FRO_MIN_REST_TIME)) {
+        return;                                     // no room. Leave this block alone
+    }
+
+    // Commit. Describe the remainder of the line to the planner first...
+    bf->plannable = false;
+    bf->length = available_length - ramp_length;
+    if (v_1 > bf->cruise_velocity) {
+        bf->cruise_velocity = v_1;                  // let the remainder cruise at the raised velocity
+    }
+
+    // ...then turn the rest of the running block into the ramp
+    mr->section = SECTION_TAIL;
+    mr->section_state = SECTION_NEW;
+    mr->r->cruise_velocity = v_0;
+    mr->r->exit_velocity = v_1;
+    mr->r->tail_length = ramp_length;
+    mr->r->tail_time = ramp_length / v_mean;
+    mr->r->head_length = 0;
+    mr->r->body_length = 0;
+    mr->r->head_time = 0;
+    mr->r->body_time = 0;
+    for (uint8_t axis=0; axis<AXES; axis++) {
+        mr->waypoint[SECTION_TAIL][axis] = mr->position[axis] + mr->unit[axis] * ramp_length;
+    }
+
+    mr->fro_state = FRO_REPLAN_REQUESTED;           // hand the remainder to the forward planner
+    st_request_forward_plan();
 }
 
 /*********************************************************************************************

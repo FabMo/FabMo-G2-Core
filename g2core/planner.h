@@ -450,6 +450,14 @@ typedef struct mpBlockRuntimeBuf {      // Data structure for just the parts of 
     float exit_velocity;                // velocity at the end of the move
 } mpBlockRuntimeBuf_t;
 
+////## FabMo: in-flight feed override. A running block is only touched when the override factor
+////    changes while the block is cruising; see _exec_aline_feed_override() in plan_exec.cpp.
+typedef enum {
+    FRO_OFF = 0,                    // nothing in progress (always the case unless an override just changed)
+    FRO_REPLAN_REQUESTED,           // exec is ramping the running block; forward planner must plan the remainder
+    FRO_REMAINDER_PLANNED           // remainder of the running block is planned and waiting in mr->p
+} mpFroState;
+
 typedef struct mpPlannerRuntime {       // persistent runtime variables
     //  uint8_t (*run_move)(struct mpMoveRuntimeSingleton *m); // currently running move - left in for reference
     magic_t magic_start;                // magic number to test memory integrity
@@ -495,10 +503,13 @@ typedef struct mpPlannerRuntime {       // persistent runtime variables
 
     GCodeState_t gm;                    // gcode model state currently executing
 
+    uint8_t fro_state;                  // ////## FabMo: in-flight feed override state (see mpFroState)
+
     magic_t magic_end;
 
    // resets mpPlannerRuntime structure without actually wiping it
     void reset() {
+        fro_state = FRO_OFF;
         block_state = BLOCK_INACTIVE;
         section = SECTION_HEAD;
         section_state = SECTION_OFF;
