@@ -46,6 +46,7 @@
 // Tuning knobs. These are conservative starting points — revisit after field testing.
 #define JGV_SEGMENT_TIME_MS    25.0f     // per-segment duration in ms. Total lookahead = SEGMENT_TIME × TARGET_QUEUE_DEPTH; that's also the max direction-change lag. The planner needs a fixed *count* of segments to plan smooth cruise through junctions (~8), so shrinking SEGMENT_TIME shrinks the wall-clock lag proportionally.
 #define JGV_RAMP_TIME_S        0.25f     // 0→velocity_max ramp time, sets accel_max per axis
+#define JGV_EASE_SEGMENTS      5.0f      // segments over which a speed-up builds to (and eases off from) full acceleration. Speeding up is eased so a jog starts with a gentle push instead of a step in acceleration; slowing down is not eased, so a release stops as promptly as before.
 #define JGV_WATCHDOG_DEFAULT   500       // ms of host silence before auto-stop
 #define JGV_STOP_EPSILON       0.01f     // mm/min — below this we treat velocity as zero (slower than this isn't useful jogging)
 
@@ -53,6 +54,7 @@ struct jgvSingleton {
     bool      active;                   // true while CYCLE_JGV is running
     float     v_target[AXES];           // commanded target velocities (mm/min, signed)
     float     v_current[AXES];          // current per-axis velocities (jerk-limited)
+    float     dv_up[AXES];              // size of the last speed-up step (mm/min, >= 0); 0 when the axis is not speeding up. The next speed-up step may only be a little larger — that is the ease-in
     float     planned_pos[AXES];        // cumulative endpoint of queued segments (mm, absolute machine coords) — we add displacement to this, not to the runtime position, so back-to-back queued G1s have distinct endpoints
     uint32_t  last_msg_time;            // SysTick ms timestamp of most recent {"jgv":...}
     uint32_t  next_commit_time;         // SysTick ms; commits before this are skipped (gives planner's BLOCK_TIMEOUT_MS=30 a chance to fire and kick STARTUP → PRIMING)
@@ -73,6 +75,7 @@ static struct jgvSingleton jgv = {
     .active = false,
     .v_target = {0},
     .v_current = {0},
+    .dv_up = {0},
     .planned_pos = {0},
     .last_msg_time = 0,
     .next_commit_time = 0,
@@ -90,6 +93,7 @@ static void   _jgv_finalize_exit(void);
 static bool   _jgv_all_targets_zero(void);
 static bool   _jgv_all_current_zero(void);
 static float  _jgv_accel_max(uint8_t axis);
+static float  _jgv_next_dv(uint8_t axis, float v_cur, float v_tgt, float max_dv);
 static void   _jgv_apply_axis_softlimit(uint8_t axis, float planned_pos);
 
 /*****************************************************************************
@@ -232,6 +236,7 @@ stat_t cm_jgv_callback(void)
         for (uint8_t a = 0; a < AXES; a++) {
             jgv.v_target[a]  = 0;
             jgv.v_current[a] = 0;
+            jgv.dv_up[a]     = 0;
         }
         return (STAT_NOOP);
     }
@@ -254,6 +259,7 @@ stat_t cm_jgv_callback(void)
         for (uint8_t a = 0; a < AXES; a++) {
             jgv.v_target[a]  = 0;
             jgv.v_current[a] = 0;
+            jgv.dv_up[a]     = 0;
         }
         _jgv_finalize_exit();
         return (STAT_OK);
@@ -319,10 +325,7 @@ stat_t cm_jgv_callback(void)
         float accel_max = _jgv_accel_max(a);
         float max_dv    = accel_max * segment_time_min;
 
-        float dv = v_tgt - v_cur;
-        if (dv >  max_dv) dv =  max_dv;
-        if (dv < -max_dv) dv = -max_dv;
-        v_end[a] = v_cur + dv;
+        v_end[a] = v_cur + _jgv_next_dv(a, v_cur, v_tgt, max_dv);
 
         // Snap very small velocities to zero so the cycle can actually exit.
         if (fabsf(v_end[a]) < JGV_STOP_EPSILON && fabsf(v_tgt) < JGV_STOP_EPSILON) {
@@ -349,6 +352,7 @@ stat_t cm_jgv_callback(void)
         // accumulated v_current state reflects what actually got queued.
         if (fabsf(target_pos[a] - pos_now) < 1e-7f) {
             v_end[a] = 0;
+            jgv.dv_up[a] = 0;
             jgv.v_target[a] = 0;         // don't keep trying — host has to re-command opposite dir
         }
 
@@ -436,6 +440,7 @@ static void _jgv_enter_cycle(void)
     // massive first-segment move at planner-permitted velocity.
     for (uint8_t a = 0; a < AXES; a++) {
         jgv.v_current[a]   = 0;            // always start from a known rest
+        jgv.dv_up[a]       = 0;
         float pos          = cm_get_absolute_position(RUNTIME, a);
         jgv.planned_pos[a] = pos;
         mp_set_planner_position(a, pos);
@@ -464,6 +469,7 @@ static void _jgv_finalize_exit(void)
     for (uint8_t a = 0; a < AXES; a++) {
         jgv.v_target[a]  = 0;
         jgv.v_current[a] = 0;
+        jgv.dv_up[a]     = 0;
     }
     xio_writeline("{\"jgv\":0}\n");     // notify host that cycle has exited
 }
@@ -496,6 +502,48 @@ static float _jgv_accel_max(uint8_t axis)
     if (vmax <= 0) return (0);
     float a_from_ramp = vmax / (JGV_RAMP_TIME_S / 60.0f);    // mm/min^2 (RAMP_TIME_S → min)
     return (a_from_ramp);
+}
+
+// Velocity change for one axis over the next segment (signed, mm/min).
+//
+// Slowing down (including the stop after a release) is a plain constant
+// deceleration of at most max_dv per segment, as it always was.
+//
+// Speeding up is eased at both ends. The step may grow by only max_dv /
+// JGV_EASE_SEGMENTS from one segment to the next, so acceleration builds from
+// zero instead of arriving all at once, and it shrinks at the same rate on the
+// approach to the target speed so acceleration also returns to zero smoothly.
+// A reversal slows to rest first, then speeds up from rest the other way.
+static float _jgv_next_dv(uint8_t axis, float v_cur, float v_tgt, float max_dv)
+{
+    if (v_cur * v_tgt < 0) {
+        v_tgt = 0;                              // reversing: stop first
+    }
+    float remaining = v_tgt - v_cur;
+    float sign = (remaining < 0) ? -1.0f : 1.0f;
+    float r = fabsf(remaining);
+
+    if (fabsf(v_tgt) <= fabsf(v_cur)) {         // slowing down or holding speed
+        jgv.dv_up[axis] = 0;
+        return (sign * ((r < max_dv) ? r : max_dv));
+    }
+
+    float ddv = max_dv / JGV_EASE_SEGMENTS;     // change in step size allowed per segment
+    if (ddv <= 0) {
+        return (0);
+    }
+    float dv = jgv.dv_up[axis] + ddv;           // ease in
+    if (dv > max_dv) dv = max_dv;
+    if (r <= ddv) {
+        dv = r;                                 // close enough to land on the target
+    } else {
+        // Ease out: the largest step from which the steps can still shrink by
+        // ddv per segment and arrive at the target without overshooting.
+        float land = ddv * (sqrtf(0.25f + 2.0f * r / ddv) - 0.5f);
+        if (dv > land) dv = land;
+    }
+    jgv.dv_up[axis] = dv;
+    return (sign * dv);
 }
 
 // Clamp target_pos for one axis to stay within the soft-limit envelope.
