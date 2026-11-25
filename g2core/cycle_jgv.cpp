@@ -198,7 +198,8 @@ stat_t cm_set_jgvto(nvObj_t *nv)
 /*****************************************************************************
  * cm_jgv_abort() - external abort
  *
- * Called from feedhold/queue-flush/alarm paths when motion is being torn down.
+ * Called from the queue flush (_run_queue_flush in cycle_feedhold.cpp), which
+ * also covers job kill, when motion is being torn down.
  * Clears velocity state and exits the cycle cleanly. Idempotent.
  */
 void cm_jgv_abort(void)

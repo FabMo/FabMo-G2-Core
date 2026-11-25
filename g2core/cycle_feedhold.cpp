@@ -539,6 +539,10 @@ stat_t _run_queue_flush()            // typically runs from cm1 planner
     cm_abort_arc(cm);                       // kill arcs so they don't just create more alines
     cm_abort_homing(cm);                    // kill homing so it can reset cleanly
     cm_abort_probing(cm);                   // kill probing so it can exit cleanly
+    cm_jgv_abort();                         // kill a velocity jog so it doesn't resume from its old speed.
+                                            // Without this, a jog stopped by a limit/stop input started
+                                            // moving again as soon as the hold was flushed, and ran on
+                                            // until the cycle had ramped itself down.
     cm1.queue_flush_state = QUEUE_FLUSH_OFF;
     qr_request_queue_report(0);             // request a queue report, since we've changed the number of buffers available
     return (STAT_OK);
