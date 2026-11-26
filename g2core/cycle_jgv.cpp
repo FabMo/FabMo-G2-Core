@@ -316,7 +316,9 @@ stat_t cm_jgv_callback(void)
     float v_end[AXES];
     float target_pos[AXES];
     bool  flags[AXES];
-    float toolpath_speed_sq = 0;
+    float linear_speed_sq = 0;          // X/Y/Z and linear-mode A/B/C, (mm/min)^2
+    float rotary_speed_sq = 0;          // rotary A/B/C, (deg/min)^2
+    bool  linear_in_move = false;
 
     for (uint8_t a = 0; a < AXES; a++) {
         float v_cur = jgv.v_current[a];
@@ -361,11 +363,19 @@ stat_t cm_jgv_callback(void)
         // Zero-displacement axes shouldn't be in the gcode line.
         flags[a] = (fabsf(target_pos[a] - pos_now) > 1e-7f);
 
-        toolpath_speed_sq += v_end[a] * v_end[a];
+        if ((a <= AXIS_Z) || (cm->a[a].axis_mode == AXIS_INHIBITED)) {
+            linear_speed_sq += v_end[a] * v_end[a];
+            if (flags[a]) linear_in_move = true;
+        } else {
+            rotary_speed_sq += v_end[a] * v_end[a];
+        }
     }
 
-    float toolpath_F = sqrtf(toolpath_speed_sq);
-    if (toolpath_F < JGV_STOP_EPSILON) {
+    // The planner times a segment from its linear axes alone when any linear
+    // axis moves, and from its rotary axes alone otherwise (plan_line.cpp), so
+    // the feed rate has to be the speed of that same group of axes.
+    float toolpath_F = sqrtf(linear_in_move ? linear_speed_sq : rotary_speed_sq);
+    if (sqrtf(linear_speed_sq + rotary_speed_sq) < JGV_STOP_EPSILON) {
         // No motion this segment. Just advance state and wait for the next tick.
         for (uint8_t a = 0; a < AXES; a++) jgv.v_current[a] = v_end[a];
         return (STAT_EAGAIN);
@@ -376,8 +386,13 @@ stat_t cm_jgv_callback(void)
     // and the planner converts (plan_line.cpp: feed_rate * MM_PER_INCH when
     // G20). Hand it display units, or inch-mode jogs run 25.4x fast, clamped
     // only by velocity_max.
+    //
+    // A rotary-only segment is the exception: its feed rate is degrees/min and
+    // the planner takes it as given. Dividing that by 25.4 made rotary jogs in
+    // G20 run 25.4x slow, so the queued segments took seconds to play out —
+    // the axis answered late and kept turning long after the release.
     float display_F = toolpath_F;
-    if (cm->gm.units_mode == INCHES) {
+    if (linear_in_move && cm->gm.units_mode == INCHES) {
         display_F = toolpath_F / MM_PER_INCH;
     }
     cm_set_feed_rate_mm(display_F);
